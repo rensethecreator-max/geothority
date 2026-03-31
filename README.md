@@ -94,3 +94,4 @@ See `.env.local` for all required variables. Key ones:
 - `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_AUDIT` / `STRIPE_PRICE_STARTER` / `STRIPE_PRICE_PRO`
 - `RESEND_API_KEY`
+# Geothority — Redeploying with all env vars
