@@ -9,7 +9,7 @@ export const PLANS = {
   audit: {
     name: "Audit Only",
     price: 47,
-    priceId: process.env.STRIPE_PRICE_AUDIT!,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_AUDIT_PRICE_ID || process.env.STRIPE_PRICE_AUDIT || "",
     features: [
       "Full website scan & Trust Stack™ analysis",
       "Competitor gap report",
@@ -21,7 +21,7 @@ export const PLANS = {
   starter: {
     name: "Starter",
     price: 149,
-    priceId: process.env.STRIPE_PRICE_STARTER!,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || process.env.STRIPE_PRICE_STARTER || "",
     popular: true,
     features: [
       "Everything in Audit",
@@ -35,7 +35,7 @@ export const PLANS = {
   pro: {
     name: "Pro",
     price: 299,
-    priceId: process.env.STRIPE_PRICE_PRO!,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || process.env.STRIPE_PRICE_PRO || "",
     features: [
       "Everything in Starter",
       "10 competitors tracked",
