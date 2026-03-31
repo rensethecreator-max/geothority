@@ -1,0 +1,54 @@
+{
+  "host": "geothority.io",
+  "name": "Geothority",
+  "launcherName": "LocalAuth",
+  "display": "standalone",
+  "themeColor": "#3B82F6",
+  "navigationColor": "#0F1117",
+  "navigationColorDark": "#0F1117",
+  "navigationDividerColor": "#2D3148",
+  "navigationDividerColorDark": "#2D3148",
+  "backgroundColor": "#0F1117",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://geothority.ai/icons/icon-512x512.png",
+  "maskableIconUrl": "https://geothority.ai/icons/icon-512x512.png",
+  "splashScreenFadeOutDuration": 300,
+  "isChromeOSOnly": false,
+  "shortcuts": [
+    {
+      "name": "New Scan",
+      "short_name": "Scan",
+      "url": "/scan",
+      "icons": []
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "icons": []
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://geothority.ai/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "packageId": "io.geothority.app",
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "geothority"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "signing": {
+    "keyStore": "./geothority.keystore",
+    "keyAlias": "geothority"
+  },
+  "minSdkVersion": 23,
+  "orientation": "portrait",
+  "shortName": "Geothority"
+}
