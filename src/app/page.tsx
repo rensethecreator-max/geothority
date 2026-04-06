@@ -56,22 +56,25 @@ const features = [
 
 const testimonials = [
   {
-    name: "Sarah Mitchell",
-    title: "State Farm Agent, Austin TX",
-    quote: "I was spending $3,200/month on Google Ads and getting nothing from organic. Geothority found 14 missing pages and helped me generate them in one afternoon. My organic leads doubled in 8 weeks.",
+    name: "Beta User",
+    title: "Independent Insurance Agent",
+    quote: "We're in early access. Be one of our first agents and share your story — founding users get 3 months free.",
     rating: 5,
+    isCTA: true,
   },
   {
-    name: "Marcus Johnson",
-    title: "Independent Agent, Charlotte NC",
-    quote: "The Trust Stack visualization was my aha moment. I had no idea I was missing so many basic trust signals. The Quick Win cards made fixing them effortless.",
+    name: "Join the Waitlist",
+    title: "Get Early Access",
+    quote: "Geothority is built specifically for independent insurance agents who are tired of being outranked. Get in early and help shape the product.",
     rating: 5,
+    isCTA: true,
   },
   {
-    name: "Jennifer Park",
-    title: "Farmers Agent, Portland OR",
-    quote: "The Competitor Watchdog caught my biggest competitor adding 8 new city pages. I matched them in a day using the content generator. Game changer.",
+    name: "Founding Agent Program",
+    title: "3 Months Free · Limited Spots",
+    quote: "First 50 agents get founding pricing locked in forever. We build the features you need. You get results you can measure.",
     rating: 5,
+    isCTA: true,
   },
 ];
 
@@ -279,9 +282,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-electric-500 flex items-center justify-center">
-                <span className="text-white font-bold text-xs">G</span>
-              </div>
+              <img src="/logo.jpg" alt="Geothority" className="w-8 h-8 rounded-lg" />
               <span className="font-semibold">Geothority</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-[var(--muted-foreground)]">

@@ -63,8 +63,22 @@ export async function scanWebsite(
   let html = "";
   let fetchError = false;
 
+  // SSRF protection — block internal/metadata URLs
   try {
     const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
+    const parsed = new URL(normalizedUrl);
+    const blockedHosts = [
+      'localhost', '127.0.0.1', '0.0.0.0', '::1',
+      '169.254.169.254', '169.254.0.0',
+      'metadata.google.internal',
+    ];
+    const isPrivateIP = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/.test(parsed.hostname);
+    if (blockedHosts.includes(parsed.hostname) || isPrivateIP || parsed.hostname.endsWith('.internal') || parsed.hostname.endsWith('.local')) {
+      throw new Error('URL not allowed');
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      throw new Error('Invalid URL protocol');
+    }
     const res = await fetch(normalizedUrl, {
       headers: {
         "User-Agent":

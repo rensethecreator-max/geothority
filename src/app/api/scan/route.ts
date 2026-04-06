@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { scanWebsite } from "@/lib/scanner";
+import { scanRatelimit, checkRateLimit } from "@/lib/ratelimit";
+
+// Input validation constants
+const MAX_URL_LENGTH = 500;
+const MAX_NAME_LENGTH = 100;
+const MAX_CITY_LENGTH = 100;
+const MAX_STATE_LENGTH = 50;
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +21,21 @@ export async function POST(req: NextRequest) {
     }
 
     const { url, businessName, city, state } = await req.json();
+
+    // Input length validation (prevents prompt injection + cost abuse)
+    if (url?.length > MAX_URL_LENGTH || businessName?.length > MAX_NAME_LENGTH ||
+        city?.length > MAX_CITY_LENGTH || state?.length > MAX_STATE_LENGTH) {
+      return NextResponse.json({ error: "Input too long" }, { status: 400 });
+    }
+
+    // Rate limiting — 3 scans/day per user on free plan
+    const rl = await checkRateLimit(scanRatelimit, `scan:${user.id}`);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded", message: "You've reached your daily scan limit. Upgrade to Pro for unlimited scans.", reset: rl.reset },
+        { status: 429 }
+      );
+    }
 
     if (!url || !businessName || !city || !state) {
       return NextResponse.json(
