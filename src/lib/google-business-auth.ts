@@ -5,7 +5,7 @@ export async function handleOAuthSignIn() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      scopes: ["https://www.googleapis.com/auth/business.manage"],
+      scopes: "https://www.googleapis.com/auth/business.manage",
       redirectTo: `${window.location.origin}/api/auth/callback`,
     },
   });
