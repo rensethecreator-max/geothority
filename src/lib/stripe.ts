@@ -1,9 +1,13 @@
 import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia" as any,
-  typescript: true,
-});
+// Only instantiate Stripe on the server side (where STRIPE_SECRET_KEY is available)
+// The pricing page imports PLANS but NOT the stripe instance, so this is safe
+export const stripe = typeof window === 'undefined' && process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2024-12-18.acacia" as any,
+      typescript: true,
+    })
+  : null as unknown as Stripe;
 
 export const PLANS = {
   audit: {

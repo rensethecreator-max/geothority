@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -15,10 +16,8 @@ export function PublicHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-electric-500 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">LA</span>
-            </div>
-            <span className="text-lg font-semibold">Geothority</span>
+            <Image src="/logo.jpg" alt="Geothority" width={36} height={36} className="rounded-lg" />
+            <span className="text-lg font-semibold tracking-tight">Geothority</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -28,6 +27,12 @@ export function PublicHeader() {
               className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             >
               Features
+            </Link>
+            <Link
+              href="/insurance-agents"
+              className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+            >
+              Insurance Agents
             </Link>
             <Link
               href="/pricing"
@@ -71,6 +76,13 @@ export function PublicHeader() {
               className="block text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               Features
+            </Link>
+            <Link
+              href="/insurance-agents"
+              onClick={() => setMobileOpen(false)}
+              className="block text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            >
+              Insurance Agents
             </Link>
             <Link
               href="/pricing"
