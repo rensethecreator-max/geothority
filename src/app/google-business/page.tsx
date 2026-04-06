@@ -217,7 +217,7 @@ export default function GoogleBusinessPage() {
         )}
 
         {/* Connected & synced — show dashboard */}
-        {status?.googleConnected && status?.hasSyncedProfile && (
+        {status?.googleConnected && status?.hasSyncedProfile && profileData && (
           <>
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -230,17 +230,24 @@ export default function GoogleBusinessPage() {
                   )}
                 </p>
               </div>
-              <button
-                onClick={handleSync}
-                disabled={syncing}
-                className="inline-flex items-center gap-2 text-sm border border-[var(--border)] hover:border-[var(--foreground)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] px-4 py-2 rounded-lg transition-all disabled:opacity-60"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
-                {syncing ? "Syncing…" : "Sync Now"}
-              </button>
             </div>
-            <GBPDashboard data={profileData} />
+            <GBPDashboard
+              profile={profileData.profile}
+              audit={profileData.audit ?? null}
+              recentReviews={profileData.recentReviews ?? []}
+              recentPosts={profileData.recentPosts ?? []}
+              unansweredQuestions={profileData.unansweredQuestions ?? []}
+              allQuestions={profileData.allQuestions ?? []}
+              onSync={handleSync}
+              syncing={syncing}
+              lastSyncedAt={status.lastSyncedAt}
+            />
           </>
+        )}
+
+        {/* Connected & synced but profile still loading */}
+        {status?.googleConnected && status?.hasSyncedProfile && !profileData && (
+          <GBPSkeleton />
         )}
 
       </div>
