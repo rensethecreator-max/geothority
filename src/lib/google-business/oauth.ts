@@ -1,7 +1,7 @@
 // ============================================================
 // Google Business Profile — OAuth via Supabase
 // ============================================================
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client"; // uses @supabase/ssr
 
 /**
  * Required Google scopes for GBP access.
