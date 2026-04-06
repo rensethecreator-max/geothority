@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { signInWithGoogleBusiness } from "@/lib/google-business/oauth";
-import { GBPDashboard } from "@/components/gbp/GBPDashboard";
+import GBPDashboard from "@/components/gbp/GBPDashboard";
 import { GBPSkeleton } from "@/components/gbp/GBPSkeleton";
 import { Building2, RefreshCw, AlertCircle, CheckCircle2, Wifi } from "lucide-react";
 
