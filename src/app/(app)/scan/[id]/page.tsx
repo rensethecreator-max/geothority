@@ -134,6 +134,32 @@ export default function ScanResultPage() {
             <QuickWinCard key={i} win={win} featured={i === 0} />
           ))}
         </div>
+
+        {/* ReviewPulse cross-sell — show when Layer 4 (Reviews) score is low */}
+        {ls.layer4 < 60 && (
+          <div className="mt-6 p-5 rounded-2xl border border-amber-500/30 bg-amber-500/5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">⭐</span>
+                  <h3 className="font-semibold text-sm text-amber-400">Fix Your Review Score Automatically</h3>
+                </div>
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed max-w-lg">
+                  Your review velocity is hurting your local rank. ReviewPulse automatically texts customers after every transaction and routes happy ones straight to Google — without you lifting a finger.
+                </p>
+                <p className="text-xs text-[var(--muted-foreground)] mt-1">Works with Square, Stripe, or any payment system. Setup takes 5 minutes.</p>
+              </div>
+              <a
+                href="https://reviewpulse-iota.vercel.app?ref=geothority"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-shrink-0 bg-amber-500 hover:bg-amber-600 text-black text-sm font-bold px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap"
+              >
+                Fix Reviews →
+              </a>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Competitor Gaps */}
