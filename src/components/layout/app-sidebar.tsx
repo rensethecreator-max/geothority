@@ -12,6 +12,7 @@ import {
   PenTool,
   Menu,
   X,
+  Building2,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/content", label: "Content Library", icon: FileText },
   { href: "/content/generate", label: "Generate Content", icon: PenTool },
   { href: "/competitors", label: "Competitor Watchdog", icon: Eye },
+  { href: "/google-business", label: "Google Business", icon: Building2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
