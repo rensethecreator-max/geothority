@@ -16,7 +16,7 @@ export function PublicHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.jpg" alt="Geothority" width={36} height={36} className="rounded-lg" />
+            <Image src="/logo.png" alt="Geothority" width={140} height={40} className="object-contain" />
             <span className="text-lg font-semibold tracking-tight">Geothority</span>
           </Link>
 
