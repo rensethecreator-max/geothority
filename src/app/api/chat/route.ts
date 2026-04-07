@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { openai, WILL_SYSTEM_PROMPT } from "@/lib/openai";
 import { chatRatelimit, checkRateLimit } from "@/lib/ratelimit";
 import { createServerSupabase } from "@/lib/supabase/server";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 // Prompt injection patterns to block
 const INJECTION_PATTERNS = [
@@ -41,17 +42,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Sanitize: limit history, length, and check for prompt injection
-    const recentMessages = messages
+    const recentMessages: ChatCompletionMessageParam[] = messages
       .slice(-MAX_MESSAGES)
       .filter((m: any) => typeof m.content === 'string' && m.content.length <= MAX_MESSAGE_LENGTH)
       .map((m: any) => ({
-        role: m.role === 'user' ? 'user' : 'assistant',
+        role: m.role === 'user' ? 'user' as const : 'assistant' as const,
         content: m.content.slice(0, MAX_MESSAGE_LENGTH),
       }));
 
     // Block prompt injection attempts
     const lastUserMsg = recentMessages.filter((m: any) => m.role === 'user').pop();
-    if (lastUserMsg && containsInjection(lastUserMsg.content)) {
+    if (lastUserMsg && typeof lastUserMsg.content === 'string' && containsInjection(lastUserMsg.content)) {
       return NextResponse.json({
         message: "I can only help with Geothority and local SEO topics. What can I help you with?"
       });
