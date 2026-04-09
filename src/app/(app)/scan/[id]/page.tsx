@@ -7,6 +7,7 @@ import type { Scan } from "@/lib/types";
 import { ScanSkeleton } from "@/components/shared/loading-skeleton";
 import { TrustStackVisualization, ScoreRing } from "@/components/scan/trust-stack";
 import { QuickWinCard } from "@/components/scan/quick-win-card";
+import { StarceptaBanner } from "@/components/upsell/StarceptaBanner";
 import {
   ArrowLeft,
   ExternalLink,
@@ -21,14 +22,18 @@ export default function ScanResultPage() {
   const params = useParams();
   const [loading, setLoading] = useState(true);
   const [scan, setScan] = useState<Scan | null>(null);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
     async function loadScan() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
       const { data } = await supabase
         .from("scans")
         .select("*")
         .eq("id", params.id)
+        .eq("user_id", user.id)
         .single();
 
       if (data) setScan(data);
@@ -117,6 +122,14 @@ export default function ScanResultPage() {
           </div>
         </div>
       </div>
+
+      {/* Starcepta Review Cross-Sell Banner */}
+      {!bannerDismissed && (
+        <StarceptaBanner
+          reviewHealthScore={ls.layer4}
+          onDismiss={() => setBannerDismissed(true)}
+        />
+      )}
 
       {/* Trust Stack */}
       <div className="bg-[var(--card)] rounded-xl p-6 border border-[var(--border)]">

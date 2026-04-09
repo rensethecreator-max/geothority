@@ -16,12 +16,14 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { StarceptaBanner } from "@/components/upsell/StarceptaBanner";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [_profile, setProfile] = useState<UserProfile | null>(null);
   const [scans, setScans] = useState<Scan[]>([]);
   const [latestScan, setLatestScan] = useState<Scan | null>(null);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -126,6 +128,14 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {/* Starcepta Review Cross-Sell Banner */}
+      {!bannerDismissed && (
+        <StarceptaBanner
+          reviewHealthScore={ls.layer4}
+          onDismiss={() => setBannerDismissed(true)}
+        />
+      )}
 
       {/* Trust Stack + Quick Win */}
       <div className="grid lg:grid-cols-5 gap-6">

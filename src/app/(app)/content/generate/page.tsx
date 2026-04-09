@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import DOMPurify from "dompurify";
 import { useSearchParams } from "next/navigation";
 import { PenTool, Loader2, Sparkles, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -103,7 +104,7 @@ function GenerateForm() {
           <div className="p-6">
             <div
               className="prose prose-invert prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: preview.content_html || preview.content_markdown || "" }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(preview.content_html || preview.content_markdown || "") }}
             />
           </div>
         </div>

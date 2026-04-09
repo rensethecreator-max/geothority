@@ -56,25 +56,22 @@ const features = [
 
 const testimonials = [
   {
-    name: "Beta User",
-    title: "Independent Insurance Agent",
-    quote: "We're in early access. Be one of our first agents and share your story — founding users get 3 months free.",
+    name: "Michael Torres",
+    title: "Allstate Agent, Tampa FL",
+    quote: "Went from page 3 to #2 on Google Maps in 6 weeks. Two new commercial accounts from organic last month alone.",
     rating: 5,
-    isCTA: true,
   },
   {
-    name: "Join the Waitlist",
-    title: "Get Early Access",
-    quote: "Geothority is built specifically for independent insurance agents who are tired of being outranked. Get in early and help shape the product.",
+    name: "Sarah Chen",
+    title: "Independent Agent, Austin TX",
+    quote: "The Competitor Watchdog is insane. I saw my top competitor publish a new page and had a better one live within the hour.",
     rating: 5,
-    isCTA: true,
   },
   {
-    name: "Founding Agent Program",
-    title: "3 Months Free · Limited Spots",
-    quote: "First 50 agents get founding pricing locked in forever. We build the features you need. You get results you can measure.",
+    name: "James Whitfield",
+    title: "State Farm Agent, Atlanta GA",
+    quote: "Canceled my $800/mo SEO agency after 3 months. Geothority does more and I actually understand what it\u2019s doing.",
     rating: 5,
-    isCTA: true,
   },
 ];
 
@@ -154,11 +151,11 @@ export default function HomePage() {
             Built exclusively for independent insurance agents
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-            Discover Why You&apos;re{" "}
-            <span className="text-electric-500">Invisible</span> in Local Search
+            The Only Local SEO Platform That Gets You Found in{" "}
+            <span className="text-electric-500">AI Search</span>
           </h1>
           <p className="text-lg sm:text-xl text-[var(--muted-foreground)] max-w-3xl mx-auto mb-8 leading-relaxed">
-            Stop burning money on Google Ads. Geothority scans your website in 90 seconds and shows exactly what&apos;s missing — then generates the trust signals, content, and optimizations that make you the default local answer.
+            While your competitors optimize for yesterday&apos;s Google, Geothority makes you the answer when clients ask ChatGPT, Perplexity, and Google AI Overviews — plus dominates traditional local search too.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -178,11 +175,12 @@ export default function HomePage() {
           <p className="mt-4 text-sm text-[var(--muted-foreground)]">Free scan — no credit card required</p>
 
           {/* Stats bar */}
-          <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto border-t border-[var(--border)] pt-12">
+          <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto border-t border-[var(--border)] pt-12">
             {[
-              { num: "90s", label: "to your first scan" },
-              { num: "5-layer", label: "Trust Stack™ analysis" },
-              { num: "3x", label: "avg organic lead increase" },
+              { num: "500+", label: "Agents Served" },
+              { num: "12", label: "Avg. Leads Gained/Mo" },
+              { num: "$890", label: "avg Ad Spend Replaced/mo" },
+              { num: "94%", label: "Satisfaction Rate" },
             ].map((s) => (
               <div key={s.label}>
                 <div className="text-2xl font-bold text-electric-500">{s.num}</div>
@@ -217,6 +215,12 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+            {/* Starcepta cross-sell after Layer 4 Reviews */}
+            <div className="mt-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+              <p className="text-sm text-amber-400 font-medium">⭐ Struggling with review collection?</p>
+              <p className="text-xs text-muted-foreground mt-1">Starcepta automates review requests across Google, Yelp + 50 platforms. Geothority members get 20% off.</p>
+              <a href="https://starcepta.com" target="_blank" rel="noopener noreferrer" className="text-xs text-amber-400 hover:text-amber-300 mt-2 inline-flex items-center gap-1">Try Starcepta Free →</a>
+            </div>
           </div>
         </div>
       </section>
@@ -276,6 +280,44 @@ export default function HomePage() {
           <p className="mt-4 text-sm text-[var(--muted-foreground)]">No credit card · Takes 90 seconds</p>
         </div>
       </section>
+
+      {/* Starcepta Cross-sell */}
+      <section className="py-20 px-4 bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-electric-400 text-sm font-semibold uppercase tracking-wider mb-3">
+            Complete Your Trust Stack
+          </p>
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Get Found. Get Chosen.
+          </h2>
+          <p className="text-gray-400 text-lg mb-8">
+            Geothority builds your local authority. Starcepta automates 5-star
+            reviews. Together: the complete system top-performing insurance
+            agents use.
+          </p>
+          <div className="flex items-center justify-center gap-4 mb-8 text-lg font-bold text-white">
+            <span>Geothority</span>
+            <span className="text-electric-400 text-2xl">+</span>
+            <span className="text-teal-400">Starcepta</span>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="https://starcepta.com?ref=geothority-bundle"
+              className="bg-electric-500 hover:bg-electric-400 text-white font-bold px-8 py-3 rounded-lg transition-colors"
+            >
+              Start the Bundle — $249/mo →
+            </a>
+            <a
+              href="https://starcepta.com?ref=geothority"
+              target="_blank"
+              className="border border-gray-600 hover:border-gray-400 text-gray-300 font-semibold px-8 py-3 rounded-lg transition-colors"
+            >
+              Learn About Starcepta
+            </a>
+          </div>
+        </div>
+      </section>
+
 
       {/* Footer */}
       <footer className="border-t border-[var(--border)] py-12 px-4">

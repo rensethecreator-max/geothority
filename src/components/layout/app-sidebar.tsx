@@ -45,7 +45,7 @@ export function AppSidebar() {
       <div className="p-6 border-b border-[var(--border)]">
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-electric-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">LA</span>
+            <span className="text-white font-bold text-sm">G</span>
           </div>
           <span className="text-lg font-semibold text-[var(--foreground)]">
             Geothority
@@ -105,7 +105,7 @@ export function AppSidebar() {
         </button>
         <div className="flex items-center gap-2 ml-3">
           <div className="w-7 h-7 rounded-md bg-electric-500 flex items-center justify-center">
-            <span className="text-white font-bold text-xs">LA</span>
+            <span className="text-white font-bold text-xs">G</span>
           </div>
           <span className="font-semibold text-sm">Geothority</span>
         </div>
