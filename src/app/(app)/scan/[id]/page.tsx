@@ -8,6 +8,8 @@ import { ScanSkeleton } from "@/components/shared/loading-skeleton";
 import { TrustStackVisualization, ScoreRing } from "@/components/scan/trust-stack";
 import { QuickWinCard } from "@/components/scan/quick-win-card";
 import { StarceptaBanner } from "@/components/upsell/StarceptaBanner";
+import { PDFReportButton } from "@/components/scan/pdf-report";
+import { useAchievements } from "@/hooks/use-achievements";
 import {
   ArrowLeft,
   ExternalLink,
@@ -15,15 +17,168 @@ import {
   Target,
   Trophy,
   FileText,
+  Zap,
+  Loader2,
+  Copy,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Brain,
+  Code,
+  AlignLeft,
+  MapPin,
+  Link2,
+  BarChart3,
+  Sparkles,
+  Star,
+  ArrowRight,
 } from "lucide-react";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import Link from "next/link";
+
+/* ─── Types ─── */
+
+interface FixItem {
+  type: "schema" | "faq" | "about" | "landing_page" | "meta_tags" | "listing_sync" | "ai_optimization";
+  title: string;
+  content: string;
+  instructions: string;
+  impact: "high" | "medium" | "low";
+  autoApplied: boolean;
+  group?: string;
+}
+
+interface FixPackage {
+  scanId: string;
+  generatedAt: string;
+  fixes: FixItem[];
+  totalFixes: number;
+  autoAppliedCount: number;
+}
+
+/* ─── FixCard ─── */
+
+const fixTypeConfig: Record<FixItem["type"], { icon: React.ElementType; label: string; color: string }> = {
+  schema: { icon: Code, label: "Schema Markup", color: "text-purple-400" },
+  faq: { icon: AlignLeft, label: "FAQ Content", color: "text-blue-400" },
+  about: { icon: FileText, label: "About Page", color: "text-teal-400" },
+  landing_page: { icon: MapPin, label: "Landing Page", color: "text-emerald-400" },
+  meta_tags: { icon: BarChart3, label: "Meta Tags", color: "text-amber-400" },
+  listing_sync: { icon: Link2, label: "Listing Sync", color: "text-emerald-400" },
+  ai_optimization: { icon: Brain, label: "AI Optimization", color: "text-violet-400" },
+};
+
+const impactColors = {
+  high: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  medium: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  low: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+};
+
+function FixCard({ fix }: { fix: FixItem }) {
+  const [expanded, setExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const cfg = fixTypeConfig[fix.type] ?? fixTypeConfig.schema;
+  const Icon = cfg.icon;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(fix.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // For ai_optimization, try to parse JSON for nicer display
+  let aiParsed: Record<string, string> | null = null;
+  if (fix.type === "ai_optimization") {
+    try { aiParsed = JSON.parse(fix.content); } catch { /* raw */ }
+  }
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-[#0f1117] overflow-hidden">
+      <div className="p-4 flex items-start gap-3">
+        <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <Icon className={`w-4 h-4 ${cfg.color}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <span className="font-semibold text-sm">{fix.title}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${impactColors[fix.impact]}`}>
+              {fix.impact.charAt(0).toUpperCase() + fix.impact.slice(1)} Impact
+            </span>
+            {fix.autoApplied && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium flex items-center gap-1">
+                <Check className="w-3 h-3" /> Auto-applied
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 leading-relaxed">{fix.instructions}</p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {!fix.autoApplied && (
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          )}
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-white/5 p-4">
+          {fix.type === "ai_optimization" && aiParsed ? (
+            <div className="space-y-4">
+              <p className="text-xs text-violet-400 font-medium mb-3 flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5" />
+                These changes help AI assistants like ChatGPT and Perplexity recognize and recommend your business.
+              </p>
+              {Object.entries(aiParsed).map(([key, val]) => (
+                <div key={key} className="space-y-1">
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{key.replace(/([A-Z])/g, " $1").trim()}</div>
+                  <pre className="text-xs text-gray-300 bg-black/40 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap font-mono border border-white/5">
+                    {typeof val === "string" ? val : JSON.stringify(val, null, 2)}
+                  </pre>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(typeof val === "string" ? val : JSON.stringify(val, null, 2)); }}
+                    className="text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1"
+                  >
+                    <Copy className="w-3 h-3" /> Copy this section
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <pre className="text-xs text-gray-300 bg-black/40 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap font-mono border border-white/5">
+              {fix.content}
+            </pre>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Page ─── */
 
 export default function ScanResultPage() {
   const params = useParams();
   const [loading, setLoading] = useState(true);
   const [scan, setScan] = useState<Scan | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [fixing, setFixing] = useState(false);
+  const [fixPackage, setFixPackage] = useState<FixPackage | null>(null);
+  const [fixError, setFixError] = useState<string | null>(null);
   const supabase = createClient();
+
+  // IMPORTANT: All hooks must be called before any conditional returns
+  useAchievements({ scanScore: scan?.geothority_score ?? 0, scanCount: scan ? 1 : 0 });
 
   useEffect(() => {
     async function loadScan() {
@@ -44,6 +199,44 @@ export default function ScanResultPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
+  const handleFixAll = async () => {
+    if (fixing || !scan) return;
+
+    // If we already have a package, just scroll to it
+    if (fixPackage) {
+      document.getElementById("fix-package")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    setFixing(true);
+    setFixError(null);
+
+    try {
+      const res = await fetch("/api/scan/fix-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scanId: scan.id }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to generate fixes");
+      }
+
+      const pkg: FixPackage = await res.json();
+      setFixPackage(pkg);
+
+      // Scroll to results after a tick
+      setTimeout(() => {
+        document.getElementById("fix-package")?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    } catch (err) {
+      setFixError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setFixing(false);
+    }
+  };
+
   if (loading) return <ScanSkeleton />;
 
   if (!scan) {
@@ -63,6 +256,10 @@ export default function ScanResultPage() {
   const ls = scan.layer_scores || { layer1: 0, layer2: 0, layer3: 0, layer4: 0, layer5: 0 };
   const quickWins = scan.quick_wins || [];
   const competitors = scan.competitor_gaps || [];
+
+  // Group fixes by group label for display
+  const aiGroupFixes = fixPackage?.fixes.filter((f) => f.group === "AI Optimization Package") ?? [];
+  const regularFixes = fixPackage?.fixes.filter((f) => f.group !== "AI Optimization Package") ?? [];
 
   return (
     <div className="space-y-6">
@@ -90,20 +287,32 @@ export default function ScanResultPage() {
               </span>
             </div>
           </div>
-          <Link
-            href={`/content/generate?city=${scan.city}&state=${scan.state}&business=${scan.business_name}&scanId=${scan.id}`}
-            className="flex items-center gap-2 px-4 py-2 bg-electric-500 hover:bg-electric-600 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            <FileText className="w-4 h-4" />
-            Generate Content
-          </Link>
+          <div className="flex items-center gap-2 flex-wrap">
+            <PDFReportButton scan={scan} />
+            <Link
+              href={`/content/generate?city=${scan.city}&state=${scan.state}&business=${scan.business_name}&scanId=${scan.id}`}
+              className="flex items-center gap-2 px-4 py-2 bg-electric-500 hover:bg-electric-600 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <FileText className="w-4 h-4" />
+              Generate Content
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Score Overview */}
       <div className="bg-[var(--card)] rounded-xl p-8 border border-[var(--border)]">
         <div className="flex flex-col md:flex-row items-center gap-8">
-          <ScoreRing score={scan.geothority_score || 0} size={160} />
+          <div className="flex flex-col items-center gap-1">
+            <ScoreRing score={scan.geothority_score || 0} size={160} />
+            <div className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
+              Trust Stack Score
+              <InfoTooltip
+                content="Your overall local search authority score from 0-100. Higher means more visibility in Google and AI search."
+                side="bottom"
+              />
+            </div>
+          </div>
           <div className="flex-1 text-center md:text-left">
             <h2 className="text-xl font-bold mb-2">
               {scan.geothority_score! >= 70
@@ -141,36 +350,149 @@ export default function ScanResultPage() {
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
           <Target className="w-5 h-5 text-amber-500" />
           Quick Wins ({quickWins.length})
+          <InfoTooltip
+            content="Specific, actionable fixes you can make today to improve your score. Sorted by impact."
+            side="right"
+          />
         </h2>
         <div className="space-y-4">
           {quickWins.map((win, i) => (
-            <QuickWinCard key={i} win={win} featured={i === 0} />
+            <QuickWinCard key={i} win={win} featured={i === 0} scanId={scan.id} index={i} />
           ))}
         </div>
 
-        {/* ReviewPulse cross-sell — show when Layer 4 (Reviews) score is low */}
+        {/* Cross-sell: Starcepta */}
         {ls.layer4 < 60 && (
-          <div className="mt-6 p-5 rounded-2xl border border-amber-500/30 bg-amber-500/5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">⭐</span>
-                  <h3 className="font-semibold text-sm text-amber-400">Fix Your Review Score Automatically</h3>
-                </div>
-                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed max-w-lg">
-                  Your review velocity is hurting your local rank. ReviewPulse automatically texts customers after every transaction and routes happy ones straight to Google — without you lifting a finger.
-                </p>
-                <p className="text-xs text-[var(--muted-foreground)] mt-1">Works with Square, Stripe, or any payment system. Setup takes 5 minutes.</p>
+          <div className="mt-6 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-2xl border border-green-500/20 p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                <Star className="w-5 h-5 text-green-400" />
               </div>
+              <div className="flex-1">
+                <h4 className="font-bold">Your Review Score is Holding You Back</h4>
+                <p className="text-sm text-gray-400 mt-1">
+                  Your competitors average more reviews. Starcepta automates review collection with One-Tap Reviews — customers leave a 5-star review in 3 seconds.
+                </p>
+                <a
+                  href="https://starcepta.com?ref=geothority"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-green-400 hover:text-green-300 mt-2 font-medium"
+                >
+                  Try Starcepta Free <ArrowRight className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cross-sell: 4MinuteSEO */}
+        <div className="mt-6 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 rounded-2xl border border-blue-500/20 p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-5 h-5 text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold">Want to Fix Everything Automatically?</h4>
+              <p className="text-sm text-gray-400 mt-1">
+                4MinuteSEO builds your backlinks, generates content, and gets you indexed — on autopilot. The engine behind your local SEO growth.
+              </p>
               <a
-                href="https://reviewpulse-iota.vercel.app?ref=geothority"
+                href="https://4minuteseo.com?ref=geothority"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-shrink-0 bg-amber-500 hover:bg-amber-600 text-black text-sm font-bold px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap"
+                className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 mt-2 font-medium"
               >
-                Fix Reviews →
+                Learn About 4MinuteSEO <ArrowRight className="w-3 h-3" />
               </a>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Fix Everything Banner ─── */}
+      <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-2xl border border-emerald-500/20 p-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-xl font-bold flex items-center gap-2">
+              <Zap className="w-5 h-5 text-emerald-400" />
+              Fix Everything Automatically
+            </h3>
+            <p className="text-sm text-gray-400 mt-1">
+              We&apos;ll generate your missing schema, content, meta tags, AI optimization, and sync your listings — all in one click.
+            </p>
+          </div>
+          <button
+            onClick={handleFixAll}
+            disabled={fixing}
+            className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-xl font-semibold transition-all flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {fixing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Zap className="w-4 h-4" />
+            )}
+            {fixing
+              ? "Generating Fixes..."
+              : fixPackage
+              ? "View Fix Package ↓"
+              : "Fix Everything"}
+          </button>
+        </div>
+
+        {fixError && (
+          <p className="mt-4 text-sm text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-4 py-2">
+            {fixError}
+          </p>
+        )}
+
+        {fixing && (
+          <div className="mt-6 space-y-2">
+            {["Analyzing scan results...", "Generating content with AI...", "Packaging your fixes..."].map((msg, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm text-gray-400 animate-pulse" style={{ animationDelay: `${i * 0.3}s` }}>
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                {msg}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {fixPackage && (
+          <div id="fix-package" className="mt-6 space-y-6">
+            {/* Summary */}
+            <div className="flex flex-wrap items-center gap-4 text-sm border-b border-white/5 pb-4">
+              <span className="text-emerald-400 font-semibold">{fixPackage.totalFixes} fixes generated</span>
+              <span className="text-gray-600">·</span>
+              <span className="text-gray-400">{fixPackage.autoAppliedCount} applied automatically</span>
+              <span className="text-gray-600">·</span>
+              <span className="text-gray-500 text-xs">Generated {new Date(fixPackage.generatedAt).toLocaleString()}</span>
+            </div>
+
+            {/* Regular Fixes */}
+            {regularFixes.length > 0 && (
+              <div className="space-y-3">
+                {regularFixes.map((fix, i) => (
+                  <FixCard key={i} fix={fix} />
+                ))}
+              </div>
+            )}
+
+            {/* AI Optimization Package — grouped separately */}
+            {aiGroupFixes.length > 0 && (
+              <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-5 space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Brain className="w-4 h-4 text-violet-400" />
+                  <h4 className="font-bold text-sm text-violet-300">AI Optimization Package</h4>
+                  <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 font-medium">High Impact</span>
+                </div>
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  These changes help AI assistants like ChatGPT and Perplexity recognize and recommend your business. Generate the exact content and schema that <em>makes</em> AI recommend you — not just checks if it does.
+                </p>
+                {aiGroupFixes.map((fix, i) => (
+                  <FixCard key={i} fix={fix} />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -181,6 +503,10 @@ export default function ScanResultPage() {
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Trophy className="w-5 h-5 text-amber-500" />
             Competitor Gaps
+            <InfoTooltip
+              content="Areas where your competitors are outperforming you. Fix these to close the gap."
+              side="right"
+            />
           </h2>
           <p className="text-sm text-[var(--muted-foreground)] mt-1">
             Top competitors in {scan.city}, {scan.state} and what they&apos;re doing better

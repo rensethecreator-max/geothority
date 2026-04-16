@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Loader2, Globe, Building2, MapPin } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 export default function ScanPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function ScanPage() {
     e.preventDefault();
     setError(null);
     setScanning(true);
+    trackEvent("scan_started", { url, businessName, city, state });
 
     try {
       const res = await fetch("/api/scan", {
@@ -31,6 +33,7 @@ export default function ScanPage() {
       }
 
       const { scan } = await res.json();
+      trackEvent("scan_completed", { scanId: scan.id, url, city });
       router.push(`/scan/${scan.id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

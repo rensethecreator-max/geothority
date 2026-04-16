@@ -1,6 +1,9 @@
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { WillChatbot } from "@/components/chat/will-chatbot";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
+import FloatingHelpChat from "@/components/saas/FloatingHelpChat";
+// WillChatbot is rendered in the root layout (app/layout.tsx) so it is
+// available on both the public marketing site and the app without duplication.
+// WelcomeFlow is only rendered on /dashboard — not here in the layout
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,7 +14,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <ErrorBoundary>{children}</ErrorBoundary>
         </div>
       </main>
-      <WillChatbot />
+      <FloatingHelpChat />
     </div>
   );
 }

@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { syncGBPData } from "@/lib/google-business/sync";
+import { requirePlan } from "@/lib/plan-gate";
 
 /**
  * POST /api/gbp/sync
  * One-click GBP data sync. Requires authenticated user with Google OAuth token.
+ * Requires: starter plan or above.
  */
 export async function POST(request: NextRequest) {
   try {
+    const gate = await requirePlan(request, "starter");
+    if (gate.error) return gate.error;
     const supabase = await createServerSupabase();
 
     const {

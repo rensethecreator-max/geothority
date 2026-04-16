@@ -9,6 +9,36 @@ const MAX_NAME_LENGTH = 100;
 const MAX_CITY_LENGTH = 100;
 const MAX_STATE_LENGTH = 50;
 
+export async function GET(req: NextRequest) {
+  try {
+    const supabase = await createServerSupabase();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Return user's scan history
+    const { data: scans, error } = await supabase
+      .from("scans")
+      .select("id, url, business_name, city, state, geothority_score, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (error) {
+      return NextResponse.json({ error: "Failed to fetch scans" }, { status: 500 });
+    }
+
+    return NextResponse.json({ scans: scans || [] });
+  } catch (error) {
+    console.error("Scan GET error:", error);
+    return NextResponse.json({ error: "Failed to fetch scans" }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createServerSupabase();
@@ -70,6 +100,15 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Insert score_history entry for chart tracking
+    await supabase.from("score_history").insert({
+      user_id: user.id,
+      scan_id: scan.id,
+      overall_score: result.localAuthorityScore,
+      layer_scores: result.layerScores,
+      scanned_at: new Date().toISOString(),
+    });
 
     // Update user profile with business info
     await supabase.from("user_profiles").upsert({

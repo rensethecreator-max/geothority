@@ -13,14 +13,30 @@ import {
   CheckCircle2,
   ArrowUpRight,
   Loader2,
+  Trash2,
+  AlertTriangle,
+  Save,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { trackEvent } from "@/lib/analytics";
 
 function SettingsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const success = searchParams.get("success");
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userEmail, setUserEmail] = useState("");
+
+  // Profile edit state
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ business_name: "", city: "", state: "", website_url: "" });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+
+  // CMS state
   const [cmsType, setCmsType] = useState<string>("");
   const [wpUrl, setWpUrl] = useState("");
   const [wpUser, setWpUser] = useState("");
@@ -28,12 +44,20 @@ function SettingsContent() {
   const [savingCms, setSavingCms] = useState(false);
   const [cmsSaved, setCmsSaved] = useState(false);
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
+
+  // Account deletion state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const supabase = createClient();
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setUserEmail(user.email || "");
 
       const { data } = await supabase
         .from("user_profiles")
@@ -43,6 +67,12 @@ function SettingsContent() {
 
       if (data) {
         setProfile(data);
+        setProfileForm({
+          business_name: data.business_name || "",
+          city: data.city || "",
+          state: data.state || "",
+          website_url: data.website_url || "",
+        });
         if (data.cms_type) setCmsType(data.cms_type);
         if (data.cms_credentials) {
           setWpUrl(data.cms_credentials.siteUrl || "");
@@ -54,6 +84,56 @@ function SettingsContent() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleSaveProfile = async () => {
+    if (!profile) return;
+    setSavingProfile(true);
+    setProfileError(null);
+
+    const { error } = await supabase
+      .from("user_profiles")
+      .update({
+        business_name: profileForm.business_name || null,
+        city: profileForm.city || null,
+        state: profileForm.state || null,
+        website_url: profileForm.website_url || null,
+      })
+      .eq("id", profile.id);
+
+    setSavingProfile(false);
+    if (error) {
+      setProfileError(error.message);
+    } else {
+      setProfile({ ...profile, ...profileForm });
+      setProfileSaved(true);
+      setEditingProfile(false);
+      trackEvent("settings_profile_saved");
+      setTimeout(() => setProfileSaved(false), 3000);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch("/api/user/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmEmail: deleteConfirmEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setDeleteError(data.error || "Deletion failed.");
+        setDeleting(false);
+      } else {
+        // Account deleted — redirect to marketing site
+        router.push("/");
+      }
+    } catch {
+      setDeleteError("Network error. Please try again.");
+      setDeleting(false);
+    }
+  };
 
   const handleSaveCms = async () => {
     if (!profile) return;
@@ -78,6 +158,7 @@ function SettingsContent() {
 
   const handleUpgrade = async (plan: string) => {
     setUpgradingPlan(plan);
+    trackEvent("upgrade_clicked", { plan, currentPlan: profile?.plan || "free" });
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -87,6 +168,7 @@ function SettingsContent() {
 
       if (res.ok) {
         const { url } = await res.json();
+        trackEvent("checkout_started", { plan });
         window.location.href = url;
       }
     } catch {
@@ -100,7 +182,30 @@ function SettingsContent() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <div>
+        <h1 className="text-2xl font-bold">Settings</h1>
+      </div>
+
+      {/* Settings sub-navigation */}
+      <div className="flex gap-1 border-b border-[var(--border)] pb-0 -mb-2">
+        {[
+          { label: "General", href: "/settings" },
+          { label: "Notifications", href: "/settings/notifications" },
+          { label: "Embed", href: "/settings/embed" },
+        ].map((tab) => (
+          <a
+            key={tab.href}
+            href={tab.href}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              typeof window !== "undefined" && window.location.pathname === tab.href
+                ? "border-electric-500 text-electric-400"
+                : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            {tab.label}
+          </a>
+        ))}
+      </div>
 
       {success && (
         <div className="p-4 bg-score-good/10 border border-score-good/20 rounded-xl flex items-center gap-2 text-score-good">
@@ -113,29 +218,121 @@ function SettingsContent() {
 
       {/* Profile */}
       <div className="bg-[var(--card)] rounded-xl border border-[var(--border)]">
-        <div className="p-4 border-b border-[var(--border)] flex items-center gap-2">
-          <User className="w-4 h-4 text-electric-500" />
-          <h2 className="font-semibold">Profile</h2>
+        <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-electric-500" />
+            <h2 className="font-semibold">Profile</h2>
+          </div>
+          {!editingProfile && (
+            <button
+              onClick={() => setEditingProfile(true)}
+              className="text-xs text-electric-500 hover:underline"
+            >
+              Edit
+            </button>
+          )}
         </div>
-        <div className="p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-[var(--muted-foreground)]">Business</span>
-              <div className="font-medium">{profile?.business_name || "Not set"}</div>
+        <div className="p-4 space-y-4">
+          {profileError && (
+            <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+              {profileError}
             </div>
-            <div>
-              <span className="text-[var(--muted-foreground)]">Location</span>
-              <div className="font-medium">
-                {profile?.city && profile?.state
-                  ? `${profile.city}, ${profile.state}`
-                  : "Not set"}
+          )}
+          {profileSaved && (
+            <div className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" /> Profile saved!
+            </div>
+          )}
+
+          {editingProfile ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-[var(--muted-foreground)] mb-1 block">Business Name</label>
+                  <input
+                    type="text"
+                    value={profileForm.business_name}
+                    onChange={(e) => setProfileForm({ ...profileForm, business_name: e.target.value })}
+                    placeholder="Your Agency Name"
+                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-electric-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-[var(--muted-foreground)] mb-1 block">City</label>
+                  <input
+                    type="text"
+                    value={profileForm.city}
+                    onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
+                    placeholder="Tampa"
+                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-electric-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-[var(--muted-foreground)] mb-1 block">State</label>
+                  <input
+                    type="text"
+                    value={profileForm.state}
+                    onChange={(e) => setProfileForm({ ...profileForm, state: e.target.value })}
+                    placeholder="FL"
+                    maxLength={2}
+                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-electric-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-[var(--muted-foreground)] mb-1 block">Website URL</label>
+                  <input
+                    type="url"
+                    value={profileForm.website_url}
+                    onChange={(e) => setProfileForm({ ...profileForm, website_url: e.target.value })}
+                    placeholder="https://youragency.com"
+                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-electric-500"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={savingProfile}
+                  className="flex items-center gap-2 px-4 py-2 bg-electric-500 hover:bg-electric-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  {savingProfile ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                  ) : (
+                    <><Save className="w-4 h-4" /> Save Profile</>
+                  )}
+                </button>
+                <button
+                  onClick={() => { setEditingProfile(false); setProfileError(null); }}
+                  className="px-4 py-2 border border-[var(--border)] rounded-lg text-sm hover:bg-[var(--accent)] transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
-            <div>
-              <span className="text-[var(--muted-foreground)]">Website</span>
-              <div className="font-medium">{profile?.website_url || "Not set"}</div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-[var(--muted-foreground)]">Business</span>
+                <div className="font-medium">{profile?.business_name || <span className="text-[var(--muted-foreground)] italic">Not set</span>}</div>
+              </div>
+              <div>
+                <span className="text-[var(--muted-foreground)]">Location</span>
+                <div className="font-medium">
+                  {profile?.city && profile?.state
+                    ? `${profile.city}, ${profile.state}`
+                    : <span className="text-[var(--muted-foreground)] italic">Not set</span>}
+                </div>
+              </div>
+              <div>
+                <span className="text-[var(--muted-foreground)]">Website</span>
+                <div className="font-medium">{profile?.website_url || <span className="text-[var(--muted-foreground)] italic">Not set</span>}</div>
+              </div>
+              <div>
+                <span className="text-[var(--muted-foreground)]">Email</span>
+                <div className="font-medium">{userEmail || <span className="text-[var(--muted-foreground)] italic">—</span>}</div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -282,6 +479,82 @@ function SettingsContent() {
           </button>
         </div>
       </div>
+
+      {/* Danger Zone: Delete Account */}
+      <div className="bg-[var(--card)] rounded-xl border border-red-500/30">
+        <div className="p-4 border-b border-red-500/20 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-red-400" />
+          <h2 className="font-semibold text-red-400">Danger Zone</h2>
+        </div>
+        <div className="p-4">
+          <p className="text-sm text-[var(--muted-foreground)] mb-4">
+            Permanently delete your Geothority account and all associated data. This action cannot be undone.
+          </p>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="flex items-center gap-2 px-4 py-2 border border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-lg text-sm font-medium transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete Account
+          </button>
+        </div>
+      </div>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-md">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Delete Account</h3>
+                <p className="text-sm text-[var(--muted-foreground)]">This action is permanent and irreversible.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-[var(--muted-foreground)] mb-4">
+              All your scans, reports, content, and billing data will be permanently deleted.
+              Type your email address to confirm:
+            </p>
+
+            {deleteError && (
+              <div className="mb-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                {deleteError}
+              </div>
+            )}
+
+            <input
+              type="email"
+              placeholder={userEmail}
+              value={deleteConfirmEmail}
+              onChange={(e) => setDeleteConfirmEmail(e.target.value)}
+              className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 mb-4"
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting || deleteConfirmEmail.toLowerCase() !== userEmail.toLowerCase()}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                {deleting ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</>
+                ) : (
+                  <><Trash2 className="w-4 h-4" /> Delete My Account</>
+                )}
+              </button>
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeleteConfirmEmail(""); setDeleteError(null); }}
+                className="px-4 py-2.5 border border-[var(--border)] rounded-lg text-sm hover:bg-[var(--accent)] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

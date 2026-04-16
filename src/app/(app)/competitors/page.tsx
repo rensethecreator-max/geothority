@@ -11,6 +11,7 @@ import {
   Clock,
   ArrowRight,
 } from "lucide-react";
+import { ComparisonCards } from "@/components/competitors/comparison-cards";
 import Link from "next/link";
 
 interface MockCompetitor {
@@ -87,6 +88,7 @@ export default function CompetitorsPage() {
   const [loading, setLoading] = useState(true);
   const [competitors, setCompetitors] = useState<MockCompetitor[]>([]);
   const [hasProfile, setHasProfile] = useState(false);
+  const [userScore, setUserScore] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -104,6 +106,15 @@ export default function CompetitorsPage() {
         setHasProfile(true);
         // In production, load from Supabase. MVP uses mock data.
         setCompetitors(MOCK_COMPETITORS);
+        // Load latest scan score for comparison
+        const { data: latestScan } = await supabase
+          .from("scans")
+          .select("geothority_score, business_name, url")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+        if (latestScan?.geothority_score) setUserScore(latestScan.geothority_score);
       }
       setLoading(false);
     }
@@ -197,6 +208,30 @@ export default function CompetitorsPage() {
       )}
 
       {/* Competitors Grid */}
+      {/* Side-by-side comparison cards */}
+      {userScore > 0 && (
+        <ComparisonCards
+          you={{
+            name: "Your Business",
+            domain: "",
+            score: userScore,
+            rating: null,
+            reviewCount: null,
+            citationCount: null,
+            isYou: true,
+          }}
+          competitors={competitors.map((c) => ({
+            name: c.businessName,
+            domain: c.domain,
+            score: c.score,
+            rating: null,
+            reviewCount: null,
+            citationCount: null,
+          }))}
+        />
+      )}
+
+      {/* Detailed competitor cards */}
       <div className="grid md:grid-cols-3 gap-4">
         {competitors.map((comp) => (
           <div
@@ -206,9 +241,7 @@ export default function CompetitorsPage() {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="font-semibold text-sm">{comp.businessName}</div>
-                <div className="text-xs text-[var(--muted-foreground)]">
-                  {comp.domain}
-                </div>
+                <div className="text-xs text-[var(--muted-foreground)]">{comp.domain}</div>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold">{comp.score}</div>
@@ -216,14 +249,11 @@ export default function CompetitorsPage() {
               </div>
             </div>
 
-            <div className="h-2 bg-[var(--background)] rounded-full overflow-hidden mb-3">
+            <div className="h-1.5 bg-[var(--background)] rounded-full overflow-hidden mb-3">
               <div
                 className={`h-full rounded-full ${
-                  comp.score >= 70
-                    ? "bg-score-good"
-                    : comp.score >= 40
-                    ? "bg-score-mid"
-                    : "bg-score-poor"
+                  comp.score >= 70 ? "bg-score-good" :
+                  comp.score >= 40 ? "bg-score-mid" : "bg-score-poor"
                 }`}
                 style={{ width: `${comp.score}%` }}
               />

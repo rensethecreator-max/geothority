@@ -72,6 +72,36 @@
   background: var(--muted-foreground);
 }
 
+/* Light mode override */
+.light-mode {
+  --background: #F9FAFB;
+  --foreground: #111827;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+  --primary: #2563EB;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #111827;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: #F3F4F6;
+  --accent-foreground: #111827;
+  --destructive: #DC2626;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #2563EB;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #2563EB;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F3F4F6;
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #2563EB;
+}
+
 /* Score colors */
 .score-good { color: #10B981; }
 .score-mid { color: #F59E0B; }
@@ -80,3 +110,43 @@
 .bg-score-good { background-color: #10B981; }
 .bg-score-mid { background-color: #F59E0B; }
 .bg-score-poor { background-color: #EF4444; }
+
+/* Sparkle ring fade */
+@keyframes sparkle-ring-fade {
+  0%   { opacity: 0; transform: scale(0.85); }
+  20%  { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+
+/* Health pulse dot */
+@keyframes health-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.45; transform: scale(0.75); }
+}
+
+/* ─── Scroll-reveal animations ──────────────────────────────── */
+.scroll-reveal {
+  opacity: 0;
+  transition-property: opacity, transform;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-reveal.visible { opacity: 1; transform: none !important; }
+.scroll-reveal.fade-up { transform: translateY(30px); }
+.scroll-reveal.fade-in { transform: none; }
+.scroll-reveal.slide-left { transform: translateX(-40px); }
+.scroll-reveal.slide-right { transform: translateX(40px); }
+.scroll-reveal.scale-up { transform: scale(0.95); }
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .scroll-reveal.fade-up { transform: translateY(20px); }
+  .scroll-reveal.slide-left { transform: translateX(-20px); }
+  .scroll-reveal.slide-right { transform: translateX(20px); }
+}

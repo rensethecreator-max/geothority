@@ -52,6 +52,23 @@ interface RawScanData {
   pageCount: number;
   internalLinks: string[];
   externalLinks: string[];
+  // Enhanced scan fields
+  sslValid: boolean;
+  sslIssuer: string;
+  pageLoadTimeMs: number;
+  hasRobotsTxt: boolean;
+  hasSitemapXml: boolean;
+  hasH1: boolean;
+  h1Text: string;
+  hasViewportMeta: boolean;
+  hasOgTitle: boolean;
+  hasOgDescription: boolean;
+  hasOgImage: boolean;
+  hasTwitterCard: boolean;
+  imagesTotal: number;
+  imagesWithAlt: number;
+  imagesMissingAlt: number;
+  hasGBPLink: boolean;
 }
 
 export async function scanWebsite(
@@ -62,10 +79,14 @@ export async function scanWebsite(
 ): Promise<ScanResult> {
   let html = "";
   let fetchError = false;
+  let pageLoadTimeMs = 0;
+  let sslValid = false;
+  let sslIssuer = "";
+
+  const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
 
   // SSRF protection — block internal/metadata URLs
   try {
-    const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
     const parsed = new URL(normalizedUrl);
     const blockedHosts = [
       'localhost', '127.0.0.1', '0.0.0.0', '::1',
@@ -79,6 +100,14 @@ export async function scanWebsite(
     if (!['http:', 'https:'].includes(parsed.protocol)) {
       throw new Error('Invalid URL protocol');
     }
+
+    // SSL check — if URL is https, attempt to verify
+    sslValid = parsed.protocol === 'https:';
+    if (sslValid) {
+      sslIssuer = 'Valid (HTTPS)';
+    }
+
+    const fetchStart = Date.now();
     const res = await fetch(normalizedUrl, {
       headers: {
         "User-Agent":
@@ -86,13 +115,35 @@ export async function scanWebsite(
       },
       signal: AbortSignal.timeout(15000),
     });
+    pageLoadTimeMs = Date.now() - fetchStart;
     html = await res.text();
   } catch {
     fetchError = true;
   }
 
+  // Check robots.txt and sitemap.xml in parallel
+  let hasRobotsTxt = false;
+  let hasSitemapXml = false;
+  try {
+    const baseOrigin = new URL(normalizedUrl).origin;
+    const [robotsRes, sitemapRes] = await Promise.allSettled([
+      fetch(`${baseOrigin}/robots.txt`, { signal: AbortSignal.timeout(5000) }),
+      fetch(`${baseOrigin}/sitemap.xml`, { signal: AbortSignal.timeout(5000) }),
+    ]);
+    if (robotsRes.status === 'fulfilled' && robotsRes.value.ok) {
+      const robotsText = await robotsRes.value.text();
+      hasRobotsTxt = robotsText.toLowerCase().includes('user-agent');
+    }
+    if (sitemapRes.status === 'fulfilled' && sitemapRes.value.ok) {
+      const sitemapText = await sitemapRes.value.text();
+      hasSitemapXml = sitemapText.includes('<urlset') || sitemapText.includes('<sitemapindex');
+    }
+  } catch {
+    // ignore
+  }
+
   const $ = fetchError ? null : cheerio.load(html);
-  const rawScanData = $ ? analyzeHTML($, url) : getEmptyRawScan();
+  const rawScanData = $ ? analyzeHTML($, url, { sslValid, sslIssuer, pageLoadTimeMs, hasRobotsTxt, hasSitemapXml }) : getEmptyRawScan();
 
   const layerScores = calculateLayerScores(rawScanData, businessName, city);
   const localAuthorityScore = Math.round(
@@ -119,7 +170,15 @@ export async function scanWebsite(
   };
 }
 
-function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string): RawScanData {
+interface EnhancedMeta {
+  sslValid: boolean;
+  sslIssuer: string;
+  pageLoadTimeMs: number;
+  hasRobotsTxt: boolean;
+  hasSitemapXml: boolean;
+}
+
+function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, meta: EnhancedMeta): RawScanData {
   const bodyText = $("body").text().toLowerCase();
   const title = $("title").text() || "";
   const description = $('meta[name="description"]').attr("content") || "";
@@ -165,6 +224,35 @@ function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string): RawScanData {
   const hasLocalBusinessSchema = schemaText.includes("localbusiness") || schemaText.includes("insuranceagency");
   const hasFAQSchema = schemaText.includes("faqpage");
 
+  // H1 tag check
+  const h1El = $("h1").first();
+  const hasH1 = h1El.length > 0;
+  const h1Text = h1El.text().trim() || "";
+
+  // Viewport meta
+  const hasViewportMeta = $("meta[name='viewport']").length > 0;
+
+  // OG & Twitter meta tags
+  const hasOgTitle = $("meta[property='og:title']").length > 0;
+  const hasOgDescription = $("meta[property='og:description']").length > 0;
+  const hasOgImage = $("meta[property='og:image']").length > 0;
+  const hasTwitterCard = $("meta[name='twitter:card']").length > 0 || $("meta[property='twitter:card']").length > 0;
+
+  // Image alt tag analysis
+  const allImages = $("img");
+  const imagesTotal = allImages.length;
+  let imagesWithAlt = 0;
+  allImages.each((_, el) => {
+    const alt = $(el).attr("alt");
+    if (alt && alt.trim().length > 0) imagesWithAlt++;
+  });
+  const imagesMissingAlt = imagesTotal - imagesWithAlt;
+
+  // GBP link detection
+  const hasGBPLink = externalLinks.some(
+    (l) => l.includes("google.com/maps") || l.includes("g.page") || l.includes("business.google.com")
+  );
+
   return {
     title,
     description,
@@ -184,6 +272,22 @@ function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string): RawScanData {
     pageCount: internalLinks.length,
     internalLinks,
     externalLinks,
+    sslValid: meta.sslValid,
+    sslIssuer: meta.sslIssuer,
+    pageLoadTimeMs: meta.pageLoadTimeMs,
+    hasRobotsTxt: meta.hasRobotsTxt,
+    hasSitemapXml: meta.hasSitemapXml,
+    hasH1,
+    h1Text,
+    hasViewportMeta,
+    hasOgTitle,
+    hasOgDescription,
+    hasOgImage,
+    hasTwitterCard,
+    imagesTotal,
+    imagesWithAlt,
+    imagesMissingAlt,
+    hasGBPLink,
   };
 }
 
@@ -207,6 +311,22 @@ function getEmptyRawScan(): RawScanData {
     pageCount: 0,
     internalLinks: [],
     externalLinks: [],
+    sslValid: false,
+    sslIssuer: "",
+    pageLoadTimeMs: 0,
+    hasRobotsTxt: false,
+    hasSitemapXml: false,
+    hasH1: false,
+    h1Text: "",
+    hasViewportMeta: false,
+    hasOgTitle: false,
+    hasOgDescription: false,
+    hasOgImage: false,
+    hasTwitterCard: false,
+    imagesTotal: 0,
+    imagesWithAlt: 0,
+    imagesMissingAlt: 0,
+    hasGBPLink: false,
   };
 }
 

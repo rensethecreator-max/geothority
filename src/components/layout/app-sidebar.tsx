@@ -7,25 +7,52 @@ import {
   Search,
   FileText,
   Eye,
+  Radar,
   Settings,
   LogOut,
   PenTool,
   Menu,
   X,
   Building2,
+  CreditCard,
+  Shield,
+  Bell,
+  BarChart3,
+  Code,
+  Sparkles,
+  ClipboardList,
+  MapPin,
+  Globe,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import NotificationCenter from "@/components/saas/NotificationCenter";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/scan", label: "New Scan", icon: Search },
+  { href: "/reports", label: "Reports", icon: ClipboardList },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/content", label: "Content Library", icon: FileText },
   { href: "/content/generate", label: "Generate Content", icon: PenTool },
   { href: "/competitors", label: "Competitor Watchdog", icon: Eye },
+  { href: "/gbp-monitor", label: "GBP Monitor", icon: Radar },
+  { href: "/citations", label: "Citation Checker", icon: MapPin },
+  { href: "/schema-generator", label: "Schema Generator", icon: Code },
+  { href: "/settings/embed", label: "Install on Your Site", icon: Globe },
+  { href: "/ai-overview", label: "AI Overview ⭐", icon: Sparkles },
   { href: "/google-business", label: "Google Business", icon: Building2 },
+  { href: "/billing", label: "Billing", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings },
+];
+
+const adminNavItems = [
+  { href: "/admin/diagnostics", label: "Diagnostics", icon: Shield },
+  { href: "/admin/analytics", label: "Analytics", icon: LayoutDashboard },
+  { href: "/admin/email-journey", label: "Email Journey", icon: FileText },
+  { href: "/admin/push", label: "Push Notifications", icon: Bell },
 ];
 
 export function AppSidebar() {
@@ -42,7 +69,7 @@ export function AppSidebar() {
   const nav = (
     <nav className="flex flex-col h-full">
       {/* Logo */}
-      <div className="p-6 border-b border-[var(--border)]">
+      <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-electric-500 flex items-center justify-center">
             <span className="text-white font-bold text-sm">G</span>
@@ -51,10 +78,14 @@ export function AppSidebar() {
             Geothority
           </span>
         </Link>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <NotificationCenter />
+        </div>
       </div>
 
       {/* Nav Items */}
-      <div className="flex-1 px-3 py-4 space-y-1">
+      <div className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
@@ -73,6 +104,33 @@ export function AppSidebar() {
             </Link>
           );
         })}
+
+        {/* Admin section */}
+        {process.env.NEXT_PUBLIC_ADMIN_EMAILS && (
+          <>
+            <div className="pt-4 pb-1">
+              <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
+            </div>
+            {adminNavItems.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-electric-500/10 text-electric-500"
+                      : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
+                  }`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* Sign Out */}
@@ -103,12 +161,13 @@ export function AppSidebar() {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <div className="flex items-center gap-2 ml-3">
+        <div className="flex items-center gap-2 ml-3 flex-1">
           <div className="w-7 h-7 rounded-md bg-electric-500 flex items-center justify-center">
             <span className="text-white font-bold text-xs">G</span>
           </div>
           <span className="font-semibold text-sm">Geothority</span>
         </div>
+        <NotificationCenter />
       </div>
 
       {/* Mobile Overlay */}

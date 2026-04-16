@@ -4,7 +4,8 @@ export interface UserProfile {
   city: string | null;
   state: string | null;
   website_url: string | null;
-  plan: "free" | "audit" | "starter" | "pro";
+  plan: "free" | "audit" | "starter" | "growth" | "authority" | "agency" | "pro";
+  onboarding_completed: boolean;
   stripe_customer_id: string | null;
   cms_type: "wordpress" | "wix" | "squarespace" | null;
   cms_credentials: Record<string, string> | null;

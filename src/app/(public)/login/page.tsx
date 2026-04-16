@@ -5,15 +5,17 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { Eye, EyeOff, ArrowRight, Mail } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const redirect = searchParams.get("redirect") || "/dashboard";
   const error = searchParams.get("error");
+  const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
   const supabase = createClient();
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +42,7 @@ function LoginForm() {
         setMessage({ type: "error", text: error.message });
         setLoading(false);
       } else {
+        trackEvent("signin_completed");
         router.push(redirect);
       }
     } else {
@@ -51,6 +54,7 @@ function LoginForm() {
       if (error) {
         setMessage({ type: "error", text: error.message });
       } else {
+        trackEvent("signup_completed", { method: "email" });
         setMessage({ type: "success", text: "Check your email for a confirmation link." });
       }
       setLoading(false);
@@ -157,6 +161,15 @@ function LoginForm() {
             )}
           </button>
         </form>
+
+        {/* Forgot password link — only shown in sign-in mode */}
+        {mode === "signin" && (
+          <p className="mt-3 text-center text-sm">
+            <Link href="/forgot-password" className="text-electric-500 hover:underline">
+              Forgot your password?
+            </Link>
+          </p>
+        )}
 
         {/* Toggle mode */}
         <p className="mt-4 text-center text-sm text-[var(--muted-foreground)]">

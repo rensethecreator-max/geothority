@@ -1,6 +1,26 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// All paths that require authentication
+const PROTECTED_PATHS = [
+  "/dashboard",
+  "/scan",
+  "/content",
+  "/competitors",
+  "/settings",
+  "/billing",
+  "/onboarding",
+  "/admin",
+  "/google-business",
+  "/analytics",
+  "/gbp-monitor",
+  "/schema-generator",
+  "/ai-overview",
+];
+
+// Admin-only paths (require ADMIN_EMAILS match)
+const ADMIN_PATHS = ["/admin"];
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -29,22 +49,59 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect /dashboard, /scan, /content, /competitors, /settings
-  const protectedPaths = ["/dashboard", "/scan", "/content", "/competitors", "/settings"];
-  const isProtected = protectedPaths.some((p) => request.nextUrl.pathname.startsWith(p));
+  const pathname = request.nextUrl.pathname;
+
+  // Check if path is protected
+  const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("redirect", request.nextUrl.pathname);
+    url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }
 
-  // Redirect logged-in users from /login to /dashboard
-  if (request.nextUrl.pathname === "/login" && user) {
+  // Check admin paths
+  const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p));
+  if (isAdminPath && user) {
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
+    if (!adminEmails.includes(user.email ?? "")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Redirect logged-in users from /login or /signup to /dashboard
+  if ((pathname === "/login" || pathname === "/signup") && user) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
+  }
+
+  // Auto-redirect new authenticated users to /onboarding if not yet completed
+  // Only applies to protected app paths (not /onboarding itself, not API routes, not admin)
+  const isAppPath = isProtected && !pathname.startsWith("/admin") && !pathname.startsWith("/api");
+  if (isAppPath && user && pathname !== "/onboarding" && pathname !== "/billing") {
+    try {
+      const { data: profileCheck } = await supabase
+        .from("user_profiles")
+        .select("onboarding_completed")
+        .eq("id", user.id)
+        .single();
+
+      // Only redirect if profile exists and onboarding is explicitly false
+      if (profileCheck && profileCheck.onboarding_completed === false) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/onboarding";
+        return NextResponse.redirect(url);
+      }
+    } catch {
+      // If profile doesn't exist yet, allow through (will be created on first auth)
+    }
   }
 
   return supabaseResponse;
