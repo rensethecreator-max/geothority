@@ -435,11 +435,11 @@ export default function HomePage() {
           <div>
             <SectionEyebrow>Territorial intelligence for local authority</SectionEyebrow>
 
-            <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-white sm:text-6xl lg:text-[5.25rem]">
+            <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[0.94] tracking-[-0.06em] text-white sm:text-6xl lg:text-[5.35rem]">
               Dominate local search and AI with a command view of your market.
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/64 sm:text-xl">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/62 sm:text-[1.22rem]">
               Geothority maps trust, listings, content, reviews, and AI visibility into one calm operating surface, then tells you exactly what to fix next. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
             </p>
 
@@ -636,7 +636,7 @@ export default function HomePage() {
           <ScrollReveal animation="fade-up">
             <div className="mb-16 max-w-3xl">
               <SectionEyebrow>How the system works</SectionEyebrow>
-              <h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
+              <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Three operating layers, <span className="text-white/72">diagnose, deploy, defend.</span>
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
@@ -660,7 +660,7 @@ export default function HomePage() {
                         </div>
                         <div className="text-sm uppercase tracking-[0.18em] text-white/35">{chapter.metric}</div>
                       </div>
-                      <h3 className="mt-5 max-w-xl text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
+                      <h3 className="mt-5 max-w-xl text-2xl font-semibold leading-[1.02] tracking-[-0.04em] text-white sm:text-4xl">
                         {chapter.title}
                       </h3>
                       <p className="mt-4 max-w-xl text-base leading-7 text-white/60 sm:text-lg">
@@ -721,12 +721,10 @@ export default function HomePage() {
           <div className="grid gap-6 lg:grid-cols-3">
             {testimonials.map((t, i) => (
               <ScrollReveal key={i} animation="fade-up" delay={i * 120}>
-                <div className="geo-proof-card h-full rounded-[28px] border border-white/10 bg-white/[0.03] p-7">
-                  <div className="mb-6 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
-                      <div className="mt-2 text-xl font-semibold text-white">{t.metric}</div>
-                      <div className="mt-1 text-sm text-[#8de7d0]">{t.impact}</div>
+                <div className="geo-proof-card h-full rounded-[30px] border border-white/10 bg-white/[0.03] p-7">
+                  <div className="mb-5 flex items-center justify-between gap-3">
+                    <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/38">
+                      Evidence module
                     </div>
                     <div className="flex gap-0.5">
                       {[...Array(5)].map((_, j) => (
@@ -734,10 +732,26 @@ export default function HomePage() {
                       ))}
                     </div>
                   </div>
+
+                  <div className="mb-5 rounded-[24px] border border-white/8 bg-black/20 p-4">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
+                    <div className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">{t.metric}</div>
+                    <div className="mt-2 text-sm text-[#8de7d0]">{t.impact}</div>
+                  </div>
+
                   <p className="mb-7 text-base leading-7 text-white/72">&ldquo;{t.quote}&rdquo;</p>
-                  <div className="border-t border-white/8 pt-5">
-                    <div className="text-sm font-medium text-white">{t.name}</div>
-                    <div className="mt-1 text-sm text-white/45">{t.title}</div>
+
+                  <div className="grid grid-cols-2 gap-3 border-t border-white/8 pt-5">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Operator</div>
+                      <div className="mt-2 text-sm font-medium text-white">{t.name}</div>
+                      <div className="mt-1 text-sm text-white/45">{t.title}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Market</div>
+                      <div className="mt-2 text-sm font-medium text-white">{t.city}</div>
+                      <div className="mt-1 text-sm text-white/45">Insurance vertical</div>
+                    </div>
                   </div>
                 </div>
               </ScrollReveal>
@@ -752,7 +766,7 @@ export default function HomePage() {
           <ScrollReveal animation="fade-up">
             <div className="mb-12 text-center">
               <SectionEyebrow>Operating tiers</SectionEyebrow>
-              <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
+              <h2 className="mt-5 mx-auto max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Choose the level of command your market requires.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
@@ -820,7 +834,7 @@ export default function HomePage() {
           <ScrollReveal animation="fade-up">
             <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_24px_100px_rgba(5,10,18,0.45)] sm:px-10 sm:py-14">
               <SectionEyebrow>Start with a field scan</SectionEyebrow>
-              <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
+              <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 See your Trust Stack score, local weak spots, and AI readiness in 90 seconds.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
