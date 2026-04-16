@@ -138,6 +138,13 @@ const commandMetrics = [
   { label: "Competitor delta", value: "+22", detail: "ahead of local median" },
 ];
 
+const authoritySectors = [
+  { name: "Northwest", score: 84, status: "Owned" },
+  { name: "Central", score: 71, status: "Contested" },
+  { name: "South", score: 63, status: "Exposed" },
+  { name: "AI Surface", score: 88, status: "Advancing" },
+];
+
 const storyChapters = [
   {
     eyebrow: "Diagnose",
@@ -241,7 +248,8 @@ function CommandSurface() {
       </div>
 
       <div className="relative grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-[24px] border border-white/10 bg-black/20 p-4 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+        <div className="space-y-4">
+          <div className="rounded-[24px] border border-white/10 bg-black/20 p-4 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Trust Stack</div>
@@ -274,6 +282,51 @@ function CommandSurface() {
             ))}
           </div>
         </div>
+
+        <div className="geo-radar-shell rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4 sm:p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Authority sectors</div>
+              <div className="mt-1 text-sm text-white/68">A map-like view of where your visibility holds and where it breaks.</div>
+            </div>
+            <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">Geo mesh</div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div className="geo-radar-grid relative mx-auto aspect-square w-full max-w-[220px] rounded-full border border-white/10">
+              <div className="absolute inset-[12%] rounded-full border border-white/10" />
+              <div className="absolute inset-[24%] rounded-full border border-white/10" />
+              <div className="absolute inset-[36%] rounded-full border border-white/10" />
+              <div className="absolute inset-x-1/2 top-3 bottom-3 w-px -translate-x-1/2 bg-white/10" />
+              <div className="absolute inset-y-1/2 left-3 right-3 h-px -translate-y-1/2 bg-white/10" />
+              <div className="absolute left-1/2 top-[16%] h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[#7ce6c7] shadow-[0_0_18px_rgba(124,230,199,0.8)] geo-breathe" />
+              <div className="absolute right-[18%] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-[#8f94ff] shadow-[0_0_18px_rgba(143,148,255,0.65)] geo-breathe" />
+              <div className="absolute bottom-[18%] left-[36%] h-2.5 w-2.5 rounded-full bg-[#7ce6c7] shadow-[0_0_18px_rgba(124,230,199,0.55)]" />
+              <div className="absolute left-[18%] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-[#ffb86d] shadow-[0_0_18px_rgba(255,184,109,0.45)]" />
+              <svg viewBox="0 0 220 220" className="absolute inset-0 h-full w-full">
+                <path d="M110 38 L169 110 L110 164 L54 110 Z" fill="rgba(124,230,199,0.12)" stroke="rgba(124,230,199,0.7)" strokeWidth="2" />
+              </svg>
+            </div>
+
+            <div className="space-y-3">
+              {authoritySectors.map((sector) => (
+                <div key={sector.name} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-white">{sector.name}</div>
+                      <div className="mt-1 text-xs uppercase tracking-[0.18em] text-white/35">{sector.status}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-semibold text-white">{sector.score}</div>
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">sector score</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
@@ -420,6 +473,7 @@ export default function HomePage() {
 
           <div className="relative">
             <div className="pointer-events-none absolute inset-x-10 top-6 h-24 rounded-full bg-[#5ce6ba]/10 blur-3xl" />
+            <div className="pointer-events-none absolute -right-6 top-1/2 hidden h-40 w-40 -translate-y-1/2 rounded-full border border-white/8 bg-white/[0.03] xl:block" />
             <CommandSurface />
           </div>
         </div>
@@ -491,9 +545,17 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="geo-feature-shell rounded-[28px] border border-white/10 bg-[#09111c] p-5 sm:p-6">
-                <div className="grid gap-4 sm:grid-cols-[1fr_0.82fr]">
-                  <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+              <div className="geo-feature-shell rounded-[30px] border border-white/10 bg-[#09111c] p-5 sm:p-6">
+                <div className="mb-5 flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-white/38">Trust Stack Object</div>
+                    <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">A living authority artifact, not a decorative score.</div>
+                  </div>
+                  <div className="rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">Priority system</div>
+                </div>
+
+                <div className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
+                  <div className="geo-stack-core rounded-[26px] border border-white/10 bg-white/[0.03] p-5">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Authority score</div>
@@ -504,7 +566,7 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 space-y-3">
+                    <div className="mt-6 grid gap-3 sm:grid-cols-5">
                       {[
                         ["Foundation", "61"],
                         ["Trust", "74"],
@@ -512,19 +574,32 @@ export default function HomePage() {
                         ["Reviews", "79"],
                         ["AI", "88"],
                       ].map(([label, value], index) => (
-                        <div key={label}>
-                          <div className="mb-1.5 flex items-center justify-between text-xs text-white/55">
-                            <span>{label}</span>
-                            <span>{value}</span>
-                          </div>
-                          <div className="h-2.5 rounded-full bg-white/6">
+                        <div key={label} className="rounded-2xl border border-white/8 bg-black/20 p-3 text-center">
+                          <div className="text-[10px] uppercase tracking-[0.16em] text-white/35">{label}</div>
+                          <div className="mt-3 text-2xl font-semibold text-white">{value}</div>
+                          <div className="mt-3 h-1.5 rounded-full bg-white/8">
                             <div
-                              className="geo-signal-pulse h-2.5 rounded-full bg-gradient-to-r from-[#5ce6ba] via-[#83f1d6] to-[#8f94ff]"
+                              className="geo-signal-pulse h-1.5 rounded-full bg-gradient-to-r from-[#5ce6ba] via-[#83f1d6] to-[#8f94ff]"
                               style={{ width: `${58 + index * 8}%` }}
                             />
                           </div>
                         </div>
                       ))}
+                    </div>
+
+                    <div className="mt-5 rounded-[22px] border border-white/8 bg-black/20 p-4">
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Priority path</div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {[
+                          "Fix trust page architecture",
+                          "Repair Apple Maps entity mismatch",
+                          "Expand Tampa geo landing cluster",
+                        ].map((item, index) => (
+                          <span key={item} className={`rounded-full px-3 py-2 text-xs ${index === 0 ? "border border-[#7ce6c7]/25 bg-[#7ce6c7]/10 text-[#9be8d2]" : "border border-white/10 bg-white/[0.03] text-white/62"}`}>
+                            {item}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -542,6 +617,10 @@ export default function HomePage() {
                       <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Next best move</div>
                       <div className="mt-3 text-sm font-medium text-white">Publish two city-trust pages and repair Apple Maps entity mismatch</div>
                       <div className="mt-2 text-sm text-white/55">Estimated impact: +7 to +11 visibility points</div>
+                    </div>
+                    <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(143,148,255,0.09),rgba(255,255,255,0.03))] p-4">
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Operator reading</div>
+                      <p className="mt-3 text-sm leading-6 text-white/65">Trust Stack should feel like a live decision object, something a serious operator returns to every week, not a static report badge.</p>
                     </div>
                   </div>
                 </div>
