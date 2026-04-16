@@ -117,6 +117,19 @@ export default function InsuranceAgentsPage() {
           </div>
         </section>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-[var(--border)] py-8 mt-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--muted-foreground)]">
+          <p>&copy; {new Date().getFullYear()} Geothority. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <Link href="/pricing" className="hover:text-[var(--foreground)] transition-colors">Pricing</Link>
+            <Link href="/faq" className="hover:text-[var(--foreground)] transition-colors">FAQ</Link>
+            <Link href="/privacy" className="hover:text-[var(--foreground)] transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">Terms of Service</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
