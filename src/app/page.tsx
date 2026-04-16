@@ -7,19 +7,20 @@ import {
   ArrowRight,
   Search,
   Shield,
-  Globe,
   Brain,
   Code,
   FileText,
   Eye,
   Zap,
   Star,
-  Check,
   MapPin,
-  BarChart3,
-  Sparkles,
   Menu,
   X,
+  Radar,
+  ScanSearch,
+  TrendingUp,
+  Waypoints,
+  ChevronRight,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { useState } from "react";
@@ -92,6 +93,8 @@ const testimonials = [
     name: "Michael Torres",
     title: "Allstate Agent",
     city: "Tampa, FL",
+    metric: "Map Pack #8 → #2",
+    impact: "+2 commercial policies in 30 days",
     quote:
       "Went from page 3 to #2 on Google Maps in 6 weeks. Two new commercial accounts from organic last month alone.",
   },
@@ -99,6 +102,8 @@ const testimonials = [
     name: "Sarah Chen",
     title: "Independent Agent",
     city: "Austin, TX",
+    metric: "Response speed under 1 hour",
+    impact: "Out-shipped her top competitor the same day",
     quote:
       "The Competitor Watchdog is insane. I saw my top competitor publish a new page and had a better one live within the hour.",
   },
@@ -106,23 +111,73 @@ const testimonials = [
     name: "James Whitfield",
     title: "State Farm Agent",
     city: "Atlanta, GA",
+    metric: "$800/mo agency replaced",
+    impact: "Clearer visibility with lower spend",
     quote:
       "Canceled my $800/mo SEO agency after 3 months. Geothority does more and I actually understand what it's doing.",
   },
 ];
 
 const stats = [
-  { value: "500+", label: "Agents" },
-  { value: "18", label: "Directories Checked" },
-  { value: "90s", label: "Scan Time" },
-  { value: "50+", label: "Listing Sync" },
+  { value: "500+", label: "Insurance operators" },
+  { value: "68+", label: "Authority signals mapped" },
+  { value: "90s", label: "Time to first scan" },
+  { value: "3", label: "AI surfaces monitored" },
 ];
 
 const pricingTiers = [
-  { name: "Free", price: 0, desc: "Local SEO basics" },
-  { name: "Starter", price: 97, desc: "Individual agents" },
-  { name: "Growth", price: 197, desc: "Most popular", highlighted: true },
-  { name: "Authority", price: 297, desc: "Serious agencies" },
+  { name: "Scout", price: 0, desc: "See your authority gaps" },
+  { name: "Operator", price: 97, desc: "Single-location command" },
+  { name: "Command", price: 197, desc: "Most popular", highlighted: true },
+  { name: "Network", price: 297, desc: "Multi-location control" },
+];
+
+const commandMetrics = [
+  { label: "Trust Stack", value: "78", detail: "+14 this month" },
+  { label: "AI visibility", value: "3/3", detail: "ChatGPT, Perplexity, Google" },
+  { label: "Competitor delta", value: "+22", detail: "ahead of local median" },
+];
+
+const storyChapters = [
+  {
+    eyebrow: "Diagnose",
+    title: "See your local authority like a territory map, not a checklist.",
+    description:
+      "Geothority turns messy local SEO into a strategic field view. You can see what supports visibility, what weakens trust, and where competitors are taking ground.",
+    points: [
+      "5-layer Trust Stack score with ranked fix order",
+      "Directory, reputation, geo-content, and AI mention coverage",
+      "Signal gaps surfaced as actions, not vague advice",
+    ],
+    metric: "Signal coverage across 68+ sources",
+    icon: Radar,
+  },
+  {
+    eyebrow: "Deploy",
+    title: "Ship fixes fast with guided assets that feel production-ready.",
+    description:
+      "Instead of bouncing between agencies, spreadsheets, and generic AI copy, operators can generate schema, city pages, authority content, and listing improvements from one system.",
+    points: [
+      "Schema wizard and AI overview optimization",
+      "Entity-rich local pages with real-time generation",
+      "Listing sync and fix workflows designed for speed",
+    ],
+    metric: "From issue found to fix deployed in minutes",
+    icon: ScanSearch,
+  },
+  {
+    eyebrow: "Defend",
+    title: "Hold your territory with competitive monitoring that actually feels strategic.",
+    description:
+      "The platform keeps watching after the scan. You see movement, detect competitor pushes early, and get prompted with the next best action before rankings drift.",
+    points: [
+      "Weekly auto-scans with movement alerts",
+      "Competitor tracking tied to direct actions",
+      "Evidence-based reporting instead of vanity dashboards",
+    ],
+    metric: "A living command layer, not a static report",
+    icon: TrendingUp,
+  },
 ];
 
 /* ───────────────── Components ───────────────── */
@@ -136,15 +191,120 @@ function BrowserFrame({
 }) {
   return (
     <div
-      className={`rounded-xl border border-white/10 bg-[#0f1117] overflow-hidden shadow-2xl shadow-emerald-500/5 ${className}`}
+      className={`geo-panel rounded-[28px] overflow-hidden shadow-[0_30px_120px_rgba(6,12,24,0.55)] ${className}`}
     >
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/5">
-        <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-        <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-        <div className="ml-3 flex-1 h-5 rounded bg-white/5" />
+      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/8 bg-white/[0.02]">
+        <div className="w-2.5 h-2.5 rounded-full bg-rose-400/60" />
+        <div className="w-2.5 h-2.5 rounded-full bg-amber-300/60" />
+        <div className="w-2.5 h-2.5 rounded-full bg-emerald-300/60" />
+        <div className="ml-3 flex-1 h-5 rounded-full bg-white/5" />
       </div>
-      <div className="p-6">{children}</div>
+      <div className="p-6 sm:p-7">{children}</div>
+    </div>
+  );
+}
+
+function SectionEyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8ddccb]">
+      <span className="h-1.5 w-1.5 rounded-full bg-[#7ce6c7] shadow-[0_0_16px_rgba(124,230,199,0.7)]" />
+      {children}
+    </div>
+  );
+}
+
+function SignalChip({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 backdrop-blur-sm">
+      <div className="text-[10px] uppercase tracking-[0.2em] text-white/45">{label}</div>
+      <div className="mt-1 text-sm font-medium text-white/90">{value}</div>
+    </div>
+  );
+}
+
+function CommandSurface() {
+  return (
+    <div className="geo-command-surface relative overflow-hidden rounded-[30px] border border-white/10 bg-[#0c1321]/90 p-5 sm:p-6">
+      <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-60" />
+      <div className="pointer-events-none absolute -left-10 top-10 h-40 w-40 rounded-full bg-[#5ce6ba]/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-40 w-40 rounded-full bg-[#6e74ff]/10 blur-3xl" />
+
+      <div className="relative mb-5 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-[11px] uppercase tracking-[0.28em] text-white/40">Geothority Command Surface</div>
+          <div className="mt-1 text-lg font-semibold text-white">Local authority, mapped in real time</div>
+        </div>
+        <div className="rounded-full border border-[#7ce6c7]/25 bg-[#7ce6c7]/10 px-3 py-1 text-xs font-medium text-[#9be8d2]">
+          Live intelligence
+        </div>
+      </div>
+
+      <div className="relative grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="rounded-[24px] border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Trust Stack</div>
+              <div className="mt-1 text-sm text-white/75">Territory strength by layer</div>
+            </div>
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/65">
+              <Waypoints className="h-3.5 w-3.5 text-[#7ce6c7]" />
+              Synced
+            </div>
+          </div>
+
+          <div className="grid grid-cols-5 gap-2 sm:gap-3">
+            {[
+              ["Foundation", 61],
+              ["Trust", 74],
+              ["Geo", 82],
+              ["Reviews", 79],
+              ["AI", 88],
+            ].map(([label, score]) => (
+              <div key={label as string} className="rounded-2xl border border-white/8 bg-white/[0.04] p-3 text-center">
+                <div className="mx-auto mb-3 h-20 w-2 rounded-full bg-white/8">
+                  <div
+                    className="w-full rounded-full bg-gradient-to-t from-[#5ce6ba] via-[#85ead3] to-[#d6fff3] geo-signal-pulse"
+                    style={{ height: `${score}%`, marginTop: `${100 - Number(score)}%` }}
+                  />
+                </div>
+                <div className="text-[10px] uppercase tracking-[0.16em] text-white/40">{label}</div>
+                <div className="mt-1 text-sm font-semibold text-white">{score}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            {commandMetrics.map((metric) => (
+              <div key={metric.label} className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">{metric.label}</div>
+                <div className="mt-2 text-3xl font-semibold text-white">{metric.value}</div>
+                <div className="mt-1 text-sm text-white/55">{metric.detail}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-[22px] border border-white/10 bg-black/20 p-4">
+            <div className="mb-3 flex items-center justify-between text-sm text-white/70">
+              <span>Competitive territory movement</span>
+              <span className="rounded-full bg-[#7ce6c7]/10 px-2.5 py-1 text-xs text-[#9be8d2]">+12% visibility</span>
+            </div>
+            <div className="relative h-24 overflow-hidden rounded-2xl border border-white/8 bg-white/[0.04] p-3">
+              <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-white/10" />
+              <svg viewBox="0 0 260 80" className="h-full w-full">
+                <path d="M8 62 C40 58, 52 50, 78 52 S125 64, 150 42 S192 16, 252 18" fill="none" stroke="url(#geoTrend)" strokeWidth="4" strokeLinecap="round" />
+                <defs>
+                  <linearGradient id="geoTrend" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#5ce6ba" />
+                    <stop offset="100%" stopColor="#8f94ff" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -201,50 +361,46 @@ export default function HomePage() {
       </nav>
 
       {/* ─── Hero ─── */}
-      <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(16,185,129,0.08)_0%,_transparent_70%)]" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxIiBjeT0iMSIgcj0iMC41IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIi8+PC9zdmc+')] opacity-50" />
+      <section className="geo-hero relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(92,230,186,0.14),_transparent_34%),radial-gradient(circle_at_85%_20%,_rgba(110,116,255,0.14),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
+        <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-40" />
 
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight mb-6">
-            Dominate Local Search
-            <br />
-            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-              & AI
-            </span>
-          </h1>
+        <div className="relative mx-auto grid max-w-7xl gap-14 px-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+          <div>
+            <SectionEyebrow>Territorial intelligence for local authority</SectionEyebrow>
 
-          <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            We scan your website, fix your listings, generate your content, and
-            monitor your competitors — automatically.{" "}
-            <span className="text-white font-medium">Free scan in 90 seconds.</span>
-          </p>
+            <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-white sm:text-6xl lg:text-[5.25rem]">
+              Dominate local search and AI with a command view of your market.
+            </h1>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
-            <Link
-              href="/signup"
-              className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
-            >
-              Get Your Free Scan <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link
-              href="#features"
-              className="w-full sm:w-auto px-8 py-4 text-lg font-medium border border-white/15 hover:border-white/30 rounded-xl transition-all text-center"
-            >
-              See How It Works
-            </Link>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/64 sm:text-xl">
+              Geothority maps trust, listings, content, reviews, and AI visibility into one calm operating surface, then tells you exactly what to fix next. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
+            </p>
+
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] px-7 py-4 text-base font-semibold text-[#071019] transition-all hover:translate-y-[-1px] hover:shadow-[0_18px_45px_rgba(92,230,186,0.22)]"
+              >
+                Get Your Free Scan <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="#story"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.03] px-7 py-4 text-base font-medium text-white/85 transition-all hover:border-white/20 hover:bg-white/[0.05]"
+              >
+                Explore the system <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {stats.map((s) => (
+                <SignalChip key={s.label} label={s.label} value={s.value} />
+              ))}
+            </div>
           </div>
 
-          {/* Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
-            {stats.map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                  {s.value}
-                </div>
-                <div className="text-xs sm:text-sm text-gray-500 mt-1">{s.label}</div>
-              </div>
-            ))}
+          <div className="relative">
+            <CommandSurface />
           </div>
         </div>
       </section>
@@ -288,113 +444,158 @@ export default function HomePage() {
         </section>
       </ScrollReveal>
 
-      {/* ─── Product Screenshot ─── */}
+      {/* ─── Trust Stack flagship ─── */}
       <ScrollReveal animation="scale-up">
-        <section className="max-w-5xl mx-auto px-4 pb-20">
+        <section className="mx-auto max-w-7xl px-4 pb-16 sm:pb-24">
           <BrowserFrame>
-            <div className="h-64 sm:h-80 bg-gradient-to-br from-emerald-900/30 via-[#0f1117] to-teal-900/30 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 mx-auto rounded-full border-4 border-emerald-500/30 flex items-center justify-center mb-4">
-                  <span className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                    78
-                  </span>
-                </div>
-                <p className="text-gray-400 text-sm">Trust Stack™ Score</p>
-                <div className="flex justify-center gap-3 mt-4">
-                  {["Foundation", "Trust", "Geo", "Reviews", "AI"].map((l, i) => (
-                    <div key={l} className="text-center">
-                      <div
-                        className="w-10 h-2 rounded-full mb-1"
-                        style={{
-                          background: `linear-gradient(to right, #10b981, #14b8a6)`,
-                          opacity: 0.3 + i * 0.15,
-                        }}
-                      />
-                      <span className="text-[10px] text-gray-500">{l}</span>
+            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+              <div>
+                <SectionEyebrow>Trust Stack 2.0</SectionEyebrow>
+                <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
+                  A proprietary authority model that shows what to fix, where to act, and how fast you are moving.
+                </h2>
+                <p className="mt-4 max-w-xl text-base leading-7 text-white/62 sm:text-lg">
+                  This is the visual center of Geothority. Not a vanity score, a command object. It turns local SEO into a field view with ranked layers, movement, and signal pressure.
+                </p>
+                <div className="mt-6 space-y-3 text-sm text-white/72">
+                  {[
+                    "Foundation strength and technical readiness",
+                    "Trust pages, geo entities, reviews, and AI visibility",
+                    "Ranked next-best actions instead of generic recommendations",
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-3">
+                      <span className="mt-1 h-2 w-2 rounded-full bg-[#7ce6c7]" />
+                      <span>{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
+
+              <div className="geo-feature-shell rounded-[28px] border border-white/10 bg-[#09111c] p-5 sm:p-6">
+                <div className="grid gap-4 sm:grid-cols-[1fr_0.82fr]">
+                  <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Authority score</div>
+                        <div className="mt-2 text-5xl font-semibold text-white">78</div>
+                      </div>
+                      <div className="rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">
+                        +14 this month
+                      </div>
+                    </div>
+
+                    <div className="mt-6 space-y-3">
+                      {[
+                        ["Foundation", "61"],
+                        ["Trust", "74"],
+                        ["Geo", "82"],
+                        ["Reviews", "79"],
+                        ["AI", "88"],
+                      ].map(([label, value], index) => (
+                        <div key={label}>
+                          <div className="mb-1.5 flex items-center justify-between text-xs text-white/55">
+                            <span>{label}</span>
+                            <span>{value}</span>
+                          </div>
+                          <div className="h-2.5 rounded-full bg-white/6">
+                            <div
+                              className="geo-signal-pulse h-2.5 rounded-full bg-gradient-to-r from-[#5ce6ba] via-[#83f1d6] to-[#8f94ff]"
+                              style={{ width: `${58 + index * 8}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Signal pressure</div>
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="h-16 w-16 rounded-full border border-white/10 bg-[#0b1726] flex items-center justify-center">
+                          <span className="text-lg font-semibold text-white">High</span>
+                        </div>
+                        <p className="text-sm leading-6 text-white/60">AI and citation coverage are pulling performance upward. Trust pages are still the main unlock.</p>
+                      </div>
+                    </div>
+                    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Next best move</div>
+                      <div className="mt-3 text-sm font-medium text-white">Publish two city-trust pages and repair Apple Maps entity mismatch</div>
+                      <div className="mt-2 text-sm text-white/55">Estimated impact: +7 to +11 visibility points</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </BrowserFrame>
-          <p className="text-center text-sm text-gray-500 mt-4">
-            Your Trust Stack™ Score tells you exactly what to fix and in what order
-          </p>
         </section>
       </ScrollReveal>
 
-      {/* ─── Features ─── */}
-      <section id="features" className="py-20 sm:py-28">
-        <div className="max-w-6xl mx-auto px-4">
+      {/* ─── Story chapters ─── */}
+      <section id="story" className="py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
-            <div className="text-center mb-20">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-                Everything You Need to{" "}
-                <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                  Dominate Local Search
-                </span>
+            <div className="mb-16 max-w-3xl">
+              <SectionEyebrow>How the system works</SectionEyebrow>
+              <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
+                Three operating layers, diagnose, deploy, defend.
               </h2>
-              <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-                Six powerful tools working together to make you the default answer
-                in Google and AI search.
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
+                Instead of six generic feature blocks, Geothority should feel like one strategic system unfolding in chapters.
               </p>
             </div>
           </ScrollReveal>
 
-          <div className="space-y-24 sm:space-y-32">
-            {features.map((f, i) => {
-              const isEven = i % 2 === 0;
+          <div className="space-y-10">
+            {storyChapters.map((chapter, index) => {
+              const Icon = chapter.icon;
+              const reverse = index % 2 === 1;
               return (
-                <ScrollReveal key={i} animation={isEven ? "slide-left" : "slide-right"}>
-                  <div
-                    className={`flex flex-col ${
-                      isEven ? "lg:flex-row" : "lg:flex-row-reverse"
-                    } items-center gap-12 lg:gap-16`}
-                  >
-                    {/* Text */}
-                    <div className="flex-1 space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 flex items-center justify-center">
-                          <f.icon className="w-5 h-5 text-emerald-400" />
+                <ScrollReveal key={chapter.title} animation={reverse ? "slide-right" : "slide-left"}>
+                  <div className={`grid gap-6 lg:grid-cols-[0.9fr_1.1fr] ${reverse ? "lg:[&>div:first-child]:order-2" : ""}`}>
+                    <div className="geo-feature-shell rounded-[30px] border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+                      <SectionEyebrow>{chapter.eyebrow}</SectionEyebrow>
+                      <div className="mt-5 flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-[#8de7d0]">
+                          <Icon className="h-5 w-5" />
                         </div>
-                        {f.badge && (
-                          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400">
-                            {f.badge}
-                          </span>
-                        )}
+                        <div className="text-sm uppercase tracking-[0.18em] text-white/35">{chapter.metric}</div>
                       </div>
-                      <h3 className="text-2xl sm:text-3xl font-bold leading-tight">
-                        {f.title}
+                      <h3 className="mt-5 max-w-xl text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
+                        {chapter.title}
                       </h3>
-                      <p className="text-gray-400 leading-relaxed text-lg">
-                        {f.description}
+                      <p className="mt-4 max-w-xl text-base leading-7 text-white/60 sm:text-lg">
+                        {chapter.description}
                       </p>
-                      {f.note && (
-                        <p className="text-xs text-gray-500 italic border-l-2 border-emerald-500/30 pl-3">
-                          {f.note}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 text-emerald-400 font-medium">
-                        <Zap className="w-4 h-4" />
-                        <span>{f.stat}</span>
+                      <div className="mt-6 space-y-3">
+                        {chapter.points.map((point) => (
+                          <div key={point} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-black/15 px-4 py-3 text-sm text-white/72">
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[#7ce6c7]" />
+                            <span>{point}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
-                    {/* Product Screenshot */}
-                    <div className="flex-1 w-full">
-                      <BrowserFrame>
-                        <div className="relative h-48 sm:h-64 rounded-lg overflow-hidden">
-                          <Image
-                            src={f.image}
-                            alt={f.title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#0f1117]/60 to-transparent" />
+                    <BrowserFrame className="h-full">
+                      <div className="relative h-full min-h-[320px] overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]">
+                        <Image
+                          src={features[index * 2]?.image || features[index]?.image}
+                          alt={chapter.title}
+                          fill
+                          className="object-cover opacity-78"
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                        />
+                        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,24,0.15),rgba(8,14,24,0.86))]" />
+                        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
+                          <div className="max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md">
+                            <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Operator view</div>
+                            <div className="mt-2 text-xl font-semibold text-white">{chapter.eyebrow} the local market</div>
+                            <p className="mt-3 text-sm leading-6 text-white/65">{chapter.metric}. The interface should feel less like a screenshot gallery and more like evidence from a living platform.</p>
+                          </div>
                         </div>
-                      </BrowserFrame>
-                    </div>
+                      </div>
+                    </BrowserFrame>
                   </div>
                 </ScrollReveal>
               );
@@ -403,49 +604,41 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Testimonials ─── */}
-      <section className="py-20 sm:py-28 bg-[#0f1117]/50">
-        <div className="max-w-6xl mx-auto px-4">
+      {/* ─── Proof ─── */}
+      <section className="bg-[#0e141f]/55 py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">
-              Trusted by Insurance Agents{" "}
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                Across America
-              </span>
-            </h2>
-            <p className="text-gray-400 text-center mb-16 text-lg">
-              Here&apos;s what agents are saying about Geothority
-            </p>
+            <div className="mb-14 max-w-3xl">
+              <SectionEyebrow>Evidence, not fluff</SectionEyebrow>
+              <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
+                Trusted by insurance operators who care about measurable territory gains.
+              </h2>
+              <p className="mt-5 text-lg leading-8 text-white/60">
+                This should feel like proof pulled from the platform, not a generic testimonials strip.
+              </p>
+            </div>
           </ScrollReveal>
 
-          <div className="grid sm:grid-cols-3 gap-6">
+          <div className="grid gap-6 lg:grid-cols-3">
             {testimonials.map((t, i) => (
               <ScrollReveal key={i} animation="fade-up" delay={i * 120}>
-                <div className="bg-[#0f1117] rounded-2xl border border-white/5 p-8 h-full flex flex-col">
-                  <div className="flex gap-0.5 mb-4">
-                    {[...Array(5)].map((_, j) => (
-                      <Star
-                        key={j}
-                        className="w-4 h-4 text-amber-400 fill-amber-400"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-gray-300 leading-relaxed flex-1 mb-6">
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-sm">
-                      {t.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </div>
+                <div className="geo-proof-card h-full rounded-[28px] border border-white/10 bg-white/[0.03] p-7">
+                  <div className="mb-6 flex items-start justify-between gap-4">
                     <div>
-                      <div className="font-medium text-sm">{t.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {t.title}, {t.city}
-                      </div>
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
+                      <div className="mt-2 text-xl font-semibold text-white">{t.metric}</div>
+                      <div className="mt-1 text-sm text-[#8de7d0]">{t.impact}</div>
                     </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, j) => (
+                        <Star key={j} className="h-4 w-4 fill-amber-300 text-amber-300" />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="mb-7 text-base leading-7 text-white/72">&ldquo;{t.quote}&rdquo;</p>
+                  <div className="border-t border-white/8 pt-5">
+                    <div className="text-sm font-medium text-white">{t.name}</div>
+                    <div className="mt-1 text-sm text-white/45">{t.title}</div>
                   </div>
                 </div>
               </ScrollReveal>
@@ -456,52 +649,59 @@ export default function HomePage() {
 
       {/* ─── Pricing Preview ─── */}
       <section className="py-20 sm:py-28">
-        <div className="max-w-5xl mx-auto px-4">
+        <div className="mx-auto max-w-6xl px-4">
           <ScrollReveal animation="fade-up">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-gray-400 text-center mb-12 text-lg">
-              Start free. Upgrade when you see the results.
-            </p>
+            <div className="mb-12 text-center">
+              <SectionEyebrow>Operating tiers</SectionEyebrow>
+              <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
+                Choose the level of command your market requires.
+              </h2>
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
+                Geothority should price like an operating system for local authority, not a commodity SaaS widget.
+              </p>
+            </div>
           </ScrollReveal>
 
-          <div className="grid sm:grid-cols-4 gap-4">
+          <div className="grid gap-4 lg:grid-cols-4">
             {pricingTiers.map((t, i) => (
               <ScrollReveal key={i} animation="scale-up" delay={i * 100}>
                 <div
-                  className={`rounded-2xl p-6 text-center ${
+                  className={`relative h-full rounded-[28px] border p-6 text-left ${
                     t.highlighted
-                      ? "bg-[#0f1117] border-2 border-emerald-500/50 shadow-lg shadow-emerald-500/10 relative"
-                      : "bg-[#0f1117] border border-white/5"
+                      ? "border-[#7ce6c7]/35 bg-[linear-gradient(180deg,rgba(124,230,199,0.1),rgba(255,255,255,0.03))] shadow-[0_20px_70px_rgba(92,230,186,0.14)]"
+                      : "border-white/10 bg-white/[0.03]"
                   }`}
                 >
                   {t.highlighted && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-semibold px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500">
-                      Most Popular
+                    <div className="absolute -top-3 left-6 rounded-full border border-[#7ce6c7]/25 bg-[#7ce6c7]/12 px-3 py-1 text-xs font-semibold text-[#9be8d2]">
+                      Recommended
                     </div>
                   )}
-                  <div className="text-sm text-gray-400 mb-2">{t.name}</div>
-                  <div className="text-3xl font-bold mb-1">
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">{t.name}</div>
+                  <div className="mt-4 text-4xl font-semibold text-white">
                     {t.price === 0 ? (
                       "Free"
                     ) : (
                       <>
-                        <span className="text-lg text-gray-500">$</span>
+                        <span className="text-xl text-white/38">$</span>
                         {t.price}
-                        <span className="text-sm font-normal text-gray-500">
-                          /mo
-                        </span>
+                        <span className="text-sm font-normal text-white/35"> /mo</span>
                       </>
                     )}
                   </div>
-                  <div className="text-xs text-gray-500 mb-4">{t.desc}</div>
+                  <div className="mt-3 text-sm leading-6 text-white/58">{t.desc}</div>
+                  <div className="mt-6 rounded-2xl border border-white/8 bg-black/15 p-4 text-sm text-white/68">
+                    {t.name === "Scout" && "Perfect for first visibility and trust diagnostics."}
+                    {t.name === "Operator" && "For solo agents who need one calm authority cockpit."}
+                    {t.name === "Command" && "For teams that want active fixes, monitoring, and momentum."}
+                    {t.name === "Network" && "For agencies or multi-location operators managing territory at scale."}
+                  </div>
                   <Link
                     href={t.price === 0 ? "/signup" : "/pricing"}
-                    className={`block text-sm font-medium py-2.5 rounded-lg transition-all ${
+                    className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                       t.highlighted
-                        ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400"
-                        : "border border-white/10 hover:border-white/20"
+                        ? "bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] text-[#071019]"
+                        : "border border-white/10 bg-white/[0.03] text-white/86 hover:bg-white/[0.05]"
                     }`}
                   >
                     {t.price === 0 ? "Start Free" : "See Details"}
@@ -510,37 +710,30 @@ export default function HomePage() {
               </ScrollReveal>
             ))}
           </div>
-
-          <div className="text-center mt-8">
-            <Link
-              href="/pricing"
-              className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors inline-flex items-center gap-1"
-            >
-              See Full Pricing & Feature Comparison <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
         </div>
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="py-20 sm:py-28 bg-gradient-to-b from-emerald-950/40 to-[#0a0a0f]">
-        <div className="max-w-3xl mx-auto px-4 text-center">
+      <section className="relative overflow-hidden py-20 sm:py-28">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(92,230,186,0.14),_transparent_35%),linear-gradient(180deg,rgba(12,19,33,0.25),rgba(10,10,15,0.02))]" />
+        <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-30" />
+        <div className="relative mx-auto max-w-5xl px-4">
           <ScrollReveal animation="fade-up">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              See Your Trust Stack Score in{" "}
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                90 Seconds
-              </span>
-            </h2>
-            <p className="text-lg text-gray-400 mb-8">
-              Free forever. No credit card required.
-            </p>
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
-            >
-              Get Your Free Scan <ArrowRight className="w-5 h-5" />
-            </Link>
+            <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_24px_100px_rgba(5,10,18,0.45)] sm:px-10 sm:py-14">
+              <SectionEyebrow>Start with a field scan</SectionEyebrow>
+              <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
+                See your Trust Stack score, local weak spots, and AI readiness in 90 seconds.
+              </h2>
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
+                No credit card. No agency pitch deck. Just a clearer view of your market and the next best move.
+              </p>
+              <Link
+                href="/signup"
+                className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] px-8 py-4 text-base font-semibold text-[#071019] shadow-[0_18px_50px_rgba(92,230,186,0.2)] transition-all hover:translate-y-[-1px]"
+              >
+                Get Your Free Scan <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </ScrollReveal>
         </div>
       </section>

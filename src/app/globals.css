@@ -17,33 +17,33 @@
   }
 
   :root {
-    --background: #0F1117;
-    --foreground: #E5E7EB;
-    --card: #161822;
-    --card-foreground: #E5E7EB;
-    --popover: #161822;
-    --popover-foreground: #E5E7EB;
-    --primary: #3B82F6;
-    --primary-foreground: #FFFFFF;
-    --secondary: #1E2030;
-    --secondary-foreground: #E5E7EB;
-    --muted: #262940;
-    --muted-foreground: #9CA3AF;
-    --accent: #262940;
-    --accent-foreground: #E5E7EB;
+    --background: #09101A;
+    --foreground: #E6EEF7;
+    --card: #101926;
+    --card-foreground: #E6EEF7;
+    --popover: #101926;
+    --popover-foreground: #E6EEF7;
+    --primary: #5CE6BA;
+    --primary-foreground: #071019;
+    --secondary: #151F2D;
+    --secondary-foreground: #DCE7F2;
+    --muted: #1B2736;
+    --muted-foreground: #8E9AA8;
+    --accent: #182436;
+    --accent-foreground: #E6EEF7;
     --destructive: #EF4444;
-    --border: #2D3148;
-    --input: #2D3148;
-    --ring: #3B82F6;
-    --radius: 0.625rem;
-    --sidebar: #161822;
-    --sidebar-foreground: #E5E7EB;
-    --sidebar-primary: #3B82F6;
-    --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #262940;
-    --sidebar-accent-foreground: #E5E7EB;
-    --sidebar-border: #2D3148;
-    --sidebar-ring: #3B82F6;
+    --border: rgba(158, 177, 199, 0.16);
+    --input: rgba(158, 177, 199, 0.16);
+    --ring: #5CE6BA;
+    --radius: 0.9rem;
+    --sidebar: #101926;
+    --sidebar-foreground: #E6EEF7;
+    --sidebar-primary: #5CE6BA;
+    --sidebar-primary-foreground: #071019;
+    --sidebar-accent: #182436;
+    --sidebar-accent-foreground: #E6EEF7;
+    --sidebar-border: rgba(158, 177, 199, 0.16);
+    --sidebar-ring: #5CE6BA;
   }
 
   * {
@@ -103,13 +103,43 @@
 }
 
 /* Score colors */
-.score-good { color: #10B981; }
+.score-good { color: #5CE6BA; }
 .score-mid { color: #F59E0B; }
 .score-poor { color: #EF4444; }
 
-.bg-score-good { background-color: #10B981; }
+.bg-score-good { background-color: #5CE6BA; }
 .bg-score-mid { background-color: #F59E0B; }
 .bg-score-poor { background-color: #EF4444; }
+
+.geo-territory-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px),
+    radial-gradient(circle at 20% 20%, rgba(92,230,186,0.12), transparent 22%),
+    radial-gradient(circle at 80% 35%, rgba(143,148,255,0.1), transparent 24%);
+  background-size: 36px 36px, 36px 36px, 100% 100%, 100% 100%;
+  background-position: center;
+}
+
+.geo-panel {
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
+    rgba(8, 12, 19, 0.92);
+  backdrop-filter: blur(22px);
+}
+
+.geo-feature-shell {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.geo-proof-card {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 60px rgba(4, 10, 18, 0.28);
+}
+
+.geo-command-surface {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 30px 120px rgba(5, 10, 18, 0.42);
+}
 
 /* Sparkle ring fade */
 @keyframes sparkle-ring-fade {
@@ -122,6 +152,21 @@
 @keyframes health-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: 0.45; transform: scale(0.75); }
+}
+
+@keyframes geo-signal-pulse {
+  0%, 100% {
+    filter: saturate(1);
+    box-shadow: 0 0 0 rgba(92,230,186,0);
+  }
+  50% {
+    filter: saturate(1.15);
+    box-shadow: 0 0 18px rgba(92,230,186,0.2);
+  }
+}
+
+.geo-signal-pulse {
+  animation: geo-signal-pulse 3.6s ease-in-out infinite;
 }
 
 /* ─── Scroll-reveal animations ──────────────────────────────── */
