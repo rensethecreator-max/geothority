@@ -224,23 +224,24 @@ function SignalChip({ label, value }: { label: string; value: string }) {
 
 function CommandSurface() {
   return (
-    <div className="geo-command-surface relative overflow-hidden rounded-[30px] border border-white/10 bg-[#0c1321]/90 p-5 sm:p-6">
-      <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-60" />
-      <div className="pointer-events-none absolute -left-10 top-10 h-40 w-40 rounded-full bg-[#5ce6ba]/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-0 h-40 w-40 rounded-full bg-[#6e74ff]/10 blur-3xl" />
+    <div className="geo-command-surface geo-surface-ambient relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0b1322]/92 p-5 sm:p-6">
+      <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-55" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(92,230,186,0.18),transparent_22%),radial-gradient(circle_at_82%_16%,rgba(143,148,255,0.16),transparent_24%),radial-gradient(circle_at_50%_100%,rgba(75,132,255,0.12),transparent_30%)]" />
+      <div className="pointer-events-none absolute left-6 top-6 text-[10px] uppercase tracking-[0.34em] text-white/15">Sector 04 · East Grid · Live</div>
+      <div className="pointer-events-none absolute bottom-6 right-6 text-[10px] uppercase tracking-[0.34em] text-white/15">Authority mesh active</div>
 
       <div className="relative mb-5 flex items-center justify-between gap-3">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.28em] text-white/40">Geothority Command Surface</div>
+          <div className="text-[11px] uppercase tracking-[0.28em] text-white/36">Geothority Command Surface</div>
           <div className="mt-1 text-lg font-semibold text-white">Local authority, mapped in real time</div>
         </div>
-        <div className="rounded-full border border-[#7ce6c7]/25 bg-[#7ce6c7]/10 px-3 py-1 text-xs font-medium text-[#9be8d2]">
+        <div className="rounded-full border border-[#7ce6c7]/25 bg-[#7ce6c7]/10 px-3 py-1 text-xs font-medium text-[#9be8d2] geo-breathe">
           Live intelligence
         </div>
       </div>
 
       <div className="relative grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-[24px] border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+        <div className="rounded-[24px] border border-white/10 bg-black/20 p-4 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Trust Stack</div>
@@ -260,7 +261,7 @@ function CommandSurface() {
               ["Reviews", 79],
               ["AI", 88],
             ].map(([label, score]) => (
-              <div key={label as string} className="rounded-2xl border border-white/8 bg-white/[0.04] p-3 text-center">
+              <div key={label as string} className="rounded-2xl border border-white/8 bg-white/[0.04] p-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                 <div className="mx-auto mb-3 h-20 w-2 rounded-full bg-white/8">
                   <div
                     className="w-full rounded-full bg-gradient-to-t from-[#5ce6ba] via-[#85ead3] to-[#d6fff3] geo-signal-pulse"
@@ -277,7 +278,7 @@ function CommandSurface() {
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
             {commandMetrics.map((metric) => (
-              <div key={metric.label} className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
+              <div key={metric.label} className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">{metric.label}</div>
                 <div className="mt-2 text-3xl font-semibold text-white">{metric.value}</div>
                 <div className="mt-1 text-sm text-white/55">{metric.detail}</div>
@@ -285,15 +286,17 @@ function CommandSurface() {
             ))}
           </div>
 
-          <div className="rounded-[22px] border border-white/10 bg-black/20 p-4">
+          <div className="rounded-[22px] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
             <div className="mb-3 flex items-center justify-between text-sm text-white/70">
               <span>Competitive territory movement</span>
               <span className="rounded-full bg-[#7ce6c7]/10 px-2.5 py-1 text-xs text-[#9be8d2]">+12% visibility</span>
             </div>
             <div className="relative h-24 overflow-hidden rounded-2xl border border-white/8 bg-white/[0.04] p-3">
               <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-white/10" />
+              <div className="absolute left-3 top-3 text-[9px] uppercase tracking-[0.28em] text-white/22">30 day slope</div>
               <svg viewBox="0 0 260 80" className="h-full w-full">
                 <path d="M8 62 C40 58, 52 50, 78 52 S125 64, 150 42 S192 16, 252 18" fill="none" stroke="url(#geoTrend)" strokeWidth="4" strokeLinecap="round" />
+                <circle cx="252" cy="18" r="4" fill="#8f94ff" className="geo-breathe" />
                 <defs>
                   <linearGradient id="geoTrend" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor="#5ce6ba" />
@@ -301,6 +304,16 @@ function CommandSurface() {
                   </linearGradient>
                 </defs>
               </svg>
+            </div>
+          </div>
+
+          <div className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Scan telemetry</div>
+                <div className="mt-2 text-sm text-white/72">12 unresolved authority gaps, 4 high impact</div>
+              </div>
+              <div className="rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Priority lane</div>
             </div>
           </div>
         </div>
@@ -397,9 +410,16 @@ export default function HomePage() {
                 <SignalChip key={s.label} label={s.label} value={s.value} />
               ))}
             </div>
+
+            <div className="mt-6 flex flex-wrap gap-3 text-[11px] uppercase tracking-[0.2em] text-white/32">
+              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Trust map active</span>
+              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Competitive drift tracked</span>
+              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">AI recommendation surfaces monitored</span>
+            </div>
           </div>
 
           <div className="relative">
+            <div className="pointer-events-none absolute inset-x-10 top-6 h-24 rounded-full bg-[#5ce6ba]/10 blur-3xl" />
             <CommandSurface />
           </div>
         </div>
@@ -537,8 +557,8 @@ export default function HomePage() {
           <ScrollReveal animation="fade-up">
             <div className="mb-16 max-w-3xl">
               <SectionEyebrow>How the system works</SectionEyebrow>
-              <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
-                Three operating layers, diagnose, deploy, defend.
+              <h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
+                Three operating layers, <span className="text-white/72">diagnose, deploy, defend.</span>
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
                 Instead of six generic feature blocks, Geothority should feel like one strategic system unfolding in chapters.
@@ -588,7 +608,7 @@ export default function HomePage() {
                         />
                         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,24,0.15),rgba(8,14,24,0.86))]" />
                         <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
-                          <div className="max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md">
+                          <div className="max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md shadow-[0_18px_60px_rgba(6,10,18,0.38)]">
                             <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Operator view</div>
                             <div className="mt-2 text-xl font-semibold text-white">{chapter.eyebrow} the local market</div>
                             <p className="mt-3 text-sm leading-6 text-white/65">{chapter.metric}. The interface should feel less like a screenshot gallery and more like evidence from a living platform.</p>
