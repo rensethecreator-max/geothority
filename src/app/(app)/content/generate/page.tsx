@@ -70,6 +70,9 @@ function GenerateForm() {
 
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => ({ error: "Generation failed" }));
+        if (res.status === 403) {
+          throw new Error("UPGRADE_REQUIRED:authority");
+        }
         throw new Error(data.error || "Generation failed");
       }
 
@@ -253,11 +256,29 @@ function GenerateForm() {
           </div>
         </div>
 
-        {error && (
+        {error && error.startsWith("UPGRADE_REQUIRED:") ? (
+          <div className="p-4 bg-electric-500/10 border border-electric-500/30 rounded-xl">
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-electric-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-[var(--foreground)] mb-1">Authority Plan Required</p>
+                <p className="text-sm text-[var(--muted-foreground)] mb-3">
+                  AI Content Generation requires the Authority plan or above. Upgrade to generate geo-targeted landing pages that rank.
+                </p>
+                <Link
+                  href="/billing"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-electric-500 hover:bg-electric-400 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Upgrade to Authority
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : error ? (
           <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
             {error}
           </div>
-        )}
+        ) : null}
 
         <button
           type="submit"
