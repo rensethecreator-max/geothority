@@ -142,7 +142,7 @@ export default function BillingPortalPage() {
       {plan === "free" && (
         <Card className="border-electric-500/30">
           <CardHeader>
-            <CardTitle className="text-base">Unlock More with Pro — $49/mo</CardTitle>
+            <CardTitle className="text-base">Unlock More — Plans from $97/mo</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">

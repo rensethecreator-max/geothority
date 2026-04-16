@@ -657,6 +657,18 @@ export default function PricingPage() {
         </ScrollReveal>
 
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 py-8 mt-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+          <p>© {new Date().getFullYear()} Geothority. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms of Service</Link>
+            <Link href="/faq" className="hover:text-gray-300 transition-colors">FAQ</Link>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

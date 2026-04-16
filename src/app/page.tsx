@@ -593,8 +593,8 @@ export default function HomePage() {
               <h4 className="font-semibold text-sm mb-4">Company</h4>
               <div className="space-y-2.5">
                 <Link href="/faq" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">FAQ</Link>
-                <Link href="/privacy" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Privacy</Link>
-                <Link href="/terms" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Terms</Link>
+                <Link href="/privacy" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Terms of Service</Link>
               </div>
             </div>
           </div>

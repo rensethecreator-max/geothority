@@ -210,7 +210,7 @@ export default function FAQPage() {
               <Link href="/compare/geothority-vs-brightlocal" className="hover:text-[var(--foreground)] transition-colors">Compare</Link>
               <Link href="/for/insurance-agents" className="hover:text-[var(--foreground)] transition-colors">Insurance Agents</Link>
               <Link href="/privacy" className="hover:text-[var(--foreground)] transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">Terms</Link>
+              <Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">Terms of Service</Link>
             </div>
             <p className="text-xs text-[var(--muted-foreground)]">© {new Date().getFullYear()} Geothority. All rights reserved.</p>
           </div>
