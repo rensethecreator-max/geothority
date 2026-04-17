@@ -28,9 +28,9 @@ const comparisons: Record<string, {
       { name: "Built for Insurance Agents", geo: true, comp: false },
     ],
     differentiators: [
-      "Geothority checks if you appear in AI search (ChatGPT, Perplexity, Google AI Overviews) — BrightLocal doesn't.",
+      "Geothority checks if you appear in AI search (ChatGPT, Perplexity, Google AI Overviews) - BrightLocal doesn't.",
       "Our Trust Stack framework gives you a single score and prioritized action plan, not a wall of data.",
-      "Schema Generator lets you fix technical SEO in 60 seconds — no developer needed.",
+      "Schema Generator lets you fix technical SEO in 60 seconds - no developer needed.",
     ],
     faqs: [
       { q: "Is BrightLocal better for agencies?", a: "BrightLocal has more agency features like white-label reports. Geothority is better for individual businesses who want actionable guidance, not raw data." },
@@ -42,7 +42,7 @@ const comparisons: Record<string, {
   },
   "geothority-vs-moz-local": {
     name: "Moz Local", slug: "geothority-vs-moz-local",
-    tagline: "Moz Local focuses on listing management and distribution. Geothority gives you the full picture — from citations to AI visibility to content optimization.",
+    tagline: "Moz Local focuses on listing management and distribution. Geothority gives you the full picture - from citations to AI visibility to content optimization.",
     pricing: "From $14/mo",
     features: [
       { name: "Trust Stack Score", geo: true, comp: false },
@@ -60,15 +60,15 @@ const comparisons: Record<string, {
     ],
     differentiators: [
       "Moz Local syncs your listings but doesn't tell you how to rank. Geothority gives you a complete optimization roadmap.",
-      "Geothority's AI Overview Checker is unique — see if ChatGPT and Perplexity recommend you.",
+      "Geothority's AI Overview Checker is unique - see if ChatGPT and Perplexity recommend you.",
       "Our content generator creates SEO-optimized city landing pages in seconds.",
     ],
     faqs: [
-      { q: "Is Moz Local cheaper?", a: "Yes, Moz Local starts at $14/mo. But it only manages listings — Geothority covers AI optimization, content generation, competitor analysis, and more." },
-      { q: "Does Moz Local submit citations?", a: "Yes, Moz Local distributes your listings to directories. Geothority checks 18 directories but doesn't submit — we tell you what's wrong and how to fix it." },
+      { q: "Is Moz Local cheaper?", a: "Yes, Moz Local starts at $14/mo. But it only manages listings - Geothority covers AI optimization, content generation, competitor analysis, and more." },
+      { q: "Does Moz Local submit citations?", a: "Yes, Moz Local distributes your listings to directories. Geothority checks 18 directories but doesn't submit - we tell you what's wrong and how to fix it." },
       { q: "Which is better for SEO beginners?", a: "Geothority. Our Trust Stack score and prioritized quick wins tell you exactly what to do first." },
       { q: "Can Moz Local check AI visibility?", a: "No. Only Geothority checks if you appear in AI-powered search results." },
-      { q: "Do I need both?", a: "If you want listing distribution, use Moz Local for that. Use Geothority for everything else — scoring, AI optimization, content, and competitor analysis." },
+      { q: "Do I need both?", a: "If you want listing distribution, use Moz Local for that. Use Geothority for everything else - scoring, AI optimization, content, and competitor analysis." },
     ],
   },
   "geothority-vs-semrush": {
@@ -92,7 +92,7 @@ const comparisons: Record<string, {
     differentiators: [
       "Semrush is built for SEO professionals. Geothority is built for business owners who just want to rank locally.",
       "You'll spend weeks learning Semrush. Geothority gives you your Trust Stack score and action plan in 90 seconds.",
-      "At $139/mo, Semrush costs more than Geothority's Authority plan — and you still need add-ons for local SEO.",
+      "At $139/mo, Semrush costs more than Geothority's Authority plan - and you still need add-ons for local SEO.",
     ],
     faqs: [
       { q: "Is Semrush overkill for local businesses?", a: "Often, yes. Semrush has incredible depth but most local businesses use less than 10% of its features. Geothority gives you exactly what you need." },
@@ -122,14 +122,14 @@ const comparisons: Record<string, {
     ],
     differentiators: [
       "Whitespark excels at citation building. Geothority covers the full local SEO picture including AI visibility.",
-      "Our Schema Generator creates technical markup in 60 seconds — Whitespark doesn't offer this.",
+      "Our Schema Generator creates technical markup in 60 seconds - Whitespark doesn't offer this.",
       "Geothority's AI content generator creates city-specific landing pages that Whitespark can't.",
     ],
     faqs: [
       { q: "Is Whitespark better for citations?", a: "Whitespark is excellent for finding and building citations. Geothority checks 18 directories and tells you what's inconsistent, but doesn't submit listings for you." },
       { q: "Does Whitespark check AI visibility?", a: "No. Geothority is unique in checking if AI assistants recommend your business." },
       { q: "Which should I choose?", a: "If citations are your only concern, Whitespark is great. If you want a complete local SEO + AI optimization platform, choose Geothority." },
-      { q: "Can I use both?", a: "Yes — use Whitespark for citation building and Geothority for Trust Stack scoring, AI optimization, and content generation." },
+      { q: "Can I use both?", a: "Yes - use Whitespark for citation building and Geothority for Trust Stack scoring, AI optimization, and content generation." },
       { q: "Which has better reviews features?", a: "Whitespark has built-in review generation. Geothority integrates with Starcepta for one-tap review collection." },
     ],
   },
@@ -154,7 +154,7 @@ const comparisons: Record<string, {
     differentiators: [
       "Yext locks you into annual contracts and charges per location. Geothority is month-to-month with unlimited scans.",
       "If you stop paying Yext, your listings may revert. Geothority teaches you to build lasting SEO authority.",
-      "Geothority checks AI visibility — Yext focuses on directory listings, which matter less as search shifts to AI.",
+      "Geothority checks AI visibility - Yext focuses on directory listings, which matter less as search shifts to AI.",
     ],
     faqs: [
       { q: "Is Yext worth the price for small businesses?", a: "For a single location, Yext's value proposition is weaker. Geothority offers more actionable local SEO guidance at a fraction of the cost." },
@@ -174,7 +174,7 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   const data = comparisons[params.slug];
   if (!data) return {};
   return {
-    title: `Geothority vs ${data.name} — Local SEO Comparison`,
+    title: `Geothority vs ${data.name} - Local SEO Comparison`,
     description: data.tagline,
     openGraph: { title: `Geothority vs ${data.name}`, description: data.tagline },
   };

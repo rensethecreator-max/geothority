@@ -26,7 +26,7 @@ function getContextGreeting(pathname: string): string {
     return "This is our AI Content Generator. Let me show you how to create geo-targeted landing pages that rank. What city and service do you want to target?";
   }
   if (pathname === "/competitors") {
-    return "This is our Competitor Watchdog. Let me show you how to track — and outmaneuver — your top local competitors.";
+    return "This is our Competitor Watchdog. Let me show you how to track - and outmaneuver - your top local competitors.";
   }
   if (pathname === "/analytics") {
     return "This is your Analytics hub. I can help you understand what the numbers mean and which trends to act on.";

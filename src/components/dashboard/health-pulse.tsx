@@ -28,11 +28,11 @@ export function HealthPulse({ score, lastScanDate }: HealthPulseProps) {
 
   return (
     <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-      {/* Tiny breathing dot — barely visible unless you look */}
+      {/* Tiny breathing dot - barely visible unless you look */}
       <span
         className="relative inline-flex w-2 h-2 flex-shrink-0"
       >
-        {/* Outer glow ring — very subtle */}
+        {/* Outer glow ring - very subtle */}
         <span
           className="absolute inset-0 rounded-full opacity-40"
           style={{
@@ -61,7 +61,7 @@ export function HealthPulse({ score, lastScanDate }: HealthPulseProps) {
             href="/scan"
             className="text-amber-400 hover:text-amber-300 transition-colors"
           >
-            Overdue — scan now
+            Overdue - scan now
           </Link>
         ) : (
           <span>Scanned {relativeTime}</span>

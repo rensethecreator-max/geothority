@@ -193,7 +193,7 @@ function GoogleResultCard({ result }: { result: GoogleAiOverviewResult }) {
       {isDemoMode ? (
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-4">
           <p className="text-xs text-blue-300 leading-relaxed">
-            Google AI Overview — Demo Mode. Full checking available with a SerpAPI key configured.
+            Google AI Overview - Demo Mode. Full checking available with a SerpAPI key configured.
           </p>
         </div>
       ) : (
@@ -465,7 +465,7 @@ export default function AiOverviewPage() {
         </div>
         <p className="text-sm text-[var(--muted-foreground)]">
           See if your business appears in Google AI Overviews, ChatGPT, Perplexity, Claude, and
-          Gemini — the new frontier of local search.
+          Gemini - the new frontier of local search.
         </p>
       </div>
 

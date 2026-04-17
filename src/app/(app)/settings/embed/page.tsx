@@ -78,7 +78,7 @@ const PLATFORMS = [
         detail: 'Find the box labeled "Footer" at the bottom. Click inside it and paste your snippet.',
       },
       {
-        title: "Click Save — you're done!",
+        title: "Click Save - you're done!",
         detail: "Hit the Save button at the top right. Your snippet is now live on every page of your site.",
       },
     ],
@@ -136,7 +136,7 @@ const PLATFORMS = [
         detail: 'In the file list on the left, click "theme.liquid". Find </body> near the bottom and paste your snippet just above it.',
       },
       {
-        title: "Click Save — you're done!",
+        title: "Click Save - you're done!",
         detail: "Click the Save button in the top right. Your snippet is now live across your entire store.",
       },
     ],
@@ -150,7 +150,7 @@ const PLATFORMS = [
     steps: [
       {
         title: "Open your website's template or layout file",
-        detail: 'Look for a file called "index.html", "layout.html", or "base.html" — this is the master template that controls every page.',
+        detail: 'Look for a file called "index.html", "layout.html", or "base.html" - this is the master template that controls every page.',
       },
       {
         title: 'Find the </body> tag near the bottom',
@@ -492,7 +492,7 @@ export default function EmbedSettingsPage() {
 
         <div className="p-6 space-y-4">
           {!embedData.embed_api_key ? (
-            /* No key yet — show generate button */
+            /* No key yet - show generate button */
             <div className="text-center py-6 space-y-4">
               <div className="w-16 h-16 rounded-2xl bg-electric-500/10 flex items-center justify-center mx-auto">
                 <Zap className="w-8 h-8 text-electric-500" />
@@ -517,7 +517,7 @@ export default function EmbedSettingsPage() {
               </button>
             </div>
           ) : (
-            /* Key exists — show snippet + big copy button */
+            /* Key exists - show snippet + big copy button */
             <div className="space-y-4">
               {/* Code block */}
               <div>
@@ -605,7 +605,7 @@ export default function EmbedSettingsPage() {
                   <span className="text-2xl">{activePlatform.emoji}</span>
                   <div>
                     <h3 className="font-bold text-lg">{activePlatform.name} Instructions</h3>
-                    <p className="text-sm text-[var(--muted-foreground)]">Follow these steps in order — takes about 2 minutes.</p>
+                    <p className="text-sm text-[var(--muted-foreground)]">Follow these steps in order - takes about 2 minutes.</p>
                   </div>
                 </div>
 
@@ -707,7 +707,7 @@ export default function EmbedSettingsPage() {
       <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
         <h2 className="text-lg font-bold mb-1">Need help?</h2>
         <p className="text-sm text-[var(--muted-foreground)] mb-5 leading-relaxed">
-          This stuff can be confusing. No judgment — we install it for you for free.
+          This stuff can be confusing. No judgment - we install it for you for free.
         </p>
         <div className="space-y-3">
           <a
@@ -718,7 +718,7 @@ export default function EmbedSettingsPage() {
               <Mail className="w-5 h-5 text-electric-500" />
             </div>
             <div>
-              <p className="font-semibold text-sm">Email us — we&apos;ll install it for you</p>
+              <p className="font-semibold text-sm">Email us - we&apos;ll install it for you</p>
               <p className="text-xs text-[var(--muted-foreground)]">
                 support@geothority.io · We install it free, usually within 24 hours
               </p>
@@ -732,7 +732,7 @@ export default function EmbedSettingsPage() {
             <div>
               <p className="font-semibold text-sm">Will can walk you through it</p>
               <p className="text-xs text-[var(--muted-foreground)]">
-                Use the chat bubble in the bottom right corner — Will is your AI assistant and knows exactly how to help.
+                Use the chat bubble in the bottom right corner - Will is your AI assistant and knows exactly how to help.
               </p>
             </div>
           </div>

@@ -43,16 +43,16 @@ const features: {
     icon: Shield,
     title: "See Your Complete Local SEO Picture in 90 Seconds",
     description:
-      "Our 5-layer Trust Stack™ framework scores your Foundation, Trust Pages, Geo Content, Reviews, and AI Optimization. Know exactly what's holding you back — and what we'll handle first.",
+      "Our 5-layer Trust Stack™ framework scores your Foundation, Trust Pages, Geo Content, Reviews, and AI Optimization. Know exactly what's holding you back - and what we'll handle first.",
     stat: "5 layers, 1 actionable score",
     image: "/cards/truststack.jpg",
-    statTip: "The Trust Stack scores your business across 5 authority layers and gives you one clear priority — so we always know what to handle first for you.",
+    statTip: "The Trust Stack scores your business across 5 authority layers and gives you one clear priority - so we always know what to handle first for you.",
   },
   {
     icon: MapPin,
     title: "Verify 18 Directories. Sync Across 50+ More.",
     description:
-      "We directly verify your listings across Google, Yelp, Bing, Apple Maps, and 14 more directories. Then we confirm and sync your presence across the Foursquare data network — covering Bing, Samsung, Uber, HERE Maps, and 50+ additional services.",
+      "We directly verify your listings across Google, Yelp, Bing, Apple Maps, and 14 more directories. Then we confirm and sync your presence across the Foursquare data network - covering Bing, Samsung, Uber, HERE Maps, and 50+ additional services.",
     stat: "68+ directories covered",
     note: "We directly verify 18 major directories. Plus verify your presence in the Foursquare data network covering 50+ additional services. That's 68+ directories covered.",
     image: "/cards/audit.jpg",
@@ -60,9 +60,9 @@ const features: {
   },
   {
     icon: Brain,
-    title: "We Don't Just Check if AI Recommends You — We Make It Happen.",
+    title: "We Don't Just Check if AI Recommends You - We Make It Happen.",
     description:
-      "ChatGPT, Perplexity, and Google AI Overviews are replacing traditional search. We check if they mention your business — then we generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
+      "ChatGPT, Perplexity, and Google AI Overviews are replacing traditional search. We check if they mention your business - then we generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
     stat: "3 AI platforms checked",
     badge: "Only on Geothority",
     image: "/cards/quickwin.jpg",
@@ -72,7 +72,7 @@ const features: {
     icon: Code,
     title: "Your Schema Markup, Fixed in 60 Seconds",
     description:
-      "Missing schema means Google can't understand your business. Our wizard generates valid JSON-LD for you in 3 clicks — no developer needed.",
+      "Missing schema means Google can't understand your business. Our wizard generates valid JSON-LD for you in 3 clicks - no developer needed.",
     stat: "9 schema types supported",
     image: "/cards/ai-ready.jpg",
     statTip: "Schema is the technical code that tells Google what your business does. Without it, you are invisible in rich results and AI answers.",
@@ -84,16 +84,16 @@ const features: {
       "We generate SEO-optimized, city-specific content with real local landmarks and entities. Streamed in real-time with a live typing experience.",
     stat: "1,200 words in 40 seconds",
     image: "/cards/content.jpg",
-    statTip: "City-specific landing pages rank for local searches — the #1 way new customers find you. AI generates them in seconds, not weeks.",
+    statTip: "City-specific landing pages rank for local searches - the #1 way new customers find you. AI generates them in seconds, not weeks.",
   },
   {
     icon: Eye,
     title: "Your Competitors Don't Sleep. Neither Do We.",
     description:
-      "Weekly auto-scans track your Trust Stack score, monitor competitor moves, and email you when anything changes. We watch so you don't have to — and every scan links to a one-click action we handle for you.",
+      "Weekly auto-scans track your Trust Stack score, monitor competitor moves, and email you when anything changes. We watch so you don't have to - and every scan links to a one-click action we handle for you.",
     stat: "Weekly auto-monitoring",
     image: "/cards/watchdog.jpg",
-    statTip: "Set it and forget it. We scan your market weekly, detect competitor moves, and email you only when something needs attention — with the next step already queued up.",
+    statTip: "Set it and forget it. We scan your market weekly, detect competitor moves, and email you only when something needs attention - with the next step already queued up.",
   },
 ];
 
@@ -135,7 +135,7 @@ const stats = [
 ];
 
 const pricingTiers = [
-  { name: "Scout", price: 0, desc: "See your authority gaps", tip: "Get your free Trust Stack scan and see where you stand. No credit card needed — just clarity." },
+  { name: "Scout", price: 0, desc: "See your authority gaps", tip: "Get your free Trust Stack scan and see where you stand. No credit card needed - just clarity." },
   { name: "Operator", price: 97, desc: "Single-location command", tip: "One business location fully managed: scans, fixes, schema, content, and weekly monitoring." },
   { name: "Command", price: 197, desc: "Most popular", highlighted: true, tip: "Everything in Operator plus competitor tracking, AI optimization, priority support, and unlimited content generation." },
   { name: "Network", price: 297, desc: "Multi-location control", tip: "Manage 2+ locations from one dashboard. Agency-grade tools with volume pricing for multi-location operators." },
@@ -148,7 +148,7 @@ const commandMetrics = [
 ];
 
 const authoritySectors = [
-  { name: "Northwest", score: 84, status: "Owned", tip: "Your visibility strength in the northwest area of your market — listings, content, and review coverage combined." },
+  { name: "Northwest", score: 84, status: "Owned", tip: "Your visibility strength in the northwest area of your market - listings, content, and review coverage combined." },
   { name: "Central", score: 71, status: "Contested", tip: "The central core of your market where competition is fiercest. Contested means competitors are actively challenging your position." },
   { name: "South", score: 63, status: "Exposed", tip: "Your southern market area has gaps. Exposed means competitors outperform you here." },
   { name: "AI Surface", score: 88, status: "Advancing", tip: "Whether AI assistants like ChatGPT and Perplexity recommend your business. Advancing means you are gaining AI mention ground." },
@@ -168,7 +168,7 @@ const storyChapters = [
     pointTips: [
       "Your Trust Stack score ranks all 5 authority layers so we know exactly what to handle first for maximum impact.",
       "We check directories, reviews, local content, and AI mentions so you see the full picture.",
-      "Every gap comes with a specific action we can take for you — not vague advice. You always know the next step.",
+      "Every gap comes with a specific action we can take for you - not vague advice. You always know the next step.",
     ],
     metric: "Signal coverage across 68+ sources",
     metricTip: "We monitor 68+ directories, AI platforms, and review sites for you so nothing slips through the cracks.",
@@ -176,9 +176,9 @@ const storyChapters = [
   },
   {
     eyebrow: "Deploy",
-    title: "We handle problems fast — generating exactly what you need, ready to deploy.",
+    title: "We handle problems fast - generating exactly what you need, ready to deploy.",
     description:
-      "Instead of hiring agencies, wrestling with spreadsheets, or writing content from scratch, we generate your schema, local pages, and listing fixes from one dashboard — in minutes, not weeks.",
+      "Instead of hiring agencies, wrestling with spreadsheets, or writing content from scratch, we generate your schema, local pages, and listing fixes from one dashboard - in minutes, not weeks.",
     points: [
       "Schema wizard and AI overview optimization",
       "Entity-rich local pages with real-time generation",
@@ -186,7 +186,7 @@ const storyChapters = [
     ],
     pointTips: [
       "Our 3-click schema wizard generates search-engine-ready code for you. We also optimize your presence for AI answer engines.",
-      "AI writes city-specific pages with real local landmarks — content that Google and AI assistants trust.",
+      "AI writes city-specific pages with real local landmarks - content that Google and AI assistants trust.",
       "We fix listing errors and sync across 50+ directories from one dashboard.",
     ],
     metric: "From issue found to handled in minutes",
@@ -197,7 +197,7 @@ const storyChapters = [
     eyebrow: "Defend",
     title: "Stay ahead with monitoring that catches problems before they hurt you.",
     description:
-      "We keep scanning after the initial fix. You'll see what changed, know when competitors make moves, and get notified with the exact next step — before your rankings slip.",
+      "We keep scanning after the initial fix. You'll see what changed, know when competitors make moves, and get notified with the exact next step - before your rankings slip.",
     points: [
       "Weekly auto-scans with movement alerts",
       "Competitor tracking tied to direct actions",
@@ -206,7 +206,7 @@ const storyChapters = [
     pointTips: [
       "Every week we re-scan your market. If anything changes, you get an email instantly.",
       "See a competitor move? We link you to a one-click response so we can match it the same day.",
-      "Every metric ties to a real business outcome — more calls, more visibility, more authority.",
+      "Every metric ties to a real business outcome - more calls, more visibility, more authority.",
     ],
     metric: "Fresh data every week, not a stale report",
     metricTip: "Your dashboard updates weekly with fresh data. No stale screenshots.",
@@ -383,7 +383,7 @@ function CommandSurface() {
           <div className="rounded-[22px] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
             <div className="mb-3 flex items-center justify-between text-sm text-white/70">
               <span className="flex items-center gap-1.5">Competitor movement <GeoTooltip tip="Tracks how your local visibility has changed relative to competitors over the past 30 days." side="right" iconClassName="w-3 h-3" /></span>
-              <span className="flex items-center gap-1 rounded-full bg-[#7ce6c7]/10 px-2.5 py-1 text-xs text-[#9be8d2]">+12% visibility <GeoTooltip tip="Your overall local search visibility improved 12% this month — more calls, more clicks, more customers finding you." side="bottom" iconClassName="w-2.5 h-2.5" /></span>
+              <span className="flex items-center gap-1 rounded-full bg-[#7ce6c7]/10 px-2.5 py-1 text-xs text-[#9be8d2]">+12% visibility <GeoTooltip tip="Your overall local search visibility improved 12% this month - more calls, more clicks, more customers finding you." side="bottom" iconClassName="w-2.5 h-2.5" /></span>
             </div>
             <div className="relative h-24 overflow-hidden rounded-2xl border border-white/8 bg-white/[0.04] p-3">
               <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-white/10" />
@@ -410,7 +410,7 @@ function CommandSurface() {
               </div>
                 <div className="mt-2 text-sm text-white/72">12 issues found, 4 high priority</div>
               </div>
-              <div className="flex items-center gap-1 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Handle first <GeoTooltip tip="High-impact issues that will move the needle most — we handle them first." side="left" iconClassName="w-2.5 h-2.5" /></div>
+              <div className="flex items-center gap-1 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Handle first <GeoTooltip tip="High-impact issues that will move the needle most - we handle them first." side="left" iconClassName="w-2.5 h-2.5" /></div>
             </div>
           </div>
         </div>
@@ -480,11 +480,11 @@ export default function HomePage() {
             <SectionEyebrow>Local SEO, simplified</SectionEyebrow>
 
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[0.96] tracking-[-0.05em] text-white sm:text-5xl lg:text-[4.5rem] xl:text-[5.35rem]">
-              Get found locally — on Google, Maps, and AI — we handle the SEO work for you.
+              Get found locally on Google, Maps, and AI. We handle the SEO work for you.
             </h1>
 
             <p className="mt-5 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8 text-white/58 sm:text-[1.15rem]">
-              Geothority scans your business across Google, directories, reviews, and AI platforms, then shows what&apos;s holding you back and helps get it handled for you. We take on the hard parts so you can stay focused on running the business. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
+              Geothority scans your business across Google, directories, reviews, and AI platforms, identifies what&apos;s holding you back, and helps get it handled for you. We take on the hard parts so you can stay focused on running the business. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -505,7 +505,7 @@ export default function HomePage() {
             <div className="mt-8 grid gap-2.5 sm:gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <SignalChip label="Insurance operators" value="500+" tip="Over 500 insurance professionals rely on Geothority to manage their local search visibility and AI presence." />
               <SignalChip label="Authority signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
-              <SignalChip label="Time to first scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds — no setup, no waiting." />
+              <SignalChip label="Time to first scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
               <SignalChip label="AI surfaces monitored" value="3" tip="We track whether ChatGPT, Perplexity, and Google AI Overviews recommend your business when customers ask." />
             </div>
 
@@ -538,7 +538,7 @@ export default function HomePage() {
                 </div>
                 <div className="text-xs font-semibold text-emerald-400 mb-2">STEP 1</div>
                 <h3 className="text-lg font-bold mb-2">We Scan</h3>
-                <p className="text-sm text-gray-400">Enter your URL and we analyze your entire local SEO presence across 68+ directories and 3 AI platforms in 90 seconds — no effort on your part.</p>
+                <p className="text-sm text-gray-400">Enter your URL and we analyze your entire local SEO presence across 68+ directories and 3 AI platforms in 90 seconds. There&apos;s almost no lift required from you.</p>
               </div>
 
               <div className="text-center">
@@ -547,7 +547,7 @@ export default function HomePage() {
                 </div>
                 <div className="text-xs font-semibold text-emerald-400 mb-2">STEP 2</div>
                 <h3 className="text-lg font-bold mb-2">We Handle</h3>
-                <p className="text-sm text-gray-400">One click and we generate your missing schema, FAQ content, meta tags, and AI-optimized markup — and sync your listings to 50+ directories automatically.</p>
+                <p className="text-sm text-gray-400">With one approval, we generate your missing schema, FAQ content, meta tags, and AI-optimized markup, then sync your listings to 50+ directories automatically.</p>
               </div>
 
               <div className="text-center">
@@ -571,16 +571,16 @@ export default function HomePage() {
               <div>
                 <SectionEyebrow>Trust Stack 2.0</SectionEyebrow>
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
-                  One score that tells us what to handle first — and how fast you&apos;re improving.
+                  One score that tells us what to handle first, and how fast you&apos;re improving.
                 </h2>
                 <p className="mt-4 max-w-xl text-base leading-7 text-white/62 sm:text-lg">
-                  The Trust Stack scores your business across 5 key areas and ranks the highest-impact actions for you. No more guessing what matters — we always know the next step.
+                  The Trust Stack scores your business across 5 key areas and ranks the highest-impact actions for you. No more guessing what matters. We always know the next step.
                 </p>
                 <div className="mt-6 space-y-3 text-sm text-white/72">
                   {[
-                    "Technical foundation — is your site set up for Google?",
-                    "Listings, content, reviews, and AI visibility — all scored",
-                    "Prioritized action plan so we always know what to handle next",
+                    "Technical foundation, so your site is set up for Google",
+                    "Listings, content, reviews, and AI visibility, all scored in one place",
+                    "A prioritized action plan so we always know what to handle next",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
                       <span className="mt-1 h-2 w-2 rounded-full bg-[#7ce6c7]" />
@@ -641,13 +641,13 @@ export default function HomePage() {
                     <div className="mt-5 rounded-[22px] border border-white/8 bg-black/20 p-4">
                       <div className="flex items-center gap-1.5">
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">We handle these first</div>
-                        <GeoTooltip tip="Your ranked action queue — we handle these in order for the fastest visibility gains." side="right" iconClassName="w-3 h-3" />
+                        <GeoTooltip tip="Your ranked action queue. We handle these in order for the fastest visibility gains." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {[
-                          "Fix trust page architecture",
-                          "Repair Apple Maps entity mismatch",
-                          "Expand Tampa geo landing cluster",
+                          "Improving trust page structure",
+                          "Repairing Apple Maps entity mismatch",
+                          "Expanding Tampa landing coverage",
                         ].map((item, index) => (
                           <span key={item} className={`rounded-full px-3 py-2 text-xs ${index === 0 ? "border border-[#7ce6c7]/25 bg-[#7ce6c7]/10 text-[#9be8d2]" : "border border-white/10 bg-white/[0.03] text-white/62"}`}>
                             {item}
@@ -675,12 +675,12 @@ export default function HomePage() {
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Your next step</div>
                         <GeoTooltip tip="Based on your Trust Stack data, this is the single action that will improve your local visibility the most right now." side="right" iconClassName="w-3 h-3" />
                       </div>
-                      <div className="mt-3 text-sm font-medium text-white">Publish two city-trust pages and repair Apple Maps entity mismatch</div>
+                      <div className="mt-3 text-sm font-medium text-white">Publish two city trust pages and repair the Apple Maps entity mismatch</div>
                       <div className="mt-2 text-sm text-white/55">Estimated impact: +7 to +11 visibility points</div>
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(143,148,255,0.09),rgba(255,255,255,0.03))] p-4">
                       <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Operator reading</div>
-                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities — so you always know where you stand and what we&apos;re handling next.</p>
+                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities, so you always know where you stand and what we&apos;re handling next.</p>
                     </div>
                   </div>
                 </div>
@@ -700,7 +700,7 @@ export default function HomePage() {
                 Three steps: <span className="text-white/72">we scan, we handle, we monitor.</span>
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Geothority isn&apos;t a pile of disconnected tools — it&apos;s one system that finds your problems, handles them for you, and keeps watching.
+                Geothority isn&apos;t a pile of disconnected tools. It&apos;s one system that finds your problems, handles them for you, and keeps watching.
               </p>
             </div>
           </ScrollReveal>
@@ -773,7 +773,7 @@ export default function HomePage() {
                 Trusted by insurance operators who care about measurable territory gains.
               </h2>
               <p className="mt-5 text-lg leading-8 text-white/60">
-                These are actual results from Geothority users — not marketing fluff.
+                These are actual results from Geothority users - not marketing fluff.
               </p>
             </div>
           </ScrollReveal>
@@ -866,7 +866,7 @@ export default function HomePage() {
                   <div className="mt-6 rounded-2xl border border-white/8 bg-black/15 p-4 text-sm text-white/68">
                     {t.name === "Scout" && "Get your free scan and see where you stand."}
                     {t.name === "Operator" && "Everything you need to manage one location."}
-                    {t.name === "Command" && "The most popular plan — fixes, monitoring, AI optimization, and unlimited content."}
+                    {t.name === "Command" && "The most popular plan - fixes, monitoring, AI optimization, and unlimited content."}
                     {t.name === "Network" && "Manage 2+ locations with agency-grade tools and volume pricing."}
                   </div>
                   <Link
@@ -895,7 +895,7 @@ export default function HomePage() {
             <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_24px_100px_rgba(5,10,18,0.45)] sm:px-10 sm:py-14">
               <SectionEyebrow>Get your free scan</SectionEyebrow>
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                See your Trust Stack score, local weak spots, and AI readiness — free, in 90 seconds. We&apos;ll show you exactly what we&apos;ll handle.
+                See your Trust Stack score, local weak spots, and AI readiness - free, in 90 seconds. We&apos;ll show you exactly what we&apos;ll handle.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
                 No credit card. No sales call. Just a clear view of where you stand and what we&apos;ll handle next.
@@ -965,7 +965,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Our Products — cross-sell row */}
+          {/* Our Products - cross-sell row */}
           <div className="border-t border-white/5 pt-8 mb-8">
             <h4 className="font-semibold text-sm mb-4 text-gray-400">Our Products</h4>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -1022,7 +1022,7 @@ export default function HomePage() {
               </span>
             </div>
             <p className="text-xs text-gray-600">
-              Dominate local search & AI — for insurance agents and local businesses.
+              Dominate local search & AI - for insurance agents and local businesses.
             </p>
           </div>
         </div>

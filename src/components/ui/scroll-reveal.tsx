@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 /**
- * Standard SaaS Package — ScrollReveal
+ * Standard SaaS Package - ScrollReveal
  *
  * Premium scroll-triggered entrance animations. Wrap any section or element
  * to animate it into view as the user scrolls.

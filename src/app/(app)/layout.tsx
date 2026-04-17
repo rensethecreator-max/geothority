@@ -3,7 +3,7 @@ import { ErrorBoundary } from "@/components/shared/error-boundary";
 import FloatingHelpChat from "@/components/saas/FloatingHelpChat";
 // WillChatbot is rendered in the root layout (app/layout.tsx) so it is
 // available on both the public marketing site and the app without duplication.
-// WelcomeFlow is only rendered on /dashboard — not here in the layout
+// WelcomeFlow is only rendered on /dashboard - not here in the layout
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (

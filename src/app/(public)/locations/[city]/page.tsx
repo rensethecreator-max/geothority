@@ -21,7 +21,7 @@ const cities: Record<string, {
     name: "Chicago",
     state: "Illinois",
     stateAbbr: "IL",
-    h1: "Local SEO for Chicago Businesses — Dominate Chicago Search",
+    h1: "Local SEO for Chicago Businesses - Dominate Chicago Search",
     description: "Chicago's 77 neighborhoods mean hyperlocal search is everything. Geothority's Trust Stack helps Chicago businesses rank in the local pack, get found in AI search, and outrank competitors block by block.",
     neighborhoods: [
       {
@@ -48,12 +48,12 @@ const cities: Record<string, {
       role: "Personal Injury Attorney, Chicago IL",
     },
     stats: [
-      { value: "2.7M", label: "Chicago city population — one of the most competitive local markets in the US" },
+      { value: "2.7M", label: "Chicago city population - one of the most competitive local markets in the US" },
       { value: "77", label: "distinct Chicago neighborhoods, each its own local search opportunity" },
     ],
     faqs: [
-      { q: "How competitive is local SEO in Chicago?", a: "Chicago is extremely competitive, especially in the Loop and North Side neighborhoods. That's why having a complete Trust Stack — citations, schema, GBP, AI visibility — is essential." },
-      { q: "Does Geothority work for Chicago suburbs like Oak Brook and Evanston?", a: "Yes. Run separate scans for each location. Suburban Chicago has different competitive dynamics than the city — often easier to rank but still requires a strong local presence." },
+      { q: "How competitive is local SEO in Chicago?", a: "Chicago is extremely competitive, especially in the Loop and North Side neighborhoods. That's why having a complete Trust Stack - citations, schema, GBP, AI visibility - is essential." },
+      { q: "Does Geothority work for Chicago suburbs like Oak Brook and Evanston?", a: "Yes. Run separate scans for each location. Suburban Chicago has different competitive dynamics than the city - often easier to rank but still requires a strong local presence." },
       { q: "What industries are most competitive in Chicago local search?", a: "Law firms, insurance agents, dental practices, and restaurants face the toughest competition in Chicago. Geothority's industry-specific Trust Stack scoring helps each type." },
       { q: "How do I rank for neighborhood-specific searches in Chicago?", a: "Create neighborhood-specific landing pages optimized for searches like 'dentist in Lincoln Park' or 'insurance agent Wicker Park.' Geothority's content generator builds these in seconds." },
       { q: "Does Google Maps ranking differ by Chicago neighborhood?", a: "Yes. Google localizes results significantly. A business in Logan Square won't appear in the local pack for Lincoln Park searches without neighborhood-specific signals." },
@@ -64,7 +64,7 @@ const cities: Record<string, {
     name: "Austin",
     state: "Texas",
     stateAbbr: "TX",
-    h1: "Local SEO for Austin Businesses — Rank in Austin's Fast-Growing Market",
+    h1: "Local SEO for Austin Businesses - Rank in Austin's Fast-Growing Market",
     description: "Austin is one of the fastest-growing cities in America, adding thousands of new residents and businesses every month. Geothority helps Austin businesses stay ahead of the competition with a complete Trust Stack optimization strategy.",
     neighborhoods: [
       {
@@ -86,7 +86,7 @@ const cities: Record<string, {
     ],
     industries: ["Insurance Agents", "Tech Startups", "Restaurants", "Real Estate Agents", "Law Firms"],
     testimonial: {
-      quote: "Austin is growing so fast — new competitors appear every month. Geothority keeps me ahead with a Trust Stack score that shows me exactly where I'm vulnerable before competitors catch up.",
+      quote: "Austin is growing so fast - new competitors appear every month. Geothority keeps me ahead with a Trust Stack score that shows me exactly where I'm vulnerable before competitors catch up.",
       author: "Rachel C.",
       role: "Independent Insurance Agent, Cedar Park TX",
     },
@@ -95,9 +95,9 @@ const cities: Record<string, {
       { value: "58%", label: "of Austin searchers use 'near me' queries for local services" },
     ],
     faqs: [
-      { q: "Is local SEO competitive in Austin?", a: "Increasingly so. Austin's rapid growth means new businesses arrive constantly. Getting your Trust Stack established now — before competition intensifies further — is critical." },
+      { q: "Is local SEO competitive in Austin?", a: "Increasingly so. Austin's rapid growth means new businesses arrive constantly. Getting your Trust Stack established now - before competition intensifies further - is critical." },
       { q: "How do I rank in Austin suburbs like Cedar Park and Round Rock?", a: "Create separate GBP listings and landing pages for each suburb you serve. Geothority's city page generator creates optimized pages for each location in seconds." },
-      { q: "Does Austin's tech-heavy population affect local SEO?", a: "Yes — Austin searchers are more likely to use AI assistants for local recommendations. Geothority's AI Overview Checker helps you appear in ChatGPT and Perplexity results." },
+      { q: "Does Austin's tech-heavy population affect local SEO?", a: "Yes - Austin searchers are more likely to use AI assistants for local recommendations. Geothority's AI Overview Checker helps you appear in ChatGPT and Perplexity results." },
       { q: "What's the fastest way to rank in Austin?", a: "GBP optimization and citation consistency are the fastest wins in any market. Geothority's Trust Stack scan tells you exactly which quick wins to tackle first." },
       { q: "Can I rank for both 'Austin' and specific neighborhood searches?", a: "Yes. Your main GBP covers Austin broadly. Add neighborhood-specific landing pages for SoCo, East Austin, or wherever you serve to capture those hyperlocal searches." },
     ],
@@ -107,12 +107,12 @@ const cities: Record<string, {
     name: "Tampa",
     state: "Florida",
     stateAbbr: "FL",
-    h1: "Local SEO for Tampa Businesses — Win Tampa Bay Local Search",
+    h1: "Local SEO for Tampa Businesses - Win Tampa Bay Local Search",
     description: "Tampa Bay is one of Florida's most competitive local markets. From Hyde Park to Brandon, Geothority's Trust Stack helps Tampa businesses rank at the top of local search, Google Maps, and AI recommendations.",
     neighborhoods: [
       {
         name: "Hyde Park",
-        desc: "Tampa's most upscale neighborhood is home to boutique retailers, fine dining, and professional services. High-income searchers here expect to find the best — your Trust Stack needs to reflect that.",
+        desc: "Tampa's most upscale neighborhood is home to boutique retailers, fine dining, and professional services. High-income searchers here expect to find the best - your Trust Stack needs to reflect that.",
       },
       {
         name: "Channelside",
@@ -129,19 +129,19 @@ const cities: Record<string, {
     ],
     industries: ["Insurance Agents", "Dental Practices", "Restaurants", "Real Estate Agents", "Law Firms"],
     testimonial: {
-      quote: "My dental practice in Brandon was invisible in local search. Geothority showed me I had NAP inconsistencies on 7 directories and my GBP was missing key attributes. Fixed everything in one weekend — bookings up 30% in two months.",
+      quote: "My dental practice in Brandon was invisible in local search. Geothority showed me I had NAP inconsistencies on 7 directories and my GBP was missing key attributes. Fixed everything in one weekend - bookings up 30% in two months.",
       author: "Dr. Michael T.",
       role: "General Dentist, Brandon FL",
     },
     stats: [
-      { value: "3.2M", label: "Tampa Bay metro population — one of Florida's fastest-growing markets" },
+      { value: "3.2M", label: "Tampa Bay metro population - one of Florida's fastest-growing markets" },
       { value: "42%", label: "of Tampa service searches result in a phone call within 1 hour" },
     ],
     faqs: [
-      { q: "Is Tampa Bay competitive for local SEO?", a: "Yes — Tampa, St. Pete, Clearwater, and Brandon all have dense business competition. A complete Trust Stack is essential to stand out in the local pack." },
+      { q: "Is Tampa Bay competitive for local SEO?", a: "Yes - Tampa, St. Pete, Clearwater, and Brandon all have dense business competition. A complete Trust Stack is essential to stand out in the local pack." },
       { q: "Does Geothority cover St. Petersburg and Clearwater?", a: "Yes. Run separate scans for your St. Pete or Clearwater location. Create city-specific landing pages to capture searches across the entire Tampa Bay area." },
       { q: "What industries are most competitive in Tampa local search?", a: "Insurance, legal, dental, and real estate are highly competitive in Tampa Bay. Geothority's industry-specific Trust Stack scoring helps each type of business prioritize correctly." },
-      { q: "How does hurricane season affect local SEO in Tampa?", a: "Storm-related searches spike seasonally. Make sure your GBP hours and emergency services are always up to date — Geothority monitors your GBP for unexpected changes." },
+      { q: "How does hurricane season affect local SEO in Tampa?", a: "Storm-related searches spike seasonally. Make sure your GBP hours and emergency services are always up to date - Geothority monitors your GBP for unexpected changes." },
       { q: "Can I target both Tampa and surrounding cities with one account?", a: "Yes. Use multiple city landing pages (Tampa, Brandon, Riverview, Valrico) to capture searches across your entire service area." },
     ],
   },
@@ -150,7 +150,7 @@ const cities: Record<string, {
     name: "Atlanta",
     state: "Georgia",
     stateAbbr: "GA",
-    h1: "Local SEO for Atlanta Businesses — Rank in Atlanta's Diverse Market",
+    h1: "Local SEO for Atlanta Businesses - Rank in Atlanta's Diverse Market",
     description: "Atlanta's sprawling metro and diverse neighborhoods create unique local search opportunities. From Buckhead to Decatur, Geothority's Trust Stack helps Atlanta businesses capture hyperlocal search traffic across the region.",
     neighborhoods: [
       {
@@ -163,7 +163,7 @@ const cities: Record<string, {
       },
       {
         name: "Decatur",
-        desc: "Decatur is one of Atlanta's most beloved communities — independent businesses, restaurants, and professionals here benefit greatly from hyperlocal search optimization.",
+        desc: "Decatur is one of Atlanta's most beloved communities - independent businesses, restaurants, and professionals here benefit greatly from hyperlocal search optimization.",
       },
       {
         name: "Marietta",
@@ -172,7 +172,7 @@ const cities: Record<string, {
     ],
     industries: ["Insurance Agents", "Law Firms", "Real Estate Agents", "Dental Practices", "Restaurants"],
     testimonial: {
-      quote: "Atlanta is huge — you can't just say 'Atlanta,' you have to own your neighborhood. Geothority's city page generator helped me create Buckhead and Midtown landing pages in 20 minutes. Both rank in the top 5 now.",
+      quote: "Atlanta is huge - you can't just say 'Atlanta,' you have to own your neighborhood. Geothority's city page generator helped me create Buckhead and Midtown landing pages in 20 minutes. Both rank in the top 5 now.",
       author: "Keisha R.",
       role: "Estate Planning Attorney, Atlanta GA",
     },
@@ -181,11 +181,11 @@ const cities: Record<string, {
       { value: "65%", label: "of Atlanta small business searches have neighborhood-specific intent" },
     ],
     faqs: [
-      { q: "How large is Atlanta's local search market?", a: "Atlanta is one of the top 10 largest US metro areas with 6.2M+ people. Local search is highly fragmented by neighborhood and suburb — hyperlocal targeting is essential." },
-      { q: "Does Geothority cover Atlanta suburbs like Alpharetta and Sandy Springs?", a: "Yes. Create separate GBP listings and landing pages for each suburb. Many suburban Atlanta markets are less competitive than Midtown or Buckhead — easier wins available." },
+      { q: "How large is Atlanta's local search market?", a: "Atlanta is one of the top 10 largest US metro areas with 6.2M+ people. Local search is highly fragmented by neighborhood and suburb - hyperlocal targeting is essential." },
+      { q: "Does Geothority cover Atlanta suburbs like Alpharetta and Sandy Springs?", a: "Yes. Create separate GBP listings and landing pages for each suburb. Many suburban Atlanta markets are less competitive than Midtown or Buckhead - easier wins available." },
       { q: "How do I rank across multiple Atlanta neighborhoods?", a: "Create individual landing pages for each area you serve (Buckhead, Midtown, Decatur, etc.) with neighborhood-specific content. Geothority's page generator builds these fast." },
       { q: "What's the biggest local SEO mistake Atlanta businesses make?", a: "Targeting 'Atlanta' broadly instead of their specific neighborhoods. The local pack is hyper-geographic. Geothority's competitor analysis shows exactly who you're up against in each area." },
-      { q: "Is AI search important for Atlanta businesses?", a: "Yes — Atlanta has a large tech-forward professional population that uses AI assistants heavily. Geothority's AI Overview Checker ensures you appear in ChatGPT and Perplexity recommendations." },
+      { q: "Is AI search important for Atlanta businesses?", a: "Yes - Atlanta has a large tech-forward professional population that uses AI assistants heavily. Geothority's AI Overview Checker ensures you appear in ChatGPT and Perplexity recommendations." },
     ],
   },
   "dallas": {
@@ -193,7 +193,7 @@ const cities: Record<string, {
     name: "Dallas",
     state: "Texas",
     stateAbbr: "TX",
-    h1: "Local SEO for Dallas Businesses — Dominate DFW Local Search",
+    h1: "Local SEO for Dallas Businesses - Dominate DFW Local Search",
     description: "The Dallas-Fort Worth Metroplex is one of America's largest and fastest-growing markets. Geothority's Trust Stack helps Dallas businesses cut through the competition and rank at the top of local search across the DFW area.",
     neighborhoods: [
       {
@@ -215,20 +215,20 @@ const cities: Record<string, {
     ],
     industries: ["Insurance Agents", "Real Estate Agents", "Law Firms", "Dental Practices", "Restaurants"],
     testimonial: {
-      quote: "DFW is massive — but Frisco is a gold rush right now. I set up Geothority, found out my schema was completely wrong for my insurance agency, fixed it, and hit the local pack within 6 weeks. The ROI is insane.",
+      quote: "DFW is massive - but Frisco is a gold rush right now. I set up Geothority, found out my schema was completely wrong for my insurance agency, fixed it, and hit the local pack within 6 weeks. The ROI is insane.",
       author: "Brandon W.",
       role: "Independent Insurance Agent, Frisco TX",
     },
     stats: [
-      { value: "7.8M", label: "Dallas-Fort Worth metro population — 4th largest in the US" },
-      { value: "#2", label: "fastest-growing major metro in America — new competitors arrive daily" },
+      { value: "7.8M", label: "Dallas-Fort Worth metro population - 4th largest in the US" },
+      { value: "#2", label: "fastest-growing major metro in America - new competitors arrive daily" },
     ],
     faqs: [
       { q: "Is the DFW local search market different from Dallas proper?", a: "Yes. Dallas, Plano, Frisco, Allen, McKinney, and Fort Worth each have distinct local search markets. One GBP for 'Dallas' won't capture suburban searches." },
-      { q: "How competitive is local SEO in Plano and Frisco?", a: "Plano is very competitive due to corporate concentration. Frisco is growing fast but still winnable — especially for service businesses that establish their Trust Stack now." },
+      { q: "How competitive is local SEO in Plano and Frisco?", a: "Plano is very competitive due to corporate concentration. Frisco is growing fast but still winnable - especially for service businesses that establish their Trust Stack now." },
       { q: "Does Geothority cover Fort Worth separately from Dallas?", a: "Yes. Fort Worth is a separate local market. Create distinct landing pages and ensure your GBP service area correctly covers Fort Worth if you serve customers there." },
-      { q: "What's the best strategy for a new Dallas business?", a: "Start with GBP optimization and citation consistency — these are foundational. Geothority's Trust Stack scan identifies your highest-impact quick wins within 90 seconds." },
-      { q: "How do I compete with large national chains in Dallas?", a: "National chains struggle with hyperlocal signals. Geothority helps you optimize for your specific neighborhood, service area, and community connections — advantages chains can't easily replicate." },
+      { q: "What's the best strategy for a new Dallas business?", a: "Start with GBP optimization and citation consistency - these are foundational. Geothority's Trust Stack scan identifies your highest-impact quick wins within 90 seconds." },
+      { q: "How do I compete with large national chains in Dallas?", a: "National chains struggle with hyperlocal signals. Geothority helps you optimize for your specific neighborhood, service area, and community connections - advantages chains can't easily replicate." },
     ],
   },
 };
@@ -285,7 +285,7 @@ export default function CityPage({ params }: { params: { city: string } }) {
         <div className="mb-20">
           <h2 className="text-2xl font-bold mb-2 text-center">{data.name} Neighborhoods We Help</h2>
           <p className="text-center text-[var(--muted-foreground)] mb-10">
-            Local SEO in {data.name} is hyperlocal — each neighborhood has its own competitive landscape.
+            Local SEO in {data.name} is hyperlocal - each neighborhood has its own competitive landscape.
           </p>
           <div className="grid sm:grid-cols-2 gap-6">
             {data.neighborhoods.map((n, i) => (
@@ -327,7 +327,7 @@ export default function CityPage({ params }: { params: { city: string } }) {
               &ldquo;{data.testimonial.quote}&rdquo;
             </blockquote>
             <div className="text-sm text-[var(--muted-foreground)]">
-              <span className="font-semibold text-foreground">{data.testimonial.author}</span> — {data.testimonial.role}
+              <span className="font-semibold text-foreground">{data.testimonial.author}</span> - {data.testimonial.role}
             </div>
           </div>
         </div>
@@ -335,7 +335,7 @@ export default function CityPage({ params }: { params: { city: string } }) {
         {/* FAQ */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold mb-8 text-center">
-            Local SEO in {data.name} — Common Questions
+            Local SEO in {data.name} - Common Questions
           </h2>
           <div className="space-y-4 max-w-3xl mx-auto">
             {data.faqs.map((faq, i) => (

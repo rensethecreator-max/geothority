@@ -76,7 +76,7 @@ function LoginForm() {
           <p className="text-sm text-[var(--muted-foreground)]">
             {mode === "signin"
               ? "Sign in to scan your website and dominate local search"
-              : "Start your free website scan — no credit card needed"}
+              : "Start your free website scan - no credit card needed"}
           </p>
         </div>
 
@@ -161,7 +161,7 @@ function LoginForm() {
           </button>
         </form>
 
-        {/* Forgot password link — only shown in sign-in mode */}
+        {/* Forgot password link - only shown in sign-in mode */}
         {mode === "signin" && (
           <p className="mt-3 text-center text-sm">
             <Link href="/forgot-password" className="text-electric-500 hover:underline">

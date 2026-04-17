@@ -117,7 +117,7 @@ function CitationCard({ citation }: { citation: CitationResult }) {
         )}
       </div>
 
-      {/* Fix actions — shown when there's an issue */}
+      {/* Fix actions - shown when there's an issue */}
       {needsFix && citation.claimUrl && (
         <div className="mt-3 flex flex-col gap-2">
           {!citation.found ? (

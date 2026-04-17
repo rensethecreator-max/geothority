@@ -371,7 +371,7 @@ export default function ScanResultPage() {
               <div className="flex-1">
                 <h4 className="font-bold">Your Review Score is Holding You Back</h4>
                 <p className="text-sm text-gray-400 mt-1">
-                  Your competitors average more reviews. Starcepta automates review collection with One-Tap Reviews — customers leave a 5-star review in 3 seconds.
+                  Your competitors average more reviews. Starcepta automates review collection with One-Tap Reviews - customers leave a 5-star review in 3 seconds.
                 </p>
                 <a
                   href="https://starcepta.com?ref=geothority"
@@ -395,7 +395,7 @@ export default function ScanResultPage() {
             <div className="flex-1">
               <h4 className="font-bold">Want to Fix Everything Automatically?</h4>
               <p className="text-sm text-gray-400 mt-1">
-                4MinuteSEO builds your backlinks, generates content, and gets you indexed — on autopilot. The engine behind your local SEO growth.
+                4MinuteSEO builds your backlinks, generates content, and gets you indexed - on autopilot. The engine behind your local SEO growth.
               </p>
               <a
                 href="https://4minuteseo.com?ref=geothority"
@@ -419,7 +419,7 @@ export default function ScanResultPage() {
               Fix Everything Automatically
             </h3>
             <p className="text-sm text-gray-400 mt-1">
-              We&apos;ll generate your missing schema, content, meta tags, AI optimization, and sync your listings — all in one click.
+              We&apos;ll generate your missing schema, content, meta tags, AI optimization, and sync your listings - all in one click.
             </p>
           </div>
           <button
@@ -477,7 +477,7 @@ export default function ScanResultPage() {
               </div>
             )}
 
-            {/* AI Optimization Package — grouped separately */}
+            {/* AI Optimization Package - grouped separately */}
             {aiGroupFixes.length > 0 && (
               <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-5 space-y-4">
                 <div className="flex items-center gap-2 mb-1">
@@ -486,7 +486,7 @@ export default function ScanResultPage() {
                   <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 font-medium">High Impact</span>
                 </div>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  These changes help AI assistants like ChatGPT and Perplexity recognize and recommend your business. Generate the exact content and schema that <em>makes</em> AI recommend you — not just checks if it does.
+                  These changes help AI assistants like ChatGPT and Perplexity recognize and recommend your business. Generate the exact content and schema that <em>makes</em> AI recommend you - not just checks if it does.
                 </p>
                 {aiGroupFixes.map((fix, i) => (
                   <FixCard key={i} fix={fix} />

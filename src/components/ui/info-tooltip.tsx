@@ -94,15 +94,15 @@ export const LAYER_TOOLTIP_DATA: Record<
   2: {
     what: "Essential pages that prove you're a real, established local business",
     why: "Google and AI assistants need these pages to understand who you are, what you do, and where you serve.",
-    how: "We check for About, Service Area, FAQ, and Team pages — the trust signals that separate professionals from fly-by-nights.",
+    how: "We check for About, Service Area, FAQ, and Team pages - the trust signals that separate professionals from fly-by-nights.",
   },
   3: {
     what: "Locally-optimized content targeting your specific cities and services",
-    why: "Without city-specific pages, you're invisible for '[city] insurance agent' searches — the #1 way customers find you.",
+    why: "Without city-specific pages, you're invisible for '[city] insurance agent' searches - the #1 way customers find you.",
     how: "We analyze your content for local relevance, keyword targeting, and geographic signals that Google needs to rank you locally.",
   },
   4: {
-    what: "Your review profile — how many, how recent, and whether you respond",
+    what: "Your review profile - how many, how recent, and whether you respond",
     why: "Reviews are the #1 factor in Google Maps rankings. A competitor with more recent reviews will outrank you even with worse SEO.",
     how: "We track your review count, average rating, recency of reviews, and response rate compared to local competitors.",
   },

@@ -11,7 +11,7 @@ interface QuickWinCardProps {
   index?: number;
 }
 
-// Small inline pill config — restrained, not loud
+// Small inline pill config - restrained, not loud
 const IMPACT_CONFIG = {
   high: {
     label: "High impact",
@@ -75,7 +75,7 @@ export function QuickWinCard({ win, featured = false, scanId, index = 0 }: Quick
               Quick Win
             </span>
           )}
-          {/* Impact pill — small & inline */}
+          {/* Impact pill - small & inline */}
           <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${cfg.pill}`}>
             {cfg.label}
           </span>
@@ -87,7 +87,7 @@ export function QuickWinCard({ win, featured = false, scanId, index = 0 }: Quick
           <span className="text-[11px] text-[var(--muted-foreground)]">Layer {win.layer}</span>
         </div>
 
-        {/* Mark done — quiet toggle */}
+        {/* Mark done - quiet toggle */}
         <button
           onClick={toggleDone}
           className={`flex items-center gap-1 text-[11px] rounded-md px-2 py-1 transition-colors ${

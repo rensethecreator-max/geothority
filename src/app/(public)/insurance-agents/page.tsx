@@ -5,14 +5,14 @@ import { Shield, MapPin, Star, FileText, Zap, TrendingUp, ChevronRight } from "l
 
 export const metadata: Metadata = {
   title: "Local SEO for Insurance Agents | Geothority",
-  description: "Stop losing clients to State Farm and big captive agencies. Geothority shows independent insurance agents exactly why competitors rank higher — and gives you the fixes.",
+  description: "Stop losing clients to State Farm and big captive agencies. Geothority shows independent insurance agents exactly why competitors rank higher - and gives you the fixes.",
 };
 
 const painPoints = [
   {
     icon: MapPin,
     problem: "You're invisible in the local pack",
-    solution: "Geothority scans your site the same way Google does and scores your local visibility across 5 layers — then tells you exactly what to fix.",
+    solution: "Geothority scans your site the same way Google does and scores your local visibility across 5 layers - then tells you exactly what to fix.",
   },
   {
     icon: Shield,
@@ -32,7 +32,7 @@ const painPoints = [
   {
     icon: Zap,
     problem: "Your website doesn't have the technical code Google needs",
-    solution: "LocalBusiness schema, InsuranceAgency schema, FAQ schema — generated for your specific business and ready to paste into your site. No developer needed.",
+    solution: "LocalBusiness schema, InsuranceAgency schema, FAQ schema - generated for your specific business and ready to paste into your site. No developer needed.",
   },
   {
     icon: TrendingUp,
@@ -56,10 +56,10 @@ export default function InsuranceAgentsPage() {
             Why Is State Farm<br />Showing Up Before You?
           </h1>
           <p className="text-xl text-[var(--muted-foreground)] mb-4 max-w-2xl mx-auto leading-relaxed">
-            You&apos;ve been in business for years. They have 12 agents in your city. And somehow, when someone Googles &ldquo;insurance agent near me&rdquo; — you&apos;re on page 2.
+            You&apos;ve been in business for years. They have 12 agents in your city. And somehow, when someone Googles &ldquo;insurance agent near me&rdquo; - you&apos;re on page 2.
           </p>
           <p className="text-lg text-[var(--muted-foreground)] mb-10 max-w-2xl mx-auto leading-relaxed">
-            It&apos;s not about who&apos;s been around longer. It&apos;s about who Google trusts more. Geothority shows you exactly what&apos;s missing — and fixes it.
+            It&apos;s not about who&apos;s been around longer. It&apos;s about who Google trusts more. Geothority shows you exactly what&apos;s missing - and fixes it.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

@@ -42,7 +42,7 @@ function MetricRow({
             youWins ? "text-emerald-400" : "text-[var(--muted-foreground)]"
           }`}
         >
-          {youValue !== null ? format(youNum) : "—"}
+          {youValue !== null ? format(youNum) : "-"}
           {youWins && youNum !== theirNum && (
             <span className="ml-0.5 text-emerald-400/60">↑</span>
           )}
@@ -72,7 +72,7 @@ function MetricRow({
             !youWins && youNum !== theirNum ? "text-red-400" : "text-[var(--muted-foreground)]"
           }`}
         >
-          {theirValue !== null ? format(theirNum) : "—"}
+          {theirValue !== null ? format(theirNum) : "-"}
         </span>
       </div>
     </div>

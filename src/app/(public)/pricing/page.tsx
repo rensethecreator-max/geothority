@@ -112,7 +112,7 @@ const plans: Plan[] = [
     id: "growth",
     name: "Growth",
     monthlyPrice: 197,
-    description: "Most Popular — everything you need",
+    description: "Most Popular - everything you need",
     cta: "Start 14-Day Trial",
     ctaHref: "/billing",
     popular: true,
@@ -175,7 +175,7 @@ const faqs = [
   },
   {
     q: "Is there a free trial?",
-    a: "Yes — every paid plan comes with a 14-day free trial, no credit card required. You get full access to all features in your plan so you can see the value before you commit.",
+    a: "Yes - every paid plan comes with a 14-day free trial, no credit card required. You get full access to all features in your plan so you can see the value before you commit.",
   },
   {
     q: "What payment methods do you accept?",
@@ -187,11 +187,11 @@ const faqs = [
   },
   {
     q: "Do you offer discounts for annual billing?",
-    a: "Yes — save 20% when you pay annually. For the Growth plan that's over $480 back in your pocket each year. Discounts apply to all paid plans.",
+    a: "Yes - save 20% when you pay annually. For the Growth plan that's over $480 back in your pocket each year. Discounts apply to all paid plans.",
   },
   {
     q: "What happens when I hit my scan limit?",
-    a: "On the Free plan, scans reset daily at midnight UTC. If you reach your limit before then, you'll see a prompt to upgrade. Paid plans come with generous limits — Growth and Authority are completely unlimited.",
+    a: "On the Free plan, scans reset daily at midnight UTC. If you reach your limit before then, you'll see a prompt to upgrade. Paid plans come with generous limits - Growth and Authority are completely unlimited.",
   },
 ];
 
@@ -302,7 +302,7 @@ export default function PricingPage() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32">
 
         {/* ═══════════════════════════════════════════════════
-            SECTION 1 — Header
+            SECTION 1 - Header
         ════════════════════════════════════════════════════ */}
         <ScrollReveal>
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -353,7 +353,7 @@ export default function PricingPage() {
         </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════
-            SECTION 2 — Pricing Cards
+            SECTION 2 - Pricing Cards
         ════════════════════════════════════════════════════ */}
         <ScrollReveal delay={100}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
@@ -455,7 +455,7 @@ export default function PricingPage() {
                     <span className={plan.features.listingSync ? "text-gray-300" : "text-gray-600"}>
                       Listing sync (50+ dirs)
                     </span>
-                    <GeoTooltip tip="Automatically push correct info to 50+ directories — no manual updates needed." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                    <GeoTooltip tip="Automatically push correct info to 50+ directories - no manual updates needed." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   {plan.features.napMonitoring !== "None" && (
                     <li className="flex items-center gap-2.5 text-sm text-gray-300">
@@ -494,7 +494,7 @@ export default function PricingPage() {
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.scoreHistory} score history
-                    <GeoTooltip tip="See how your Trust Stack has improved over time — proof your efforts are working." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                    <GeoTooltip tip="See how your Trust Stack has improved over time - proof your efforts are working." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                 </ul>
               </div>
@@ -529,29 +529,29 @@ export default function PricingPage() {
                 <tbody>
                   <SectionHeader label="Scanning & Analysis" />
                   <FeatureRow label="Daily scans" free="3" starter="10" growth="Unlimited" authority="Unlimited" tip="More scans means more up-to-date data. Free gives you 3 daily scans to start; paid plans let you re-scan as often as you need." />
-                  <FeatureRow label="Trust Stack Score" free={true} starter={true} growth={true} authority={true} tip="Your Trust Stack is a single 0–100 score across 5 authority layers — Foundation, Trust Pages, Geo Content, Reviews, and AI Optimization. It tells you at a glance how strong your local presence is." />
+                  <FeatureRow label="Trust Stack Score" free={true} starter={true} growth={true} authority={true} tip="Your Trust Stack is a single 0–100 score across 5 authority layers - Foundation, Trust Pages, Geo Content, Reviews, and AI Optimization. It tells you at a glance how strong your local presence is." />
                   <FeatureRow label="Layer Breakdown" free={true} starter={true} growth={true} authority={true} tip="See exactly how you score on each of the 5 Trust Stack layers, so you know which specific area to fix first for the biggest ranking gains." />
-                  <FeatureRow label="Quick Wins with Priority" free={true} starter={true} growth={true} authority={true} tip="We rank every issue by impact and effort. Quick Wins are the fixes that move your score the most with the least work — your fastest path to better visibility." />
+                  <FeatureRow label="Quick Wins with Priority" free={true} starter={true} growth={true} authority={true} tip="We rank every issue by impact and effort. Quick Wins are the fixes that move your score the most with the least work - your fastest path to better visibility." />
                   <FeatureRow label="Competitor Analysis" free="Basic" starter="Full" growth="Full + Alerts" authority="Full + Alerts" tip="See how your local authority compares to competitors. Full adds detailed side-by-side breakdowns; Alerts emails you when a competitor makes a move." />
 
                   <SectionHeader label="Citations & Listings" />
                   <FeatureRow label="Citation Check (18 dirs)" free={true} starter={true} growth={true} authority={true} tip="We verify your business name, address, and phone across 18 major directories like Google, Yelp, Bing, and Apple Maps. Inconsistent listings confuse Google and cost you rankings." />
-                  <FeatureRow label="Listing Sync (50+ dirs)" free={false} starter={false} growth={true} authority={true} tip="Automatically push correct business info to 50+ directories through the Foursquare data network — covering Bing, Uber, Samsung, HERE Maps, and more. No manual updates needed." />
-                  <FeatureRow label="Fix This Direct Links" free={true} starter={true} growth={true} authority={true} tip="Every issue we find comes with a one-click link that takes you straight to the fix — no hunting through dashboards or guessing what to do next." />
-                  <FeatureRow label="NAP Monitoring" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="NAP stands for Name, Address, Phone. We watch your listings around the clock and alert you the moment something changes — so your info stays consistent everywhere." />
+                  <FeatureRow label="Listing Sync (50+ dirs)" free={false} starter={false} growth={true} authority={true} tip="Automatically push correct business info to 50+ directories through the Foursquare data network - covering Bing, Uber, Samsung, HERE Maps, and more. No manual updates needed." />
+                  <FeatureRow label="Fix This Direct Links" free={true} starter={true} growth={true} authority={true} tip="Every issue we find comes with a one-click link that takes you straight to the fix - no hunting through dashboards or guessing what to do next." />
+                  <FeatureRow label="NAP Monitoring" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="NAP stands for Name, Address, Phone. We watch your listings around the clock and alert you the moment something changes - so your info stays consistent everywhere." />
 
                   <SectionHeader label="Content & AI" />
                   <FeatureRow label="AI Content Generation" free="1 / mo" starter="5 / mo" growth="Unlimited" authority="Unlimited" tip="AI writes city-specific landing pages, service descriptions, and local content that Google and AI assistants trust. More generations means more pages ranking for more local searches." />
-                  <FeatureRow label="Schema Generator" free={true} starter={true} growth={true} authority={true} tip="Schema is the technical code that tells search engines exactly what your business does. Our 3-click wizard generates it for you — no developer needed." />
+                  <FeatureRow label="Schema Generator" free={true} starter={true} growth={true} authority={true} tip="Schema is the technical code that tells search engines exactly what your business does. Our 3-click wizard generates it for you - no developer needed." />
                   <FeatureRow label="AI Overview Checker" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="Checks whether ChatGPT, Perplexity, and Google AI Overviews mention your business when customers ask. Full + Monitor means we track changes over time and alert you." />
 
                   <SectionHeader label="Monitoring & Alerts" />
                   <FeatureRow label="GBP Monitor" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="Your Google Business Profile is the most important listing you have. We watch it for changes, suspensions, and optimization opportunities so you never lose ground." />
-                  <FeatureRow label="Competitor Alerts" free={false} starter={false} growth={true} authority={true} tip="Get an email the moment a competitor publishes new content, gains reviews, or makes a move in your market — so you can respond the same day instead of finding out weeks later." />
+                  <FeatureRow label="Competitor Alerts" free={false} starter={false} growth={true} authority={true} tip="Get an email the moment a competitor publishes new content, gains reviews, or makes a move in your market - so you can respond the same day instead of finding out weeks later." />
                   <FeatureRow label="Score History" free="30 days" starter="90 days" growth="1 year" authority="Unlimited" tip="See how your Trust Stack score has changed over time. Longer history means better trend tracking and proof that your efforts are paying off." />
 
                   <SectionHeader label="Support" />
-                  <FeatureRow label="Will AI Assistant" free={true} starter={true} growth={true} authority={true} tip="An AI assistant that answers your local SEO questions, explains your scan results, and suggests next steps — like having a local SEO expert on call 24/7." />
+                  <FeatureRow label="Will AI Assistant" free={true} starter={true} growth={true} authority={true} tip="An AI assistant that answers your local SEO questions, explains your scan results, and suggests next steps - like having a local SEO expert on call 24/7." />
                   <FeatureRow label="Email Support" free="None" starter="✓" growth="Priority" authority="Dedicated" tip="Priority means faster response times. Dedicated means a named contact who knows your account and business goals." />
                   <FeatureRow label="PDF Reports" free="None" starter="✓" growth="Branded" authority="White-label" tip="Download professional reports to share with clients or stakeholders. Branded includes your logo; White-label lets you remove all Geothority branding and use your own." />
                 </tbody>
@@ -561,7 +561,7 @@ export default function PricingPage() {
         </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════
-            SECTION 3 — Enterprise / Agency
+            SECTION 3 - Enterprise / Agency
         ════════════════════════════════════════════════════ */}
         <ScrollReveal delay={100}>
           <div className="relative mb-20 rounded-2xl overflow-hidden border border-white/10 bg-[#0f1117]">
@@ -594,7 +594,7 @@ export default function PricingPage() {
         </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════
-            SECTION 4 — Money-Back Guarantee
+            SECTION 4 - Money-Back Guarantee
         ════════════════════════════════════════════════════ */}
         <ScrollReveal delay={100}>
           <div className="flex flex-col sm:flex-row items-center gap-6 justify-center text-center sm:text-left mb-20 p-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/5">
@@ -613,7 +613,7 @@ export default function PricingPage() {
         </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════
-            SECTION 5 — FAQ
+            SECTION 5 - FAQ
         ════════════════════════════════════════════════════ */}
         <ScrollReveal delay={100}>
           <div className="max-w-3xl mx-auto mb-28">
@@ -632,7 +632,7 @@ export default function PricingPage() {
         </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════
-            SECTION 6 — Final CTA
+            SECTION 6 - Final CTA
         ════════════════════════════════════════════════════ */}
         <ScrollReveal delay={100}>
           <div className="relative text-center rounded-3xl overflow-hidden border border-white/10 bg-[#0f1117] px-8 py-20">
@@ -657,7 +657,7 @@ export default function PricingPage() {
                   href="/signup"
                   className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold px-8 py-4 rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02] transition-all text-lg"
                 >
-                  Start Free — No Credit Card
+                  Start Free - No Credit Card
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link

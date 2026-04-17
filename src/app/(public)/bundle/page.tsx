@@ -18,9 +18,9 @@ import {
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export const metadata: Metadata = {
-  title: "Local Dominance Bundle — Geothority + Starcepta + 4MinuteSEO",
+  title: "Local Dominance Bundle - Geothority + Starcepta + 4MinuteSEO",
   description:
-    "The complete local business growth platform. Scan your SEO, collect reviews, and automate your campaigns — all in one package. Save $96/mo.",
+    "The complete local business growth platform. Scan your SEO, collect reviews, and automate your campaigns - all in one package. Save $96/mo.",
 };
 
 const geothorityFeatures = [
@@ -78,7 +78,7 @@ const flywheelSteps = [
 const faqs = [
   {
     q: "Can I start with just one product?",
-    a: "Yes — each product is available as a standalone subscription. Geothority starts at $97/mo, Starcepta at $49/mo, and 4MinuteSEO at $197/mo. The bundle saves you $96/mo when you use all three.",
+    a: "Yes - each product is available as a standalone subscription. Geothority starts at $97/mo, Starcepta at $49/mo, and 4MinuteSEO at $197/mo. The bundle saves you $96/mo when you use all three.",
   },
   {
     q: "Is there a free trial?",
@@ -90,7 +90,7 @@ const faqs = [
   },
   {
     q: "Do the products integrate with each other?",
-    a: "They're designed to work together — Geothority's scan results feed directly into 4MinuteSEO's fix queue, and Starcepta's review data appears on your Geothority trust dashboard. One platform, zero friction.",
+    a: "They're designed to work together - Geothority's scan results feed directly into 4MinuteSEO's fix queue, and Starcepta's review data appears on your Geothority trust dashboard. One platform, zero friction.",
   },
   {
     q: "What if I already use one of the products?",
@@ -114,7 +114,7 @@ export default function BundlePage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-emerald-400 font-medium mb-8">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Save $96/mo — Limited Time Bundle Pricing
+            Save $96/mo - Limited Time Bundle Pricing
           </div>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
@@ -127,7 +127,7 @@ export default function BundlePage() {
 
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
             Stop paying for 3 separate tools that don&apos;t talk to each other.
-            Get Geothority, Starcepta, and 4MinuteSEO in one bundle — and save{" "}
+            Get Geothority, Starcepta, and 4MinuteSEO in one bundle - and save{" "}
             <span className="text-white font-semibold">$96 every month</span>.
           </p>
 
@@ -136,7 +136,7 @@ export default function BundlePage() {
               href="#pricing"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
             >
-              Get the Bundle — $247/mo
+              Get the Bundle - $247/mo
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
@@ -174,7 +174,7 @@ export default function BundlePage() {
             </h2>
             <p className="text-gray-400 text-lg mb-14 max-w-2xl mx-auto">
               Most agents juggle 3-4 different tools that don&apos;t talk to
-              each other — wasting hours and leaving money on the table every
+              each other - wasting hours and leaving money on the table every
               week.
             </p>
 
@@ -192,14 +192,14 @@ export default function BundlePage() {
                   color: "text-orange-400",
                   bg: "bg-orange-500/10 border-orange-500/20",
                   title: "Not enough reviews",
-                  desc: "Prospects see 3 reviews and move on. You know your customers are happy — you just can't get them to say so publicly.",
+                  desc: "Prospects see 3 reviews and move on. You know your customers are happy - you just can't get them to say so publicly.",
                 },
                 {
                   icon: Clock,
                   color: "text-yellow-400",
                   bg: "bg-yellow-500/10 border-yellow-500/20",
                   title: "No time for content",
-                  desc: "Backlinks and blog posts build authority — but who has time? Your SEO sits stagnant while competitors pull ahead.",
+                  desc: "Backlinks and blog posts build authority - but who has time? Your SEO sits stagnant while competitors pull ahead.",
                 },
               ].map((pain) => (
                 <div
@@ -252,7 +252,7 @@ export default function BundlePage() {
                 <p className="text-gray-400 text-sm leading-relaxed mb-5">
                   Trust Stack scoring, 68+ directory checks, AI visibility
                   monitoring, schema generation, content creation, listing sync.
-                  We scan, fix, and monitor — automatically.
+                  We scan, fix, and monitor - automatically.
                 </p>
                 <div className="mt-auto">
                   <div className="text-sm text-gray-500 mb-4">
@@ -360,7 +360,7 @@ export default function BundlePage() {
               </h2>
               <p className="text-gray-400 text-lg max-w-xl mx-auto">
                 Each product feeds the next. The result is a compounding flywheel
-                that grows your local authority month after month — automatically.
+                that grows your local authority month after month - automatically.
               </p>
             </div>
 
@@ -417,7 +417,7 @@ export default function BundlePage() {
               <div className="mt-8 flex justify-center">
                 <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-sm text-gray-400">
                   <RefreshCw className="w-4 h-4 text-emerald-400" />
-                  Cycle repeats — compounding your local authority month after month
+                  Cycle repeats - compounding your local authority month after month
                 </div>
               </div>
             </div>
@@ -460,8 +460,8 @@ export default function BundlePage() {
                     { label: "Geothority", price: "$97/mo" },
                     { label: "Starcepta", price: "$49/mo" },
                     { label: "4MinuteSEO", price: "$197/mo" },
-                    { label: "No integration", price: "—" },
-                    { label: "No unified dashboard", price: "—" },
+                    { label: "No integration", price: "-" },
+                    { label: "No unified dashboard", price: "-" },
                   ].map((row) => (
                     <li
                       key={row.label}
@@ -518,12 +518,12 @@ export default function BundlePage() {
                   href="#"
                   className="block w-full text-center py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-500/25 mb-4"
                 >
-                  Get the Bundle — $247/mo
+                  Get the Bundle - $247/mo
                 </Link>
 
                 {/* Annual upsell */}
                 <div className="text-center text-sm text-gray-400">
-                  Or save even more —{" "}
+                  Or save even more -{" "}
                   <span className="text-white font-medium">$197/mo</span>{" "}
                   billed annually
                 </div>
@@ -568,7 +568,7 @@ export default function BundlePage() {
                   icon: Globe,
                   emoji: "🏪",
                   title: "Any Local Business",
-                  desc: "Restaurants, contractors, dentists, lawyers — if your customers search locally before they buy, this bundle builds the authority that wins them.",
+                  desc: "Restaurants, contractors, dentists, lawyers - if your customers search locally before they buy, this bundle builds the authority that wins them.",
                 },
               ].map((card) => (
                 <div
@@ -640,7 +640,7 @@ export default function BundlePage() {
             <div className="relative">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-sm text-emerald-400 font-medium mb-8">
                 <AlertCircle className="w-4 h-4" />
-                Start with zero risk — free scan, no credit card
+                Start with zero risk - free scan, no credit card
               </div>
 
               <h2 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
@@ -653,7 +653,7 @@ export default function BundlePage() {
               <p className="text-gray-400 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
                 Start with a free Geothority scan. See exactly what&apos;s
                 broken, what you&apos;re missing, and how far behind your
-                competitors you are — before you spend a dollar.
+                competitors you are - before you spend a dollar.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -661,7 +661,7 @@ export default function BundlePage() {
                   href="#pricing"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
                 >
-                  Get the Bundle — $247/mo
+                  Get the Bundle - $247/mo
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link

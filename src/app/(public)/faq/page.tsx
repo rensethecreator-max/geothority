@@ -4,12 +4,12 @@ import { PublicHeader } from "@/components/layout/public-header";
 import { ChevronDown } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "FAQ — Geothority Local SEO Platform | Frequently Asked Questions",
+  title: "FAQ - Geothority Local SEO Platform | Frequently Asked Questions",
   description:
     "Everything you need to know about Geothority: how the Trust Stack score works, what the AI Overview Checker does, citation scanning, GBP monitoring, and how we compare to BrightLocal and Moz Local.",
   alternates: { canonical: "https://geothority.io/faq" },
   openGraph: {
-    title: "Geothority FAQ — Local SEO Questions Answered",
+    title: "Geothority FAQ - Local SEO Questions Answered",
     description:
       "Get answers about Geothority's Trust Stack™, AI search optimization, website scanner, and how we help insurance agents dominate local search.",
     url: "https://geothority.io/faq",
@@ -34,7 +34,7 @@ const faqSchema = {
       name: "What is a Trust Stack score?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Your Trust Stack™ score is Geothority's proprietary 5-layer scoring system that measures your local search authority from 0–100. The five layers are: (1) Foundation — technical SEO, site speed, mobile optimization; (2) Trust Pages — About, Contact, team bios, credentials; (3) Geo Content — city pages, local landing pages, neighborhood mentions; (4) Reviews — Google review count, rating, recency, and response rate; (5) AI Optimization — schema markup, entity signals, FAQ content, and citation consistency. Each layer is scored individually so you know exactly which area to fix first.",
+        text: "Your Trust Stack™ score is Geothority's proprietary 5-layer scoring system that measures your local search authority from 0–100. The five layers are: (1) Foundation - technical SEO, site speed, mobile optimization; (2) Trust Pages - About, Contact, team bios, credentials; (3) Geo Content - city pages, local landing pages, neighborhood mentions; (4) Reviews - Google review count, rating, recency, and response rate; (5) AI Optimization - schema markup, entity signals, FAQ content, and citation consistency. Each layer is scored individually so you know exactly which area to fix first.",
       },
     },
     {
@@ -42,7 +42,7 @@ const faqSchema = {
       name: "How does the website scan work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Enter your website URL and Geothority crawls your site in approximately 90 seconds. It checks over 80 SEO and local signals including page speed, meta tags, schema markup, NAP consistency, Google Business Profile completeness, review signals, and content quality. You'll receive a scored report with a prioritized list of Quick Win cards — each with a specific fix, the expected impact, and (where applicable) copy-paste code or content.",
+        text: "Enter your website URL and Geothority crawls your site in approximately 90 seconds. It checks over 80 SEO and local signals including page speed, meta tags, schema markup, NAP consistency, Google Business Profile completeness, review signals, and content quality. You'll receive a scored report with a prioritized list of Quick Win cards - each with a specific fix, the expected impact, and (where applicable) copy-paste code or content.",
       },
     },
     {
@@ -66,7 +66,7 @@ const faqSchema = {
       name: "What is NAP consistency?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "NAP stands for Name, Address, Phone number — the three core data points Google uses to verify a local business's identity across the web. Inconsistent NAP (e.g., your address listed differently on Yelp vs. your website vs. Yellow Pages) sends confusing signals to Google and can significantly suppress your local rankings. Geothority scans 80+ citation directories and data sources to flag every NAP discrepancy, then gives you the corrected citation data to submit.",
+        text: "NAP stands for Name, Address, Phone number - the three core data points Google uses to verify a local business's identity across the web. Inconsistent NAP (e.g., your address listed differently on Yelp vs. your website vs. Yellow Pages) sends confusing signals to Google and can significantly suppress your local rankings. Geothority scans 80+ citation directories and data sources to flag every NAP discrepancy, then gives you the corrected citation data to submit.",
       },
     },
     {
@@ -74,7 +74,7 @@ const faqSchema = {
       name: "How does the AI Overview Checker work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Geothority's AI Overview Checker runs your business against 20+ queries that trigger Google AI Overviews and ChatGPT responses in your category. It checks whether your business is cited as a recommended answer, which competitors are appearing instead, and what content signals (schema, FAQ pages, entity mentions) are driving those citations. You get a GEO score and a checklist of optimizations — structured data improvements, FAQ content, and entity-building tactics — that increase the probability of appearing in AI-generated answers.",
+        text: "Geothority's AI Overview Checker runs your business against 20+ queries that trigger Google AI Overviews and ChatGPT responses in your category. It checks whether your business is cited as a recommended answer, which competitors are appearing instead, and what content signals (schema, FAQ pages, entity mentions) are driving those citations. You get a GEO score and a checklist of optimizations - structured data improvements, FAQ content, and entity-building tactics - that increase the probability of appearing in AI-generated answers.",
       },
     },
     {
@@ -82,7 +82,7 @@ const faqSchema = {
       name: "What schema markup does my business need?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "For insurance agents and local service businesses, the most impactful schema types are: LocalBusiness (with InsuranceAgency subtype), FAQPage, BreadcrumbList, Review/AggregateRating, Service, and Organization. Geothority's Schema Generator tool creates the exact JSON-LD code for each schema type based on your business data — just copy and paste it into your website's <head> section or use it with a plugin like RankMath or Schema Pro.",
+        text: "For insurance agents and local service businesses, the most impactful schema types are: LocalBusiness (with InsuranceAgency subtype), FAQPage, BreadcrumbList, Review/AggregateRating, Service, and Organization. Geothority's Schema Generator tool creates the exact JSON-LD code for each schema type based on your business data - just copy and paste it into your website's <head> section or use it with a plugin like RankMath or Schema Pro.",
       },
     },
     {
@@ -114,7 +114,7 @@ const faqSchema = {
       name: "How does GBP monitoring work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Geothority connects to your Google Business Profile via the Google Business API and monitors it continuously for unauthorized edits, photo removals, Q&A spam, review violations, and ranking fluctuations. You get an alert the moment something changes — critical because Google allows anyone to 'suggest edits' to your GBP listing. Beyond monitoring, Geothority tracks your GBP post engagement, photo performance, and message response rate, and benchmarks all of these against your local competitors.",
+        text: "Geothority connects to your Google Business Profile via the Google Business API and monitors it continuously for unauthorized edits, photo removals, Q&A spam, review violations, and ranking fluctuations. You get an alert the moment something changes - critical because Google allows anyone to 'suggest edits' to your GBP listing. Beyond monitoring, Geothority tracks your GBP post engagement, photo performance, and message response rate, and benchmarks all of these against your local competitors.",
       },
     },
     {
@@ -122,7 +122,7 @@ const faqSchema = {
       name: "What makes Geothority different from BrightLocal and Moz Local?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "BrightLocal and Moz Local are solid citation management tools, but they were built for SEO agencies managing dozens of clients. Geothority is built specifically for independent insurance agents and small local businesses who need to understand and act on their SEO themselves. Key differences: (1) GEO/AI Optimization — Geothority optimizes for AI Overviews and ChatGPT citations; BrightLocal and Moz Local do not. (2) Industry focus — our Quick Wins and content templates are insurance-agent specific. (3) Built-in content generation — Geothority writes city landing pages and GBP posts; BrightLocal and Moz Local do not. (4) Competitor Watchdog — live monitoring of specific local competitors; not available in BrightLocal or Moz Local.",
+        text: "BrightLocal and Moz Local are solid citation management tools, but they were built for SEO agencies managing dozens of clients. Geothority is built specifically for independent insurance agents and small local businesses who need to understand and act on their SEO themselves. Key differences: (1) GEO/AI Optimization - Geothority optimizes for AI Overviews and ChatGPT citations; BrightLocal and Moz Local do not. (2) Industry focus - our Quick Wins and content templates are insurance-agent specific. (3) Built-in content generation - Geothority writes city landing pages and GBP posts; BrightLocal and Moz Local do not. (4) Competitor Watchdog - live monitoring of specific local competitors; not available in BrightLocal or Moz Local.",
       },
     },
     {
@@ -138,7 +138,7 @@ const faqSchema = {
       name: "Do I need technical skills to use Geothority?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No. Geothority is designed for insurance agents, not developers. The website scan requires only your URL. Quick Win cards include the exact code or content to add — no coding knowledge required. The schema generator produces copy-paste JSON-LD. The GBP post generator writes the post and you click 'Publish.' The most technical thing you might do is paste a meta description into your website builder. If you get stuck, our onboarding call (included with Authority plan) walks you through implementing your first 5 fixes live.",
+        text: "No. Geothority is designed for insurance agents, not developers. The website scan requires only your URL. Quick Win cards include the exact code or content to add - no coding knowledge required. The schema generator produces copy-paste JSON-LD. The GBP post generator writes the post and you click 'Publish.' The most technical thing you might do is paste a meta description into your website builder. If you get stuck, our onboarding call (included with Authority plan) walks you through implementing your first 5 fixes live.",
       },
     },
   ],
@@ -161,7 +161,7 @@ export default function FAQPage() {
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
         <p className="text-[var(--muted-foreground)] max-w-xl mx-auto mb-4">
-          Everything you need to know about Geothority — from how the Trust Stack score works to
+          Everything you need to know about Geothority - from how the Trust Stack score works to
           what makes us different from BrightLocal.
         </p>
         <p className="text-sm text-[var(--muted-foreground)]">
@@ -185,7 +185,7 @@ export default function FAQPage() {
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold mb-3">Ready to dominate local search?</h2>
           <p className="text-[var(--muted-foreground)] mb-6">
-            Get your free Trust Stack™ score in 90 seconds — no credit card required.
+            Get your free Trust Stack™ score in 90 seconds - no credit card required.
           </p>
           <Link
             href="/login"

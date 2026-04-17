@@ -13,7 +13,7 @@ interface WelcomeFlowProps {
 
 export function WelcomeFlow({ onComplete }: WelcomeFlowProps = {}) {
   const router = useRouter();
-  // Start open immediately — the parent (dashboard) decides when to show this
+  // Start open immediately - the parent (dashboard) decides when to show this
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState(0);
   const [businessName, setBusinessName] = useState("");
@@ -40,7 +40,7 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps = {}) {
   };
 
   const steps = [
-    // Step 0 — Welcome
+    // Step 0 - Welcome
     {
       content: (
         <div className="text-center py-4">
@@ -50,7 +50,7 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps = {}) {
           <h2 className="text-xl font-bold mb-3 tracking-tight">Welcome to Geothority</h2>
           <p className="text-sm text-[var(--muted-foreground)] leading-relaxed max-w-xs mx-auto">
             The local SEO intelligence platform trusted by agencies to diagnose,
-            fix, and dominate local search — in minutes.
+            fix, and dominate local search - in minutes.
           </p>
           <div className="mt-6 grid grid-cols-3 gap-3 text-center">
             {[
@@ -70,7 +70,7 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps = {}) {
       canSkip: false,
     },
 
-    // Step 1 — Business info
+    // Step 1 - Business info
     {
       content: (
         <div className="py-2">
@@ -113,7 +113,7 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps = {}) {
       canSkip: true,
     },
 
-    // Step 2 — Run first scan
+    // Step 2 - Run first scan
     {
       content: (
         <div className="text-center py-4">

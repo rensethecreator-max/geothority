@@ -116,7 +116,7 @@ export default function SchemaGeneratorPage() {
         <h1 className="text-2xl font-bold mb-1 flex items-center gap-2">
           Schema Generator
           <InfoTooltip
-            content="Code that tells search engines exactly what your business is. It's like a digital business card for Google — helps you appear in rich results."
+            content="Code that tells search engines exactly what your business is. It's like a digital business card for Google - helps you appear in rich results."
             side="right"
           />
         </h1>
@@ -150,7 +150,7 @@ export default function SchemaGeneratorPage() {
         ))}
       </div>
 
-      {/* Step 1 — Select schema type */}
+      {/* Step 1 - Select schema type */}
       {step === 1 && (
         <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6">
           <h2 className="font-semibold mb-4">Select Schema Type</h2>
@@ -188,7 +188,7 @@ export default function SchemaGeneratorPage() {
         </div>
       )}
 
-      {/* Step 2 — Business details */}
+      {/* Step 2 - Business details */}
       {step === 2 && (
         <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6">
           <h2 className="font-semibold mb-4">Business Details</h2>
@@ -317,7 +317,7 @@ export default function SchemaGeneratorPage() {
         </div>
       )}
 
-      {/* Step 3 — Preview & Copy */}
+      {/* Step 3 - Preview & Copy */}
       {step === 3 && schema && (
         <div className="space-y-5">
           {/* Rich result preview */}

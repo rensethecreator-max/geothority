@@ -125,7 +125,7 @@ export default function ReportsPage() {
             { label: "Total Reports", value: scans.length, icon: FileText, color: "text-electric-500" },
             {
               label: "Latest Score",
-              value: `${scans[0]?.geothority_score ?? "—"}/100`,
+              value: `${scans[0]?.geothority_score ?? "-"}/100`,
               icon: TrendingUp,
               color: "text-emerald-400",
             },

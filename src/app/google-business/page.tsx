@@ -57,7 +57,7 @@ export default function GoogleBusinessPage() {
       const data = await res.json();
       setProfileData(data);
     } catch {
-      // Non-fatal — dashboard just won't show data
+      // Non-fatal - dashboard just won't show data
     }
   }
 
@@ -150,7 +150,7 @@ export default function GoogleBusinessPage() {
           </div>
         )}
 
-        {/* Not connected — connect CTA */}
+        {/* Not connected - connect CTA */}
         {!status?.googleConnected && (
           <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-10 text-center">
             <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-5">
@@ -158,7 +158,7 @@ export default function GoogleBusinessPage() {
             </div>
             <h2 className="text-xl font-bold mb-3">Connect Your Google Business Profile</h2>
             <p className="text-[var(--muted-foreground)] text-sm max-w-md mx-auto mb-2">
-              Link your GBP to get a full Layer 6 health score — reviews, completeness, 
+              Link your GBP to get a full Layer 6 health score - reviews, completeness, 
               engagement, photos, Q&A, and weekly monitoring.
             </p>
             <p className="text-[var(--muted-foreground)] text-xs max-w-md mx-auto mb-8">
@@ -193,8 +193,8 @@ export default function GoogleBusinessPage() {
             </div>
             <h2 className="text-xl font-bold mb-3">Google Account Connected!</h2>
             <p className="text-[var(--muted-foreground)] text-sm max-w-md mx-auto mb-8">
-              Now sync your Google Business Profile to pull in your real data — reviews, 
-              photos, posts, Q&A — and calculate your GBP Health Score.
+              Now sync your Google Business Profile to pull in your real data - reviews, 
+              photos, posts, Q&A - and calculate your GBP Health Score.
             </p>
             <button
               onClick={handleSync}
@@ -216,7 +216,7 @@ export default function GoogleBusinessPage() {
           </div>
         )}
 
-        {/* Connected & synced — show dashboard */}
+        {/* Connected & synced - show dashboard */}
         {status?.googleConnected && status?.hasSyncedProfile && profileData && (
           <>
             <div className="flex items-center justify-between mb-6">

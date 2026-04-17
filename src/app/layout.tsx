@@ -7,13 +7,13 @@ import { WillChatbot } from "@/components/chat/will-chatbot";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Geothority — Dominate Local Search & AI for Insurance Agents",
+  title: "Geothority - Dominate Local Search & AI for Insurance Agents",
   description:
     "Discover why you're invisible in search and AI. Generate the trust signals, content, and optimizations that make you the default local answer.",
   manifest: "/manifest.json",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io"),
   openGraph: {
-    title: "Geothority — Dominate Local Search & AI",
+    title: "Geothority - Dominate Local Search & AI",
     description:
       "The local SEO platform that shows insurance agents exactly how to become the default answer in Google and AI search. Free website audit in 90 seconds.",
     url: process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io",
@@ -25,13 +25,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Geothority — Local SEO Authority Scanner",
+        alt: "Geothority - Local SEO Authority Scanner",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Geothority — Dominate Local Search & AI",
+    title: "Geothority - Dominate Local Search & AI",
     description:
       "Free 90-second website audit. See your Geothority Score and get copy-paste fixes to dominate local search.",
     images: ["/og-image.png"],
@@ -70,7 +70,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <QueryProvider>
           {children}
-          {/* Will AI assistant — present on both public marketing pages and the app */}
+          {/* Will AI assistant - present on both public marketing pages and the app */}
           <WillChatbot />
         </QueryProvider>
       </body>

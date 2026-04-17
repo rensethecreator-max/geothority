@@ -75,7 +75,7 @@ export default function DashboardPage() {
   const [activeLines, setActiveLines] = useState<Record<string, boolean>>({
     overall: true, layer1: false, layer2: false, layer3: false, layer4: false, layer5: false,
   });
-  // Onboarding completion state — must be declared before any early returns
+  // Onboarding completion state - must be declared before any early returns
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
   const supabase = createClient();
 
@@ -130,7 +130,7 @@ export default function DashboardPage() {
   if (loading) return <DashboardSkeleton />;
 
   if (!latestScan) {
-    // Still reading localStorage — wait a tick
+    // Still reading localStorage - wait a tick
     if (onboardingDone === null) return <DashboardSkeleton />;
 
     // Show onboarding wizard if not completed
@@ -143,7 +143,7 @@ export default function DashboardPage() {
       );
     }
 
-    // Onboarding done but no scans yet — show empty state
+    // Onboarding done but no scans yet - show empty state
     return (
       <div>
         <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
           ) : (
             <div className="bg-[var(--card)] rounded-xl p-6 border border-[var(--border)] text-center">
               <p className="text-sm text-[var(--muted-foreground)]">
-                No quick wins — your site looks great! 🎉
+                No quick wins - your site looks great! 🎉
               </p>
             </div>
           )}

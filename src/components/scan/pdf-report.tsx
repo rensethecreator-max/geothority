@@ -36,7 +36,7 @@ export function PDFReportButton({ scan }: PDFReportProps) {
       const label = s >= 70 ? "Healthy" : s >= 40 ? "Needs work" : "Critical";
       return `<tr>
         <td style="padding:9px 0;border-bottom:1px solid #F3F4F6;">
-          <span style="font-size:12px;font-weight:600;color:#111;">Layer ${n} — ${LAYER_NAMES[n]}</span>
+          <span style="font-size:12px;font-weight:600;color:#111;">Layer ${n} - ${LAYER_NAMES[n]}</span>
           <div style="font-size:11px;color:#6B7280;margin-top:1px;">${LAYER_DESCRIPTIONS[n]}</div>
         </td>
         <td style="padding:9px 0 9px 20px;border-bottom:1px solid #F3F4F6;width:180px;vertical-align:middle;">
@@ -96,7 +96,7 @@ export function PDFReportButton({ scan }: PDFReportProps) {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Local SEO Report — ${scan.business_name}</title>
+  <title>Local SEO Report - ${scan.business_name}</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

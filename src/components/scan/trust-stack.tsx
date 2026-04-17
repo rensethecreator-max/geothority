@@ -148,7 +148,7 @@ export function ScoreRing({ score, size = 120, label = "Geothority Score" }: Sco
     <div className="flex flex-col items-center">
       <div className="relative" style={{ width: size, height: size }}>
 
-        {/* Single soft glow ring — barely visible, fades in/out once */}
+        {/* Single soft glow ring - barely visible, fades in/out once */}
         <div
           className="absolute inset-0 rounded-full transition-opacity duration-700 pointer-events-none"
           style={{
@@ -157,7 +157,7 @@ export function ScoreRing({ score, size = 120, label = "Geothority Score" }: Sco
           }}
         />
 
-        {/* Subtle sparkle dots — small, fade out in 1.8s */}
+        {/* Subtle sparkle dots - small, fade out in 1.8s */}
         {showSparkles && <SparkleRing size={size} color={color} />}
 
         <svg className="transform -rotate-90" width={size} height={size}>

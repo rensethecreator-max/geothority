@@ -23,7 +23,7 @@ const ONBOARDING_STEPS: WizardStep[] = [
     content: (
       <div className="space-y-4">
         <p className="text-muted-foreground">
-          Geothority gives you complete visibility into your local SEO presence — and a clear roadmap to dominate local search and AI results.
+          Geothority gives you complete visibility into your local SEO presence - and a clear roadmap to dominate local search and AI results.
         </p>
         <div className="grid grid-cols-2 gap-3">
           {[
@@ -109,7 +109,7 @@ const ONBOARDING_STEPS: WizardStep[] = [
     content: (
       <div className="space-y-4">
         <p className="text-muted-foreground">
-          After your first scan, your Trust Stack™ dashboard shows your score for each of the 5 layers — plus prioritized Quick Win cards with copy-paste fixes.
+          After your first scan, your Trust Stack™ dashboard shows your score for each of the 5 layers - plus prioritized Quick Win cards with copy-paste fixes.
         </p>
         <div className="bg-muted/20 border border-border rounded-lg p-4">
           <p className="text-sm font-medium mb-2">Your score breakdown:</p>

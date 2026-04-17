@@ -95,16 +95,16 @@ export default function BillingPortalPage() {
               <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                 {plan === "free" ? (
                   <span className="flex items-center gap-1.5">
-                    Free tier — 1 location audit, basic score
+                    Free tier - 1 location audit, basic score
                     <InfoTooltip
                       content="Includes 3 scans per day, basic Trust Stack analysis, and access to all tools."
                       side="right"
                     />
                   </span>
                 ) : plan === "pro" || plan === "growth"
-                  ? "Pro — Unlimited audits, competitor monitoring, trust stack tracking"
+                  ? "Pro - Unlimited audits, competitor monitoring, trust stack tracking"
                   : plan === "agency" || plan === "authority"
-                  ? "Agency — Multi-location, white-label reports, client dashboard"
+                  ? "Agency - Multi-location, white-label reports, client dashboard"
                   : "Your active plan"}
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function BillingPortalPage() {
       {plan === "free" && (
         <Card className="border-electric-500/30">
           <CardHeader>
-            <CardTitle className="text-base">Unlock More — Plans from $97/mo</CardTitle>
+            <CardTitle className="text-base">Unlock More - Plans from $97/mo</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">

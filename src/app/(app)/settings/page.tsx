@@ -126,7 +126,7 @@ function SettingsContent() {
         setDeleteError(data.error || "Deletion failed.");
         setDeleting(false);
       } else {
-        // Account deleted — redirect to marketing site
+        // Account deleted - redirect to marketing site
         router.push("/");
       }
     } catch {
@@ -329,7 +329,7 @@ function SettingsContent() {
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)]">Email</span>
-                <div className="font-medium">{userEmail || <span className="text-[var(--muted-foreground)] italic">—</span>}</div>
+                <div className="font-medium">{userEmail || <span className="text-[var(--muted-foreground)] italic">-</span>}</div>
               </div>
             </div>
           )}
