@@ -25,6 +25,7 @@ import {
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { GeoTooltip } from "@/components/ui/geo-tooltip";
 import { LayerInfoTooltip } from "@/components/ui/info-tooltip";
+import { Logo } from "@/components/ui/logo";
 import { useState } from "react";
 
 /* ───────────────── Data ───────────────── */
@@ -429,12 +430,7 @@ export default function HomePage() {
       {/* ─── Navigation ─── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-lg">Geothority</span>
-          </Link>
+          <Logo href="/" size={32} className="text-white" />
 
           <div className="hidden md:flex items-center gap-8">
             <Link href="#features" className="text-sm text-gray-400 hover:text-white transition-colors">Features</Link>
@@ -1014,9 +1010,7 @@ export default function HomePage() {
 
           <div className="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                <Shield className="w-3 h-3 text-white" />
-              </div>
+              <Logo href="/" size={24} showText={false} />
               <span className="text-sm text-gray-500">
                 © 2026 Geothority. All rights reserved.
               </span>
