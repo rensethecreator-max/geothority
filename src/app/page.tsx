@@ -43,16 +43,16 @@ const features: {
     icon: Shield,
     title: "See Your Complete Local SEO Picture in 90 Seconds",
     description:
-      "Our 5-layer Trust Stack™ framework scores your Foundation, Trust Pages, Geo Content, Reviews, and AI Optimization. Know exactly what's holding you back — and what to fix first.",
+      "Our 5-layer Trust Stack™ framework scores your Foundation, Trust Pages, Geo Content, Reviews, and AI Optimization. Know exactly what's holding you back — and what we'll handle first.",
     stat: "5 layers, 1 actionable score",
     image: "/cards/truststack.jpg",
-    statTip: "The Trust Stack scores your business across 5 authority layers and gives you one clear priority — so you always know what to fix first.",
+    statTip: "The Trust Stack scores your business across 5 authority layers and gives you one clear priority — so we always know what to handle first for you.",
   },
   {
     icon: MapPin,
     title: "Verify 18 Directories. Sync Across 50+ More.",
     description:
-      "We directly verify your listings across Google, Yelp, Bing, Apple Maps, and 14 more directories. Then confirm and sync your presence across the Foursquare data network — covering Bing, Samsung, Uber, HERE Maps, and 50+ additional services.",
+      "We directly verify your listings across Google, Yelp, Bing, Apple Maps, and 14 more directories. Then we confirm and sync your presence across the Foursquare data network — covering Bing, Samsung, Uber, HERE Maps, and 50+ additional services.",
     stat: "68+ directories covered",
     note: "We directly verify 18 major directories. Plus verify your presence in the Foursquare data network covering 50+ additional services. That's 68+ directories covered.",
     image: "/cards/audit.jpg",
@@ -62,7 +62,7 @@ const features: {
     icon: Brain,
     title: "We Don't Just Check if AI Recommends You — We Make It Happen.",
     description:
-      "ChatGPT, Perplexity, and Google AI Overviews are replacing traditional search. We check if they mention your business — then generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
+      "ChatGPT, Perplexity, and Google AI Overviews are replacing traditional search. We check if they mention your business — then we generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
     stat: "3 AI platforms checked",
     badge: "Only on Geothority",
     image: "/cards/quickwin.jpg",
@@ -70,9 +70,9 @@ const features: {
   },
   {
     icon: Code,
-    title: "Fix Your Schema Markup in 60 Seconds",
+    title: "Your Schema Markup, Fixed in 60 Seconds",
     description:
-      "Missing schema means Google can't understand your business. Our wizard generates valid JSON-LD in 3 clicks — no developer needed.",
+      "Missing schema means Google can't understand your business. Our wizard generates valid JSON-LD for you in 3 clicks — no developer needed.",
     stat: "9 schema types supported",
     image: "/cards/ai-ready.jpg",
     statTip: "Schema is the technical code that tells Google what your business does. Without it, you are invisible in rich results and AI answers.",
@@ -81,7 +81,7 @@ const features: {
     icon: FileText,
     title: "AI-Powered Local Landing Pages",
     description:
-      "Generate SEO-optimized, city-specific content with real local landmarks and entities. Streamed in real-time with a live typing experience.",
+      "We generate SEO-optimized, city-specific content with real local landmarks and entities. Streamed in real-time with a live typing experience.",
     stat: "1,200 words in 40 seconds",
     image: "/cards/content.jpg",
     statTip: "City-specific landing pages rank for local searches — the #1 way new customers find you. AI generates them in seconds, not weeks.",
@@ -90,10 +90,10 @@ const features: {
     icon: Eye,
     title: "Your Competitors Don't Sleep. Neither Do We.",
     description:
-      "Weekly auto-scans track your Trust Stack score, monitor competitor moves, and email you when anything changes. We watch so you don't have to — and every scan links to a one-click Fix Everything action.",
+      "Weekly auto-scans track your Trust Stack score, monitor competitor moves, and email you when anything changes. We watch so you don't have to — and every scan links to a one-click action we handle for you.",
     stat: "Weekly auto-monitoring",
     image: "/cards/watchdog.jpg",
-    statTip: "Set it and forget it. We scan your market weekly, detect competitor moves, and email you only when something needs your attention.",
+    statTip: "Set it and forget it. We scan your market weekly, detect competitor moves, and email you only when something needs attention — with the next step already queued up.",
   },
 ];
 
@@ -161,36 +161,36 @@ const storyChapters = [
     description:
       "Geothority scans your entire local presence and shows you what's working, what's broken, and where competitors are beating you. No more guessing.",
     points: [
-      "5-layer Trust Stack score with ranked fix order",
+      "5-layer Trust Stack score with prioritized action plan",
       "Directory, reputation, geo-content, and AI mention coverage",
-      "Signal gaps surfaced as actions, not vague advice",
+      "Signal gaps surfaced as specific actions we can handle for you",
     ],
     pointTips: [
-      "Your Trust Stack score ranks all 5 authority layers so you fix what matters most first.",
+      "Your Trust Stack score ranks all 5 authority layers so we know exactly what to handle first for maximum impact.",
       "We check directories, reviews, local content, and AI mentions so you see the full picture.",
-      "Every gap comes with a specific action, not vague advice. You always know the next step.",
+      "Every gap comes with a specific action we can take for you — not vague advice. You always know the next step.",
     ],
     metric: "Signal coverage across 68+ sources",
-    metricTip: "We monitor 68+ directories, AI platforms, and review sites so nothing slips through the cracks.",
+    metricTip: "We monitor 68+ directories, AI platforms, and review sites for you so nothing slips through the cracks.",
     icon: Radar,
   },
   {
     eyebrow: "Deploy",
-    title: "Fix problems fast — we generate what you need, ready to deploy.",
+    title: "We handle problems fast — generating exactly what you need, ready to deploy.",
     description:
-      "Instead of hiring agencies, wrestling with spreadsheets, or writing content from scratch, you generate schema, local pages, and listing fixes from one dashboard — in minutes, not weeks.",
+      "Instead of hiring agencies, wrestling with spreadsheets, or writing content from scratch, we generate your schema, local pages, and listing fixes from one dashboard — in minutes, not weeks.",
     points: [
       "Schema wizard and AI overview optimization",
       "Entity-rich local pages with real-time generation",
       "Listing sync and fix workflows designed for speed",
     ],
     pointTips: [
-      "Our 3-click schema wizard generates search-engine-ready code. We also optimize for AI answer engines.",
+      "Our 3-click schema wizard generates search-engine-ready code for you. We also optimize your presence for AI answer engines.",
       "AI writes city-specific pages with real local landmarks — content that Google and AI assistants trust.",
-      "Fix listing errors and sync across 50+ directories from one dashboard.",
+      "We fix listing errors and sync across 50+ directories from one dashboard.",
     ],
-    metric: "From issue found to fix deployed in minutes",
-    metricTip: "Most fixes take 2-3 clicks. No waiting for an agency, no hiring a developer.",
+    metric: "From issue found to handled in minutes",
+    metricTip: "Most fixes take 2-3 clicks and we handle the rest. No waiting for an agency, no hiring a developer.",
     icon: ScanSearch,
   },
   {
@@ -205,7 +205,7 @@ const storyChapters = [
     ],
     pointTips: [
       "Every week we re-scan your market. If anything changes, you get an email instantly.",
-      "See a competitor move? We link you to a one-click response so you can match it the same day.",
+      "See a competitor move? We link you to a one-click response so we can match it the same day.",
       "Every metric ties to a real business outcome — more calls, more visibility, more authority.",
     ],
     metric: "Fresh data every week, not a stale report",
@@ -406,11 +406,11 @@ function CommandSurface() {
               <div>
                 <div className="flex items-center gap-1.5">
                 <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Scan summary</div>
-                <GeoTooltip tip="Live intelligence from your latest scan. Unresolved gaps are ranked by impact so you fix what matters first." side="right" iconClassName="w-3 h-3" />
+                <GeoTooltip tip="Live intelligence from your latest scan. Unresolved gaps are ranked by impact so we handle what matters first." side="right" iconClassName="w-3 h-3" />
               </div>
                 <div className="mt-2 text-sm text-white/72">12 issues found, 4 high priority</div>
               </div>
-              <div className="flex items-center gap-1 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Fix first <GeoTooltip tip="High-impact issues that will move the needle most if you fix them first." side="left" iconClassName="w-2.5 h-2.5" /></div>
+              <div className="flex items-center gap-1 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Handle first <GeoTooltip tip="High-impact issues that will move the needle most — we handle them first." side="left" iconClassName="w-2.5 h-2.5" /></div>
             </div>
           </div>
         </div>
@@ -480,11 +480,11 @@ export default function HomePage() {
             <SectionEyebrow>Local SEO, simplified</SectionEyebrow>
 
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[0.96] tracking-[-0.05em] text-white sm:text-5xl lg:text-[4.5rem] xl:text-[5.35rem]">
-              Get found locally — on Google, Maps, and AI — with one clear view of what to fix.
+              Get found locally — on Google, Maps, and AI — we handle the SEO work for you.
             </h1>
 
             <p className="mt-5 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8 text-white/58 sm:text-[1.15rem]">
-              Geothority scans your business across Google, directories, reviews, and AI platforms — then shows you exactly what to fix next. We handle the hard parts so you don&apos;t have to. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
+              Geothority scans your business across Google, directories, reviews, and AI platforms, then shows what&apos;s holding you back and helps get it handled for you. We take on the hard parts so you can stay focused on running the business. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -510,7 +510,7 @@ export default function HomePage() {
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3 text-[11px] uppercase tracking-[0.2em] text-white/32">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Trust map active <GeoTooltip tip="Your Trust Stack map updates with every scan, showing which authority layers are strong and which need attention." iconClassName="w-2.5 h-2.5" /></span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Trust map active <GeoTooltip tip="Your Trust Stack map updates with every scan, showing which authority layers are strong and which we need to address." iconClassName="w-2.5 h-2.5" /></span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Competitive drift tracked <GeoTooltip tip="We monitor competitor movements weekly and alert you when they gain ground in your market." iconClassName="w-2.5 h-2.5" /></span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">AI recommendation surfaces monitored <GeoTooltip tip="ChatGPT, Perplexity, and Google AI Overviews are checked for your business mentions so you know if AI recommends you." iconClassName="w-2.5 h-2.5" /></span>
             </div>
@@ -529,7 +529,7 @@ export default function HomePage() {
         <section className="py-16 sm:py-20 bg-[#0f1117]/30">
           <div className="max-w-5xl mx-auto px-4 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">How It Works</h2>
-            <p className="text-lg text-gray-400 mb-16">Three steps to local search dominance</p>
+            <p className="text-lg text-gray-400 mb-16">We handle local search in three steps</p>
 
             <div className="grid sm:grid-cols-3 gap-8">
               <div className="text-center">
@@ -538,7 +538,7 @@ export default function HomePage() {
                 </div>
                 <div className="text-xs font-semibold text-emerald-400 mb-2">STEP 1</div>
                 <h3 className="text-lg font-bold mb-2">We Scan</h3>
-                <p className="text-sm text-gray-400">Enter your URL and we analyze your entire local SEO presence across 68+ directories and 3 AI platforms in 90 seconds.</p>
+                <p className="text-sm text-gray-400">Enter your URL and we analyze your entire local SEO presence across 68+ directories and 3 AI platforms in 90 seconds — no effort on your part.</p>
               </div>
 
               <div className="text-center">
@@ -546,8 +546,8 @@ export default function HomePage() {
                   <Zap className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="text-xs font-semibold text-emerald-400 mb-2">STEP 2</div>
-                <h3 className="text-lg font-bold mb-2">We Fix</h3>
-                <p className="text-sm text-gray-400">One click generates your missing schema, FAQ content, meta tags, and AI-optimized markup — and syncs your listings to 50+ directories automatically.</p>
+                <h3 className="text-lg font-bold mb-2">We Handle</h3>
+                <p className="text-sm text-gray-400">One click and we generate your missing schema, FAQ content, meta tags, and AI-optimized markup — and sync your listings to 50+ directories automatically.</p>
               </div>
 
               <div className="text-center">
@@ -571,16 +571,16 @@ export default function HomePage() {
               <div>
                 <SectionEyebrow>Trust Stack 2.0</SectionEyebrow>
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
-                  One score that tells you what to fix first — and how fast you&apos;re improving.
+                  One score that tells us what to handle first — and how fast you&apos;re improving.
                 </h2>
                 <p className="mt-4 max-w-xl text-base leading-7 text-white/62 sm:text-lg">
-                  The Trust Stack scores your business across 5 key areas and ranks your fixes by impact. No more guessing what matters — you&apos;ll always know the next step.
+                  The Trust Stack scores your business across 5 key areas and ranks the highest-impact actions for you. No more guessing what matters — we always know the next step.
                 </p>
                 <div className="mt-6 space-y-3 text-sm text-white/72">
                   {[
                     "Technical foundation — is your site set up for Google?",
                     "Listings, content, reviews, and AI visibility — all scored",
-                    "Prioritized fixes so you always know what to do next",
+                    "Prioritized action plan so we always know what to handle next",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
                       <span className="mt-1 h-2 w-2 rounded-full bg-[#7ce6c7]" />
@@ -640,8 +640,8 @@ export default function HomePage() {
 
                     <div className="mt-5 rounded-[22px] border border-white/8 bg-black/20 p-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Fix these first</div>
-                        <GeoTooltip tip="Your ranked action queue — fix these in order for the fastest visibility gains." side="right" iconClassName="w-3 h-3" />
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">We handle these first</div>
+                        <GeoTooltip tip="Your ranked action queue — we handle these in order for the fastest visibility gains." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {[
@@ -661,7 +661,7 @@ export default function HomePage() {
                     <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                       <div className="flex items-center gap-1.5">
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">What&apos;s helping vs. hurting</div>
-                        <GeoTooltip tip="Shows which authority layers are actively improving your rankings and which are holding you back. Fix the bottlenecks first." side="right" iconClassName="w-3 h-3" />
+                        <GeoTooltip tip="Shows which authority layers are actively improving your rankings and which are holding you back. We tackle the bottlenecks first." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 flex items-center gap-3">
                         <div className="h-16 w-16 rounded-full border border-white/10 bg-[#0b1726] flex items-center justify-center">
@@ -680,7 +680,7 @@ export default function HomePage() {
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(143,148,255,0.09),rgba(255,255,255,0.03))] p-4">
                       <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Operator reading</div>
-                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities — so you always know where you stand and what to do next.</p>
+                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities — so you always know where you stand and what we&apos;re handling next.</p>
                     </div>
                   </div>
                 </div>
@@ -697,10 +697,10 @@ export default function HomePage() {
             <div className="mb-16 max-w-3xl">
               <SectionEyebrow>How it works</SectionEyebrow>
               <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Three steps: <span className="text-white/72">scan, fix, monitor.</span>
+                Three steps: <span className="text-white/72">we scan, we handle, we monitor.</span>
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Geothority isn&apos;t a pile of disconnected tools — it&apos;s one system that finds your problems, fixes them, and keeps watching.
+                Geothority isn&apos;t a pile of disconnected tools — it&apos;s one system that finds your problems, handles them for you, and keeps watching.
               </p>
             </div>
           </ScrollReveal>
@@ -895,10 +895,10 @@ export default function HomePage() {
             <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_24px_100px_rgba(5,10,18,0.45)] sm:px-10 sm:py-14">
               <SectionEyebrow>Get your free scan</SectionEyebrow>
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                See your Trust Stack score, local weak spots, and AI readiness — free, in 90 seconds.
+                See your Trust Stack score, local weak spots, and AI readiness — free, in 90 seconds. We&apos;ll show you exactly what we&apos;ll handle.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                No credit card. No sales call. Just a clear view of where you stand and what to fix next.
+                No credit card. No sales call. Just a clear view of where you stand and what we&apos;ll handle next.
               </p>
               <Link
                 href="/signup"
