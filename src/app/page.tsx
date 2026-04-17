@@ -294,7 +294,7 @@ function CommandSurface() {
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-2 sm:gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
             {[
               ["Foundation", 61, 1],
               ["Trust", 74, 2],
@@ -329,7 +329,7 @@ function CommandSurface() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div className="geo-radar-grid relative mx-auto aspect-square w-full max-w-[220px] rounded-full border border-white/10">
+            <div className="geo-radar-grid relative mx-auto aspect-square w-full max-w-[220px] rounded-full border border-white/10 hidden sm:block">
               <div className="absolute inset-[12%] rounded-full border border-white/10" />
               <div className="absolute inset-[24%] rounded-full border border-white/10" />
               <div className="absolute inset-[36%] rounded-full border border-white/10" />
@@ -456,12 +456,12 @@ export default function HomePage() {
         </div>
 
         {mobileNav && (
-          <div className="md:hidden border-t border-white/5 bg-[#0a0a0f] px-4 py-4 space-y-3">
-            <Link href="#features" className="block text-sm text-gray-400" onClick={() => setMobileNav(false)}>Features</Link>
-            <Link href="/pricing" className="block text-sm text-gray-400">Pricing</Link>
-            <Link href="/faq" className="block text-sm text-gray-400">FAQ</Link>
-            <Link href="/login" className="block text-sm text-gray-400">Sign In</Link>
-            <Link href="/signup" className="block text-sm text-center font-medium bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg py-2">Get Free Scan</Link>
+          <div className="md:hidden border-t border-white/5 bg-[#0a0a0f] px-4 py-4 space-y-1">
+            <Link href="#features" className="block text-base py-3 text-gray-400" onClick={() => setMobileNav(false)}>Features</Link>
+            <Link href="/pricing" className="block text-base py-3 text-gray-400">Pricing</Link>
+            <Link href="/faq" className="block text-base py-3 text-gray-400">FAQ</Link>
+            <Link href="/login" className="block text-base py-3 text-gray-400">Sign In</Link>
+            <Link href="/signup" className="block text-base text-center font-medium bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg py-3 mt-2">Get Free Scan</Link>
           </div>
         )}
       </nav>
@@ -498,14 +498,14 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="mt-8 grid gap-2.5 sm:gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-8 grid gap-2.5 sm:gap-3 grid-cols-2 xl:grid-cols-4">
               <SignalChip label="Insurance operators" value="500+" tip="Over 500 insurance professionals rely on Geothority to manage their local search visibility and AI presence." />
               <SignalChip label="Authority signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
               <SignalChip label="Time to first scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
               <SignalChip label="AI surfaces monitored" value="3" tip="We track whether ChatGPT, Perplexity, and Google AI Overviews recommend your business when customers ask." />
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-3 text-[11px] uppercase tracking-[0.2em] text-white/32">
+            <div className="mt-6 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.2em] text-white/32">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Trust map active <GeoTooltip tip="Your Trust Stack map updates with every scan, showing which authority layers are strong and which we need to address." iconClassName="w-2.5 h-2.5" /></span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Competitive drift tracked <GeoTooltip tip="We monitor competitor movements weekly and alert you when they gain ground in your market." iconClassName="w-2.5 h-2.5" /></span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">AI recommendation surfaces monitored <GeoTooltip tip="ChatGPT, Perplexity, and Google AI Overviews are checked for your business mentions so you know if AI recommends you." iconClassName="w-2.5 h-2.5" /></span>
@@ -610,7 +610,7 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 grid gap-3 sm:grid-cols-5">
+                    <div className="mt-6 grid gap-3 grid-cols-3 sm:grid-cols-5">
                       {[
                         ["Foundation", "61", 1],
                         ["Trust", "74", 2],

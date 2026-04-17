@@ -11,13 +11,13 @@ interface InfoTooltipProps {
   side?: "top" | "bottom" | "left" | "right";
   className?: string;
   iconClassName?: string;
-  /** Delay in ms before showing (default 200) */
+  /** Delay in ms before showing (default 200) - kept for API compat */
   delayDuration?: number;
   maxWidth?: string;
 }
 
 /**
- * A small ⓘ icon that shows a rich tooltip on hover/tap.
+ * A small ⓘ icon that shows a rich tooltip on hover (desktop) or tap (mobile).
  * Wraps in its own TooltipProvider so it's self-contained.
  */
 export function InfoTooltip({
@@ -35,11 +35,9 @@ export function InfoTooltip({
           <button
             type="button"
             className={cn(
-              "inline-flex items-center justify-center w-4 h-4 rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-electric-500",
+              "inline-flex items-center justify-center min-w-[24px] min-h-[24px] w-6 h-6 rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-electric-500",
               className
             )}
-            // Let tap events toggle on mobile
-            onTouchEnd={(e) => e.stopPropagation()}
           >
             <Info className={cn("w-3.5 h-3.5", iconClassName)} />
             <span className="sr-only">More information</span>

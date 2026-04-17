@@ -260,9 +260,9 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     <div className="border border-white/10 rounded-xl bg-[#0f1117] overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-5 text-left hover:bg-white/5 transition-colors min-h-[56px]"
       >
-        <span className="text-white font-medium pr-4">{q}</span>
+        <span className="text-white font-medium pr-4 text-[15px] leading-relaxed">{q}</span>
         {open ? (
           <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0" />
         ) : (
