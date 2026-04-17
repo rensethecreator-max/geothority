@@ -129,7 +129,7 @@ const testimonials = [
 ];
 
 const stats = [
-  { value: "500+", label: "Insurance operators" },
+  { value: "500+", label: "Insurance professionals" },
   { value: "68+", label: "Authority signals mapped" },
   { value: "90s", label: "Time to first scan" },
   { value: "3", label: "AI surfaces monitored" },
@@ -139,7 +139,7 @@ const pricingTiers = [
   { name: "Free", price: 0, desc: "See your authority gaps", tip: "Get your free Trust Stack scan and see where you stand. No credit card needed - just clarity." },
   { name: "Starter", price: 97, desc: "Best for individual agents", tip: "One business location fully managed: scans, fixes, schema, content, and weekly monitoring." },
   { name: "Growth", price: 197, desc: "Most popular", highlighted: true, tip: "Everything in Starter plus competitor tracking, AI optimization, priority support, and unlimited content generation." },
-  { name: "Authority", price: 297, desc: "Multi-location control", tip: "Manage 2+ locations from one dashboard. Agency-grade tools with volume pricing for multi-location operators." },
+  { name: "Authority", price: 297, desc: "Multi-location control", tip: "Manage 2+ locations from one dashboard. Agency-grade tools with volume pricing for businesses with multiple locations." },
 ];
 
 const commandMetrics = [
@@ -499,7 +499,7 @@ export default function HomePage() {
             </div>
 
             <div className="mt-8 grid gap-2.5 sm:gap-3 grid-cols-2 xl:grid-cols-4">
-              <SignalChip label="Insurance operators" value="500+" tip="Over 500 insurance professionals rely on Geothority to manage their local search visibility and AI presence." />
+              <SignalChip label="Insurance professionals" value="500+" tip="Over 500 insurance professionals rely on Geothority to manage their local search visibility and AI presence." />
               <SignalChip label="Authority signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
               <SignalChip label="Time to first scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
               <SignalChip label="AI surfaces monitored" value="3" tip="We track whether ChatGPT, Perplexity, and Google AI Overviews recommend your business when customers ask." />
@@ -543,7 +543,7 @@ export default function HomePage() {
                 </div>
                 <div className="text-xs font-semibold text-emerald-400 mb-2">STEP 2</div>
                 <h3 className="text-lg font-bold mb-2">We Handle</h3>
-                <p className="text-sm text-gray-400">With one approval, we generate your missing schema, FAQ content, meta tags, and AI-optimized markup, then sync your listings to 50+ directories automatically.</p>
+                <p className="text-sm text-gray-400">With one approval, we generate your missing schema, FAQ content, meta tags, and search-ready markup, then sync your listings to 50+ directories automatically.</p>
               </div>
 
               <div className="text-center">
@@ -675,7 +675,7 @@ export default function HomePage() {
                       <div className="mt-2 text-sm text-white/55">Estimated impact: +7 to +11 visibility points</div>
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(143,148,255,0.09),rgba(255,255,255,0.03))] p-4">
-                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Operator reading</div>
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Weekly briefing</div>
                       <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities, so you always know where you stand and what we&apos;re handling next.</p>
                     </div>
                   </div>
@@ -766,7 +766,7 @@ export default function HomePage() {
             <div className="mb-14 max-w-3xl">
               <SectionEyebrow>Real results from real businesses</SectionEyebrow>
               <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
-                Trusted by insurance operators who care about measurable territory gains.
+                Trusted by insurance professionals who care about measurable territory gains.
               </h2>
               <p className="mt-5 text-lg leading-8 text-white/60">
                 These are actual results from Geothority users - not marketing fluff.
@@ -799,7 +799,7 @@ export default function HomePage() {
 
                   <div className="grid grid-cols-2 gap-3 border-t border-white/8 pt-5">
                     <div>
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Operator</div>
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Agent</div>
                       <div className="mt-2 text-sm font-medium text-white">{t.name}</div>
                       <div className="mt-1 text-sm text-white/45">{t.title}</div>
                     </div>
