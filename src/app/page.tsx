@@ -471,7 +471,7 @@ export default function HomePage() {
       </nav>
 
       {/* ─── Hero ─── */}
-      <section className="geo-hero relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
+      <section className="geo-hero relative overflow-hidden pt-28 pb-16 sm:pt-40 sm:pb-24">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(92,230,186,0.14),_transparent_34%),radial-gradient(circle_at_85%_20%,_rgba(110,116,255,0.14),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
         <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-40" />
 
@@ -479,15 +479,15 @@ export default function HomePage() {
           <div>
             <SectionEyebrow>Territorial intelligence for local authority</SectionEyebrow>
 
-            <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[0.94] tracking-[-0.06em] text-white sm:text-6xl lg:text-[5.35rem]">
+            <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[0.96] tracking-[-0.05em] text-white sm:text-5xl lg:text-[4.5rem] xl:text-[5.35rem]">
               Dominate local search and AI with a command view of your market.
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/62 sm:text-[1.22rem]">
+            <p className="mt-5 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8 text-white/58 sm:text-[1.15rem]">
               Geothority maps trust, listings, content, reviews, and AI visibility into one calm operating surface, then tells you exactly what to fix next. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
             </p>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
                 href="/signup"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] px-7 py-4 text-base font-semibold text-[#071019] transition-all hover:translate-y-[-1px] hover:shadow-[0_18px_45px_rgba(92,230,186,0.22)]"
@@ -502,7 +502,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-8 grid gap-2.5 sm:gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <SignalChip label="Insurance operators" value="500+" tip="Over 500 insurance professionals rely on Geothority to manage their local search visibility and AI presence." />
               <SignalChip label="Authority signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
               <SignalChip label="Time to first scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds — no setup, no waiting." />
@@ -526,7 +526,7 @@ export default function HomePage() {
 
       {/* ─── How It Works ─── */}
       <ScrollReveal animation="fade-up">
-        <section className="py-20 bg-[#0f1117]/30">
+        <section className="py-16 sm:py-20 bg-[#0f1117]/30">
           <div className="max-w-5xl mx-auto px-4 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">How It Works</h2>
             <p className="text-lg text-gray-400 mb-16">Three steps to local search dominance</p>
@@ -691,7 +691,7 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── Story chapters ─── */}
-      <section id="story" className="py-20 sm:py-28">
+      <section id="story" className="py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-16 max-w-3xl">
@@ -764,7 +764,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Proof ─── */}
-      <section className="bg-[#0e141f]/55 py-20 sm:py-28">
+      <section className="bg-[#0e141f]/55 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-14 max-w-3xl">
@@ -778,7 +778,7 @@ export default function HomePage() {
             </div>
           </ScrollReveal>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-5 lg:grid-cols-3">
             {testimonials.map((t, i) => (
               <ScrollReveal key={i} animation="fade-up" delay={i * 120}>
                 <div className="geo-proof-card h-full rounded-[30px] border border-white/10 bg-white/[0.03] p-7">
@@ -821,7 +821,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Pricing Preview ─── */}
-      <section className="py-20 sm:py-28">
+      <section className="py-16 sm:py-24">
         <div className="mx-auto max-w-6xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 text-center">
@@ -887,7 +887,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="relative overflow-hidden py-20 sm:py-28">
+      <section className="relative overflow-hidden py-16 sm:py-24">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(92,230,186,0.14),_transparent_35%),linear-gradient(180deg,rgba(12,19,33,0.25),rgba(10,10,15,0.02))]" />
         <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-30" />
         <div className="relative mx-auto max-w-5xl px-4">

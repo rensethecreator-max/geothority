@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Check, X, Shield, ArrowRight, Sparkles, ChevronDown, ChevronUp, Building2, Star } from "lucide-react";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { GeoTooltip } from "@/components/ui/geo-tooltip";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -215,16 +216,23 @@ function FeatureRow({
   starter,
   growth,
   authority,
+  tip,
 }: {
   label: string;
   free: FeatureValue;
   starter: FeatureValue;
   growth: FeatureValue;
   authority: FeatureValue;
+  tip?: string;
 }) {
   return (
     <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-      <td className="py-3 pr-4 text-sm text-gray-400 font-medium">{label}</td>
+      <td className="py-3 pr-4 text-sm text-gray-400 font-medium">
+        <span className="inline-flex items-center gap-1.5">
+          {label}
+          {tip && <GeoTooltip tip={tip} side="right" iconClassName="w-3 h-3 opacity-40 hover:opacity-100 transition-opacity" />}
+        </span>
+      </td>
       <td className="py-3 text-center px-2"><FeatureCell value={free} /></td>
       <td className="py-3 text-center px-2"><FeatureCell value={starter} /></td>
       <td className="py-3 text-center px-2 relative">
@@ -303,7 +311,7 @@ export default function PricingPage() {
               Plans for every local business
             </div>
 
-            <h1 className="text-5xl sm:text-6xl font-bold tracking-tight mb-5">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-5">
               <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
                 Simple, Transparent
               </span>{" "}
@@ -311,7 +319,7 @@ export default function PricingPage() {
               <span className="text-white">Pricing</span>
             </h1>
 
-            <p className="text-xl text-gray-400 mb-10">
+            <p className="text-lg sm:text-xl text-gray-400 mb-10">
               Start free. Upgrade when you&apos;re ready. Cancel anytime.
             </p>
 
@@ -418,14 +426,17 @@ export default function PricingPage() {
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.dailyScans} daily scans
+                    <GeoTooltip tip="More scans means more up-to-date data. Re-scan whenever you make changes to see the impact immediately." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     Trust Stack Score
+                    <GeoTooltip tip="A single 0–100 score across 5 authority layers that tells you how strong your local presence is at a glance." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.competitorAnalysis} competitor analysis
+                    <GeoTooltip tip="See how your local authority compares to competitors. Alerts notify you when they make a move." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
 
                   {/* Citations */}
@@ -433,6 +444,7 @@ export default function PricingPage() {
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     Citation check (18 dirs)
+                    <GeoTooltip tip="We verify your business info across 18 major directories so Google trusts your listings." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   <li className="flex items-center gap-2.5 text-sm">
                     {plan.features.listingSync ? (
@@ -443,11 +455,13 @@ export default function PricingPage() {
                     <span className={plan.features.listingSync ? "text-gray-300" : "text-gray-600"}>
                       Listing sync (50+ dirs)
                     </span>
+                    <GeoTooltip tip="Automatically push correct info to 50+ directories — no manual updates needed." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   {plan.features.napMonitoring !== "None" && (
                     <li className="flex items-center gap-2.5 text-sm text-gray-300">
                       <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                       NAP monitoring ({plan.features.napMonitoring.toLowerCase()})
+                      <GeoTooltip tip="We watch your Name, Address, and Phone listings and alert you the moment something changes." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                     </li>
                   )}
 
@@ -456,10 +470,12 @@ export default function PricingPage() {
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.aiContentGen} AI content
+                    <GeoTooltip tip="AI writes city-specific pages and local content that Google trusts. More generations = more pages ranking for more searches." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.aiOverviewChecker} AI overview checker
+                    <GeoTooltip tip="Checks if ChatGPT, Perplexity, and Google AI mention your business when customers search for your services." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
 
                   {/* Reports */}
@@ -473,10 +489,12 @@ export default function PricingPage() {
                     <span className={plan.features.pdfReports !== "None" ? "text-gray-300" : "text-gray-600"}>
                       {plan.features.pdfReports !== "None" ? `${plan.features.pdfReports} PDF reports` : "No PDF reports"}
                     </span>
+                    <GeoTooltip tip="Download professional reports. Branded includes your logo; White-label lets you use your own branding entirely." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.scoreHistory} score history
+                    <GeoTooltip tip="See how your Trust Stack has improved over time — proof your efforts are working." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                 </ul>
               </div>
@@ -510,32 +528,32 @@ export default function PricingPage() {
                 </thead>
                 <tbody>
                   <SectionHeader label="Scanning & Analysis" />
-                  <FeatureRow label="Daily scans" free="3" starter="10" growth="Unlimited" authority="Unlimited" />
-                  <FeatureRow label="Trust Stack Score" free={true} starter={true} growth={true} authority={true} />
-                  <FeatureRow label="Layer Breakdown" free={true} starter={true} growth={true} authority={true} />
-                  <FeatureRow label="Quick Wins with Priority" free={true} starter={true} growth={true} authority={true} />
-                  <FeatureRow label="Competitor Analysis" free="Basic" starter="Full" growth="Full + Alerts" authority="Full + Alerts" />
+                  <FeatureRow label="Daily scans" free="3" starter="10" growth="Unlimited" authority="Unlimited" tip="More scans means more up-to-date data. Free gives you 3 daily scans to start; paid plans let you re-scan as often as you need." />
+                  <FeatureRow label="Trust Stack Score" free={true} starter={true} growth={true} authority={true} tip="Your Trust Stack is a single 0–100 score across 5 authority layers — Foundation, Trust Pages, Geo Content, Reviews, and AI Optimization. It tells you at a glance how strong your local presence is." />
+                  <FeatureRow label="Layer Breakdown" free={true} starter={true} growth={true} authority={true} tip="See exactly how you score on each of the 5 Trust Stack layers, so you know which specific area to fix first for the biggest ranking gains." />
+                  <FeatureRow label="Quick Wins with Priority" free={true} starter={true} growth={true} authority={true} tip="We rank every issue by impact and effort. Quick Wins are the fixes that move your score the most with the least work — your fastest path to better visibility." />
+                  <FeatureRow label="Competitor Analysis" free="Basic" starter="Full" growth="Full + Alerts" authority="Full + Alerts" tip="See how your local authority compares to competitors. Full adds detailed side-by-side breakdowns; Alerts emails you when a competitor makes a move." />
 
                   <SectionHeader label="Citations & Listings" />
-                  <FeatureRow label="Citation Check (18 dirs)" free={true} starter={true} growth={true} authority={true} />
-                  <FeatureRow label="Listing Sync (50+ dirs)" free={false} starter={false} growth={true} authority={true} />
-                  <FeatureRow label="Fix This Direct Links" free={true} starter={true} growth={true} authority={true} />
-                  <FeatureRow label="NAP Monitoring" free="None" starter="Weekly" growth="Daily" authority="Real-time" />
+                  <FeatureRow label="Citation Check (18 dirs)" free={true} starter={true} growth={true} authority={true} tip="We verify your business name, address, and phone across 18 major directories like Google, Yelp, Bing, and Apple Maps. Inconsistent listings confuse Google and cost you rankings." />
+                  <FeatureRow label="Listing Sync (50+ dirs)" free={false} starter={false} growth={true} authority={true} tip="Automatically push correct business info to 50+ directories through the Foursquare data network — covering Bing, Uber, Samsung, HERE Maps, and more. No manual updates needed." />
+                  <FeatureRow label="Fix This Direct Links" free={true} starter={true} growth={true} authority={true} tip="Every issue we find comes with a one-click link that takes you straight to the fix — no hunting through dashboards or guessing what to do next." />
+                  <FeatureRow label="NAP Monitoring" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="NAP stands for Name, Address, Phone. We watch your listings around the clock and alert you the moment something changes — so your info stays consistent everywhere." />
 
                   <SectionHeader label="Content & AI" />
-                  <FeatureRow label="AI Content Generation" free="1 / mo" starter="5 / mo" growth="Unlimited" authority="Unlimited" />
-                  <FeatureRow label="Schema Generator" free={true} starter={true} growth={true} authority={true} />
-                  <FeatureRow label="AI Overview Checker" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" />
+                  <FeatureRow label="AI Content Generation" free="1 / mo" starter="5 / mo" growth="Unlimited" authority="Unlimited" tip="AI writes city-specific landing pages, service descriptions, and local content that Google and AI assistants trust. More generations means more pages ranking for more local searches." />
+                  <FeatureRow label="Schema Generator" free={true} starter={true} growth={true} authority={true} tip="Schema is the technical code that tells search engines exactly what your business does. Our 3-click wizard generates it for you — no developer needed." />
+                  <FeatureRow label="AI Overview Checker" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="Checks whether ChatGPT, Perplexity, and Google AI Overviews mention your business when customers ask. Full + Monitor means we track changes over time and alert you." />
 
                   <SectionHeader label="Monitoring & Alerts" />
-                  <FeatureRow label="GBP Monitor" free="None" starter="Weekly" growth="Daily" authority="Real-time" />
-                  <FeatureRow label="Competitor Alerts" free={false} starter={false} growth={true} authority={true} />
-                  <FeatureRow label="Score History" free="30 days" starter="90 days" growth="1 year" authority="Unlimited" />
+                  <FeatureRow label="GBP Monitor" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="Your Google Business Profile is the most important listing you have. We watch it for changes, suspensions, and optimization opportunities so you never lose ground." />
+                  <FeatureRow label="Competitor Alerts" free={false} starter={false} growth={true} authority={true} tip="Get an email the moment a competitor publishes new content, gains reviews, or makes a move in your market — so you can respond the same day instead of finding out weeks later." />
+                  <FeatureRow label="Score History" free="30 days" starter="90 days" growth="1 year" authority="Unlimited" tip="See how your Trust Stack score has changed over time. Longer history means better trend tracking and proof that your efforts are paying off." />
 
                   <SectionHeader label="Support" />
-                  <FeatureRow label="Will AI Assistant" free={true} starter={true} growth={true} authority={true} />
-                  <FeatureRow label="Email Support" free="None" starter="✓" growth="Priority" authority="Dedicated" />
-                  <FeatureRow label="PDF Reports" free="None" starter="✓" growth="Branded" authority="White-label" />
+                  <FeatureRow label="Will AI Assistant" free={true} starter={true} growth={true} authority={true} tip="An AI assistant that answers your local SEO questions, explains your scan results, and suggests next steps — like having a local SEO expert on call 24/7." />
+                  <FeatureRow label="Email Support" free="None" starter="✓" growth="Priority" authority="Dedicated" tip="Priority means faster response times. Dedicated means a named contact who knows your account and business goals." />
+                  <FeatureRow label="PDF Reports" free="None" starter="✓" growth="Branded" authority="White-label" tip="Download professional reports to share with clients or stakeholders. Branded includes your logo; White-label lets you remove all Geothority branding and use your own." />
                 </tbody>
               </table>
             </div>
