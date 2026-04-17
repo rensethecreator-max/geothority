@@ -79,9 +79,18 @@ function TooltipTrigger({
     };
   }, [open, setOpen]);
 
-  // Hover support for desktop
-  const handleMouseEnter = React.useCallback(() => setOpen(true), [setOpen]);
-  const handleMouseLeave = React.useCallback(() => setOpen(false), [setOpen]);
+  // Hover support only for true desktop pointer devices
+  const canHover = React.useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  }, []);
+
+  const handleMouseEnter = React.useCallback(() => {
+    if (canHover) setOpen(true);
+  }, [canHover, setOpen]);
+  const handleMouseLeave = React.useCallback(() => {
+    if (canHover) setOpen(false);
+  }, [canHover, setOpen]);
 
   return (
     <div
@@ -107,7 +116,7 @@ const TooltipContent = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "absolute z-50 max-w-[min(300px,calc(100vw-2rem))] rounded-xl bg-gray-900 border border-white/10 px-3 py-2.5 text-xs text-white shadow-xl shadow-black/40",
+        "absolute z-[80] max-w-[min(280px,calc(100vw-2.5rem))] rounded-xl border border-white/10 bg-gray-900 px-3 py-2.5 text-xs leading-relaxed text-white shadow-xl shadow-black/50 break-words",
         "animate-in fade-in-0 zoom-in-95",
         sideClasses[side],
         className

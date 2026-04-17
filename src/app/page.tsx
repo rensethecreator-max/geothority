@@ -5,13 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowRight,
-  Search,
   Shield,
   Brain,
   Code,
   FileText,
   Eye,
-  Zap,
   Star,
   MapPin,
   Menu,
@@ -278,7 +276,7 @@ function CommandSurface() {
         </div>
       </div>
 
-      <div className="relative grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="relative grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-4">
           <div className="rounded-[24px] border border-white/10 bg-black/20 p-4 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
           <div className="mb-4 flex items-center justify-between">
@@ -472,12 +470,12 @@ export default function HomePage() {
           <div>
             <SectionEyebrow>Local SEO, simplified</SectionEyebrow>
 
-            <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[0.96] tracking-[-0.05em] text-white sm:text-5xl lg:text-[4.5rem] xl:text-[5.35rem]">
-              Get found locally on Google, Maps, and AI. We handle the SEO work for you.
+            <h1 className="mt-6 max-w-2xl text-4xl font-semibold leading-[0.98] tracking-[-0.05em] text-white sm:text-5xl lg:text-[4rem] xl:text-[4.6rem]">
+              Get found locally on Google, Maps, and AI, without babysitting another SEO tool.
             </h1>
 
-            <p className="mt-5 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8 text-white/58 sm:text-[1.15rem]">
-              Geothority scans your business across Google, directories, reviews, and AI platforms, identifies what&apos;s holding you back, and helps get it handled for you. We take on the hard parts so you can stay focused on running the business. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
+            <p className="mt-5 max-w-xl text-base leading-7 text-white/58 sm:text-lg sm:leading-8">
+              Geothority scans your local presence, shows you what is broken, and helps get the highest-impact fixes handled for you. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -495,22 +493,15 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="mt-8 hidden sm:grid gap-3 grid-cols-4">
-              <SignalChip label="Insurance professionals" value="500+" tip="Over 500 insurance professionals rely on Geothority to manage their local search visibility and AI presence." />
+            <div className="mt-8 hidden sm:grid gap-3 grid-cols-3 max-w-2xl">
               <SignalChip label="Authority signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
               <SignalChip label="Time to first scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
               <SignalChip label="Search platforms" value="3" tip="We track whether ChatGPT, Perplexity, and Google AI Overviews recommend your business when customers ask." />
             </div>
 
-            <div className="mt-8 sm:hidden grid gap-2 grid-cols-2">
+            <div className="mt-8 grid gap-2 grid-cols-2 sm:hidden">
               <SignalChip label="Signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
               <SignalChip label="First scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
-            </div>
-
-            <div className="mt-5 hidden sm:flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.2em] text-white/32">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Trust map active <GeoTooltip tip="Your Trust Stack map updates with every scan, showing which authority layers are strong and which we need to address." iconClassName="w-2.5 h-2.5" /></span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Competitive drift tracked <GeoTooltip tip="We monitor competitor movements weekly and alert you when they gain ground in your market." iconClassName="w-2.5 h-2.5" /></span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">AI recommendations tracked <GeoTooltip tip="ChatGPT, Perplexity, and Google AI Overviews are checked so you know if AI recommends you." iconClassName="w-2.5 h-2.5" /></span>
             </div>
           </div>
 
@@ -522,40 +513,34 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── How It Works ─── */}
+      {/* ─── Quick flow summary ─── */}
       <ScrollReveal animation="fade-up">
-        <section className="py-16 sm:py-20 bg-[#0f1117]/30">
-          <div className="max-w-5xl mx-auto px-4 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">How It Works</h2>
-            <p className="text-lg text-gray-400 mb-16">We handle local search in three steps</p>
-
-            <div className="grid sm:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-6 h-6 text-emerald-400" />
+        <section className="py-10 sm:py-14 bg-[#0f1117]/25">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              {[
+                {
+                  step: '01',
+                  title: 'We scan',
+                  copy: 'We check your business across Google, directories, reviews, and AI surfaces in about 90 seconds.',
+                },
+                {
+                  step: '02',
+                  title: 'We prioritize',
+                  copy: 'You get a clear Trust Stack score and the highest-impact fixes to handle first.',
+                },
+                {
+                  step: '03',
+                  title: 'We keep watch',
+                  copy: 'Weekly monitoring keeps tabs on changes, competitor movement, and follow-up opportunities.',
+                },
+              ].map((item) => (
+                <div key={item.step} className="rounded-[24px] border border-white/8 bg-white/[0.03] px-5 py-5">
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#8ddccb]">Step {item.step}</div>
+                  <div className="mt-2 text-lg font-semibold text-white">{item.title}</div>
+                  <p className="mt-2 text-sm leading-6 text-white/58">{item.copy}</p>
                 </div>
-                <div className="text-xs font-semibold text-emerald-400 mb-2">STEP 1</div>
-                <h3 className="text-lg font-bold mb-2">We Scan</h3>
-                <p className="text-sm text-gray-400">Enter your URL and we analyze your entire local SEO presence across 68+ directories and 3 AI platforms in 90 seconds. There&apos;s almost no lift required from you.</p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-                  <Zap className="w-6 h-6 text-emerald-400" />
-                </div>
-                <div className="text-xs font-semibold text-emerald-400 mb-2">STEP 2</div>
-                <h3 className="text-lg font-bold mb-2">We Handle</h3>
-                <p className="text-sm text-gray-400">With one approval, we generate your missing schema, FAQ content, meta tags, and search-ready markup, then sync your listings to 50+ directories automatically.</p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-                  <Eye className="w-6 h-6 text-emerald-400" />
-                </div>
-                <div className="text-xs font-semibold text-emerald-400 mb-2">STEP 3</div>
-                <h3 className="text-lg font-bold mb-2">We Monitor</h3>
-                <p className="text-sm text-gray-400">Weekly auto-scans track your progress, monitor competitors, and alert you to changes. We watch so you don&apos;t have to.</p>
-              </div>
+              ))}
             </div>
           </div>
         </section>
