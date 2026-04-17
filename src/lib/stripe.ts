@@ -49,7 +49,7 @@ export const PLANS = {
     features: [
       "Everything in Growth",
       "Full trust stack dashboard",
-      "AI content engine (posts, FAQs, seasonal)",
+      "local page engine (posts, FAQs, seasonal)",
       "Unlimited competitor tracking",
       "White-label PDF reports",
       "Dedicated onboarding call",

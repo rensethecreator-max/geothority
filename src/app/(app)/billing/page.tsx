@@ -151,7 +151,7 @@ export default function BillingPortalPage() {
                 "Competitor monitoring & alerts",
                 "Full Trust Stack™ dashboard",
                 "Weekly ranking pulse reports",
-                "AI content generation",
+                "local page generation",
               ].map((feature) => (
                 <li key={feature} className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-electric-400 flex-shrink-0" />

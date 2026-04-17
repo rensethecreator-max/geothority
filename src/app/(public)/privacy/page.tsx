@@ -20,7 +20,7 @@ export default function PrivacyPage() {
                 <li><strong className="text-[var(--foreground)]">Account Information:</strong> Name, email address, and profile picture from your Google account when you sign in.</li>
                 <li><strong className="text-[var(--foreground)]">Business Information:</strong> Business name, website URL, city, and state that you provide during scans.</li>
                 <li><strong className="text-[var(--foreground)]">Scan Data:</strong> Results from website scans including scores, identified issues, and recommendations.</li>
-                <li><strong className="text-[var(--foreground)]">Generated Content:</strong> Landing pages and other content created through our AI content generator.</li>
+                <li><strong className="text-[var(--foreground)]">Generated Content:</strong> Landing pages and other content created through our local page generator.</li>
                 <li><strong className="text-[var(--foreground)]">Usage Data:</strong> How you interact with our application, including pages visited and features used.</li>
                 <li><strong className="text-[var(--foreground)]">Payment Information:</strong> Processed securely by Stripe. We never store credit card numbers.</li>
               </ul>

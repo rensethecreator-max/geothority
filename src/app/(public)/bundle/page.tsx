@@ -250,7 +250,7 @@ export default function BundlePage() {
                   Local SEO Scanner & Fixer
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-5">
-                  Trust Stack scoring, 68+ directory checks, AI mentions
+                  Trust Stack scoring, 68+ directory checks, AI recommendations
                   monitoring, schema generation, content creation, listing sync.
                   We scan, fix, and monitor - automatically.
                 </p>
@@ -320,7 +320,7 @@ export default function BundlePage() {
                   SEO Campaign Automation
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-5">
-                  Automated backlink building, AI content generation, topic
+                  Automated backlink building, local page generation, topic
                   clusters, and indexing. The engine that drives your local
                   authority on autopilot.
                 </p>

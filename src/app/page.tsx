@@ -64,7 +64,7 @@ const features: {
     title: "We Don't Just Check if AI Recommends You - We Make It Happen.",
     description:
       "ChatGPT, Perplexity, and Google AI Overviews are replacing traditional search. We check if they mention your business - then we generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
-    stat: "3 AI platforms checked",
+    stat: "3 search platforms tracked",
     badge: "Only on Geothority",
     image: "/cards/quickwin.jpg",
     statTip: "More people ask AI assistants for local recommendations. We make sure ChatGPT, Perplexity, and Google AI actually mention your business.",
@@ -132,7 +132,7 @@ const stats = [
   { value: "500+", label: "Insurance professionals" },
   { value: "68+", label: "Authority signals mapped" },
   { value: "90s", label: "Time to first scan" },
-  { value: "3", label: "AI platforms checked" },
+  { value: "3", label: "Search platforms tracked" },
 ];
 
 const pricingTiers = [
@@ -144,7 +144,7 @@ const pricingTiers = [
 
 const commandMetrics = [
   { label: "Trust Stack", value: "78", detail: "+14 this month", tip: "Your composite Trust Stack score across all 5 authority layers. Higher means more trust signals working for you in local search." },
-  { label: "AI mentions", value: "3/3", detail: "ChatGPT, Perplexity, Google", tip: "You are mentioned by all 3 major AI assistants when customers ask about your services. This is the new frontier of local search." },
+  { label: "AI recommendations", value: "3/3", detail: "ChatGPT, Perplexity, Google", tip: "You are recommended by all 3 major AI assistants when customers ask about your services. This is the new frontier of local search." },
   { label: "Competitor delta", value: "+22", detail: "ahead of local median", tip: "You are 22 points ahead of the average competitor in your market area. A positive delta means you are winning the authority game." },
 ];
 
@@ -152,7 +152,7 @@ const authoritySectors = [
   { name: "Northwest", score: 84, status: "Owned", tip: "Your visibility strength in the northwest area of your market - listings, content, and review coverage combined." },
   { name: "Central", score: 71, status: "Contested", tip: "The central core of your market where competition is fiercest. Contested means competitors are actively challenging your position." },
   { name: "South", score: 63, status: "Exposed", tip: "Your southern market area has gaps. Exposed means competitors outperform you here." },
-  { name: "AI Mentions", score: 88, status: "Advancing", tip: "Whether AI assistants like ChatGPT and Perplexity recommend your business. Advancing means you are gaining AI mention ground." },
+  { name: "AI Recommendations", score: 88, status: "Advancing", tip: "Whether AI assistants like ChatGPT and Perplexity recommend your business. Advancing means you are gaining ground." },
 ];
 
 const storyChapters = [
@@ -168,7 +168,7 @@ const storyChapters = [
     ],
     pointTips: [
       "Your Trust Stack score ranks all 5 authority layers so we know exactly what to handle first for maximum impact.",
-      "We check directories, reviews, local content, and AI mentions so you see the full picture.",
+      "We check directories, reviews, local content, and AI recommendations so you see the full picture.",
       "Every gap comes with a specific action we can take for you - not vague advice. You always know the next step.",
     ],
     metric: "Signal coverage across 68+ sources",
@@ -181,7 +181,7 @@ const storyChapters = [
     description:
       "Instead of hiring agencies, wrestling with spreadsheets, or writing content from scratch, we generate your schema, local pages, and listing fixes from one dashboard - in minutes, not weeks.",
     points: [
-      "Schema wizard and AI answer optimization",
+      "Schema wizard and AI search optimization",
       "Entity-rich local pages with real-time generation",
       "Listing sync and fix workflows designed for speed",
     ],
@@ -265,17 +265,16 @@ function CommandSurface() {
     <div className="geo-command-surface geo-surface-ambient relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0b1322]/92 p-5 sm:p-6">
       <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-55" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(92,230,186,0.18),transparent_22%),radial-gradient(circle_at_82%_16%,rgba(143,148,255,0.16),transparent_24%),radial-gradient(circle_at_50%_100%,rgba(75,132,255,0.12),transparent_30%)]" />
-      <div className="pointer-events-none absolute left-6 top-6 text-[10px] uppercase tracking-[0.34em] text-white/15">Sector 04 · East Grid · Live</div>
-      <div className="pointer-events-none absolute bottom-6 right-6 text-[10px] uppercase tracking-[0.34em] text-white/15">Authority mesh active</div>
+      <div className="pointer-events-none absolute left-6 top-6 text-[10px] uppercase tracking-[0.34em] text-white/15">Live</div>
+      <div className="pointer-events-none absolute bottom-6 right-6 text-[10px] uppercase tracking-[0.34em] text-white/15">Active</div>
 
       <div className="relative mb-5 flex items-center justify-between gap-3">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.28em] text-white/36">Geothority Dashboard</div>
+          <div className="text-[11px] uppercase tracking-[0.28em] text-white/36">Dashboard</div>
           <div className="mt-1 text-lg font-semibold text-white">Your local SEO, at a glance</div>
         </div>
         <div className="flex items-center gap-1.5 rounded-full border border-[#7ce6c7]/25 bg-[#7ce6c7]/10 px-3 py-1 text-xs font-medium text-[#9be8d2] geo-breathe">
-          Live intelligence
-          <GeoTooltip tip="Your command surface updates with every scan, showing real-time authority data." side="left" iconClassName="w-3 h-3" />
+          Live
         </div>
       </div>
 
@@ -285,12 +284,11 @@ function CommandSurface() {
           <div className="mb-4 flex items-center justify-between">
             <div>
               <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Trust Stack</div>
-              <div className="mt-1 text-sm text-white/75">Territory strength by layer</div>
+              <div className="mt-1 text-sm text-white/75">Score by layer</div>
             </div>
             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/65">
               <Waypoints className="h-3.5 w-3.5 text-[#7ce6c7]" />
               Synced
-              <GeoTooltip tip="All 68+ directory and platform data is synced and up to date from your latest scan." side="bottom" iconClassName="w-3 h-3" />
             </div>
           </div>
 
@@ -325,7 +323,7 @@ function CommandSurface() {
               <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Authority sectors</div>
               <div className="mt-1 text-sm text-white/68">A map-like view of where your visibility holds and where it breaks.</div>
             </div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">Geo mesh</div>
+            <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/45">Map</div>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
@@ -383,7 +381,7 @@ function CommandSurface() {
 
           <div className="rounded-[22px] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
             <div className="mb-3 flex items-center justify-between text-sm text-white/70">
-              <span className="flex items-center gap-1.5">Competitor movement <GeoTooltip tip="Tracks how your local visibility has changed relative to competitors over the past 30 days." side="right" iconClassName="w-3 h-3" /></span>
+              <span className="flex items-center gap-1.5">Competitor activity <GeoTooltip tip="Tracks how your local visibility has changed relative to competitors over the past 30 days." side="right" iconClassName="w-3 h-3" /></span>
               <span className="flex items-center gap-1 rounded-full bg-[#7ce6c7]/10 px-2.5 py-1 text-xs text-[#9be8d2]">+12% visibility <GeoTooltip tip="Your overall local search visibility improved 12% this month - more calls, more clicks, more customers finding you." side="bottom" iconClassName="w-2.5 h-2.5" /></span>
             </div>
             <div className="relative h-24 overflow-hidden rounded-2xl border border-white/8 bg-white/[0.04] p-3">
@@ -406,12 +404,11 @@ function CommandSurface() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5">
-                <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Scan summary</div>
-                <GeoTooltip tip="Live intelligence from your latest scan. Unresolved gaps are ranked by impact so we handle what matters first." side="right" iconClassName="w-3 h-3" />
+                <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Latest scan</div>
               </div>
                 <div className="mt-2 text-sm text-white/72">12 issues found, 4 high priority</div>
               </div>
-              <div className="flex items-center gap-1 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Handle first <GeoTooltip tip="High-impact issues that will move the needle most - we handle them first." side="left" iconClassName="w-2.5 h-2.5" /></div>
+              <div className="flex items-center gap-1 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Priority <GeoTooltip tip="High-impact issues that will move the needle most - we handle them first." side="left" iconClassName="w-2.5 h-2.5" /></div>
             </div>
           </div>
         </div>
@@ -502,7 +499,7 @@ export default function HomePage() {
               <SignalChip label="Insurance professionals" value="500+" tip="Over 500 insurance professionals rely on Geothority to manage their local search visibility and AI presence." />
               <SignalChip label="Authority signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
               <SignalChip label="Time to first scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
-              <SignalChip label="AI platforms checked" value="3" tip="We track whether ChatGPT, Perplexity, and Google AI Overviews recommend your business when customers ask." />
+              <SignalChip label="Search platforms" value="3" tip="We track whether ChatGPT, Perplexity, and Google AI Overviews recommend your business when customers ask." />
             </div>
 
             <div className="mt-8 sm:hidden grid gap-2 grid-cols-2">
@@ -513,7 +510,7 @@ export default function HomePage() {
             <div className="mt-5 hidden sm:flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.2em] text-white/32">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Trust map active <GeoTooltip tip="Your Trust Stack map updates with every scan, showing which authority layers are strong and which we need to address." iconClassName="w-2.5 h-2.5" /></span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Competitive drift tracked <GeoTooltip tip="We monitor competitor movements weekly and alert you when they gain ground in your market." iconClassName="w-2.5 h-2.5" /></span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">AI mentions tracked <GeoTooltip tip="ChatGPT, Perplexity, and Google AI Overviews are checked for your business mentions so you know if AI recommends you." iconClassName="w-2.5 h-2.5" /></span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">AI recommendations tracked <GeoTooltip tip="ChatGPT, Perplexity, and Google AI Overviews are checked so you know if AI recommends you." iconClassName="w-2.5 h-2.5" /></span>
             </div>
           </div>
 
@@ -580,7 +577,7 @@ export default function HomePage() {
                 <div className="mt-6 space-y-3 text-sm text-white/72">
                   {[
                     "Technical foundation, so your site is set up for Google",
-                    "Listings, content, reviews, and AI mentions, all scored in one place",
+                    "Listings, content, reviews, and AI recommendations, all scored in one place",
                     "A prioritized action plan so we always know what to handle next",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
@@ -597,7 +594,7 @@ export default function HomePage() {
                     <div className="text-[10px] uppercase tracking-[0.24em] text-white/38">Trust Stack Object</div>
                     <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">Your local SEO, scored and prioritized.</div>
                   </div>
-                  <div className="rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">Priority system</div>
+                  <div className="rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">Priority view</div>
                 </div>
 
                 <div className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
@@ -605,7 +602,7 @@ export default function HomePage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-1.5">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Authority score</div>
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Overall score</div>
                     <GeoTooltip tip="Your composite authority score from 0-100 across all 5 Trust Stack layers. Higher means more trust signals working for you." side="right" iconClassName="w-3 h-3" />
                   </div>
                         <div className="mt-2 text-5xl font-semibold text-white">78</div>
@@ -641,7 +638,7 @@ export default function HomePage() {
 
                     <div className="mt-5 rounded-[22px] border border-white/8 bg-black/20 p-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">We handle these first</div>
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Top priorities</div>
                         <GeoTooltip tip="Your ranked action queue. We handle these in order for the fastest visibility gains." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -661,7 +658,7 @@ export default function HomePage() {
                   <div className="space-y-4">
                     <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">What&apos;s helping vs. hurting</div>
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">What&apos;s working, what&apos;s not</div>
                         <GeoTooltip tip="Shows which authority layers are actively improving your rankings and which are holding you back. We tackle the bottlenecks first." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 flex items-center gap-3">
@@ -673,14 +670,14 @@ export default function HomePage() {
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Your next step</div>
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Next step</div>
                         <GeoTooltip tip="Based on your Trust Stack data, this is the single action that will improve your local visibility the most right now." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 text-sm font-medium text-white">Publish two city trust pages and repair the Apple Maps entity mismatch</div>
                       <div className="mt-2 text-sm text-white/55">Estimated impact: +7 to +11 visibility points</div>
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(143,148,255,0.09),rgba(255,255,255,0.03))] p-4">
-                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Weekly briefing</div>
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Weekly update</div>
                       <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities, so you always know where you stand and what we&apos;re handling next.</p>
                     </div>
                   </div>
@@ -785,7 +782,7 @@ export default function HomePage() {
                 <div className="geo-proof-card h-full rounded-[30px] border border-white/10 bg-white/[0.03] p-7">
                   <div className="mb-5 flex items-center justify-between gap-3">
                     <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/38">
-                      Evidence module
+                      Results
                     </div>
                     <div className="flex gap-0.5">
                       {[...Array(5)].map((_, j) => (
@@ -896,7 +893,7 @@ export default function HomePage() {
             <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_24px_100px_rgba(5,10,18,0.45)] sm:px-10 sm:py-14">
               <SectionEyebrow>Get your free scan</SectionEyebrow>
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                See your Trust Stack score, local weak spots, and AI readiness - free, in 90 seconds. We&apos;ll show you exactly what we&apos;ll handle.
+                See your Trust Stack score, local weak spots, and AI search presence - free, in 90 seconds. We&apos;ll show you exactly what we&apos;ll handle.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
                 No credit card. No sales call. Just a clear view of where you stand and what we&apos;ll handle next.

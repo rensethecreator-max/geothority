@@ -105,7 +105,7 @@ const JOURNEY_CONFIGS: Record<string, JourneyConfig> = {
   <li>Competitor Watchdog — alerts when competitors gain rankings</li>
   <li>Unlimited audits — scan any URL, anytime</li>
   <li>Full Trust Stack™ dashboard with weekly score tracking</li>
-  <li>AI content engine for city/service landing pages</li>
+  <li>local page engine for city/service landing pages</li>
 </ul>
 <p>At $49/mo, it's less than one referral fee. And the visibility you gain is permanent.</p>`,
       },

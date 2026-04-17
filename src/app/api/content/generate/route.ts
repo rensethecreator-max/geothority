@@ -5,7 +5,7 @@ import { requirePlan } from "@/lib/plan-gate";
 
 export async function POST(req: NextRequest) {
   try {
-    // AI content generation requires authority plan or above
+    // local page generation requires authority plan or above
     const gate = await requirePlan(req, "authority");
     if (gate.error) return gate.error;
     const user = gate.user;

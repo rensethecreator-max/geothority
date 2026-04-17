@@ -18,7 +18,7 @@ const industries: Record<string, {
     slug: "insurance-agents",
     name: "Insurance Agents",
     h1: "Local SEO for Insurance Agents - Get Found Before Your Competitors",
-    description: "Insurance agents who rank in the local pack get 3x more calls. Geothority's Trust Stack gives you a clear path to the top - citations, GBP, AI mentions, and schema all in one score.",
+    description: "Insurance agents who rank in the local pack get 3x more calls. Geothority's Trust Stack gives you a clear path to the top - citations, GBP, AI recommendations, and schema all in one score.",
     painPoints: [
       {
         title: "You're invisible in AI search",
@@ -36,7 +36,7 @@ const industries: Record<string, {
     solutions: [
       {
         title: "Trust Stack Score in 90 seconds",
-        desc: "Scan your website and instantly see your 0-100 Trust Stack Score - covering GBP health, citations, schema markup, AI mentions, and content. No guesswork.",
+        desc: "Scan your website and instantly see your 0-100 Trust Stack Score - covering GBP health, citations, schema markup, AI recommendations, and content. No guesswork.",
       },
       {
         title: "AI Overview Checker",
@@ -107,7 +107,7 @@ const industries: Record<string, {
       { value: "87%", label: "of homebuyers use the internet during their home search" },
     ],
     faqs: [
-      { q: "Does Geothority work for buyer's agents, listing agents, or both?", a: "Both. The Trust Stack score applies to any local real estate professional - we check GBP, citations, schema, and AI mentions regardless of your specialty." },
+      { q: "Does Geothority work for buyer's agents, listing agents, or both?", a: "Both. The Trust Stack score applies to any local real estate professional - we check GBP, citations, schema, and AI recommendations regardless of your specialty." },
       { q: "Can I use Geothority for multiple zip codes?", a: "Yes. Run scans for different service areas and create city/neighborhood landing pages for each area you want to target." },
       { q: "What schema markup matters most for real estate?", a: "RealEstateAgent and LocalBusiness schema are most important. Geothority's schema wizard generates both with the correct markup for your specific practice." },
       { q: "How do I rank against Zillow and Realtor.com?", a: "You can't out-rank portals for generic terms, but you can win the local pack and neighborhood-specific searches. That's where Geothority focuses." },
@@ -186,7 +186,7 @@ const industries: Record<string, {
     solutions: [
       {
         title: "Attorney Trust Stack Score",
-        desc: "Get a comprehensive score covering GBP optimization, citation consistency across legal directories, attorney schema markup, AI mentions, and content authority - all ranked by impact.",
+        desc: "Get a comprehensive score covering GBP optimization, citation consistency across legal directories, attorney schema markup, AI recommendations, and content authority - all ranked by impact.",
       },
       {
         title: "Legal Schema Generator",
@@ -236,7 +236,7 @@ const industries: Record<string, {
     solutions: [
       {
         title: "Restaurant Trust Stack Score",
-        desc: "Check your GBP (menu, hours, photos, attributes), citation consistency across Yelp/TripAdvisor/OpenTable, restaurant schema markup, and AI mentions - all in one 90-second scan.",
+        desc: "Check your GBP (menu, hours, photos, attributes), citation consistency across Yelp/TripAdvisor/OpenTable, restaurant schema markup, and AI recommendations - all in one 90-second scan.",
       },
       {
         title: "Restaurant Schema Wizard",

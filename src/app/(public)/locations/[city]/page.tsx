@@ -52,7 +52,7 @@ const cities: Record<string, {
       { value: "77", label: "distinct Chicago neighborhoods, each its own local search opportunity" },
     ],
     faqs: [
-      { q: "How competitive is local SEO in Chicago?", a: "Chicago is extremely competitive, especially in the Loop and North Side neighborhoods. That's why having a complete Trust Stack - citations, schema, GBP, AI mentions - is essential." },
+      { q: "How competitive is local SEO in Chicago?", a: "Chicago is extremely competitive, especially in the Loop and North Side neighborhoods. That's why having a complete Trust Stack - citations, schema, GBP, AI recommendations - is essential." },
       { q: "Does Geothority work for Chicago suburbs like Oak Brook and Evanston?", a: "Yes. Run separate scans for each location. Suburban Chicago has different competitive dynamics than the city - often easier to rank but still requires a strong local presence." },
       { q: "What industries are most competitive in Chicago local search?", a: "Law firms, insurance agents, dental practices, and restaurants face the toughest competition in Chicago. Geothority's industry-specific Trust Stack scoring helps each type." },
       { q: "How do I rank for neighborhood-specific searches in Chicago?", a: "Create neighborhood-specific landing pages optimized for searches like 'dentist in Lincoln Park' or 'insurance agent Wicker Park.' Geothority's content generator builds these in seconds." },
