@@ -15,7 +15,7 @@ export default function TermsPage() {
           <div className="space-y-6 text-sm text-[var(--muted-foreground)] leading-relaxed">
             <section>
               <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">1. Service Description</h2>
-              <p>Geothority (&quot;the Service&quot;) is a SaaS platform that provides website scanning, local SEO analysis, AI-powered content generation, and CMS publishing tools designed for independent insurance agents.</p>
+              <p>Geothority (&quot;the Service&quot;) is a SaaS platform that provides website scanning, local SEO analysis, content generation, and CMS publishing tools designed for independent insurance agents.</p>
             </section>
 
             <section>
@@ -88,7 +88,7 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">11. Contact</h2>
-              <p>Questions about these terms? Contact us at: <a href="mailto:will@4minuteworkday.com" className="text-electric-500 hover:underline">will@4minuteworkday.com</a></p>
+              <p>Questions about these terms? Contact us at: <a href="mailto:will@4minuteworkday.com" className="text-emerald-500 hover:underline">will@4minuteworkday.com</a></p>
             </section>
           </div>
         </div>

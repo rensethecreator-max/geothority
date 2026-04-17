@@ -67,7 +67,7 @@ const comparisons: Record<string, {
       { q: "Is Moz Local cheaper?", a: "Yes, Moz Local starts at $14/mo. But it only manages listings - Geothority covers AI optimization, content generation, competitor analysis, and more." },
       { q: "Does Moz Local submit citations?", a: "Yes, Moz Local distributes your listings to directories. Geothority checks 18 directories but doesn't submit - we tell you what's wrong and how to fix it." },
       { q: "Which is better for SEO beginners?", a: "Geothority. Our Trust Stack score and prioritized quick wins tell you exactly what to do first." },
-      { q: "Can Moz Local check AI visibility?", a: "No. Only Geothority checks if you appear in AI-powered search results." },
+      { q: "Can Moz Local check AI visibility?", a: "No. Only Geothority checks if you appear in AI search results." },
       { q: "Do I need both?", a: "If you want listing distribution, use Moz Local for that. Use Geothority for everything else - scoring, AI optimization, content, and competitor analysis." },
     ],
   },

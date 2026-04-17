@@ -156,7 +156,7 @@ export default function FAQPage() {
       <PublicHeader />
 
       <section className="pt-32 pb-12 px-4 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-electric-500/10 text-electric-400 rounded-full text-sm font-medium mb-5 border border-electric-500/20">
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-sm font-medium mb-5 border border-emerald-500/20">
           Help Center
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
@@ -166,7 +166,7 @@ export default function FAQPage() {
         </p>
         <p className="text-sm text-[var(--muted-foreground)]">
           Can&apos;t find your answer?{" "}
-          <Link href="mailto:hello@geothority.io" className="text-electric-400 hover:underline">
+          <Link href="mailto:hello@geothority.io" className="text-emerald-400 hover:underline">
             Email us
           </Link>
         </p>
@@ -188,8 +188,8 @@ export default function FAQPage() {
             Get your free Trust Stack™ score in 90 seconds - no credit card required.
           </p>
           <Link
-            href="/login"
-            className="inline-flex items-center gap-2 bg-electric-500 hover:bg-electric-400 text-white font-bold py-3 px-8 rounded-xl transition-colors"
+            href="/signup"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-xl transition-colors"
           >
             Get Your Free Scan →
           </Link>
@@ -222,8 +222,8 @@ export default function FAQPage() {
 
 function FAQAccordion({ question, answer }: { question: string; answer: string }) {
   return (
-    <details className="group bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-electric-500/30 transition-colors">
-      <summary className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none font-semibold text-sm leading-relaxed hover:text-electric-400 transition-colors">
+    <details className="group bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-emerald-500/30 transition-colors">
+      <summary className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none font-semibold text-sm leading-relaxed hover:text-emerald-400 transition-colors">
         {question}
         <ChevronDown className="w-4 h-4 flex-shrink-0 text-[var(--muted-foreground)] group-open:rotate-180 transition-transform duration-200" />
       </summary>

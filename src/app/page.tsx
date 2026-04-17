@@ -80,9 +80,9 @@ const features: {
   },
   {
     icon: FileText,
-    title: "AI-Powered Local Landing Pages",
+    title: "City Landing Pages That Rank",
     description:
-      "We generate SEO-optimized, city-specific content with real local landmarks and entities. Streamed in real-time with a live typing experience.",
+      "We write SEO-optimized, city-specific pages with real local landmarks and entities. Ready to publish in under a minute.",
     stat: "1,200 words in 40 seconds",
     image: "/cards/content.jpg",
     statTip: "City-specific landing pages rank for local searches - the #1 way new customers find you. AI generates them in seconds, not weeks.",
@@ -136,10 +136,10 @@ const stats = [
 ];
 
 const pricingTiers = [
-  { name: "Scout", price: 0, desc: "See your authority gaps", tip: "Get your free Trust Stack scan and see where you stand. No credit card needed - just clarity." },
-  { name: "Operator", price: 97, desc: "Single-location command", tip: "One business location fully managed: scans, fixes, schema, content, and weekly monitoring." },
-  { name: "Command", price: 197, desc: "Most popular", highlighted: true, tip: "Everything in Operator plus competitor tracking, AI optimization, priority support, and unlimited content generation." },
-  { name: "Network", price: 297, desc: "Multi-location control", tip: "Manage 2+ locations from one dashboard. Agency-grade tools with volume pricing for multi-location operators." },
+  { name: "Free", price: 0, desc: "See your authority gaps", tip: "Get your free Trust Stack scan and see where you stand. No credit card needed - just clarity." },
+  { name: "Starter", price: 97, desc: "Best for individual agents", tip: "One business location fully managed: scans, fixes, schema, content, and weekly monitoring." },
+  { name: "Growth", price: 197, desc: "Most popular", highlighted: true, tip: "Everything in Starter plus competitor tracking, AI optimization, priority support, and unlimited content generation." },
+  { name: "Authority", price: 297, desc: "Multi-location control", tip: "Manage 2+ locations from one dashboard. Agency-grade tools with volume pricing for multi-location operators." },
 ];
 
 const commandMetrics = [
@@ -860,10 +860,10 @@ export default function HomePage() {
                   </div>
                   <div className="mt-3 text-sm leading-6 text-white/58">{t.desc}</div>
                   <div className="mt-6 rounded-2xl border border-white/8 bg-black/15 p-4 text-sm text-white/68">
-                    {t.name === "Scout" && "Get your free scan and see where you stand."}
-                    {t.name === "Operator" && "Everything you need to manage one location."}
-                    {t.name === "Command" && "The most popular plan - fixes, monitoring, AI optimization, and unlimited content."}
-                    {t.name === "Network" && "Manage 2+ locations with agency-grade tools and volume pricing."}
+                    {t.name === "Free" && "Get your free scan and see where you stand."}
+                    {t.name === "Starter" && "Everything you need to manage one location."}
+                    {t.name === "Growth" && "The most popular plan - fixes, monitoring, AI optimization, and unlimited content."}
+                    {t.name === "Authority" && "Manage 2+ locations with agency-grade tools and volume pricing."}
                   </div>
                   <Link
                     href={t.price === 0 ? "/signup" : "/pricing"}

@@ -64,7 +64,7 @@ export default function InsuranceAgentsPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 bg-electric-500 hover:bg-electric-600 text-white px-8 py-4 rounded-xl font-semibold text-base transition-all hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 text-white px-8 py-4 rounded-xl font-semibold text-base transition-all hover:scale-105"
             >
               Run My Free Scan
               <ChevronRight className="w-4 h-4" />
@@ -88,9 +88,9 @@ export default function InsuranceAgentsPage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {painPoints.map((point, i) => (
-              <div key={i} className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 hover:border-electric-500/50 transition-all">
-                <div className="w-10 h-10 rounded-xl bg-electric-500/10 flex items-center justify-center mb-4">
-                  <point.icon className="w-5 h-5 text-electric-500" />
+              <div key={i} className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 hover:border-emerald-500/50 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500/10 flex items-center justify-center mb-4">
+                  <point.icon className="w-5 h-5 text-emerald-500" />
                 </div>
                 <h3 className="font-semibold text-sm text-red-400 mb-2">{point.problem}</h3>
                 <p className="text-[var(--muted-foreground)] text-sm leading-relaxed">{point.solution}</p>
@@ -101,14 +101,14 @@ export default function InsuranceAgentsPage() {
 
         {/* Bottom CTA */}
         <section className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <div className="bg-gradient-to-br from-electric-500/10 to-emerald-500/10 border border-electric-500/20 rounded-3xl p-12">
+          <div className="bg-gradient-to-br from-electric-500/10 to-emerald-500/10 border border-emerald-500/20 rounded-3xl p-12">
             <h2 className="text-3xl font-bold mb-4">See Your Score in 90 Seconds</h2>
             <p className="text-[var(--muted-foreground)] mb-8 text-lg max-w-lg mx-auto">
               Enter your business name, city, and website. Get a full GEO Authority Score with specific, ranked fixes ready to implement today.
             </p>
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 bg-electric-500 hover:bg-electric-600 text-white px-10 py-4 rounded-xl font-semibold text-base transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 text-white px-10 py-4 rounded-xl font-semibold text-base transition-all hover:scale-105"
             >
               Run My Free Scan
               <ChevronRight className="w-4 h-4" />

@@ -30,7 +30,7 @@ export default function PrivacyPage() {
               <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">2. How We Use Your Information</h2>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Perform website scans and generate trust stack analyses</li>
-                <li>Generate AI-powered content for your insurance agency</li>
+                <li>Generate content for your insurance agency</li>
                 <li>Publish content to your CMS on your behalf</li>
                 <li>Process payments and manage your subscription</li>
                 <li>Send relevant product updates and alerts</li>
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
               <ul className="list-disc pl-5 mt-2 space-y-1">
                 <li><strong className="text-[var(--foreground)]">Google OAuth:</strong> Authentication</li>
                 <li><strong className="text-[var(--foreground)]">Supabase:</strong> Database and authentication</li>
-                <li><strong className="text-[var(--foreground)]">OpenAI:</strong> AI-powered content generation and analysis</li>
+                <li><strong className="text-[var(--foreground)]">OpenAI:</strong> content generation and analysis</li>
                 <li><strong className="text-[var(--foreground)]">Stripe:</strong> Payment processing</li>
                 <li><strong className="text-[var(--foreground)]">Vercel:</strong> Application hosting</li>
                 <li><strong className="text-[var(--foreground)]">Resend:</strong> Transactional email delivery</li>
@@ -85,7 +85,7 @@ export default function PrivacyPage() {
 
             <section>
               <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">9. Contact</h2>
-              <p>For privacy questions, contact us at: <a href="mailto:will@4minuteworkday.com" className="text-electric-500 hover:underline">will@4minuteworkday.com</a></p>
+              <p>For privacy questions, contact us at: <a href="mailto:will@4minuteworkday.com" className="text-emerald-500 hover:underline">will@4minuteworkday.com</a></p>
             </section>
           </div>
         </div>

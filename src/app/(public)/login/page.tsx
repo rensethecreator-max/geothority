@@ -126,7 +126,7 @@ function LoginForm() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-electric-500/50 focus:border-electric-500"
+                className="w-full pl-10 pr-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
               />
             </div>
           </div>
@@ -138,7 +138,7 @@ function LoginForm() {
               onChange={e => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full pl-4 pr-10 py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-electric-500/50 focus:border-electric-500"
+              className="w-full pl-4 pr-10 py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
             />
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -148,7 +148,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-electric-500 hover:bg-electric-600 text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -164,7 +164,7 @@ function LoginForm() {
         {/* Forgot password link - only shown in sign-in mode */}
         {mode === "signin" && (
           <p className="mt-3 text-center text-sm">
-            <Link href="/forgot-password" className="text-electric-500 hover:underline">
+            <Link href="/forgot-password" className="text-emerald-500 hover:underline">
               Forgot your password?
             </Link>
           </p>
@@ -175,7 +175,7 @@ function LoginForm() {
           {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
             onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMessage(null); }}
-            className="text-electric-500 hover:underline font-medium"
+            className="text-emerald-500 hover:underline font-medium"
           >
             {mode === "signin" ? "Sign up free" : "Sign in"}
           </button>
@@ -183,9 +183,9 @@ function LoginForm() {
 
         <p className="mt-4 text-center text-xs text-[var(--muted-foreground)]">
           By signing in, you agree to our{" "}
-          <Link href="/terms" className="text-electric-500 hover:underline">Terms</Link>{" "}
+          <Link href="/terms" className="text-emerald-500 hover:underline">Terms</Link>{" "}
           and{" "}
-          <Link href="/privacy" className="text-electric-500 hover:underline">Privacy Policy</Link>
+          <Link href="/privacy" className="text-emerald-500 hover:underline">Privacy Policy</Link>
         </p>
       </div>
     </div>
