@@ -57,24 +57,57 @@ export async function GET(req: NextRequest) {
     lastScan: scan?.created_at || null,
   };
 
-  // CORS headers to allow any origin (the script runs on customer sites)
+  // CORS: validate Origin against the user's registered embed domain
+  const origin = req.headers.get("origin") || "";
+  const allowedOrigin = getAllowedOrigin(origin, profile.embed_domain);
   return NextResponse.json(payload, {
     headers: {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": allowedOrigin,
       "Access-Control-Allow-Methods": "GET",
       "Cache-Control": "public, max-age=3600, s-maxage=86400",
+      "Vary": "Origin",
     },
   });
 }
 
-export async function OPTIONS() {
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin") || "";
+  // Preflight: reflect origin only if it looks like a real customer domain
+  const allowedOrigin = origin && !isLocalhost(origin) ? origin : "";
   return new NextResponse(null, {
     headers: {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": allowedOrigin || "null",
       "Access-Control-Allow-Methods": "GET",
       "Access-Control-Allow-Headers": "Content-Type",
+      "Vary": "Origin",
     },
   });
+}
+
+function isLocalhost(origin: string): boolean {
+  return /localhost|127\.0\.0\.1|\.test$|\.local$/.test(origin);
+}
+
+function getAllowedOrigin(origin: string, embedDomain: string | null): string {
+  if (!origin) return "";
+  // In development, allow localhost
+  if (process.env.NODE_ENV !== "production" && isLocalhost(origin)) return origin;
+  // If the origin matches the registered embed domain, allow it
+  if (embedDomain) {
+    try {
+      const embedHost = new URL(embedDomain).hostname;
+      const originHost = new URL(origin).hostname;
+      if (originHost === embedHost || originHost.endsWith(`.${embedHost}`)) return origin;
+    } catch {}
+  }
+  // Fallback: allow the Geothority app domain itself
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) {
+    try {
+      if (new URL(origin).hostname === new URL(siteUrl).hostname) return origin;
+    } catch {}
+  }
+  return "";
 }
 
 function buildSchemaMarkup(profile: any, scan: any) {

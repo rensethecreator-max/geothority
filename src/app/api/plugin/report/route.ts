@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       .from("user_profiles")
       .select("id")
       .eq("embed_api_key", key)
+      .select("id, embed_domain")
       .single();
 
     if (profile) {
@@ -33,10 +34,15 @@ export async function POST(req: NextRequest) {
         .eq("id", profile.id);
     }
 
+    // CORS: restrict to the registered embed domain
+    const origin = req.headers.get("origin") || "";
+    const allowedOrigin = origin && profile?.embed_domain
+      ? matchOrigin(origin, profile.embed_domain) ? origin : ""
+      : "";
     return NextResponse.json(
       { ok: true },
       {
-        headers: { "Access-Control-Allow-Origin": "*" },
+        headers: { "Access-Control-Allow-Origin": allowedOrigin, "Vary": "Origin" },
       }
     );
   } catch {
@@ -44,12 +50,24 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function OPTIONS() {
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin") || "";
   return new NextResponse(null, {
     headers: {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": origin && !/localhost|127\.0\.0\.1/.test(origin) ? origin : "",
       "Access-Control-Allow-Methods": "POST",
       "Access-Control-Allow-Headers": "Content-Type",
+      "Vary": "Origin",
     },
   });
+}
+
+function matchOrigin(origin: string, embedDomain: string): boolean {
+  try {
+    const originHost = new URL(origin).hostname;
+    const embedHost = new URL(embedDomain).hostname;
+    return originHost === embedHost || originHost.endsWith(`.${embedHost}`);
+  } catch {
+    return false;
+  }
 }

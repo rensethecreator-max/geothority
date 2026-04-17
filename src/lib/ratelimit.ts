@@ -50,7 +50,11 @@ export async function checkRateLimit(
   identifier: string
 ): Promise<{ allowed: boolean; remaining: number; reset: number }> {
   if (!limiter) {
-    // No Redis configured — allow all (dev mode)
+    // No Redis configured — fail closed in production, allow in development
+    if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+      console.error("Rate limiter not configured (missing UPSTASH_REDIS_REST_URL/TOKEN). Blocking request.");
+      return { allowed: false, remaining: 0, reset: 0 };
+    }
     return { allowed: true, remaining: 999, reset: 0 };
   }
   const result = await limiter.limit(identifier);
