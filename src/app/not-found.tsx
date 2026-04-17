@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Search, MapPin } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 
 export default function NotFound() {
   return (
@@ -7,12 +8,7 @@ export default function NotFound() {
       <div className="text-center max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-electric-500 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">G</span>
-            </div>
-            <span className="text-xl font-semibold text-[var(--foreground)]">Geothority</span>
-          </Link>
+          <Logo href="/" size={48} />
         </div>
 
         {/* 404 graphic */}

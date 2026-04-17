@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { Eye, EyeOff, ArrowRight, Mail } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { Logo } from "@/components/ui/logo";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -66,11 +67,9 @@ function LoginForm() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-electric-500 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">G</span>
-            </div>
-          </Link>
+          <div className="mb-6">
+            <Logo href="/" size={48} showText={false} />
+          </div>
           <h1 className="text-2xl font-bold mb-2">
             {mode === "signin" ? "Welcome back" : "Create your account"}
           </h1>

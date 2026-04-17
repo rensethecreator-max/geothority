@@ -71,9 +71,7 @@ export function AppSidebar() {
       {/* Logo */}
       <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-electric-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">G</span>
-          </div>
+          <img src="/logo.svg" alt="Geothority" className="w-9 h-9 rounded-lg object-contain" />
           <span className="text-lg font-semibold text-[var(--foreground)]">
             Geothority
           </span>

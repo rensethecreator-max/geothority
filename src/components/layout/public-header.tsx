@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { Logo } from "@/components/ui/logo";
 
 export function PublicHeader() {
   const pathname = usePathname();
@@ -15,10 +16,7 @@ export function PublicHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Geothority" width={36} height={36} sizes="36px" className="object-contain rounded-lg" priority quality={100} />
-            <span className="text-lg font-semibold tracking-tight">Geothority</span>
-          </Link>
+          <Logo href="/" size={36} />
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">

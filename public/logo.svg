@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- Top glow arc -->
+  <ellipse cx="256" cy="80" rx="180" ry="120" fill="url(#glow)" opacity="0.3"/>
+  <!-- Crosshair / grid lines - territorial intelligence motif -->
+  <circle cx="256" cy="256" r="140" stroke="white" stroke-opacity="0.12" stroke-width="2" fill="none"/>
+  <circle cx="256" cy="256" r="80" stroke="white" stroke-opacity="0.08" stroke-width="1.5" fill="none"/>
+  <line x1="256" y1="96" x2="256" y2="416" stroke="white" stroke-opacity="0.06" stroke-width="1.5"/>
+  <line x1="96" y1="256" x2="416" y2="256" stroke="white" stroke-opacity="0.06" stroke-width="1.5"/>
+  <!-- Location pin -->
+  <path d="M256 140c-48 0-86 38-86 84 0 62 86 148 86 148s86-86 86-148c0-46-38-84-86-84zm0 116c-18 0-32-14-32-32s14-32 32-32 32 14 32 32-14 32-32 32z" fill="white" opacity="0.95"/>
+  <!-- Pin inner dot -->
+  <circle cx="256" cy="224" r="14" fill="#3B82F6"/>
+</svg>

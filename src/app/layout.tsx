@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: "Geothority",
   },
   icons: {
-    icon: "/icons/icon-192x192.png",
+    icon: ["/logo.svg", "/icons/icon-192x192.png"],
     apple: "/apple-touch-icon.png",
   },
 };
