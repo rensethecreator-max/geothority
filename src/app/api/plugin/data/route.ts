@@ -101,7 +101,7 @@ function getAllowedOrigin(origin: string, embedDomain: string | null): string {
     } catch {}
   }
   // Fallback: allow the Geothority app domain itself
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (siteUrl) {
     try {
       if (new URL(origin).hostname === new URL(siteUrl).hostname) return origin;
