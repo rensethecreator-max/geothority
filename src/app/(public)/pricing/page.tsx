@@ -85,7 +85,7 @@ const plans: Plan[] = [
     monthlyPrice: 97,
     description: "Best for individual agents",
     cta: "Start 14-Day Trial",
-    ctaHref: "/billing",
+    ctaHref: "/signup",
     popular: false,
     features: {
       dailyScans: "10",
@@ -114,7 +114,7 @@ const plans: Plan[] = [
     monthlyPrice: 197,
     description: "Most Popular - everything you need",
     cta: "Start 14-Day Trial",
-    ctaHref: "/billing",
+    ctaHref: "/signup",
     popular: true,
     features: {
       dailyScans: "Unlimited",
@@ -141,9 +141,9 @@ const plans: Plan[] = [
     id: "authority",
     name: "Authority",
     monthlyPrice: 297,
-    description: "For serious agencies",
+    description: "For multi-location businesses",
     cta: "Start 14-Day Trial",
-    ctaHref: "/billing",
+    ctaHref: "/signup",
     popular: false,
     features: {
       dailyScans: "Unlimited",
@@ -474,7 +474,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    {plan.features.aiOverviewChecker} AI overview checker
+                    {plan.features.aiOverviewChecker} AI answer checker
                     <GeoTooltip tip="Checks if ChatGPT, Perplexity, and Google AI mention your business when customers search for your services." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
 
@@ -661,7 +661,7 @@ export default function PricingPage() {
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
-                  href="/billing"
+                  href="/pricing"
                   className="inline-flex items-center gap-2 bg-white/10 text-white font-semibold px-8 py-4 rounded-xl border border-white/10 hover:bg-white/15 transition-all text-lg"
                 >
                   View All Plans

@@ -250,7 +250,7 @@ export default function BundlePage() {
                   Local SEO Scanner & Fixer
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-5">
-                  Trust Stack scoring, 68+ directory checks, AI visibility
+                  Trust Stack scoring, 68+ directory checks, AI mentions
                   monitoring, schema generation, content creation, listing sync.
                   We scan, fix, and monitor - automatically.
                 </p>

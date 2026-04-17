@@ -132,7 +132,7 @@ const stats = [
   { value: "500+", label: "Insurance professionals" },
   { value: "68+", label: "Authority signals mapped" },
   { value: "90s", label: "Time to first scan" },
-  { value: "3", label: "AI surfaces monitored" },
+  { value: "3", label: "AI platforms checked" },
 ];
 
 const pricingTiers = [
@@ -144,7 +144,7 @@ const pricingTiers = [
 
 const commandMetrics = [
   { label: "Trust Stack", value: "78", detail: "+14 this month", tip: "Your composite Trust Stack score across all 5 authority layers. Higher means more trust signals working for you in local search." },
-  { label: "AI visibility", value: "3/3", detail: "ChatGPT, Perplexity, Google", tip: "You are mentioned by all 3 major AI assistants when customers ask about your services. This is the new frontier of local search." },
+  { label: "AI mentions", value: "3/3", detail: "ChatGPT, Perplexity, Google", tip: "You are mentioned by all 3 major AI assistants when customers ask about your services. This is the new frontier of local search." },
   { label: "Competitor delta", value: "+22", detail: "ahead of local median", tip: "You are 22 points ahead of the average competitor in your market area. A positive delta means you are winning the authority game." },
 ];
 
@@ -152,7 +152,7 @@ const authoritySectors = [
   { name: "Northwest", score: 84, status: "Owned", tip: "Your visibility strength in the northwest area of your market - listings, content, and review coverage combined." },
   { name: "Central", score: 71, status: "Contested", tip: "The central core of your market where competition is fiercest. Contested means competitors are actively challenging your position." },
   { name: "South", score: 63, status: "Exposed", tip: "Your southern market area has gaps. Exposed means competitors outperform you here." },
-  { name: "AI Surface", score: 88, status: "Advancing", tip: "Whether AI assistants like ChatGPT and Perplexity recommend your business. Advancing means you are gaining AI mention ground." },
+  { name: "AI Mentions", score: 88, status: "Advancing", tip: "Whether AI assistants like ChatGPT and Perplexity recommend your business. Advancing means you are gaining AI mention ground." },
 ];
 
 const storyChapters = [
@@ -181,7 +181,7 @@ const storyChapters = [
     description:
       "Instead of hiring agencies, wrestling with spreadsheets, or writing content from scratch, we generate your schema, local pages, and listing fixes from one dashboard - in minutes, not weeks.",
     points: [
-      "Schema wizard and AI overview optimization",
+      "Schema wizard and AI answer optimization",
       "Entity-rich local pages with real-time generation",
       "Listing sync and fix workflows designed for speed",
     ],
@@ -498,17 +498,22 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="mt-8 grid gap-2.5 sm:gap-3 grid-cols-2 xl:grid-cols-4">
+            <div className="mt-8 hidden sm:grid gap-3 grid-cols-4">
               <SignalChip label="Insurance professionals" value="500+" tip="Over 500 insurance professionals rely on Geothority to manage their local search visibility and AI presence." />
               <SignalChip label="Authority signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
               <SignalChip label="Time to first scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
-              <SignalChip label="AI surfaces monitored" value="3" tip="We track whether ChatGPT, Perplexity, and Google AI Overviews recommend your business when customers ask." />
+              <SignalChip label="AI platforms checked" value="3" tip="We track whether ChatGPT, Perplexity, and Google AI Overviews recommend your business when customers ask." />
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.2em] text-white/32">
+            <div className="mt-8 sm:hidden grid gap-2 grid-cols-2">
+              <SignalChip label="Signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
+              <SignalChip label="First scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
+            </div>
+
+            <div className="mt-5 hidden sm:flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.2em] text-white/32">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Trust map active <GeoTooltip tip="Your Trust Stack map updates with every scan, showing which authority layers are strong and which we need to address." iconClassName="w-2.5 h-2.5" /></span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">Competitive drift tracked <GeoTooltip tip="We monitor competitor movements weekly and alert you when they gain ground in your market." iconClassName="w-2.5 h-2.5" /></span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">AI recommendation surfaces monitored <GeoTooltip tip="ChatGPT, Perplexity, and Google AI Overviews are checked for your business mentions so you know if AI recommends you." iconClassName="w-2.5 h-2.5" /></span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2">AI mentions tracked <GeoTooltip tip="ChatGPT, Perplexity, and Google AI Overviews are checked for your business mentions so you know if AI recommends you." iconClassName="w-2.5 h-2.5" /></span>
             </div>
           </div>
 
@@ -575,7 +580,7 @@ export default function HomePage() {
                 <div className="mt-6 space-y-3 text-sm text-white/72">
                   {[
                     "Technical foundation, so your site is set up for Google",
-                    "Listings, content, reviews, and AI visibility, all scored in one place",
+                    "Listings, content, reviews, and AI mentions, all scored in one place",
                     "A prioritized action plan so we always know what to handle next",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
