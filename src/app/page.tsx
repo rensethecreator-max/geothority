@@ -157,9 +157,9 @@ const authoritySectors = [
 const storyChapters = [
   {
     eyebrow: "Diagnose",
-    title: "See your local authority like a territory map, not a checklist.",
+    title: "See your local SEO like a map, not a guessing game.",
     description:
-      "Geothority turns messy local SEO into a strategic field view. You can see what supports visibility, what weakens trust, and where competitors are taking ground.",
+      "Geothority scans your entire local presence and shows you what's working, what's broken, and where competitors are beating you. No more guessing.",
     points: [
       "5-layer Trust Stack score with ranked fix order",
       "Directory, reputation, geo-content, and AI mention coverage",
@@ -176,9 +176,9 @@ const storyChapters = [
   },
   {
     eyebrow: "Deploy",
-    title: "Ship fixes fast with guided assets that feel production-ready.",
+    title: "Fix problems fast — we generate what you need, ready to deploy.",
     description:
-      "Instead of bouncing between agencies, spreadsheets, and generic AI copy, operators can generate schema, city pages, authority content, and listing improvements from one system.",
+      "Instead of hiring agencies, wrestling with spreadsheets, or writing content from scratch, you generate schema, local pages, and listing fixes from one dashboard — in minutes, not weeks.",
     points: [
       "Schema wizard and AI overview optimization",
       "Entity-rich local pages with real-time generation",
@@ -195,9 +195,9 @@ const storyChapters = [
   },
   {
     eyebrow: "Defend",
-    title: "Hold your territory with competitive monitoring that actually feels strategic.",
+    title: "Stay ahead with monitoring that catches problems before they hurt you.",
     description:
-      "The platform keeps watching after the scan. You see movement, detect competitor pushes early, and get prompted with the next best action before rankings drift.",
+      "We keep scanning after the initial fix. You'll see what changed, know when competitors make moves, and get notified with the exact next step — before your rankings slip.",
     points: [
       "Weekly auto-scans with movement alerts",
       "Competitor tracking tied to direct actions",
@@ -208,7 +208,7 @@ const storyChapters = [
       "See a competitor move? We link you to a one-click response so you can match it the same day.",
       "Every metric ties to a real business outcome — more calls, more visibility, more authority.",
     ],
-    metric: "A living command layer, not a static report",
+    metric: "Fresh data every week, not a stale report",
     metricTip: "Your dashboard updates weekly with fresh data. No stale screenshots.",
     icon: TrendingUp,
   },
@@ -269,8 +269,8 @@ function CommandSurface() {
 
       <div className="relative mb-5 flex items-center justify-between gap-3">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.28em] text-white/36">Geothority Command Surface</div>
-          <div className="mt-1 text-lg font-semibold text-white">Local authority, mapped in real time</div>
+          <div className="text-[11px] uppercase tracking-[0.28em] text-white/36">Geothority Dashboard</div>
+          <div className="mt-1 text-lg font-semibold text-white">Your local SEO, at a glance</div>
         </div>
         <div className="flex items-center gap-1.5 rounded-full border border-[#7ce6c7]/25 bg-[#7ce6c7]/10 px-3 py-1 text-xs font-medium text-[#9be8d2] geo-breathe">
           Live intelligence
@@ -382,7 +382,7 @@ function CommandSurface() {
 
           <div className="rounded-[22px] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
             <div className="mb-3 flex items-center justify-between text-sm text-white/70">
-              <span className="flex items-center gap-1.5">Competitive territory movement <GeoTooltip tip="Tracks how your local visibility has changed relative to competitors over the past 30 days." side="right" iconClassName="w-3 h-3" /></span>
+              <span className="flex items-center gap-1.5">Competitor movement <GeoTooltip tip="Tracks how your local visibility has changed relative to competitors over the past 30 days." side="right" iconClassName="w-3 h-3" /></span>
               <span className="flex items-center gap-1 rounded-full bg-[#7ce6c7]/10 px-2.5 py-1 text-xs text-[#9be8d2]">+12% visibility <GeoTooltip tip="Your overall local search visibility improved 12% this month — more calls, more clicks, more customers finding you." side="bottom" iconClassName="w-2.5 h-2.5" /></span>
             </div>
             <div className="relative h-24 overflow-hidden rounded-2xl border border-white/8 bg-white/[0.04] p-3">
@@ -405,12 +405,12 @@ function CommandSurface() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5">
-                <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Scan telemetry</div>
+                <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Scan summary</div>
                 <GeoTooltip tip="Live intelligence from your latest scan. Unresolved gaps are ranked by impact so you fix what matters first." side="right" iconClassName="w-3 h-3" />
               </div>
-                <div className="mt-2 text-sm text-white/72">12 unresolved authority gaps, 4 high impact</div>
+                <div className="mt-2 text-sm text-white/72">12 issues found, 4 high priority</div>
               </div>
-              <div className="flex items-center gap-1 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Priority lane <GeoTooltip tip="High-impact issues that will move the needle most if you fix them first." side="left" iconClassName="w-2.5 h-2.5" /></div>
+              <div className="flex items-center gap-1 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Fix first <GeoTooltip tip="High-impact issues that will move the needle most if you fix them first." side="left" iconClassName="w-2.5 h-2.5" /></div>
             </div>
           </div>
         </div>
@@ -477,14 +477,14 @@ export default function HomePage() {
 
         <div className="relative mx-auto grid max-w-7xl gap-14 px-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <div>
-            <SectionEyebrow>Territorial intelligence for local authority</SectionEyebrow>
+            <SectionEyebrow>Local SEO, simplified</SectionEyebrow>
 
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[0.96] tracking-[-0.05em] text-white sm:text-5xl lg:text-[4.5rem] xl:text-[5.35rem]">
-              Dominate local search and AI with a command view of your market.
+              Get found locally — on Google, Maps, and AI — with one clear view of what to fix.
             </h1>
 
             <p className="mt-5 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8 text-white/58 sm:text-[1.15rem]">
-              Geothority maps trust, listings, content, reviews, and AI visibility into one calm operating surface, then tells you exactly what to fix next. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
+              Geothority scans your business across Google, directories, reviews, and AI platforms — then shows you exactly what to fix next. We handle the hard parts so you don&apos;t have to. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -498,7 +498,7 @@ export default function HomePage() {
                 href="#story"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.03] px-7 py-4 text-base font-medium text-white/85 transition-all hover:border-white/20 hover:bg-white/[0.05]"
               >
-                Explore the system <ChevronRight className="h-4 w-4" />
+                See how it works <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
 
@@ -571,16 +571,16 @@ export default function HomePage() {
               <div>
                 <SectionEyebrow>Trust Stack 2.0</SectionEyebrow>
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
-                  A proprietary authority model that shows what to fix, where to act, and how fast you are moving.
+                  One score that tells you what to fix first — and how fast you&apos;re improving.
                 </h2>
                 <p className="mt-4 max-w-xl text-base leading-7 text-white/62 sm:text-lg">
-                  This is the visual center of Geothority. Not a vanity score, a command object. It turns local SEO into a field view with ranked layers, movement, and signal pressure.
+                  The Trust Stack scores your business across 5 key areas and ranks your fixes by impact. No more guessing what matters — you&apos;ll always know the next step.
                 </p>
                 <div className="mt-6 space-y-3 text-sm text-white/72">
                   {[
-                    "Foundation strength and technical readiness",
-                    "Trust pages, geo entities, reviews, and AI visibility",
-                    "Ranked next-best actions instead of generic recommendations",
+                    "Technical foundation — is your site set up for Google?",
+                    "Listings, content, reviews, and AI visibility — all scored",
+                    "Prioritized fixes so you always know what to do next",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
                       <span className="mt-1 h-2 w-2 rounded-full bg-[#7ce6c7]" />
@@ -594,7 +594,7 @@ export default function HomePage() {
                 <div className="mb-5 flex items-center justify-between gap-4">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.24em] text-white/38">Trust Stack Object</div>
-                    <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">A living authority artifact, not a decorative score.</div>
+                    <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">Your local SEO, scored and prioritized.</div>
                   </div>
                   <div className="rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">Priority system</div>
                 </div>
@@ -640,7 +640,7 @@ export default function HomePage() {
 
                     <div className="mt-5 rounded-[22px] border border-white/8 bg-black/20 p-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Priority path</div>
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Fix these first</div>
                         <GeoTooltip tip="Your ranked action queue — fix these in order for the fastest visibility gains." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -660,19 +660,19 @@ export default function HomePage() {
                   <div className="space-y-4">
                     <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Signal pressure</div>
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">What&apos;s helping vs. hurting</div>
                         <GeoTooltip tip="Shows which authority layers are actively improving your rankings and which are holding you back. Fix the bottlenecks first." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 flex items-center gap-3">
                         <div className="h-16 w-16 rounded-full border border-white/10 bg-[#0b1726] flex items-center justify-center">
                           <span className="text-lg font-semibold text-white">High</span>
                         </div>
-                        <p className="text-sm leading-6 text-white/60">AI and citation coverage are pulling performance upward. Trust pages are still the main unlock.</p>
+                        <p className="text-sm leading-6 text-white/60">AI visibility and directory listings are pulling you up. Trust pages are the main thing holding you back.</p>
                       </div>
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Next best move</div>
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Your next step</div>
                         <GeoTooltip tip="Based on your Trust Stack data, this is the single action that will improve your local visibility the most right now." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 text-sm font-medium text-white">Publish two city-trust pages and repair Apple Maps entity mismatch</div>
@@ -680,7 +680,7 @@ export default function HomePage() {
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(143,148,255,0.09),rgba(255,255,255,0.03))] p-4">
                       <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Operator reading</div>
-                      <p className="mt-3 text-sm leading-6 text-white/65">Trust Stack should feel like a live decision object, something a serious operator returns to every week, not a static report badge.</p>
+                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities — so you always know where you stand and what to do next.</p>
                     </div>
                   </div>
                 </div>
@@ -695,12 +695,12 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-16 max-w-3xl">
-              <SectionEyebrow>How the system works</SectionEyebrow>
+              <SectionEyebrow>How it works</SectionEyebrow>
               <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Three operating layers, <span className="text-white/72">diagnose, deploy, defend.</span>
+                Three steps: <span className="text-white/72">scan, fix, monitor.</span>
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Instead of six generic feature blocks, Geothority should feel like one strategic system unfolding in chapters.
+                Geothority isn&apos;t a pile of disconnected tools — it&apos;s one system that finds your problems, fixes them, and keeps watching.
               </p>
             </div>
           </ScrollReveal>
@@ -748,9 +748,9 @@ export default function HomePage() {
                         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,24,0.15),rgba(8,14,24,0.86))]" />
                         <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
                           <div className="max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md shadow-[0_18px_60px_rgba(6,10,18,0.38)]">
-                            <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Operator view</div>
+                            <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">What you see</div>
                             <div className="mt-2 text-xl font-semibold text-white">{chapter.eyebrow} the local market</div>
-                            <p className="mt-3 text-sm leading-6 text-white/65">{chapter.metric}. The interface should feel less like a screenshot gallery and more like evidence from a living platform.</p>
+                            <p className="mt-3 text-sm leading-6 text-white/65">{chapter.metric}. Real data from your business, updated with every scan.</p>
                           </div>
                         </div>
                       </div>
@@ -768,12 +768,12 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-14 max-w-3xl">
-              <SectionEyebrow>Evidence, not fluff</SectionEyebrow>
+              <SectionEyebrow>Real results from real businesses</SectionEyebrow>
               <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
                 Trusted by insurance operators who care about measurable territory gains.
               </h2>
               <p className="mt-5 text-lg leading-8 text-white/60">
-                This should feel like proof pulled from the platform, not a generic testimonials strip.
+                These are actual results from Geothority users — not marketing fluff.
               </p>
             </div>
           </ScrollReveal>
@@ -825,12 +825,12 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 text-center">
-              <SectionEyebrow>Operating tiers</SectionEyebrow>
+              <SectionEyebrow>Simple pricing</SectionEyebrow>
               <h2 className="mt-5 mx-auto max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Choose the level of command your market requires.
+                Pick the plan that fits your business.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Geothority should price like an operating system for local authority, not a commodity SaaS widget.
+                Every plan includes a free scan. Paid plans add fixes, monitoring, and ongoing support.
               </p>
             </div>
           </ScrollReveal>
@@ -864,10 +864,10 @@ export default function HomePage() {
                   </div>
                   <div className="mt-3 text-sm leading-6 text-white/58">{t.desc}</div>
                   <div className="mt-6 rounded-2xl border border-white/8 bg-black/15 p-4 text-sm text-white/68">
-                    {t.name === "Scout" && "Perfect for first visibility and trust diagnostics."}
-                    {t.name === "Operator" && "For solo agents who need one calm authority cockpit."}
-                    {t.name === "Command" && "For teams that want active fixes, monitoring, and momentum."}
-                    {t.name === "Network" && "For agencies or multi-location operators managing territory at scale."}
+                    {t.name === "Scout" && "Get your free scan and see where you stand."}
+                    {t.name === "Operator" && "Everything you need to manage one location."}
+                    {t.name === "Command" && "The most popular plan — fixes, monitoring, AI optimization, and unlimited content."}
+                    {t.name === "Network" && "Manage 2+ locations with agency-grade tools and volume pricing."}
                   </div>
                   <Link
                     href={t.price === 0 ? "/signup" : "/pricing"}
@@ -893,12 +893,12 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-5xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_24px_100px_rgba(5,10,18,0.45)] sm:px-10 sm:py-14">
-              <SectionEyebrow>Start with a field scan</SectionEyebrow>
+              <SectionEyebrow>Get your free scan</SectionEyebrow>
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                See your Trust Stack score, local weak spots, and AI readiness in 90 seconds.
+                See your Trust Stack score, local weak spots, and AI readiness — free, in 90 seconds.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                No credit card. No agency pitch deck. Just a clearer view of your market and the next best move.
+                No credit card. No sales call. Just a clear view of where you stand and what to fix next.
               </p>
               <Link
                 href="/signup"
