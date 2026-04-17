@@ -1,8 +1,24 @@
 import OpenAI from "openai";
 
+const useOpenRouter = !!process.env.OPENROUTER_API_KEY;
+const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+
+export const DEFAULT_LLM_MODEL = useOpenRouter
+  ? "google/gemini-2.5-flash"
+  : "gpt-4o-mini";
+
 export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey,
+  baseURL: useOpenRouter ? "https://openrouter.ai/api/v1" : undefined,
+  defaultHeaders: useOpenRouter
+    ? {
+        "HTTP-Referer": "https://www.geothority.io",
+        "X-Title": "Geothority",
+      }
+    : undefined,
 });
+
+export const ACTIVE_LLM_PROVIDER = useOpenRouter ? "openrouter" : "openai";
 
 export const WILL_SYSTEM_PROMPT = `You are Will, the AI assistant for Geothority. You help insurance agents understand their Local Trust Stack™ scores, figure out what to fix first, troubleshoot their CMS publishing integration, and get the most out of Geothority.
 

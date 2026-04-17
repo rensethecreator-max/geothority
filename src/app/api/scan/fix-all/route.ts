@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import OpenAI from "openai";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { DEFAULT_LLM_MODEL, openai } from "@/lib/openai";
 
 interface FixItem {
   type: "schema" | "faq" | "about" | "landing_page" | "meta_tags" | "listing_sync" | "ai_optimization";
@@ -32,7 +30,7 @@ ${address ? `Address: ${address}` : ""}
 Return ONLY the raw JSON-LD object (no markdown, no explanation). Include @context, @type, name, url, description, and any relevant service schema properties.`;
 
   const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.3,
     max_tokens: 1000,
@@ -52,7 +50,7 @@ Format as HTML with this structure for each item:
 Make the questions specific, locally-relevant, and SEO-optimized. Include questions about services, pricing, location, hours, and what makes them unique. Return ONLY the HTML.`;
 
   const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
     max_tokens: 1500,
@@ -73,7 +71,7 @@ Format as HTML sections:
 Make it warm, professional, locally-specific, and SEO-optimized. Return ONLY the HTML.`;
 
   const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
     max_tokens: 1200,
@@ -95,7 +93,7 @@ Format as HTML:
 Make it highly localized and SEO-optimized for "${businessType} in ${city}". Return ONLY the HTML.`;
 
   const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
     max_tokens: 1200,
@@ -121,7 +119,7 @@ Return a JSON object with exactly these keys:
 Ensure the content naturally mentions "${businessName}", "${businessType}", and "${location}" multiple times. Return ONLY valid JSON.`;
 
   const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.4,
     max_tokens: 2000,
@@ -144,7 +142,7 @@ Return ONLY this format:
 <meta property="og:description" content="YOUR DESCRIPTION HERE" />`;
 
   const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.4,
     max_tokens: 400,

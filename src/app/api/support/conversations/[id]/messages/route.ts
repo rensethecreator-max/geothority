@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-helpers";
 import { createServiceClient } from "@/lib/supabase/server";
+import { ACTIVE_LLM_PROVIDER, DEFAULT_LLM_MODEL } from "@/lib/openai";
 
 async function getAIReply(
   messages: Array<{ role: string; content: string }>
 ): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const baseURL = "https://api.openai.com/v1";
+  const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+  const baseURL = process.env.OPENROUTER_API_KEY
+    ? "https://openrouter.ai/api/v1"
+    : "https://api.openai.com/v1";
 
   if (!apiKey) {
     return "I'm here to help with your local SEO questions! However, I'm not fully configured yet. Please contact support.";
@@ -31,9 +34,15 @@ Be concise, friendly, and helpful. Focus on local SEO best practices for insuran
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
+        ...(ACTIVE_LLM_PROVIDER === "openrouter"
+          ? {
+              "HTTP-Referer": "https://www.geothority.io",
+              "X-Title": "Geothority",
+            }
+          : {}),
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: DEFAULT_LLM_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
           ...messages.slice(-10),

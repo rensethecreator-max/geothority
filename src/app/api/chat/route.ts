@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { openai, WILL_SYSTEM_PROMPT } from "@/lib/openai";
+import { DEFAULT_LLM_MODEL, openai, WILL_SYSTEM_PROMPT } from "@/lib/openai";
 import { chatRatelimit, checkRateLimit } from "@/lib/ratelimit";
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: DEFAULT_LLM_MODEL,
       messages: [
         { role: "system", content: WILL_SYSTEM_PROMPT },
         ...recentMessages,

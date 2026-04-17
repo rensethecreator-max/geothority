@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { openai } from "@/lib/openai";
+import { DEFAULT_LLM_MODEL, openai } from "@/lib/openai";
 import { requirePlan } from "@/lib/plan-gate";
 
 export async function POST(req: NextRequest) {
@@ -58,7 +58,7 @@ Return ONLY valid JSON, no markdown fences.`;
 
     // Stream the response
     const stream = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: DEFAULT_LLM_MODEL,
       messages: [
         {
           role: "system",
