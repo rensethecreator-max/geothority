@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  detectProfileChanges,
+  calculatePhotoFreshnessScore,
+  changeToNotification,
+  type ProfileAttributeSnapshot,
+} from "@/lib/competitor-change-detection";
 
 /**
  * GET /api/cron/competitor-monitoring
@@ -34,6 +40,18 @@ type SnapshotRow = {
   alerts: CompetitorAlert[];
   snapshot_date: string;
   created_at: string;
+  // ── Enhanced profile attributes ──
+  photo_count: number | null;
+  latest_photo_date: string | null;
+  photo_freshness_score: number | null;
+  categories: string[] | null;
+  primary_category: string | null;
+  hours_json: any | null;
+  services: string[] | null;
+  posts_count: number | null;
+  has_description: boolean | null;
+  has_website: boolean | null;
+  attributes: Record<string, any> | null;
 };
 
 type CompetitorRow = {
@@ -47,6 +65,30 @@ type CompetitorRow = {
   rank_position: number;
   last_checked: string | null;
   active: boolean;
+};
+
+type SnapshotPersistRow = {
+  user_id: string;
+  competitor_id: string;
+  place_id: string;
+  rating: number | null;
+  review_count: number;
+  score: number;
+  rank_position: number;
+  alerts: CompetitorAlert[];
+  snapshot_source: string;
+  snapshot_date: string;
+  photo_count?: number | null;
+  latest_photo_date?: string | null;
+  photo_freshness_score?: number | null;
+  categories?: string[] | null;
+  primary_category?: string | null;
+  hours_json?: any | null;
+  services?: string[] | null;
+  posts_count?: number | null;
+  has_description?: boolean | null;
+  has_website?: boolean | null;
+  attributes?: Record<string, any> | null;
 };
 
 type UserContext = {
@@ -156,7 +198,7 @@ export async function GET(req: NextRequest) {
         if (apiKey) {
           newSnapshots = await rescanCompetitors(
             supabase, userId, competitors, userCtx, apiKey
-          );
+          ) as any[];
         } else {
           // No API key — process existing snapshots for change detection
           console.log("[cron/competitor-monitoring] No Google Maps API key, processing existing snapshots only");
@@ -178,11 +220,42 @@ export async function GET(req: NextRequest) {
           const snapData = freshSnapshots[comp.id];
           if (!snapData?.latest || !snapData?.previous) continue;
 
+          // Existing metric-based change detection
           const detectedChanges = detectSignificantChanges(
             comp.business_name,
             snapData.latest,
             snapData.previous
           );
+
+          // ── Enhanced profile attribute change detection ────────────
+          const profileChanges = detectProfileChanges(
+            comp.business_name,
+            snapshotToProfileAttrs(snapData.latest),
+            snapshotToProfileAttrs(snapData.previous)
+          );
+
+          // Log profile attribute changes to dedicated table
+          for (const pc of profileChanges) {
+            try {
+              await supabase.from("competitor_attribute_changes").insert({
+                user_id: userId,
+                competitor_id: comp.id,
+                snapshot_before: snapData.previous.id,
+                snapshot_after: snapData.latest.id,
+                change_type: pc.changeType,
+                change_label: pc.changeLabel,
+                change_detail: pc.changeDetail,
+                severity: pc.severity,
+              });
+            } catch (logErr) {
+              console.error(`[cron/competitor-monitoring] Failed to log attribute change:`, logErr);
+            }
+
+            // Also create notifications for warning/critical profile changes
+            if (pc.severity === "warning" || pc.severity === "critical") {
+              detectedChanges.push(changeToNotification(pc, comp.business_name));
+            }
+          }
 
           for (const change of detectedChanges) {
             try {
@@ -331,15 +404,7 @@ async function rescanCompetitors(
   existingCompetitors: CompetitorRow[],
   userCtx: UserContext,
   apiKey: string
-): Promise<Array<{
-  competitorId: string;
-  placeId: string;
-  rating: number | null;
-  reviewCount: number;
-  score: number;
-  rankPosition: number;
-  alerts: CompetitorAlert[];
-}>> {
+): Promise<Array<Record<string, any>>> {
   const query = `${userCtx.businessType} ${userCtx.location}`;
   const searchRes = await fetch(
     `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}`,
@@ -366,15 +431,7 @@ async function rescanCompetitors(
   const userRating = userPlace?.rating || null;
   const userReviewCount = userPlace?.user_ratings_total || 0;
 
-  const results: Array<{
-    competitorId: string;
-    placeId: string;
-    rating: number | null;
-    reviewCount: number;
-    score: number;
-    rankPosition: number;
-    alerts: CompetitorAlert[];
-  }> = [];
+  const results: Array<Record<string, any>> = [];
 
   const filtered = searchData.results
     .filter((p: any) => !normalizedUserBiz || !p.name?.toLowerCase().includes(normalizedUserBiz))
@@ -429,6 +486,9 @@ async function rescanCompetitors(
       index
     );
 
+    // Extract profile attributes from Places API result
+    const profileAttrs = extractPlacesProfileAttrs(p);
+
     results.push({
       competitorId,
       placeId: p.place_id,
@@ -437,6 +497,22 @@ async function rescanCompetitors(
       score,
       rankPosition: index + 1,
       alerts,
+      // ── Enhanced profile attributes ──
+      photo_count: profileAttrs.photo_count,
+      latest_photo_date: profileAttrs.latest_photo_date,
+      photo_freshness_score: calculatePhotoFreshnessScore({
+        photoCount: profileAttrs.photo_count,
+        latestPhotoDate: profileAttrs.latest_photo_date,
+        snapshotDate: new Date().toISOString().slice(0, 10),
+      }),
+      categories: profileAttrs.categories,
+      primary_category: profileAttrs.primary_category,
+      hours_json: profileAttrs.hours_json,
+      services: profileAttrs.services,
+      posts_count: profileAttrs.posts_count,
+      has_description: profileAttrs.has_description,
+      has_website: profileAttrs.has_website,
+      attributes: profileAttrs.attributes,
     });
 
     // Update last_checked and rank_position on existing competitors
@@ -522,6 +598,17 @@ async function persistSnapshots(
     alerts: s.alerts,
     snapshot_source: "cron",
     snapshot_date: new Date().toISOString().slice(0, 10),
+    photo_count: (s as any).photo_count ?? null,
+    latest_photo_date: (s as any).latest_photo_date ?? null,
+    photo_freshness_score: (s as any).photo_freshness_score ?? null,
+    categories: (s as any).categories ?? null,
+    primary_category: (s as any).primary_category ?? null,
+    hours_json: (s as any).hours_json ?? null,
+    services: (s as any).services ?? null,
+    posts_count: (s as any).posts_count ?? null,
+    has_description: (s as any).has_description ?? null,
+    has_website: (s as any).has_website ?? null,
+    attributes: (s as any).attributes ?? null,
   }));
 
   const { error } = await supabase
@@ -605,6 +692,42 @@ function calculateCompetitorScore(
   const reviewScore = Math.min(40, Math.round(reviewCount / 6));
   const rankBonus = Math.max(5, 15 - rankIndex * 2);
   return Math.min(95, ratingScore + reviewScore + rankBonus);
+}
+
+function snapshotToProfileAttrs(snap: SnapshotRow): ProfileAttributeSnapshot {
+  return {
+    photo_count: snap.photo_count ?? null,
+    latest_photo_date: snap.latest_photo_date ?? null,
+    photo_freshness_score: snap.photo_freshness_score ?? null,
+    categories: Array.isArray(snap.categories) ? snap.categories : [],
+    primary_category: snap.primary_category ?? null,
+    hours_json: snap.hours_json ?? null,
+    services: Array.isArray(snap.services) ? snap.services : [],
+    posts_count: snap.posts_count ?? 0,
+    has_description: snap.has_description ?? null,
+    has_website: snap.has_website ?? null,
+    attributes: snap.attributes && typeof snap.attributes === "object" ? snap.attributes : {},
+  };
+}
+
+function extractPlacesProfileAttrs(p: any) {
+  const photoCount = p.photos?.length ?? null;
+  const latestPhotoDate = p.photos?.[0]?.photo_reference
+    ? null // Google Places API doesn't expose photo upload dates
+    : (p.latest_photo_date || null);
+
+  return {
+    photo_count: photoCount,
+    latest_photo_date: latestPhotoDate,
+    categories: Array.isArray(p.types) ? p.types : [],
+    primary_category: Array.isArray(p.types) ? p.types[0] || null : null,
+    hours_json: p.opening_hours?.periods || null,
+    services: Array.isArray(p.service_items) ? p.service_items.map(String) : [],
+    posts_count: p.posts_count ?? 0,
+    has_description: !!p.description,
+    has_website: !!p.website,
+    attributes: p.attributes || {},
+  };
 }
 
 function buildCronAlerts(

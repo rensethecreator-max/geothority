@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { requirePlan } from "@/lib/plan-gate";
+import { calculatePhotoFreshnessScore } from "@/lib/competitor-change-detection";
 
 type CompetitorAlert = {
   type: string;
@@ -24,6 +25,17 @@ type CompetitorResult = {
   priceLevel: number | null;
   score: number;
   alerts: CompetitorAlert[];
+  // ── Enhanced profile attributes ──
+  photo_count?: number | null;
+  latest_photo_date?: string | null;
+  photo_freshness_score?: number | null;
+  primary_category?: string | null;
+  hours_json?: any | null;
+  services?: string[];
+  posts_count?: number;
+  has_description?: boolean | null;
+  has_website?: boolean | null;
+  attributes?: Record<string, any> | null;
 };
 
 type SnapshotRow = {
@@ -36,6 +48,18 @@ type SnapshotRow = {
   alerts: CompetitorAlert[];
   snapshot_date: string;
   created_at: string;
+  // ── Enhanced profile attributes ──
+  photo_count: number | null;
+  latest_photo_date: string | null;
+  photo_freshness_score: number | null;
+  categories: string[] | null;
+  primary_category: string | null;
+  hours_json: any | null;
+  services: string[] | null;
+  posts_count: number | null;
+  has_description: boolean | null;
+  has_website: boolean | null;
+  attributes: Record<string, any> | null;
 };
 
 /**
@@ -136,6 +160,14 @@ async function handleCompetitorSearch(
             reviewCountDelta: computeDelta(prev?.latest?.review_count, prev?.previous?.review_count),
             scoreDelta: computeDelta(prev?.latest?.score, prev?.previous?.score),
             snapshotHistory: prev?.history ?? [],
+            // ── Enhanced profile attributes ──
+            photoCount: prev?.latest?.photo_count ?? null,
+            latestPhotoDate: prev?.latest?.latest_photo_date ?? null,
+            photoFreshnessScore: prev?.latest?.photo_freshness_score ?? null,
+            primaryCategory: prev?.latest?.primary_category ?? null,
+            postsCount: prev?.latest?.posts_count ?? null,
+            hasDescription: prev?.latest?.has_description ?? null,
+            hasWebsite: prev?.latest?.has_website ?? null,
           };
         });
 
@@ -233,6 +265,17 @@ async function handleCompetitorSearch(
           priceLevel: p.price_level ?? null,
           score,
           alerts,
+          // ── Enhanced profile attributes ──
+          photo_count: p.photos?.length ?? null,
+          latest_photo_date: p.latest_photo_date || null,
+          photo_freshness_score: null, // computed after by caller
+          primary_category: p.types?.[0] || null,
+          hours_json: p.opening_hours?.periods || null,
+          services: Array.isArray(p.service_items) ? p.service_items.map(String) : [],
+          posts_count: p.posts_count ?? 0,
+          has_description: !!p.description,
+          has_website: !!p.website,
+          attributes: p.attributes || {},
         };
       });
 
@@ -252,6 +295,18 @@ async function handleCompetitorSearch(
               competitors.length
           )
         : null;
+
+    // ── Compute photo freshness scores ──────────────────────────
+    const today = new Date().toISOString().slice(0, 10);
+    for (const c of competitors) {
+      if (c.photo_count !== null && c.photo_count !== undefined) {
+        c.photo_freshness_score = calculatePhotoFreshnessScore({
+          photoCount: c.photo_count,
+          latestPhotoDate: c.latest_photo_date ?? null,
+          snapshotDate: today,
+        });
+      }
+    }
 
     // ── Persist competitors + snapshots ──────────────────────────
     const competitorIds = await persistCompetitors(supabase, user.id, resolvedLocation, competitors);
@@ -299,6 +354,14 @@ async function handleCompetitorSearch(
           prev?.previous?.score
         ),
         snapshotHistory: prev?.history ?? [],
+        // ── Enhanced profile attributes ──
+        photoCount: prev?.latest?.photo_count ?? c.photo_count ?? null,
+        latestPhotoDate: prev?.latest?.latest_photo_date ?? c.latest_photo_date ?? null,
+        photoFreshnessScore: prev?.latest?.photo_freshness_score ?? c.photo_freshness_score ?? null,
+        primaryCategory: prev?.latest?.primary_category ?? c.primary_category ?? null,
+        postsCount: prev?.latest?.posts_count ?? c.posts_count ?? null,
+        hasDescription: prev?.latest?.has_description ?? c.has_description ?? null,
+        hasWebsite: prev?.latest?.has_website ?? c.has_website ?? null,
       };
     });
 
@@ -377,6 +440,17 @@ async function persistSnapshots(
       alerts: c.alerts,
       snapshot_source: "live",
       snapshot_date: new Date().toISOString().slice(0, 10),
+      photo_count: (c as any).photo_count ?? null,
+      latest_photo_date: (c as any).latest_photo_date ?? null,
+      photo_freshness_score: (c as any).photo_freshness_score ?? null,
+      categories: (c as any).categories ?? null,
+      primary_category: (c as any).primary_category ?? null,
+      hours_json: (c as any).hours_json ?? null,
+      services: (c as any).services ?? null,
+      posts_count: (c as any).posts_count ?? null,
+      has_description: (c as any).has_description ?? null,
+      has_website: (c as any).has_website ?? null,
+      attributes: (c as any).attributes ?? null,
     };
   });
 
