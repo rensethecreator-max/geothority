@@ -1,4 +1,4 @@
-# Geothority Competitor Monitoring Automation Plan
+# Plan: Geothority Automated Competitor Monitoring
 
 ## Goal
 Implement automated competitor monitoring and notification system to provide users with proactive insights into market shifts.
