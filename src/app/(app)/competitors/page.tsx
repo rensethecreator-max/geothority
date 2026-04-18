@@ -14,6 +14,10 @@ import {
   MapPin,
   Star,
   MessageSquare,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Sparkles,
 } from "lucide-react";
 import { ComparisonCards } from "@/components/competitors/comparison-cards";
 import Link from "next/link";
@@ -25,6 +29,18 @@ interface CompetitorAlert {
   severity: "info" | "warning" | "critical";
   detectedAt: string;
   competitor?: string;
+  isNew?: boolean;
+  delta?: string;
+}
+
+interface SnapshotEntry {
+  id: string;
+  rating: number | null;
+  review_count: number;
+  score: number;
+  rank_position: number;
+  snapshot_date: string;
+  created_at: string;
 }
 
 interface Competitor {
@@ -38,6 +54,10 @@ interface Competitor {
   reviewCount: number;
   address: string | null;
   alerts: CompetitorAlert[];
+  ratingDelta: number | null;
+  reviewCountDelta: number | null;
+  scoreDelta: number | null;
+  snapshotHistory: SnapshotEntry[];
 }
 
 interface CompetitorPayload {
@@ -46,6 +66,54 @@ interface CompetitorPayload {
   location?: string;
   businessType?: string;
   insights?: string[];
+}
+
+function DeltaIndicator({ value, label }: { value: number | null; label: string }) {
+  if (value == null) return null;
+  const isUp = value > 0;
+  const isDown = value < 0;
+  const Icon = isUp ? TrendingUp : isDown ? TrendingDown : Minus;
+  const color = isUp ? "text-emerald-400" : isDown ? "text-red-400" : "text-[var(--muted-foreground)]";
+
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium ${color}`} title={`${label}: ${value > 0 ? "+" : ""}${value}`}>
+      <Icon className="w-3 h-3" />
+      {value > 0 ? "+" : ""}{Number.isInteger(value) ? value : value.toFixed(1)}
+    </span>
+  );
+}
+
+function Sparkline({ history }: { history: SnapshotEntry[] }) {
+  if (history.length < 2) return null;
+
+  const scores = history
+    .slice()
+    .reverse()
+    .map((s) => s.score);
+  const max = Math.max(...scores, 1);
+  const width = 80;
+  const height = 24;
+  const step = width / (scores.length - 1);
+
+  const points = scores
+    .map((s, i) => `${i * step},${height - (s / max) * height}`)
+    .join(" ");
+
+  const trend = scores[scores.length - 1] - scores[0];
+  const stroke = trend > 0 ? "#34d399" : trend < 0 ? "#f87171" : "#9ca3af";
+
+  return (
+    <svg width={width} height={height} className="opacity-70">
+      <polyline
+        points={points}
+        fill="none"
+        stroke={stroke}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
 export default function CompetitorsPage() {
@@ -58,6 +126,7 @@ export default function CompetitorsPage() {
   const [businessType, setBusinessType] = useState<string | null>(null);
   const [insights, setInsights] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState<string | null>(null);
 
   useEffect(() => {
     void load();
@@ -134,7 +203,14 @@ export default function CompetitorsPage() {
 
   const allAlerts = competitors
     .flatMap((c) => c.alerts.map((a) => ({ ...a, competitor: c.businessName })))
-    .sort((a, b) => new Date(b.detectedAt).getTime() - new Date(a.detectedAt).getTime());
+    .sort((a, b) => {
+      // New/delta alerts float to top
+      if (a.isNew && !b.isNew) return -1;
+      if (!a.isNew && b.isNew) return 1;
+      return new Date(b.detectedAt).getTime() - new Date(a.detectedAt).getTime();
+    });
+
+  const hasAnyHistory = competitors.some((c) => c.snapshotHistory.length >= 2);
 
   return (
     <div className="space-y-6">
@@ -144,6 +220,7 @@ export default function CompetitorsPage() {
           <p className="text-sm text-[var(--muted-foreground)]">
             Tracking {competitors.length} live competitors{location ? ` in ${location}` : ""}
             {businessType ? ` for ${businessType}` : ""}
+            {hasAnyHistory && " · historical comparison active"}
           </p>
         </div>
         <button
@@ -178,7 +255,13 @@ export default function CompetitorsPage() {
           <div className="p-4 border-b border-[var(--border)]">
             <h2 className="font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              Live signals ({allAlerts.length})
+              Signals ({allAlerts.length})
+              {allAlerts.some((a) => a.isNew) && (
+                <Badge variant="secondary" className="bg-electric-500/10 text-electric-500 text-[10px]">
+                  <Sparkles className="w-3 h-3 mr-0.5" />
+                  New changes
+                </Badge>
+              )}
             </h2>
           </div>
           <div className="divide-y divide-[var(--border)]">
@@ -198,6 +281,18 @@ export default function CompetitorsPage() {
                     >
                       {alert.severity}
                     </Badge>
+                    {alert.isNew && (
+                      <Badge variant="secondary" className="bg-electric-500/15 text-electric-500 text-[10px]">
+                        NEW
+                      </Badge>
+                    )}
+                    {alert.delta && (
+                      <span className={`text-[11px] font-mono font-semibold ${
+                        alert.delta.startsWith("+") ? "text-emerald-400" : alert.delta.startsWith("-") ? "text-red-400" : "text-[var(--muted-foreground)]"
+                      }`}>
+                        {alert.delta}
+                      </span>
+                    )}
                     <span className="text-xs text-[var(--muted-foreground)]">
                       {alert.competitor}
                     </span>
@@ -259,8 +354,11 @@ export default function CompetitorsPage() {
                 <div className="font-semibold text-sm">{comp.businessName}</div>
                 <div className="text-xs text-[var(--muted-foreground)]">{comp.domain}</div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold">{comp.score}</div>
+              <div className="text-right flex flex-col items-end gap-1">
+                <div className="flex items-center gap-2">
+                  <div className="text-2xl font-bold">{comp.score}</div>
+                  <DeltaIndicator value={comp.scoreDelta} label="Score" />
+                </div>
                 <div className="text-xs text-[var(--muted-foreground)]">Market score</div>
               </div>
             </div>
@@ -279,12 +377,14 @@ export default function CompetitorsPage() {
               {comp.rating !== null && (
                 <div className="flex items-center gap-2">
                   <Star className="h-3.5 w-3.5 text-amber-400" />
-                  <span>{comp.rating.toFixed(1)}★ average rating</span>
+                  <span>{Number(comp.rating).toFixed(1)}★ average rating</span>
+                  <DeltaIndicator value={comp.ratingDelta} label="Rating" />
                 </div>
               )}
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-3.5 w-3.5" />
                 <span>{comp.reviewCount.toLocaleString()} Google reviews</span>
+                <DeltaIndicator value={comp.reviewCountDelta} label="Reviews" />
               </div>
               {comp.address && (
                 <div className="flex items-start gap-2">
@@ -294,8 +394,43 @@ export default function CompetitorsPage() {
               )}
             </div>
 
+            {/* Sparkline history */}
+            {comp.snapshotHistory.length >= 2 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setShowHistory(showHistory === comp.id ? null : comp.id)}
+                  className="text-[11px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors flex items-center gap-1"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  {showHistory === comp.id ? "Hide" : "Show"} trend
+                </button>
+                {showHistory === comp.id && (
+                  <div className="mt-2 space-y-1">
+                    <Sparkline history={comp.snapshotHistory} />
+                    <div className="space-y-0.5 mt-2">
+                      {comp.snapshotHistory.slice(0, 5).map((snap, si) => (
+                        <div key={snap.id} className="flex items-center justify-between text-[10px] text-[var(--muted-foreground)]">
+                          <span>{new Date(snap.snapshot_date).toLocaleDateString()}</span>
+                          <span className="tabular-nums">
+                            {snap.score}pts · {snap.rating != null ? `${Number(snap.rating).toFixed(1)}★` : "—"} · {snap.review_count} rev
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
-              <span>{comp.alerts.length} live signals</span>
+              <span>
+                {comp.alerts.filter((a) => a.isNew).length > 0 && (
+                  <span className="text-electric-500 mr-1">
+                    {comp.alerts.filter((a) => a.isNew).length} new
+                  </span>
+                )}
+                {comp.alerts.length} signals
+              </span>
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 Checked {new Date(comp.lastChecked).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

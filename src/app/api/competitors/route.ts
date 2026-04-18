@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { requirePlan } from "@/lib/plan-gate";
 
+type CompetitorAlert = {
+  type: string;
+  title: string;
+  description: string;
+  severity: "info" | "warning" | "critical";
+  detectedAt: string;
+  isNew?: boolean;
+  delta?: string;
+};
+
 type CompetitorResult = {
   placeId: string;
   name: string;
@@ -13,18 +23,24 @@ type CompetitorResult = {
   openNow: boolean | null;
   priceLevel: number | null;
   score: number;
-  alerts: {
-    type: string;
-    title: string;
-    description: string;
-    severity: "info" | "warning" | "critical";
-    detectedAt: string;
-  }[];
+  alerts: CompetitorAlert[];
+};
+
+type SnapshotRow = {
+  id: string;
+  competitor_id: string;
+  rating: number | null;
+  review_count: number;
+  score: number;
+  rank_position: number;
+  alerts: CompetitorAlert[];
+  snapshot_date: string;
+  created_at: string;
 };
 
 /**
  * GET /api/competitors?type=insurance+agent&location=Tampa,FL&refresh=1
- * POST /api/competitors { businessType, location, userBusinessName? }
+ * POST /api/competitors { businessType, location, userBusinessName?, refresh }
  */
 
 export async function GET(req: NextRequest) {
@@ -78,6 +94,9 @@ async function handleCompetitorSearch(
       );
     }
 
+    // ── Fetch historical snapshots for change detection ──────────
+    const previousSnapshots = await fetchPreviousSnapshots(supabase, user.id);
+
     if (!refresh) {
       const { data: stored } = await supabase
         .from("competitors")
@@ -87,24 +106,37 @@ async function handleCompetitorSearch(
         .limit(10);
 
       if (stored && stored.length > 0) {
-        const competitors = stored.map((row: any) => ({
-          id: row.id,
-          placeId: row.id,
-          name: row.business_name,
-          businessName: row.business_name,
-          address: null,
-          domain: row.domain,
-          city: row.city,
-          rankPosition: row.rank_position,
-          lastChecked: row.last_checked,
-          rating: null,
-          reviewCount: 0,
-          categories: [],
-          openNow: null,
-          priceLevel: null,
-          score: estimateScoreFromAlerts(row.alerts),
-          alerts: Array.isArray(row.alerts) ? row.alerts : [],
-        }));
+        const competitors = stored.map((row: any) => {
+          const prev = previousSnapshots[row.id];
+          const enrichedAlerts = enrichAlertsWithDiffs(
+            Array.isArray(row.alerts) ? row.alerts : [],
+            prev?.latest,
+            prev?.previous
+          );
+
+          return {
+            id: row.id,
+            placeId: row.id,
+            name: row.business_name,
+            businessName: row.business_name,
+            address: null,
+            domain: row.domain,
+            city: row.city,
+            rankPosition: row.rank_position,
+            lastChecked: row.last_checked,
+            rating: prev?.latest?.rating ?? null,
+            reviewCount: prev?.latest?.review_count ?? 0,
+            categories: [],
+            openNow: null,
+            priceLevel: null,
+            score: prev?.latest?.score ?? estimateScoreFromAlerts(row.alerts),
+            alerts: enrichedAlerts,
+            ratingDelta: computeDelta(prev?.latest?.rating, prev?.previous?.rating),
+            reviewCountDelta: computeDelta(prev?.latest?.review_count, prev?.previous?.review_count),
+            scoreDelta: computeDelta(prev?.latest?.score, prev?.previous?.score),
+            snapshotHistory: prev?.history ?? [],
+          };
+        });
 
         const allAlerts = competitors.flatMap((c: any) =>
           (c.alerts || []).map((a: any) => ({ ...a, competitor: c.name }))
@@ -124,6 +156,7 @@ async function handleCompetitorSearch(
       }
     }
 
+    // ── Live scan ────────────────────────────────────────────────
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -219,11 +252,24 @@ async function handleCompetitorSearch(
           )
         : null;
 
-    await persistCompetitors(supabase, user.id, resolvedLocation, competitors);
+    // ── Persist competitors + snapshots ──────────────────────────
+    const competitorIds = await persistCompetitors(supabase, user.id, resolvedLocation, competitors);
+    await persistSnapshots(supabase, user.id, competitorIds, competitors);
 
-    return NextResponse.json({
-      competitors: competitors.map((c, index) => ({
-        id: c.placeId,
+    // ── Re-fetch snapshots for enriched response ──────────────────
+    const freshSnapshots = await fetchPreviousSnapshots(supabase, user.id);
+
+    const enrichedCompetitors = competitors.map((c, index) => {
+      const compId = competitorIds[index];
+      const prev = freshSnapshots[compId];
+      const enrichedAlerts = enrichAlertsWithDiffs(
+        c.alerts,
+        prev?.latest,
+        prev?.previous
+      );
+
+      return {
+        id: compId,
         placeId: c.placeId,
         name: c.name,
         businessName: c.name,
@@ -238,8 +284,25 @@ async function handleCompetitorSearch(
         openNow: c.openNow,
         priceLevel: c.priceLevel,
         score: c.score,
-        alerts: c.alerts,
-      })),
+        alerts: enrichedAlerts,
+        ratingDelta: computeDelta(
+          prev?.latest?.rating ?? c.rating,
+          prev?.previous?.rating
+        ),
+        reviewCountDelta: computeDelta(
+          prev?.latest?.review_count ?? c.reviewCount,
+          prev?.previous?.review_count
+        ),
+        scoreDelta: computeDelta(
+          prev?.latest?.score ?? c.score,
+          prev?.previous?.score
+        ),
+        snapshotHistory: prev?.history ?? [],
+      };
+    });
+
+    return NextResponse.json({
+      competitors: enrichedCompetitors,
       total: competitors.length,
       businessType: resolvedBusinessType,
       location: resolvedLocation,
@@ -258,6 +321,143 @@ async function handleCompetitorSearch(
     );
   }
 }
+
+// ── Snapshot helpers ────────────────────────────────────────────
+
+async function fetchPreviousSnapshots(
+  supabase: any,
+  userId: string
+): Promise<Record<string, { latest: SnapshotRow | null; previous: SnapshotRow | null; history: SnapshotRow[] }>> {
+  const { data } = await supabase
+    .from("competitor_snapshots")
+    .select("*")
+    .eq("user_id", userId)
+    .order("snapshot_date", { ascending: false });
+
+  if (!data || data.length === 0) return {};
+
+  const grouped: Record<string, SnapshotRow[]> = {};
+  for (const row of data) {
+    const key = row.competitor_id;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(row);
+  }
+
+  const result: Record<string, { latest: SnapshotRow | null; previous: SnapshotRow | null; history: SnapshotRow[] }> = {};
+  for (const [compId, rows] of Object.entries(grouped)) {
+    result[compId] = {
+      latest: rows[0] ?? null,
+      previous: rows[1] ?? null,
+      history: rows.slice(0, 8), // keep last 8 snapshots for sparkline
+    };
+  }
+
+  return result;
+}
+
+async function persistSnapshots(
+  supabase: any,
+  userId: string,
+  competitorIds: string[],
+  competitors: CompetitorResult[]
+) {
+  if (competitorIds.length === 0) return;
+
+  const rows = competitorIds.map((compId, index) => {
+    const c = competitors[index];
+    return {
+      user_id: userId,
+      competitor_id: compId,
+      place_id: c.placeId,
+      rating: c.rating,
+      review_count: c.reviewCount,
+      score: c.score,
+      rank_position: index + 1,
+      alerts: c.alerts,
+      snapshot_source: "live",
+      snapshot_date: new Date().toISOString().slice(0, 10),
+    };
+  });
+
+  // Upsert — one snapshot per competitor per day
+  const { error } = await supabase
+    .from("competitor_snapshots")
+    .upsert(rows, { onConflict: "competitor_id,snapshot_date" });
+
+  if (error) {
+    console.error("Failed to persist competitor snapshots:", error);
+  }
+}
+
+function enrichAlertsWithDiffs(
+  currentAlerts: CompetitorAlert[],
+  latestSnapshot: SnapshotRow | null,
+  previousSnapshot: SnapshotRow | null
+): CompetitorAlert[] {
+  const enriched = [...currentAlerts];
+
+  if (!previousSnapshot || !latestSnapshot) return enriched;
+
+  // ── Rating change ─────────────────────────────────────────
+  if (latestSnapshot.rating !== null && previousSnapshot.rating !== null) {
+    const ratingDiff = Number(latestSnapshot.rating) - Number(previousSnapshot.rating);
+    if (Math.abs(ratingDiff) >= 0.1) {
+      enriched.push({
+        type: "rating_change",
+        title: `Rating ${ratingDiff > 0 ? "increased" : "decreased"} to ${Number(latestSnapshot.rating).toFixed(1)}★`,
+        description: `Changed from ${Number(previousSnapshot.rating).toFixed(1)}★ (Δ ${ratingDiff > 0 ? "+" : ""}${ratingDiff.toFixed(1)})`,
+        severity: ratingDiff <= -0.3 ? "warning" : "info",
+        detectedAt: new Date().toISOString(),
+        isNew: true,
+        delta: `${ratingDiff > 0 ? "+" : ""}${ratingDiff.toFixed(1)}`,
+      });
+    }
+  }
+
+  // ── Review count change ────────────────────────────────────
+  const reviewDiff = (latestSnapshot.review_count ?? 0) - (previousSnapshot.review_count ?? 0);
+  if (reviewDiff !== 0) {
+    enriched.push({
+      type: "review_count_change",
+      title: `${reviewDiff > 0 ? "Gained" : "Lost"} ${Math.abs(reviewDiff)} review${Math.abs(reviewDiff) !== 1 ? "s" : ""}`,
+      description: `Now at ${latestSnapshot.review_count} reviews (was ${previousSnapshot.review_count})`,
+      severity: reviewDiff >= 10 ? "warning" : "info",
+      detectedAt: new Date().toISOString(),
+      isNew: true,
+      delta: `${reviewDiff > 0 ? "+" : ""}${reviewDiff}`,
+    });
+  }
+
+  // ── Score change ───────────────────────────────────────────
+  const scoreDiff = (latestSnapshot.score ?? 0) - (previousSnapshot.score ?? 0);
+  if (Math.abs(scoreDiff) >= 3) {
+    enriched.push({
+      type: "score_change",
+      title: `Market score ${scoreDiff > 0 ? "increased" : "dropped"} to ${latestSnapshot.score}`,
+      description: `Was ${previousSnapshot.score} (Δ ${scoreDiff > 0 ? "+" : ""}${scoreDiff})`,
+      severity: scoreDiff <= -5 ? "warning" : "info",
+      detectedAt: new Date().toISOString(),
+      isNew: true,
+      delta: `${scoreDiff > 0 ? "+" : ""}${scoreDiff}`,
+    });
+  }
+
+  return enriched;
+}
+
+function computeDelta(
+  current: number | null | undefined,
+  previous: number | null | undefined
+): number | null {
+  if (current == null || previous == null) return null;
+  const cur = typeof current === "number" ? current : Number(current);
+  const prev = typeof previous === "number" ? previous : Number(previous);
+  if (isNaN(cur) || isNaN(prev)) return null;
+  const diff = cur - prev;
+  return Math.abs(diff) < 0.001 ? null : Number(diff.toFixed(2));
+}
+
+// ── Existing helpers ────────────────────────────────────────────
 
 async function getCompetitorContext(supabase: any, userId: string) {
   const { data: profile } = await supabase
@@ -357,7 +557,7 @@ function buildLiveAlerts(
   rankIndex: number
 ) {
   const detectedAt = new Date().toISOString();
-  const alerts: CompetitorResult["alerts"] = [];
+  const alerts: CompetitorAlert[] = [];
 
   if (rankIndex < 3) {
     alerts.push({
@@ -397,22 +597,32 @@ async function persistCompetitors(
   userId: string,
   location: string,
   competitors: CompetitorResult[]
-) {
+): Promise<string[]> {
   await supabase.from("competitors").delete().eq("user_id", userId);
 
-  if (competitors.length === 0) return;
+  if (competitors.length === 0) return [];
 
-  await supabase.from("competitors").insert(
-    competitors.map((c, index) => ({
-      user_id: userId,
-      domain: c.domain,
-      business_name: c.name,
-      city: location,
-      rank_position: index + 1,
-      last_checked: new Date().toISOString(),
-      alerts: c.alerts,
-    }))
-  );
+  const rows = competitors.map((c, index) => ({
+    user_id: userId,
+    domain: c.domain,
+    business_name: c.name,
+    city: location,
+    rank_position: index + 1,
+    last_checked: new Date().toISOString(),
+    alerts: c.alerts,
+  }));
+
+  const { data, error } = await supabase
+    .from("competitors")
+    .insert(rows)
+    .select("id");
+
+  if (error) {
+    console.error("Failed to persist competitors:", error);
+    return [];
+  }
+
+  return (data || []).map((r: any) => r.id);
 }
 
 function estimateScoreFromAlerts(alerts: any) {
