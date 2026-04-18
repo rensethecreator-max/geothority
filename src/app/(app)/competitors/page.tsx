@@ -10,116 +10,110 @@ import {
   AlertTriangle,
   Clock,
   ArrowRight,
+  RefreshCw,
+  MapPin,
+  Star,
+  MessageSquare,
 } from "lucide-react";
 import { ComparisonCards } from "@/components/competitors/comparison-cards";
 import Link from "next/link";
 
-interface MockCompetitor {
+interface CompetitorAlert {
+  type: string;
+  title: string;
+  description: string;
+  severity: "info" | "warning" | "critical";
+  detectedAt: string;
+  competitor?: string;
+}
+
+interface Competitor {
   id: string;
   domain: string;
   businessName: string;
   city: string;
   score: number;
   lastChecked: string;
-  alerts: {
-    type: string;
-    title: string;
-    description: string;
-    severity: "info" | "warning" | "critical";
-    detectedAt: string;
-  }[];
+  rating: number | null;
+  reviewCount: number;
+  address: string | null;
+  alerts: CompetitorAlert[];
 }
 
-// Mock data for MVP
-const MOCK_COMPETITORS: MockCompetitor[] = [
-  {
-    id: "1",
-    domain: "austininsurancegroup.com",
-    businessName: "Austin Insurance Group",
-    city: "Austin",
-    score: 78,
-    lastChecked: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    alerts: [
-      {
-        type: "new_page",
-        title: "New city page detected",
-        description: 'Published "Round Rock Auto Insurance" landing page (1,200 words)',
-        severity: "warning",
-        detectedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        type: "review_burst",
-        title: "Review burst detected",
-        description: "Received 8 new Google reviews in the past week (avg: 2/week)",
-        severity: "critical",
-        detectedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ],
-  },
-  {
-    id: "2",
-    domain: "trustedtxagent.com",
-    businessName: "Trusted TX Insurance",
-    city: "Austin",
-    score: 72,
-    lastChecked: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    alerts: [
-      {
-        type: "new_page",
-        title: "Schema markup added",
-        description: "Added LocalBusiness + FAQPage schema to all service pages",
-        severity: "info",
-        detectedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ],
-  },
-  {
-    id: "3",
-    domain: "austin-coverage.com",
-    businessName: "Austin Coverage Experts",
-    city: "Austin",
-    score: 65,
-    lastChecked: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-    alerts: [],
-  },
-];
+interface CompetitorPayload {
+  competitors: Competitor[];
+  userScore: number | null;
+  location?: string;
+  businessType?: string;
+  insights?: string[];
+}
 
 export default function CompetitorsPage() {
   const [loading, setLoading] = useState(true);
-  const [competitors, setCompetitors] = useState<MockCompetitor[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [hasProfile, setHasProfile] = useState(false);
   const [userScore, setUserScore] = useState(0);
+  const [location, setLocation] = useState<string | null>(null);
+  const [businessType, setBusinessType] = useState<string | null>(null);
+  const [insights, setInsights] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function load() {
+    void load();
+  }, []);
+
+  async function load(refresh = false) {
+    if (refresh) setRefreshing(true);
+    else setLoading(true);
+
+    try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data: profile } = await supabase
         .from("user_profiles")
-        .select("city, plan")
+        .select("city, state")
         .eq("id", user.id)
         .single();
 
-      if (profile?.city) {
-        setHasProfile(true);
-        // In production, load from Supabase. MVP uses mock data.
-        setCompetitors(MOCK_COMPETITORS);
-        // Load latest scan score for comparison
-        const { data: latestScan } = await supabase
-          .from("scans")
-          .select("geothority_score, business_name, url")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-        if (latestScan?.geothority_score) setUserScore(latestScan.geothority_score);
+      if (!profile?.city) {
+        setHasProfile(false);
+        setLoading(false);
+        return;
       }
+
+      setHasProfile(true);
+
+      const res = await fetch(`/api/competitors${refresh ? "?refresh=1" : ""}`, {
+        cache: "no-store",
+      });
+      const payload: CompetitorPayload & { error?: string; message?: string } =
+        await res.json();
+
+      if (!res.ok) {
+        throw new Error(payload.message || payload.error || "Failed to load competitors");
+      }
+
+      setCompetitors(payload.competitors || []);
+      setUserScore(payload.userScore || 0);
+      setLocation(payload.location || `${profile.city}${profile.state ? `, ${profile.state}` : ""}`);
+      setBusinessType(payload.businessType || null);
+      setInsights(payload.insights || []);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || "Failed to load competitors");
+    } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-    load();
-  }, []);
+  }
 
   if (loading) return <ContentSkeleton />;
 
@@ -144,22 +138,47 @@ export default function CompetitorsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Competitor Watchdog</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
-            Tracking {competitors.length} competitors in your area
+            Tracking {competitors.length} live competitors{location ? ` in ${location}` : ""}
+            {businessType ? ` for ${businessType}` : ""}
           </p>
         </div>
+        <button
+          onClick={() => void load(true)}
+          disabled={refreshing}
+          className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium hover:bg-white/5 disabled:opacity-60"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+          Refresh live market
+        </button>
       </div>
 
-      {/* Alerts */}
+      {error && (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-200">
+          {error}
+        </div>
+      )}
+
+      {insights.length > 0 && (
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
+          <h2 className="mb-3 font-semibold">Live market takeaways</h2>
+          <ul className="space-y-2 text-sm text-[var(--muted-foreground)]">
+            {insights.map((insight, i) => (
+              <li key={i}>• {insight}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {allAlerts.length > 0 && (
         <div className="bg-[var(--card)] rounded-xl border border-[var(--border)]">
           <div className="p-4 border-b border-[var(--border)]">
             <h2 className="font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              Recent Alerts ({allAlerts.length})
+              Live signals ({allAlerts.length})
             </h2>
           </div>
           <div className="divide-y divide-[var(--border)]">
@@ -207,8 +226,6 @@ export default function CompetitorsPage() {
         </div>
       )}
 
-      {/* Competitors Grid */}
-      {/* Side-by-side comparison cards */}
       {userScore > 0 && (
         <ComparisonCards
           you={{
@@ -224,14 +241,13 @@ export default function CompetitorsPage() {
             name: c.businessName,
             domain: c.domain,
             score: c.score,
-            rating: null,
-            reviewCount: null,
+            rating: c.rating,
+            reviewCount: c.reviewCount,
             citationCount: null,
           }))}
         />
       )}
 
-      {/* Detailed competitor cards */}
       <div className="grid md:grid-cols-3 gap-4">
         {competitors.map((comp) => (
           <div
@@ -245,11 +261,11 @@ export default function CompetitorsPage() {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold">{comp.score}</div>
-                <div className="text-xs text-[var(--muted-foreground)]">Score</div>
+                <div className="text-xs text-[var(--muted-foreground)]">Market score</div>
               </div>
             </div>
 
-            <div className="h-1.5 bg-[var(--background)] rounded-full overflow-hidden mb-3">
+            <div className="h-1.5 bg-[var(--background)] rounded-full overflow-hidden mb-4">
               <div
                 className={`h-full rounded-full ${
                   comp.score >= 70 ? "bg-score-good" :
@@ -259,8 +275,27 @@ export default function CompetitorsPage() {
               />
             </div>
 
+            <div className="space-y-2 text-xs text-[var(--muted-foreground)] mb-4">
+              {comp.rating !== null && (
+                <div className="flex items-center gap-2">
+                  <Star className="h-3.5 w-3.5 text-amber-400" />
+                  <span>{comp.rating.toFixed(1)}★ average rating</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>{comp.reviewCount.toLocaleString()} Google reviews</span>
+              </div>
+              {comp.address && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="mt-0.5 h-3.5 w-3.5" />
+                  <span>{comp.address}</span>
+                </div>
+              )}
+            </div>
+
             <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
-              <span>{comp.alerts.length} alerts</span>
+              <span>{comp.alerts.length} live signals</span>
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 Checked {new Date(comp.lastChecked).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
