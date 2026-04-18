@@ -100,8 +100,9 @@ async function handleCompetitorSearch(
     if (!refresh) {
       const { data: stored } = await supabase
         .from("competitors")
-        .select("id, domain, business_name, city, rank_position, last_checked, alerts")
+        .select("id, place_id, domain, business_name, city, address, rank_position, last_checked, alerts")
         .eq("user_id", user.id)
+        .eq("active", true)
         .order("rank_position", { ascending: true })
         .limit(10);
 
@@ -116,10 +117,10 @@ async function handleCompetitorSearch(
 
           return {
             id: row.id,
-            placeId: row.id,
+            placeId: row.place_id || row.id,
             name: row.business_name,
             businessName: row.business_name,
-            address: null,
+            address: row.address || null,
             domain: row.domain,
             city: row.city,
             rankPosition: row.rank_position,
@@ -598,31 +599,52 @@ async function persistCompetitors(
   location: string,
   competitors: CompetitorResult[]
 ): Promise<string[]> {
-  await supabase.from("competitors").delete().eq("user_id", userId);
+  if (competitors.length === 0) {
+    await supabase.from("competitors").update({ active: false }).eq("user_id", userId);
+    return [];
+  }
 
-  if (competitors.length === 0) return [];
+  await supabase.from("competitors").update({ active: false }).eq("user_id", userId);
 
   const rows = competitors.map((c, index) => ({
     user_id: userId,
+    place_id: c.placeId,
     domain: c.domain,
     business_name: c.name,
     city: location,
+    address: c.address,
     rank_position: index + 1,
     last_checked: new Date().toISOString(),
     alerts: c.alerts,
+    active: true,
   }));
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("competitors")
-    .insert(rows)
-    .select("id");
+    .upsert(rows, { onConflict: "user_id,place_id" });
 
   if (error) {
     console.error("Failed to persist competitors:", error);
     return [];
   }
 
-  return (data || []).map((r: any) => r.id);
+  const placeIds = competitors.map((c) => c.placeId).filter(Boolean);
+  const { data, error: fetchError } = await supabase
+    .from("competitors")
+    .select("id, place_id")
+    .eq("user_id", userId)
+    .eq("active", true)
+    .in("place_id", placeIds);
+
+  if (fetchError) {
+    console.error("Failed to fetch persisted competitors:", fetchError);
+    return [];
+  }
+
+  const idByPlace = new Map<string, string>((data || []).map((row: any) => [row.place_id, row.id]));
+  return competitors
+    .map((c) => idByPlace.get(c.placeId))
+    .filter((id): id is string => Boolean(id));
 }
 
 function estimateScoreFromAlerts(alerts: any) {
