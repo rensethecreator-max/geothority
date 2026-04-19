@@ -39,7 +39,7 @@ export default function AggregatorSettingsPage() {
       for (const p of data.providers) {
         setCreds((prev) => ({
           ...prev,
-          [p.provider]: { ...prev[p.provider], ...Object.fromEntries(Object.keys(p.credentials).map((k) => [k, "••••••••"])) },
+          [p.provider as AggregatorProvider]: { ...prev[p.provider as AggregatorProvider], ...Object.fromEntries(Object.keys(p.credentials).map((k) => [k, "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"])) },
         }));
       }
     }

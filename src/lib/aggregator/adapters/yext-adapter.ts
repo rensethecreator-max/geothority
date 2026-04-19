@@ -58,7 +58,7 @@ export class YextAdapter extends BaseAggregatorAdapter {
     try {
       const { status, data: res } = await this.request("POST", "/entities", payload);
       if (status === 200 || status === 201) {
-        const entityId = String(res.meta?.entityId ?? res.entityId ?? "");
+        const entityId = String((res.meta as any)?.entityId ?? (res as any).entityId ?? "");
         return this.buildPushResult({ providerLocationId: entityId }, Object.keys(payload));
       }
       const errors = (res.errors as Array<{ field: string; message: string }>)?.map((e) => ({

@@ -28,7 +28,7 @@ export abstract class BaseAggregatorAdapter implements IAdapter {
   abstract pullListing(businessId: string): Promise<ListingState>;
   abstract deleteListing(businessId: string): Promise<DeleteResult>;
   abstract mapPayload(data: CanonicalBusinessData): Record<string, unknown>;
-  abstract mapResponse(raw: Record<string, unknown>): Partial<ListingState>;
+  abstract mapResponse(raw: Record<string, unknown>): Partial<CanonicalBusinessData>;
   abstract healthCheck(): Promise<"ok" | "degraded" | "down">;
 
   // ─── Shared helpers ───────────────────────────────────────────────────

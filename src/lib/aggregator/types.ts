@@ -67,7 +67,7 @@ export interface AggregatorAdapter {
   mapPayload(data: CanonicalBusinessData): Record<string, unknown>;
 
   /** Map provider-specific response → canonical shape */
-  mapResponse(raw: Record<string, unknown>): Partial<ListingState>;
+  mapResponse(raw: Record<string, unknown>): Partial<CanonicalBusinessData>;
 
   /** Health check — lightweight ping. */
   healthCheck(): Promise<"ok" | "degraded" | "down">;
