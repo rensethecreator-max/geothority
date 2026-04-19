@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/competitor-monitoring",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/expansion-refresh",
+      "schedule": "0 3 * * 1"
     }
   ]
 }

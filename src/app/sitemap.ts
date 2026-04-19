@@ -97,5 +97,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
+    // Profile sitemap index
+    {
+      url: `${baseUrl}/profiles/sitemap.xml`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.9,
+    },
+    // RSS feed
+    {
+      url: `${baseUrl}/profiles/feed.xml`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    },
+    // Profiles directory
+    {
+      url: `${baseUrl}/profiles`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.85,
+    },
   ];
 }

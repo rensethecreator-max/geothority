@@ -53,7 +53,7 @@ export interface GeneratedContent {
   id: string;
   user_id: string;
   scan_id: string | null;
-  type: "landing_page" | "trust_page" | "faq" | "about";
+  type: "landing_page" | "blog_post" | "service_page" | "localized_faq" | "trust_page" | "about";
   city: string | null;
   service: string | null;
   title: string | null;

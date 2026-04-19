@@ -1,142 +1,136 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { DEFAULT_LLM_MODEL, openai } from "@/lib/openai";
 import { requirePlan } from "@/lib/plan-gate";
+import { streamContentGeneration } from "@/lib/content-generation";
+import type { ContentType, ContentBrief } from "@/lib/content-generation";
 
 export async function POST(req: NextRequest) {
   try {
-    // local page generation requires authority plan or above
     const gate = await requirePlan(req, "authority");
     if (gate.error) return gate.error;
     const user = gate.user;
     const supabase = await createServerSupabase();
 
-    const { city, service, businessName, agentName, scanId } = await req.json();
+    const {
+      contentType = "landing_page",
+      city,
+      service,
+      businessName,
+      agentName,
+      scanId,
+      industry,
+      targetKeyword,
+      competitorContext,
+      brief, // optional pre-generated brief
+    } = await req.json();
 
-    if (!city || !service || !businessName) {
+    if (!city || !businessName) {
       return new Response(
-        JSON.stringify({ error: "City, service, and business name are required" }),
+        JSON.stringify({ error: "City and business name are required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const prompt = `Generate a complete, SEO-optimized landing page for a local insurance agency. Follow these specifications exactly:
+    // Validate content type
+    const validTypes: ContentType[] = ["landing_page", "blog_post", "service_page", "localized_faq", "trust_page", "about"];
+    if (!validTypes.includes(contentType)) {
+      return new Response(
+        JSON.stringify({ error: `Invalid content type. Valid: ${validTypes.join(", ")}` }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-BUSINESS DETAILS:
-- Agency Name: ${businessName}
-- Agent Name: ${agentName || "Our Team"}
-- City: ${city}
-- Service: ${service}
-
-REQUIREMENTS:
-1. Write 800-1200 words of unique, locally-relevant content
-2. Include the city name naturally 8-12 times throughout
-3. Reference 2-3 local landmarks, neighborhoods, or geographic features specific to ${city}
-4. Include insurance-specific trust signals (licensing, years of experience, carrier partnerships)
-5. Include a compelling H1 title with city + service keywords
-6. Include 3-5 subheadings (H2/H3)
-7. Include a FAQ section with 4-5 questions and answers
-8. Write a meta title (under 60 chars) and meta description (under 160 chars)
-9. Include a clear call-to-action
-
-OUTPUT FORMAT (JSON):
-{
-  "title": "Page H1 title",
-  "metaTitle": "SEO meta title under 60 chars",
-  "metaDescription": "SEO meta description under 160 chars",
-  "contentHtml": "Full HTML content with semantic markup",
-  "contentMarkdown": "Same content in markdown",
-  "schema": {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [...]
-  },
-  "qualityScore": 85
-}
-
-Return ONLY valid JSON, no markdown fences.`;
-
-    // Stream the response
-    const stream = await openai.chat.completions.create({
-      model: DEFAULT_LLM_MODEL,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an expert local SEO content writer specializing in insurance agency websites. You create high-quality, locally-relevant content that ranks well in search and AI-powered answers. Always output valid JSON.",
-        },
-        { role: "user", content: prompt },
-      ],
-      max_tokens: 4000,
-      temperature: 0.8,
-      response_format: { type: "json_object" },
-      stream: true,
-    });
+    const parsedBrief: ContentBrief | undefined = brief ? JSON.parse(brief) : undefined;
 
     const encoder = new TextEncoder();
-    let fullContent = "";
+    let finalOutput: Record<string, unknown> | null = null;
+    let finalBrief: ContentBrief | null = null;
 
     const readable = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of stream) {
-            const token = chunk.choices[0]?.delta?.content || "";
-            if (token) {
-              fullContent += token;
-              const sseEvent = `data: ${JSON.stringify({ token })}\n\n`;
-              controller.enqueue(encoder.encode(sseEvent));
-            }
-
-            // Check for finish
-            if (chunk.choices[0]?.finish_reason === "stop") {
-              // Parse and save to Supabase
-              let generated: Record<string, unknown> = {};
-              try {
-                generated = JSON.parse(fullContent);
-              } catch {
-                controller.enqueue(
-                  encoder.encode(`data: ${JSON.stringify({ error: "Failed to parse AI response" })}\n\n`)
-                );
-                controller.close();
-                return;
-              }
-
-              const { data: content, error } = await supabase
-                .from("generated_content")
-                .insert({
-                  user_id: user.id,
-                  scan_id: scanId || null,
-                  type: "landing_page",
-                  city,
-                  service,
-                  title: (generated.title as string) || `${service} in ${city}`,
-                  meta_description: (generated.metaDescription as string) || "",
-                  content_html: (generated.contentHtml as string) || "",
-                  content_markdown: (generated.contentMarkdown as string) || "",
-                  schema_json: (generated.schema as Record<string, unknown>) || null,
-                  quality_score: (generated.qualityScore as number) || 80,
-                  status: "draft",
-                })
-                .select()
-                .single();
-
-              if (error) {
-                console.error("Supabase insert error:", error);
-                controller.enqueue(
-                  encoder.encode(`data: ${JSON.stringify({ error: "Failed to save content" })}\n\n`)
-                );
-              } else {
-                controller.enqueue(
-                  encoder.encode(`data: ${JSON.stringify({ done: true, content })}\n\n`)
-                );
-              }
+          for await (const event of streamContentGeneration({
+            contentType,
+            businessName,
+            agentName,
+            city,
+            service,
+            targetKeyword,
+            scanId,
+            industry,
+            competitorContext,
+            brief: parsedBrief,
+          })) {
+            if (event.type === "brief") {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "brief", brief: event.brief })}\n\n`)
+              );
+            } else if (event.type === "token") {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "token", token: event.token })}\n\n`)
+              );
+            } else if (event.type === "error") {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "error", error: event.error })}\n\n`)
+              );
               controller.close();
+              return;
+            } else if (event.type === "done") {
+              finalOutput = {
+                title: event.output.title,
+                metaTitle: event.output.metaTitle,
+                metaDescription: event.output.metaDescription,
+                contentHtml: event.output.contentHtml,
+                contentMarkdown: event.output.contentMarkdown,
+                schema: event.output.schema,
+                summary: event.output.summary,
+                qualityScore: event.output.qualityScore,
+                seoChecklist: event.output.seoChecklist,
+              };
+              finalBrief = event.brief;
             }
           }
+
+          // Save to Supabase
+          if (finalOutput && finalBrief) {
+            const { data: content, error } = await supabase
+              .from("generated_content")
+              .insert({
+                user_id: user.id,
+                scan_id: scanId || null,
+                type: contentType,
+                city,
+                service: service || null,
+                title: (finalOutput.title as string) || `${service || contentType} in ${city}`,
+                meta_description: (finalOutput.metaDescription as string) || "",
+                content_html: (finalOutput.contentHtml as string) || "",
+                content_markdown: (finalOutput.contentMarkdown as string) || "",
+                schema_json: (finalOutput.schema as Record<string, unknown>) || null,
+                quality_score: (finalOutput.qualityScore as number) || 80,
+                status: "draft",
+              })
+              .select()
+              .single();
+
+            if (error) {
+              console.error("Supabase insert error:", error);
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "error", error: "Failed to save content" })}\n\n`)
+              );
+            } else {
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: "done", content, brief: finalBrief, output: finalOutput })}\n\n`
+                )
+              );
+            }
+          }
+
+          controller.close();
         } catch (err) {
           console.error("Stream error:", err);
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ error: "Stream failed" })}\n\n`)
+            encoder.encode(`data: ${JSON.stringify({ type: "error", error: "Stream failed" })}\n\n`)
           );
           controller.close();
         }

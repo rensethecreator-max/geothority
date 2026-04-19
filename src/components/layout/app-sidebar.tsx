@@ -23,6 +23,9 @@ import {
   ClipboardList,
   MapPin,
   Globe,
+  Crosshair,
+  Target,
+  TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -42,6 +45,9 @@ const navItems = [
   { href: "/citations", label: "Citation Checker", icon: MapPin },
   { href: "/schema-generator", label: "Schema Generator", icon: Code },
   { href: "/settings/embed", label: "Install on Your Site", icon: Globe },
+  { href: "/expansion", label: "Smart Expansion", icon: TrendingUp },
+  { href: "/keyword-research", label: "Keyword Research", icon: Crosshair },
+  { href: "/serp-features", label: "SERP Optimizer", icon: Target },
   { href: "/ai-overview", label: "AI Overview ⭐", icon: Sparkles },
   { href: "/google-business", label: "Google Business", icon: Building2 },
   { href: "/billing", label: "Billing", icon: CreditCard },

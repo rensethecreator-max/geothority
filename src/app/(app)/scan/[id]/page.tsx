@@ -56,6 +56,38 @@ interface FixPackage {
   autoAppliedCount: number;
 }
 
+type FixExecutionMode = "AUTO" | "ASSISTED" | "GUIDED";
+
+type FixStepStatus = "pending" | "skipped" | "running" | "completed" | "failed" | "needs_input";
+
+interface FixStep {
+  id: string;
+  fixType: string;
+  title: string;
+  impact: "high" | "medium" | "low";
+  autoRunnable: boolean;
+  status: FixStepStatus;
+  userAction?: string;
+  resultMessage?: string;
+  startedAt?: string;
+  completedAt?: string;
+  verification?: { fixType: string; passed: boolean; message: string; scoreBefore?: number; scoreAfter?: number; verifiedAt: string };
+}
+
+interface FixExecutionPlan {
+  id: string;
+  scanId: string;
+  mode: FixExecutionMode;
+  steps: FixStep[];
+  createdAt: string;
+  progress: number;
+  total: number;
+  completed: number;
+  failed: number;
+  needsInput: number;
+  status: "planning" | "executing" | "paused" | "completed" | "failed";
+}
+
 /* ─── FixCard ─── */
 
 const fixTypeConfig: Record<FixItem["type"], { icon: React.ElementType; label: string; color: string }> = {
@@ -175,6 +207,9 @@ export default function ScanResultPage() {
   const [fixing, setFixing] = useState(false);
   const [fixPackage, setFixPackage] = useState<FixPackage | null>(null);
   const [fixError, setFixError] = useState<string | null>(null);
+  const [fixMode, setFixMode] = useState<FixExecutionMode>("ASSISTED");
+  const [execPlan, setExecPlan] = useState<FixExecutionPlan | null>(null);
+  const [executing, setExecuting] = useState(false);
   const supabase = createClient();
 
   // IMPORTANT: All hooks must be called before any conditional returns
@@ -234,6 +269,70 @@ export default function ScanResultPage() {
       setFixError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setFixing(false);
+    }
+  };
+
+  const handleStartExecution = async () => {
+    if (!fixPackage || !scan || executing) return;
+    setExecuting(true);
+    setFixError(null);
+
+    try {
+      // 1. Build execution plan
+      const planRes = await fetch("/api/fix-engine/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scanId: scan.id, mode: fixMode }),
+      });
+
+      if (!planRes.ok) {
+        const err = await planRes.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to create execution plan");
+      }
+
+      const plan: FixExecutionPlan = await planRes.json();
+      setExecPlan(plan);
+
+      // 2. Execute the plan
+      const execRes = await fetch("/api/fix-engine/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: plan.id }),
+      });
+
+      if (!execRes.ok) {
+        const err = await execRes.json().catch(() => ({}));
+        throw new Error(err.error || "Execution failed");
+      }
+
+      const executed: FixExecutionPlan = await execRes.json();
+      setExecPlan(executed);
+    } catch (err) {
+      setFixError(err instanceof Error ? err.message : "Execution failed");
+    } finally {
+      setExecuting(false);
+    }
+  };
+
+  const handleStepAction = async (stepId: string, action: "complete" | "skip") => {
+    if (!execPlan || executing) return;
+    setExecuting(true);
+    try {
+      const res = await fetch("/api/fix-engine/step", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: execPlan.id, stepId, action }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Step action failed");
+      }
+      const updated: FixExecutionPlan = await res.json();
+      setExecPlan(updated);
+    } catch (err) {
+      setFixError(err instanceof Error ? err.message : "Step action failed");
+    } finally {
+      setExecuting(false);
     }
   };
 

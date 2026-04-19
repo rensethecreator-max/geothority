@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { WillChatbot } from "@/components/chat/will-chatbot";
+import { generateOrganizationSchema, generateWebSiteSchema, generateSoftwareAppSchema } from "@/lib/data-layer/organization-schema";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -45,6 +46,11 @@ export const metadata: Metadata = {
     icon: ["/logo.svg", "/icons/icon-192x192.png"],
     apple: "/apple-touch-icon.png",
   },
+  alternates: {
+    types: {
+      "application/rss+xml": `${process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io"}/profiles/feed.xml`,
+    },
+  },
 };
 
 export const viewport: Viewport = {
@@ -68,6 +74,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateSoftwareAppSchema()) }} />
         <QueryProvider>
           {children}
           {/* Will AI assistant - present on both public marketing pages and the app */}

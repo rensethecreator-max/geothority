@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "R001",
+      "trigger": { "changeType": "photo_count", "severity": ["warning", "critical"] },
+      "interpretation": "Competitor increased visual content on their GBP, improving freshness and engagement signals.",
+      "countermeasures": [
+        { "action": "generate_photos", "priority": 1, "label": "Generate branded photo set", "description": "Create AI-generated branded images (team, office, seasonal graphics) to match or exceed competitor freshness." },
+        { "action": "upload_existing_photos", "priority": 2, "label": "Upload existing photos", "description": "Identify and upload any unpublished brand assets to GBP." },
+        { "action": "review_push", "priority": 3, "label": "Launch review solicitation", "description": "Reviews with photos amplify visual signals — start a review request campaign." },
+        { "action": "gbp_post", "priority": 4, "label": "Publish GBP post with image", "description": "A new GBP post with a strong image boosts engagement and visual recency." }
+      ]
+    },
+    {
+      "id": "R002",
+      "trigger": { "changeType": "photo_freshness", "severity": ["warning", "critical"] },
+      "interpretation": "Competitor's photo freshness score surged — their visual content is significantly more recent than before.",
+      "countermeasures": [
+        { "action": "generate_photos", "priority": 1, "label": "Generate fresh branded photos", "description": "Produce new, dated visual content to close the freshness gap." },
+        { "action": "gbp_post", "priority": 2, "label": "Publish GBP post with image", "description": "Posts with images contribute to visual freshness signals." },
+        { "action": "service_area_pages", "priority": 3, "label": "Create service area pages", "description": "Build location pages with images to strengthen geo + visual signals." }
+      ]
+    },
+    {
+      "id": "R003",
+      "trigger": { "changeType": "category", "severity": ["critical"] },
+      "interpretation": "Competitor changed their primary category, which can significantly shift local ranking dynamics.",
+      "countermeasures": [
+        { "action": "category_audit", "priority": 1, "label": "Audit your GBP categories", "description": "Review and optimize your primary and secondary categories against top-ranking competitors." },
+        { "action": "schema_improvement", "priority": 2, "label": "Improve schema markup", "description": "Ensure LocalBusiness schema matches your optimal category signals." }
+      ]
+    },
+    {
+      "id": "R004",
+      "trigger": { "changeType": "category", "severity": ["info", "warning"] },
+      "interpretation": "Competitor added or adjusted secondary categories, expanding their keyword coverage.",
+      "countermeasures": [
+        { "action": "category_audit", "priority": 1, "label": "Review category gaps", "description": "Check if relevant secondary categories are missing from your profile." },
+        { "action": "geo_content", "priority": 2, "label": "Create geo-targeted content", "description": "Build service+location pages to cover category keywords the competitor is targeting." }
+      ]
+    },
+    {
+      "id": "R005",
+      "trigger": { "changeType": "hours", "severity": ["warning"] },
+      "interpretation": "Competitor extended business hours, making them more available to potential customers.",
+      "countermeasures": [
+        { "action": "hours_update", "priority": 1, "label": "Update your GBP hours", "description": "Verify and update your hours — even minor corrections can improve trust signals." },
+        { "action": "faq_refresh", "priority": 2, "label": "Add/refresh FAQ about availability", "description": "FAQ content about hours, availability, and after-hours support captures intent." }
+      ]
+    },
+    {
+      "id": "R006",
+      "trigger": { "changeType": "services", "severity": ["warning", "critical"] },
+      "interpretation": "Competitor expanded their service offerings on GBP, increasing keyword and intent coverage.",
+      "countermeasures": [
+        { "action": "services_audit", "priority": 1, "label": "Audit your GBP services", "description": "Ensure all relevant services are listed on your profile." },
+        { "action": "geo_content", "priority": 2, "label": "Create service-specific landing pages", "description": "Build dedicated pages for services the competitor just added." },
+        { "action": "service_page", "priority": 3, "label": "Generate service page", "description": "Use AI to generate a detailed service page for the new competitor service area." },
+        { "action": "schema_improvement", "priority": 3, "label": "Update schema for service coverage", "description": "Add Service schema to match expanded offerings." }
+      ]
+    },
+    {
+      "id": "R007",
+      "trigger": { "changeType": "posts", "severity": ["warning", "critical"] },
+      "interpretation": "Competitor is actively posting on GBP, improving engagement and recency signals.",
+      "countermeasures": [
+        { "action": "gbp_post", "priority": 1, "label": "Increase GBP post cadence", "description": "Match or exceed competitor posting frequency with offer, event, and update posts." },
+        { "action": "generate_photos", "priority": 2, "label": "Generate post imagery", "description": "Create branded visuals to pair with GBP posts for stronger engagement." },
+        { "action": "faq_refresh", "priority": 3, "label": "Turn FAQs into posts", "description": "Repurpose FAQ content as GBP posts for consistent publishing." },
+        { "action": "blog_post", "priority": 4, "label": "Write a local blog post", "description": "Publish a locally-relevant blog article to boost content recency and topical authority." }
+      ]
+    },
+    {
+      "id": "R008",
+      "trigger": { "changeType": "description", "severity": ["warning"] },
+      "interpretation": "Competitor added or improved their business description, boosting profile completeness.",
+      "countermeasures": [
+        { "action": "description_optimize", "priority": 1, "label": "Optimize your GBP description", "description": "Rewrite your description with keyword-rich, compelling copy." }
+      ]
+    },
+    {
+      "id": "R009",
+      "trigger": { "changeType": "attributes", "severity": ["warning", "critical"] },
+      "interpretation": "Competitor enriched their GBP attributes, improving profile completeness and filtering signals.",
+      "countermeasures": [
+        { "action": "attributes_audit", "priority": 1, "label": "Audit your GBP attributes", "description": "Identify and add missing attributes (wheelchair accessible, online appointments, etc.)." },
+        { "action": "schema_improvement", "priority": 2, "label": "Align schema with attributes", "description": "Ensure schema markup reflects your GBP attribute selections." }
+      ]
+    },
+    {
+      "id": "R010",
+      "trigger": { "changeType": "photo_staleness", "severity": ["info"] },
+      "interpretation": "Competitor's visual content is stale — this is an opportunity, not a threat.",
+      "countermeasures": [
+        { "action": "generate_photos", "priority": 1, "label": "Upload fresh photos", "description": "Capitalise on competitor inactivity by uploading recent, high-quality photos." },
+        { "action": "gbp_post", "priority": 2, "label": "Publish a GBP post", "description": "Activity signal compounds the freshness advantage." }
+      ]
+    }
+  ],
+  "action_definitions": {
+    "generate_photos": {
+      "type": "asset_generation",
+      "label": "AI Photo Generation",
+      "description": "Generate brand-safe images via AI image generation pipeline.",
+      "requires_approval": true,
+      "output": "image_brief_set",
+      "fields": ["style", "concepts", "brand_colors", "count"]
+    },
+    "upload_existing_photos": {
+      "type": "manual_action",
+      "label": "Upload Existing Photos",
+      "description": "Identify and upload unpublished brand assets to GBP.",
+      "requires_approval": false,
+      "output": "upload_checklist",
+      "fields": ["source_folders", "min_count"]
+    },
+    "review_push": {
+      "type": "campaign",
+      "label": "Review Solicitation Campaign",
+      "description": "Launch a campaign requesting reviews from recent customers.",
+      "requires_approval": true,
+      "output": "campaign_config",
+      "fields": ["channel", "template", "target_count"]
+    },
+    "gbp_post": {
+      "type": "content_publishing",
+      "label": "GBP Post Creation",
+      "description": "Create and publish a GBP post (offer, event, or update).",
+      "requires_approval": true,
+      "output": "post_draft",
+      "fields": ["post_type", "topic", "cta_text", "image_required"]
+    },
+    "category_audit": {
+      "type": "audit",
+      "label": "Category Audit",
+      "description": "Review and optimize GBP primary and secondary categories.",
+      "requires_approval": false,
+      "output": "audit_report",
+      "fields": ["competitor_categories", "current_categories"]
+    },
+    "schema_improvement": {
+      "type": "technical",
+      "label": "Schema Improvement",
+      "description": "Update LocalBusiness schema to strengthen category/service signals.",
+      "requires_approval": true,
+      "output": "schema_diff",
+      "fields": ["current_schema", "target_schema_type"]
+    },
+    "service_area_pages": {
+      "type": "content_publishing",
+      "label": "Service Area Page Creation",
+      "description": "Generate city/service-area landing pages with images.",
+      "requires_approval": true,
+      "output": "page_drafts",
+      "fields": ["cities", "services", "template"]
+    },
+    "geo_content": {
+      "type": "content_publishing",
+      "label": "Geo-Targeted Content",
+      "description": "Create service+location landing pages for keyword coverage.",
+      "requires_approval": true,
+      "output": "page_drafts",
+      "fields": ["keywords", "locations", "count"]
+    },
+    "hours_update": {
+      "type": "manual_action",
+      "label": "Update GBP Hours",
+      "description": "Verify and correct business hours on your GBP.",
+      "requires_approval": false,
+      "output": "hours_checklist",
+      "fields": ["current_hours", "suggested_hours"]
+    },
+    "faq_refresh": {
+      "type": "content_publishing",
+      "label": "FAQ Content Refresh",
+      "description": "Add or update FAQ content on GBP or website.",
+      "requires_approval": false,
+      "output": "faq_draft",
+      "fields": ["topics", "format"]
+    },
+    "services_audit": {
+      "type": "audit",
+      "label": "Services Audit",
+      "description": "Review and expand GBP service listings.",
+      "requires_approval": false,
+      "output": "audit_report",
+      "fields": ["current_services", "competitor_services"]
+    },
+    "description_optimize": {
+      "type": "content_publishing",
+      "label": "Description Optimization",
+      "description": "Rewrite GBP business description with SEO-optimized copy.",
+      "requires_approval": true,
+      "output": "description_draft",
+      "fields": ["keywords", "tone", "max_length"]
+    },
+    "attributes_audit": {
+      "type": "audit",
+      "label": "Attributes Audit",
+      "description": "Identify and add missing GBP attributes.",
+      "requires_approval": false,
+      "output": "audit_report",
+      "fields": ["current_attributes", "competitor_attributes"]
+    },
+    "blog_post": {
+      "type": "content_publishing",
+      "label": "AI Blog Post Generation",
+      "description": "Generate an SEO-optimized blog post with local relevance and AI summarization support.",
+      "requires_approval": true,
+      "output": "blog_draft",
+      "fields": ["topic", "city", "primary_keyword", "secondary_keywords"]
+    },
+    "service_page": {
+      "type": "content_publishing",
+      "label": "AI Service Page Generation",
+      "description": "Generate a detailed service page with pricing language, local specifics, and schema markup.",
+      "requires_approval": true,
+      "output": "page_draft",
+      "fields": ["service", "city", "pricing_context", "trust_signals"]
+    },
+    "localized_faq": {
+      "type": "content_publishing",
+      "label": "AI Localized FAQ Generation",
+      "description": "Generate FAQ page optimized for AI Overview with concise, definitive answers.",
+      "requires_approval": false,
+      "output": "faq_draft",
+      "fields": ["city", "topics", "include_paa"]
+    }
+  }
+}
