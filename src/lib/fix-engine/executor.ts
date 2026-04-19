@@ -1,9 +1,10 @@
 // ============================================================
 // Geothority Fix Engine — Executor
 // Handles AUTO/ASSISTED/GUIDED mode execution, progress tracking,
-// and post-fix verification.
+// post-fix verification, and persisted execution plans.
 // ============================================================
 
+import { createServiceClient } from "@/lib/supabase/server";
 import {
   type FixExecutionMode,
   type FixExecutionPlan,
@@ -12,38 +13,13 @@ import {
   type FixVerificationResult,
 } from "./types";
 
-// ── In-memory execution state (per process) ─────────────────────
-// In production this would be persisted to Supabase; for now we
-// keep a Map keyed by execution plan id.
-
 const executions = new Map<string, FixExecutionPlan>();
 
-export function getExecution(planId: string): FixExecutionPlan | undefined {
-  return executions.get(planId);
-}
-
-// ── Step auto-runnability rules ──────────────────────────────────
-
 const AUTO_RUNNABLE_TYPES = new Set([
-  "listing_sync",       // always auto (queued to aggregator)
-  "meta_tags",          // content generated, user just copies
-  "schema",             // content generated, user just copies
+  "listing_sync",
+  "meta_tags",
+  "schema",
 ]);
-
-/**
- * Determine whether a fix type can run automatically based on mode.
- * AUTO  → everything auto-runnable executes immediately
- * ASSISTED → auto-runnable steps execute; others need one confirmation
- * GUIDED → every step requires explicit user action
- */
-function canAutoRun(fixType: string, mode: FixExecutionMode): boolean {
-  if (mode === "GUIDED") return false;
-  if (mode === "AUTO") return true;
-  // ASSISTED
-  return AUTO_RUNNABLE_TYPES.has(fixType);
-}
-
-// ── Build Execution Plan ────────────────────────────────────────
 
 interface FixItemInput {
   type: string;
@@ -52,55 +28,28 @@ interface FixItemInput {
   autoApplied: boolean;
 }
 
-let _planCounter = 0;
+interface FixExecutionPlanRow {
+  id: string;
+  user_id: string;
+  scan_id: string;
+  mode: FixExecutionMode;
+  steps: FixStep[];
+  progress: number;
+  total: number;
+  completed: number;
+  failed: number;
+  needs_input: number;
+  status: FixExecutionPlan["status"];
+  created_at: string;
+  updated_at: string;
+}
 
-export function buildExecutionPlan(
-  scanId: string,
-  mode: FixExecutionMode,
-  fixes: FixItemInput[]
-): FixExecutionPlan {
-  _planCounter++;
-  const planId = `plan_${Date.now()}_${_planCounter}`;
+let planCounter = 0;
 
-  const steps: FixStep[] = fixes.map((fix, i) => {
-    const auto = canAutoRun(fix.type, mode) || fix.autoApplied;
-    let status: FixStepStatus = "pending";
-    let userAction: string | undefined;
-
-    if (fix.autoApplied) {
-      status = "pending"; // will auto-execute
-    } else if (!auto) {
-      status = "needs_input";
-      userAction = getUserActionHint(fix.type);
-    }
-
-    return {
-      id: `step_${planId}_${i}`,
-      fixType: fix.type,
-      title: fix.title,
-      impact: fix.impact,
-      autoRunnable: auto,
-      status,
-      userAction,
-    };
-  });
-
-  const plan: FixExecutionPlan = {
-    id: planId,
-    scanId,
-    mode,
-    steps,
-    createdAt: new Date().toISOString(),
-    progress: 0,
-    total: steps.length,
-    completed: 0,
-    failed: 0,
-    needsInput: steps.filter((s) => s.status === "needs_input").length,
-    status: "planning",
-  };
-
-  executions.set(planId, plan);
-  return plan;
+function canAutoRun(fixType: string, mode: FixExecutionMode): boolean {
+  if (mode === "GUIDED") return false;
+  if (mode === "AUTO") return true;
+  return AUTO_RUNNABLE_TYPES.has(fixType);
 }
 
 function getUserActionHint(fixType: string): string {
@@ -122,27 +71,162 @@ function getUserActionHint(fixType: string): string {
   }
 }
 
-// ── Execute Plan ─────────────────────────────────────────────────
+function toPlan(row: FixExecutionPlanRow): FixExecutionPlan {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    scanId: row.scan_id,
+    mode: row.mode,
+    steps: row.steps,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    progress: row.progress,
+    total: row.total,
+    completed: row.completed,
+    failed: row.failed,
+    needsInput: row.needs_input,
+    status: row.status,
+  };
+}
 
-/**
- * Execute a fix plan. In AUTO mode all auto-runnable steps fire
-// immediately; in ASSISTED/GUIDED the user drives each step.
- * Returns the updated plan.
- */
-export async function executeFixPackage(
-  planId: string
+function toRow(plan: FixExecutionPlan): Omit<FixExecutionPlanRow, "updated_at"> {
+  return {
+    id: plan.id,
+    user_id: plan.userId!,
+    scan_id: plan.scanId,
+    mode: plan.mode,
+    steps: plan.steps,
+    progress: plan.progress,
+    total: plan.total,
+    completed: plan.completed,
+    failed: plan.failed,
+    needs_input: plan.needsInput,
+    status: plan.status,
+    created_at: plan.createdAt,
+  };
+}
+
+async function saveExecution(plan: FixExecutionPlan): Promise<FixExecutionPlan> {
+  executions.set(plan.id, plan);
+
+  if (!plan.userId) {
+    return plan;
+  }
+
+  const supabase = createServiceClient();
+  const payload = {
+    ...toRow(plan),
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from("fix_execution_plans")
+    .upsert(payload, { onConflict: "id" })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Failed to persist fix execution plan", error);
+    return plan;
+  }
+
+  const persisted = toPlan(data as FixExecutionPlanRow);
+  executions.set(plan.id, persisted);
+  return persisted;
+}
+
+export async function getExecution(
+  planId: string,
+  userId?: string
+): Promise<FixExecutionPlan | undefined> {
+  const inMemory = executions.get(planId);
+  if (inMemory && (!userId || inMemory.userId === userId)) {
+    return inMemory;
+  }
+
+  const supabase = createServiceClient();
+  let query = supabase.from("fix_execution_plans").select("*").eq("id", planId);
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query.maybeSingle();
+  if (error || !data) {
+    return undefined;
+  }
+
+  const plan = toPlan(data as FixExecutionPlanRow);
+  executions.set(plan.id, plan);
+  return plan;
+}
+
+export async function buildExecutionPlan(
+  userId: string,
+  scanId: string,
+  mode: FixExecutionMode,
+  fixes: FixItemInput[]
 ): Promise<FixExecutionPlan> {
-  const plan = executions.get(planId);
+  planCounter++;
+  const planId = `plan_${Date.now()}_${planCounter}`;
+
+  const steps: FixStep[] = fixes.map((fix, i) => {
+    const auto = canAutoRun(fix.type, mode) || fix.autoApplied;
+    let status: FixStepStatus = "pending";
+    let userAction: string | undefined;
+
+    if (fix.autoApplied) {
+      status = "pending";
+    } else if (!auto) {
+      status = "needs_input";
+      userAction = getUserActionHint(fix.type);
+    }
+
+    return {
+      id: `step_${planId}_${i}`,
+      fixType: fix.type,
+      title: fix.title,
+      impact: fix.impact,
+      autoRunnable: auto,
+      status,
+      userAction,
+    };
+  });
+
+  const plan: FixExecutionPlan = {
+    id: planId,
+    userId,
+    scanId,
+    mode,
+    steps,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    progress: 0,
+    total: steps.length,
+    completed: 0,
+    failed: 0,
+    needsInput: steps.filter((s) => s.status === "needs_input").length,
+    status: "planning",
+  };
+
+  return saveExecution(plan);
+}
+
+export async function executeFixPackage(
+  planId: string,
+  userId?: string
+): Promise<FixExecutionPlan> {
+  const plan = await getExecution(planId, userId);
   if (!plan) throw new Error(`Execution plan ${planId} not found`);
+  if (plan.status === "executing") throw new Error("Execution already in progress");
 
   plan.status = "executing";
+  plan.updatedAt = new Date().toISOString();
+  await saveExecution(plan);
 
   for (const step of plan.steps) {
-    // Skip steps that need user input
     if (step.status === "needs_input") continue;
     if (step.status === "completed" || step.status === "skipped") continue;
 
-    // Auto-execute
     step.status = "running";
     step.startedAt = new Date().toISOString();
 
@@ -157,12 +241,15 @@ export async function executeFixPackage(
       plan.failed++;
     }
 
-    // Update progress
-    const resolved = plan.completed + plan.failed;
-    plan.progress = Math.round((resolved / plan.total) * 100);
+    const resolved = plan.steps.filter((s) =>
+      s.status === "completed" || s.status === "skipped" || s.status === "failed"
+    ).length;
+    plan.progress = Math.round((resolved / Math.max(plan.total, 1)) * 100);
+    plan.needsInput = plan.steps.filter((s) => s.status === "needs_input").length;
+    plan.updatedAt = new Date().toISOString();
+    await saveExecution(plan);
   }
 
-  // Check if any steps still need input
   if (plan.steps.some((s) => s.status === "needs_input")) {
     plan.status = "paused";
   } else if (plan.failed > 0 && plan.completed < plan.total) {
@@ -171,16 +258,11 @@ export async function executeFixPackage(
     plan.status = "completed";
   }
 
-  return plan;
+  plan.updatedAt = new Date().toISOString();
+  return saveExecution(plan);
 }
 
-/**
- * Execute a single step. For now this is a stub that simulates
- * work; in production it would call the actual fix handlers
- * (schema insertion, listing sync, etc.).
- */
 async function executeStep(step: FixStep): Promise<void> {
-  // Simulate async work for auto-runnable steps
   switch (step.fixType) {
     case "listing_sync":
       step.resultMessage = "Listings queued for sync across 50+ directories.";
@@ -207,17 +289,15 @@ async function executeStep(step: FixStep): Promise<void> {
       step.resultMessage = "Fix content generated.";
   }
 
-  // Small delay to represent actual work
   await new Promise((r) => setTimeout(r, 200));
 }
 
-// ── User-driven step completion ─────────────────────────────────
-
-/**
- * Mark a step as completed by the user (ASSISTED/GUIDED flow).
- */
-export function completeStep(planId: string, stepId: string): FixExecutionPlan {
-  const plan = executions.get(planId);
+export async function completeStep(
+  planId: string,
+  stepId: string,
+  userId?: string
+): Promise<FixExecutionPlan> {
+  const plan = await getExecution(planId, userId);
   if (!plan) throw new Error(`Plan ${planId} not found`);
 
   const step = plan.steps.find((s) => s.id === stepId);
@@ -227,28 +307,30 @@ export function completeStep(planId: string, stepId: string): FixExecutionPlan {
     step.status = "completed";
     step.completedAt = new Date().toISOString();
     plan.completed++;
-    plan.needsInput = plan.steps.filter((s) => s.status === "needs_input").length;
   }
 
-  // Recalculate progress
-  const resolved = plan.completed + plan.failed;
-  plan.progress = Math.round((resolved / plan.total) * 100);
+  const resolved = plan.steps.filter((s) =>
+    s.status === "completed" || s.status === "skipped" || s.status === "failed"
+  ).length;
+  plan.progress = Math.round((resolved / Math.max(plan.total, 1)) * 100);
+  plan.needsInput = plan.steps.filter((s) => s.status === "needs_input").length;
 
-  // Check overall status
   if (plan.steps.every((s) => s.status === "completed" || s.status === "skipped" || s.status === "failed")) {
     plan.status = plan.failed > 0 && plan.completed === 0 ? "failed" : "completed";
   } else if (plan.steps.some((s) => s.status === "needs_input")) {
     plan.status = "paused";
   }
 
-  return plan;
+  plan.updatedAt = new Date().toISOString();
+  return saveExecution(plan);
 }
 
-/**
- * Skip a step the user doesn't want to apply.
- */
-export function skipStep(planId: string, stepId: string): FixExecutionPlan {
-  const plan = executions.get(planId);
+export async function skipStep(
+  planId: string,
+  stepId: string,
+  userId?: string
+): Promise<FixExecutionPlan> {
+  const plan = await getExecution(planId, userId);
   if (!plan) throw new Error(`Plan ${planId} not found`);
 
   const step = plan.steps.find((s) => s.id === stepId);
@@ -258,8 +340,10 @@ export function skipStep(planId: string, stepId: string): FixExecutionPlan {
   step.completedAt = new Date().toISOString();
   plan.needsInput = plan.steps.filter((s) => s.status === "needs_input").length;
 
-  const resolved = plan.steps.filter((s) => s.status === "completed" || s.status === "skipped" || s.status === "failed").length;
-  plan.progress = Math.round((resolved / plan.total) * 100);
+  const resolved = plan.steps.filter((s) =>
+    s.status === "completed" || s.status === "skipped" || s.status === "failed"
+  ).length;
+  plan.progress = Math.round((resolved / Math.max(plan.total, 1)) * 100);
 
   if (plan.steps.every((s) => s.status === "completed" || s.status === "skipped" || s.status === "failed")) {
     plan.status = plan.failed > 0 && plan.completed === 0 ? "failed" : "completed";
@@ -267,29 +351,25 @@ export function skipStep(planId: string, stepId: string): FixExecutionPlan {
     plan.status = "paused";
   }
 
-  return plan;
+  plan.updatedAt = new Date().toISOString();
+  return saveExecution(plan);
 }
 
-// ── Get Status ──────────────────────────────────────────────────
-
-export function getFixExecutionStatus(planId: string): FixExecutionPlan | null {
-  return executions.get(planId) ?? null;
+export async function getFixExecutionStatus(
+  planId: string,
+  userId?: string
+): Promise<FixExecutionPlan | null> {
+  return (await getExecution(planId, userId)) ?? null;
 }
 
-// ── Post-Fix Verification ───────────────────────────────────────
-
-/**
- * Run a lightweight post-fix verification for a given step.
- * In production this would re-scan the specific layer or check
- * the live site. For now it provides a structured result.
- */
-export function verifyFix(
+export async function verifyFix(
   planId: string,
   stepId: string,
   scoreBefore: number,
-  scoreAfter: number
-): FixVerificationResult {
-  const plan = executions.get(planId);
+  scoreAfter: number,
+  userId?: string
+): Promise<FixVerificationResult> {
+  const plan = await getExecution(planId, userId);
   if (!plan) throw new Error(`Plan ${planId} not found`);
 
   const step = plan.steps.find((s) => s.id === stepId);
@@ -308,18 +388,18 @@ export function verifyFix(
   };
 
   step.verification = result;
+  plan.updatedAt = new Date().toISOString();
+  await saveExecution(plan);
   return result;
 }
 
-/**
- * Bulk-verify all completed steps in a plan.
- */
-export function verifyAllFixes(
+export async function verifyAllFixes(
   planId: string,
   layerScoresBefore: Record<string, number>,
-  layerScoresAfter: Record<string, number>
-): FixVerificationResult[] {
-  const plan = executions.get(planId);
+  layerScoresAfter: Record<string, number>,
+  userId?: string
+): Promise<FixVerificationResult[]> {
+  const plan = await getExecution(planId, userId);
   if (!plan) throw new Error(`Plan ${planId} not found`);
 
   const layerMap: Record<string, string> = {
@@ -341,7 +421,7 @@ export function verifyAllFixes(
     const before = layerScoresBefore[layer] ?? 0;
     const after = layerScoresAfter[layer] ?? 0;
 
-    const result = verifyFix(planId, step.id, before, after);
+    const result = await verifyFix(planId, step.id, before, after, userId);
     results.push(result);
   }
 

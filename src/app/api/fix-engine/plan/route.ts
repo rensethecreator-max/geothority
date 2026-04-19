@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No fix package found. Run fix-all first." }, { status: 404 });
     }
 
-    const plan = buildExecutionPlan(scanId, mode, fixPkg.fixes);
+    const plan = await buildExecutionPlan(user.id, scanId, mode, fixPkg.fixes);
     return NextResponse.json(plan);
   } catch (err) {
     console.error("Fix engine plan error:", err);

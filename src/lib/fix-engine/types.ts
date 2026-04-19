@@ -36,10 +36,12 @@ export interface FixStep {
 
 export interface FixExecutionPlan {
   id: string;
+  userId?: string;
   scanId: string;
   mode: FixExecutionMode;
   steps: FixStep[];
   createdAt: string;
+  updatedAt?: string;
   /** Overall progress 0-100. */
   progress: number;
   /** Summary counts. */
