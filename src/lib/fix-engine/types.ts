@@ -23,10 +23,16 @@ export interface FixStep {
   /** Whether this step can run automatically (no user input needed). */
   autoRunnable: boolean;
   status: FixStepStatus;
+  /** Generated fix artifact from the fix package, if any. */
+  content?: string;
+  instructions?: string;
+  group?: string;
   /** For ASSISTED/GUIDED: the user action required before this step can complete. */
   userAction?: string;
   /** Result message after completion or failure. */
   resultMessage?: string;
+  artifactId?: string;
+  artifactType?: string;
   /** Timestamps. */
   startedAt?: string;
   completedAt?: string;
