@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/gbp?name=BusinessName&location=City,State
  * Search Google Places API for a business listing.

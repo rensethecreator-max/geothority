@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { PublicHeader } from "@/components/layout/public-header";
 import { ChevronDown } from "lucide-react";
@@ -201,7 +202,7 @@ export default function FAQPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <img src="/logo.svg" alt="Geothority" className="h-8 w-auto object-contain" />
+              <Image src="/logo.svg" alt="Geothority" width={128} height={32} className="h-8 w-auto object-contain" />
               <span className="font-semibold">Geothority</span>
             </div>
             <div className="flex flex-wrap items-center gap-5 text-sm text-[var(--muted-foreground)]">

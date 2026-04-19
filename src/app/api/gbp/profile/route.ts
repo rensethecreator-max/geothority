@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/gbp/profile
  * Returns the user's GBP profile data, audit, reviews summary, etc.

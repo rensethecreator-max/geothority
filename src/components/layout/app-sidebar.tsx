@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -77,7 +78,7 @@ export function AppSidebar() {
       {/* Logo */}
       <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <img src="/logo.svg" alt="Geothority" className="w-9 h-9 rounded-lg object-contain" />
+          <Image src="/logo.svg" alt="Geothority" width={36} height={36} className="w-9 h-9 rounded-lg object-contain" />
           <span className="text-lg font-semibold text-[var(--foreground)]">
             Geothority
           </span>

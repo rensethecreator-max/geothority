@@ -74,6 +74,9 @@ interface ScrollRevealProps {
 export function useScrollReveal(options?: IntersectionObserverInit) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const threshold = options?.threshold ?? 0.1;
+  const root = options?.root ?? null;
+  const rootMargin = options?.rootMargin ?? "0px";
 
   useEffect(() => {
     const el = ref.current;
@@ -92,12 +95,12 @@ export function useScrollReveal(options?: IntersectionObserverInit) {
           observer.disconnect();
         }
       },
-      { threshold: 0.1, ...options }
+      { threshold, root, rootMargin }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [threshold, root, rootMargin]);
 
   return { ref, isVisible };
 }
