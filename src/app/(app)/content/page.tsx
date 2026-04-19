@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { GeneratedContent } from "@/lib/types";
 import { ContentSkeleton } from "@/components/shared/loading-skeleton";
@@ -19,6 +19,7 @@ export default function ContentPage() {
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<GeneratedContent[]>([]);
   const [publishing, setPublishing] = useState<string | null>(null);
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -40,6 +41,12 @@ export default function ContentPage() {
 
     loadContent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setSelectedContentId(params.get("contentId"));
   }, []);
 
   const handlePublish = async (contentId: string) => {
@@ -66,6 +73,15 @@ export default function ContentPage() {
       setPublishing(null);
     }
   };
+
+  const orderedContent = useMemo(() => {
+    if (!selectedContentId) return content;
+    return [...content].sort((a, b) => {
+      if (a.id === selectedContentId) return -1;
+      if (b.id === selectedContentId) return 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [content, selectedContentId]);
 
   if (loading) return <ContentSkeleton />;
 
@@ -97,14 +113,19 @@ export default function ContentPage() {
         />
       ) : (
         <div className="space-y-3">
-          {content.map((item) => (
+          {orderedContent.map((item) => (
             <div
               key={item.id}
-              className="bg-[var(--card)] rounded-xl p-5 border border-[var(--border)] hover:border-[var(--border)] transition-colors"
+              className={`bg-[var(--card)] rounded-xl p-5 border transition-colors ${item.id === selectedContentId ? "border-electric-500 shadow-[0_0_0_1px_rgba(59,130,246,0.35)]" : "border-[var(--border)] hover:border-[var(--border)]"}`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-sm mb-1">{item.title}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-sm">{item.title}</h3>
+                    {item.id === selectedContentId && (
+                      <Badge className="bg-electric-500/10 text-electric-300 border-electric-500/20">From Fix Engine</Badge>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3 text-xs text-[var(--muted-foreground)]">
                     <span>{item.city}, {item.service}</span>
                     <span className="flex items-center gap-1">

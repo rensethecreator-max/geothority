@@ -70,6 +70,8 @@ interface FixStep {
   status: FixStepStatus;
   userAction?: string;
   resultMessage?: string;
+  artifactId?: string;
+  artifactType?: string;
   startedAt?: string;
   completedAt?: string;
   verification?: { fixType: string; passed: boolean; message: string; scoreBefore?: number; scoreAfter?: number; verifiedAt: string };
@@ -211,6 +213,7 @@ export default function ScanResultPage() {
   const [fixMode, setFixMode] = useState<FixExecutionMode>("ASSISTED");
   const [execPlan, setExecPlan] = useState<FixExecutionPlan | null>(null);
   const [executing, setExecuting] = useState(false);
+  const [publishingArtifactId, setPublishingArtifactId] = useState<string | null>(null);
   const supabase = createClient();
 
   // IMPORTANT: All hooks must be called before any conditional returns
@@ -334,6 +337,38 @@ export default function ScanResultPage() {
       setFixError(err instanceof Error ? err.message : "Step action failed");
     } finally {
       setExecuting(false);
+    }
+  };
+
+  const handlePublishArtifact = async (stepId: string, artifactId: string) => {
+    setPublishingArtifactId(artifactId);
+    try {
+      const res = await fetch("/api/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentId: artifactId }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Publish failed");
+      }
+
+      setExecPlan((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          steps: prev.steps.map((step) =>
+            step.id === stepId
+              ? { ...step, resultMessage: `${step.resultMessage || "Draft saved."} Published successfully.` }
+              : step
+          ),
+        };
+      });
+    } catch (error) {
+      setFixError(error instanceof Error ? error.message : "Publish failed");
+    } finally {
+      setPublishingArtifactId(null);
     }
   };
 
@@ -679,10 +714,37 @@ export default function ScanResultPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
                       <span className={`text-xs px-2 py-0.5 rounded-full border ${impactColors[step.impact]}`}>
                         {step.impact.charAt(0).toUpperCase() + step.impact.slice(1)}
                       </span>
+                      {step.autoRunnable && (
+                        <span className="text-xs px-2 py-0.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+                          Auto
+                        </span>
+                      )}
+                      {step.artifactType === "generated_content" && step.artifactId && step.status === "completed" && (
+                        <>
+                          <Link
+                            href={`/content?contentId=${step.artifactId}`}
+                            className="px-2 py-1 text-xs font-medium rounded-lg bg-white/5 text-gray-200 hover:bg-white/10 transition-colors"
+                          >
+                            Open draft
+                          </Link>
+                          <button
+                            onClick={() => handlePublishArtifact(step.id, step.artifactId!)}
+                            disabled={publishingArtifactId === step.artifactId}
+                            className="px-2 py-1 text-xs font-medium rounded-lg bg-electric-500/20 text-electric-300 hover:bg-electric-500/30 disabled:opacity-60 transition-colors"
+                          >
+                            {publishingArtifactId === step.artifactId ? "Publishing..." : "Publish"}
+                          </button>
+                        </>
+                      )}
+                      {step.artifactType === "listing_sync" && step.artifactId && step.status === "completed" && (
+                        <span className="text-xs px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          Sync saved
+                        </span>
+                      )}
                       {step.status === "needs_input" && (
                         <>
                           <button onClick={() => handleStepAction(step.id, "complete")} className="px-2 py-1 text-xs font-medium rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors">Done</button>
