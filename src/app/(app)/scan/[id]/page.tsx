@@ -32,6 +32,7 @@ import {
   Sparkles,
   Star,
   ArrowRight,
+  XCircle,
 } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import Link from "next/link";
@@ -515,28 +516,22 @@ export default function ScanResultPage() {
           <div>
             <h3 className="text-xl font-bold flex items-center gap-2">
               <Zap className="w-5 h-5 text-emerald-400" />
-              Fix Everything Automatically
+              Fix What Matters
             </h3>
             <p className="text-sm text-gray-400 mt-1">
-              We&apos;ll generate your missing schema, content, meta tags, AI optimization, and sync your listings - all in one click.
+              Generate your missing schema, content, meta tags, AI optimization, and sync listings — with control over how much runs automatically.
             </p>
           </div>
-          <button
-            onClick={handleFixAll}
-            disabled={fixing}
-            className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-xl font-semibold transition-all flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {fixing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Zap className="w-4 h-4" />
-            )}
-            {fixing
-              ? "Generating Fixes..."
-              : fixPackage
-              ? "View Fix Package ↓"
-              : "Fix Everything"}
-          </button>
+          {!fixPackage && (
+            <button
+              onClick={handleFixAll}
+              disabled={fixing}
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-xl font-semibold transition-all flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {fixing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              {fixing ? "Generating Fixes..." : "Generate Fixes"}
+            </button>
+          )}
         </div>
 
         {fixError && (
@@ -556,8 +551,45 @@ export default function ScanResultPage() {
           </div>
         )}
 
-        {fixPackage && (
+        {fixPackage && !execPlan && (
           <div id="fix-package" className="mt-6 space-y-6">
+            {/* Execution Mode Selector */}
+            <div className="rounded-xl border border-white/10 bg-[#0f1117] p-5">
+              <h4 className="font-bold text-sm mb-3 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                Choose Execution Mode
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                {([
+                  { mode: "AUTO" as FixExecutionMode, label: "Auto", desc: "Run everything automatically. Hands-off.", icon: "🤖" },
+                  { mode: "ASSISTED" as FixExecutionMode, label: "Assisted", desc: "Auto-run safe fixes; you confirm the rest.", icon: "🤝" },
+                  { mode: "GUIDED" as FixExecutionMode, label: "Guided", desc: "You approve each step. Full control.", icon: "📋" },
+                ]).map((opt) => (
+                  <button
+                    key={opt.mode}
+                    onClick={() => setFixMode(opt.mode)}
+                    className={`text-left p-4 rounded-lg border transition-all ${
+                      fixMode === opt.mode
+                        ? "border-emerald-500/50 bg-emerald-500/10"
+                        : "border-white/10 bg-white/5 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="text-lg mb-1">{opt.icon}</div>
+                    <div className="font-semibold text-sm">{opt.label}</div>
+                    <div className="text-xs text-gray-500 mt-1">{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={handleStartExecution}
+                disabled={executing}
+                className="w-full px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {executing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                {executing ? "Executing..." : `Start ${fixMode === "AUTO" ? "Auto" : fixMode === "ASSISTED" ? "Assisted" : "Guided"} Execution`}
+              </button>
+            </div>
+
             {/* Summary */}
             <div className="flex flex-wrap items-center gap-4 text-sm border-b border-white/5 pb-4">
               <span className="text-emerald-400 font-semibold">{fixPackage.totalFixes} fixes generated</span>
@@ -592,6 +624,76 @@ export default function ScanResultPage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Execution Progress */}
+        {execPlan && (
+          <div className="mt-6 space-y-4" id="fix-package">
+            {/* Progress Bar */}
+            <div className="rounded-xl border border-white/10 bg-[#0f1117] p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-bold text-sm flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-emerald-400" />
+                  Execution Progress
+                </h4>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium">
+                  {execPlan.mode} Mode
+                </span>
+              </div>
+              <div className="w-full bg-white/5 rounded-full h-3 mb-3 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${execPlan.progress}%` }}
+                />
+              </div>
+              <div className="flex flex-wrap gap-4 text-xs text-gray-400">
+                <span>{execPlan.completed}/{execPlan.total} completed</span>
+                {execPlan.failed > 0 && <span className="text-rose-400">{execPlan.failed} failed</span>}
+                {execPlan.needsInput > 0 && <span className="text-amber-400">{execPlan.needsInput} need your action</span>}
+                <span className="ml-auto font-semibold text-emerald-400">{execPlan.progress}%</span>
+              </div>
+            </div>
+
+            {/* Step List */}
+            <div className="space-y-2">
+              {execPlan.steps.map((step) => {
+                const cfg = fixTypeConfig[step.fixType as FixItem["type"]] ?? fixTypeConfig.schema;
+                const StepIcon = cfg.icon;
+                const statusIcon = step.status === "completed" ? <Check className="w-4 h-4 text-emerald-400" /> : step.status === "failed" ? <XCircle className="w-4 h-4 text-rose-400" /> : step.status === "running" ? <Loader2 className="w-4 h-4 animate-spin text-emerald-400" /> : step.status === "needs_input" ? <ArrowRight className="w-4 h-4 text-amber-400" /> : <div className="w-4 h-4 rounded-full border border-gray-600" />;
+                return (
+                  <div key={step.id} className={`rounded-lg border p-3 flex items-center gap-3 ${step.status === "completed" ? "border-emerald-500/20 bg-emerald-500/5" : step.status === "failed" ? "border-rose-500/20 bg-rose-500/5" : step.status === "needs_input" ? "border-amber-500/20 bg-amber-500/5" : "border-white/10 bg-white/5"}`}>
+                    <div className="flex-shrink-0">{statusIcon}</div>
+                    <StepIcon className={`w-4 h-4 flex-shrink-0 ${cfg.color}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{step.title}</div>
+                      {step.userAction && step.status === "needs_input" && (
+                        <div className="text-xs text-amber-400 mt-0.5">{step.userAction}</div>
+                      )}
+                      {step.resultMessage && (step.status === "completed" || step.status === "running") && (
+                        <div className="text-xs text-gray-500 mt-0.5">{step.resultMessage}</div>
+                      )}
+                      {step.verification && (
+                        <div className={`text-xs mt-1 px-2 py-1 rounded ${step.verification.passed ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+                          ✓ Verified: {step.verification.message}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`text-xs px-2 py-0.5 rounded-full border ${impactColors[step.impact]}`}>
+                        {step.impact.charAt(0).toUpperCase() + step.impact.slice(1)}
+                      </span>
+                      {step.status === "needs_input" && (
+                        <>
+                          <button onClick={() => handleStepAction(step.id, "complete")} className="px-2 py-1 text-xs font-medium rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors">Done</button>
+                          <button onClick={() => handleStepAction(step.id, "skip")} className="px-2 py-1 text-xs font-medium rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 transition-colors">Skip</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
