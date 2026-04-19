@@ -120,7 +120,7 @@ export default function ContentPage() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className={`flex items-center gap-2 mb-1 ${item.id === selectedContentId ? "border-electric-500 shadow-[0_0_0_1px_rgba(59,130,246,0.35)]" : "border-[var(--border)] hover:border-[var(--border)] transition-colors"}`}>
                     <h3 className="font-semibold text-sm">{item.title}</h3>
                     {item.id === selectedContentId && (
                       <Badge className="bg-electric-500/10 text-electric-300 border-electric-500/20">From Fix Engine</Badge>
