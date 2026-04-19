@@ -8,12 +8,7 @@ import {
   type DetectedChange,
   type ChangeSeverity,
 } from "./competitor-change-detection";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const rulesJson = require("./response-engine-rules.json") as {
-  rules: ResponseRule[];
-  action_definitions: Record<string, ActionDefinition>;
-};
+import rulesJson from "./response-engine-rules.json";
 
 // ── Types ────────────────────────────────────────────────────────
 

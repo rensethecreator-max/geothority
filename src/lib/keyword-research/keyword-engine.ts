@@ -38,7 +38,7 @@ const KEYWORD_CATEGORIES = {
       `local ${s} ${city}`,
       `${s} office ${city} ${state}`,
     ]),
-  informational: (services: string[], city: string) =>
+  informational: (services: string[], city: string, state: string) =>
     services.flatMap((s) => [
       `what does ${s} cover in ${city}`,
       `${s} requirements ${city} ${state}`,
@@ -270,7 +270,7 @@ function mergePAAIntoKeywords(
     // Also enrich existing keywords with their PAA questions
     for (const kw of keywords) {
       if (kw.term.toLowerCase().includes(service.toLowerCase())) {
-        kw.peopleAlsoAsk = [...new Set([...kw.peopleAlsoAsk, ...questions])];
+        kw.peopleAlsoAsk = Array.from(new Set([...kw.peopleAlsoAsk, ...questions]));
       }
     }
   }
