@@ -33,47 +33,66 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Content not found" }, { status: 404 });
     }
 
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("cms_type, cms_credentials")
+      .eq("id", user.id)
+      .single();
+
+    const resolvedCmsType = cmsType || profile?.cms_type || null;
+    const resolvedCmsCredentials = cmsCredentials || profile?.cms_credentials || null;
+
+    if (
+      resolvedCmsType !== "wordpress" ||
+      !resolvedCmsCredentials?.siteUrl ||
+      !resolvedCmsCredentials?.username ||
+      !resolvedCmsCredentials?.appPassword
+    ) {
+      return NextResponse.json(
+        { error: "Connect WordPress in Settings before publishing." },
+        { status: 400 }
+      );
+    }
+
     let cmsPostId: string | null = null;
 
-    if (cmsType === "wordpress" && cmsCredentials?.siteUrl && cmsCredentials?.username && cmsCredentials?.appPassword) {
-      try {
-        const wpRes = await fetch(
-          `${cmsCredentials.siteUrl}/wp-json/wp/v2/pages`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Basic ${Buffer.from(
-                `${cmsCredentials.username}:${cmsCredentials.appPassword}`
-              ).toString("base64")}`,
+    try {
+      const wpRes = await fetch(
+        `${resolvedCmsCredentials.siteUrl}/wp-json/wp/v2/pages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Basic ${Buffer.from(
+              `${resolvedCmsCredentials.username}:${resolvedCmsCredentials.appPassword}`
+            ).toString("base64")}`,
+          },
+          body: JSON.stringify({
+            title: content.title,
+            content: content.content_html,
+            status: "publish",
+            meta: {
+              _yoast_wpseo_metadesc: content.meta_description,
             },
-            body: JSON.stringify({
-              title: content.title,
-              content: content.content_html,
-              status: "publish",
-              meta: {
-                _yoast_wpseo_metadesc: content.meta_description,
-              },
-            }),
-          }
-        );
-
-        if (!wpRes.ok) {
-          const wpError = await wpRes.text();
-          return NextResponse.json(
-            { error: `WordPress publishing failed: ${wpError}` },
-            { status: 500 }
-          );
+          }),
         }
+      );
 
-        const wpData = await wpRes.json();
-        cmsPostId = String(wpData.id);
-      } catch (_wpErr) {
+      if (!wpRes.ok) {
+        const wpError = await wpRes.text();
         return NextResponse.json(
-          { error: "Failed to connect to WordPress" },
+          { error: `WordPress publishing failed: ${wpError}` },
           { status: 500 }
         );
       }
+
+      const wpData = await wpRes.json();
+      cmsPostId = String(wpData.id);
+    } catch (_wpErr) {
+      return NextResponse.json(
+        { error: "Failed to connect to WordPress" },
+        { status: 500 }
+      );
     }
 
     // Update content status

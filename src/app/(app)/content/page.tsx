@@ -1,25 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { GeneratedContent } from "@/lib/types";
 import { ContentSkeleton } from "@/components/shared/loading-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import {
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
   FileText,
   PenTool,
-  Clock,
-  CheckCircle2,
   Upload,
 } from "lucide-react";
-import Link from "next/link";
 
 export default function ContentPage() {
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<GeneratedContent[]>([]);
   const [publishing, setPublishing] = useState<string | null>(null);
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -27,7 +30,10 @@ export default function ContentPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data } = await supabase
         .from("generated_content")
@@ -51,6 +57,8 @@ export default function ContentPage() {
 
   const handlePublish = async (contentId: string) => {
     setPublishing(contentId);
+    setPublishError(null);
+
     try {
       const res = await fetch("/api/publish", {
         method: "POST",
@@ -58,17 +66,25 @@ export default function ContentPage() {
         body: JSON.stringify({ contentId }),
       });
 
-      if (res.ok) {
-        setContent((prev) =>
-          prev.map((c) =>
-            c.id === contentId
-              ? { ...c, status: "published", published_at: new Date().toISOString() }
-              : c
-          )
-        );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Publish failed");
       }
-    } catch {
-      // Handle error
+
+      setContent((prev) =>
+        prev.map((item) =>
+          item.id === contentId
+            ? {
+                ...item,
+                status: "published",
+                published_at: data.publishedAt || new Date().toISOString(),
+                cms_post_id: data.cmsPostId || item.cms_post_id,
+              }
+            : item
+        )
+      );
+    } catch (error) {
+      setPublishError(error instanceof Error ? error.message : "Publish failed");
     } finally {
       setPublishing(null);
     }
@@ -90,9 +106,7 @@ export default function ContentPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Content Library</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            {content.length} pages generated
-          </p>
+          <p className="text-sm text-[var(--muted-foreground)]">{content.length} pages generated</p>
         </div>
         <Link
           href="/content/generate"
@@ -102,6 +116,12 @@ export default function ContentPage() {
           Generate New
         </Link>
       </div>
+
+      {publishError && (
+        <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-sm text-rose-300">
+          {publishError}
+        </div>
+      )}
 
       {content.length === 0 ? (
         <EmptyState
@@ -113,37 +133,55 @@ export default function ContentPage() {
         />
       ) : (
         <div className="space-y-3">
-          {orderedContent.map((item) => (
-            <div
-              key={item.id}
-              className={`bg-[var(--card)] rounded-xl p-5 border transition-colors ${item.id === selectedContentId ? "border-electric-500 shadow-[0_0_0_1px_rgba(59,130,246,0.35)]" : "border-[var(--border)] hover:border-[var(--border)]"}`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className={`flex items-center gap-2 mb-1 ${item.id === selectedContentId ? "border-electric-500 shadow-[0_0_0_1px_rgba(59,130,246,0.35)]" : "border-[var(--border)] hover:border-[var(--border)] transition-colors"}`}>
-                    <h3 className="font-semibold text-sm">{item.title}</h3>
-                    {item.id === selectedContentId && (
-                      <Badge className="bg-electric-500/10 text-electric-300 border-electric-500/20">From Fix Engine</Badge>
-                    )}
+          {orderedContent.map((item) => {
+            const isSelected = item.id === selectedContentId;
+            const isPublished = item.status === "published";
+
+            return (
+              <div
+                key={item.id}
+                className={`bg-[var(--card)] rounded-xl p-5 border transition-colors ${
+                  isSelected
+                    ? "border-electric-500 shadow-[0_0_0_1px_rgba(59,130,246,0.35)]"
+                    : "border-[var(--border)] hover:border-white/20"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <Link href={`/content/${item.id}`} className="font-semibold text-sm hover:text-electric-300 transition-colors">
+                        {item.title}
+                      </Link>
+                      {isSelected && (
+                        <Badge className="bg-electric-500/10 text-electric-300 border-electric-500/20">
+                          From Fix Engine
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-[var(--muted-foreground)] flex-wrap">
+                      <span>{item.city || "Unknown city"}{item.service ? `, ${item.service}` : ""}</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(item.created_at).toLocaleDateString()}
+                      </span>
+                      {isPublished && item.published_at && (
+                        <span className="flex items-center gap-1 text-emerald-400">
+                          <CheckCircle2 className="w-3 h-3" />
+                          {new Date(item.published_at).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-[var(--muted-foreground)]">
-                    <span>{item.city}, {item.service}</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {new Date(item.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
+
                   <Badge
-                    variant={item.status === "published" ? "default" : "secondary"}
+                    variant={isPublished ? "default" : "secondary"}
                     className={
-                      item.status === "published"
+                      isPublished
                         ? "bg-score-good/10 text-score-good border-score-good/20"
                         : "bg-[var(--muted)] text-[var(--muted-foreground)]"
                     }
                   >
-                    {item.status === "published" ? (
+                    {isPublished ? (
                       <span className="flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
                         Published
@@ -153,33 +191,47 @@ export default function ContentPage() {
                     )}
                   </Badge>
                 </div>
-              </div>
 
-              {item.meta_description && (
-                <p className="text-xs text-[var(--muted-foreground)] mb-3 line-clamp-2">
-                  {item.meta_description}
-                </p>
-              )}
+                {item.meta_description && (
+                  <p className="text-xs text-[var(--muted-foreground)] mb-3 line-clamp-2">{item.meta_description}</p>
+                )}
 
-              <div className="flex items-center gap-2">
-                {item.status === "draft" && (
-                  <button
-                    onClick={() => handlePublish(item.id)}
-                    disabled={publishing === item.id}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-electric-500 hover:bg-electric-600 disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-colors"
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Link
+                    href={`/content/${item.id}`}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium transition-colors"
                   >
-                    <Upload className="w-3 h-3" />
-                    {publishing === item.id ? "Publishing..." : "Publish"}
-                  </button>
-                )}
-                {item.quality_score && (
-                  <span className="text-xs text-[var(--muted-foreground)]">
-                    Quality: {item.quality_score}/100
-                  </span>
-                )}
+                    <ExternalLink className="w-3 h-3" />
+                    Open
+                  </Link>
+
+                  {!isPublished && (
+                    <button
+                      onClick={() => handlePublish(item.id)}
+                      disabled={publishing === item.id}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-electric-500 hover:bg-electric-600 disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-colors"
+                    >
+                      <Upload className="w-3 h-3" />
+                      {publishing === item.id ? "Publishing..." : "Publish"}
+                    </button>
+                  )}
+
+                  {isPublished && item.cms_post_id && (
+                    <span className="text-xs text-emerald-400">CMS Post #{item.cms_post_id}</span>
+                  )}
+
+                  {item.quality_score && (
+                    <span className="text-xs text-[var(--muted-foreground)]">Quality: {item.quality_score}/100</span>
+                  )}
+
+                  <Link href={`/content/${item.id}`} className="ml-auto flex items-center gap-1 text-xs text-electric-300 hover:text-electric-200">
+                    Review
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

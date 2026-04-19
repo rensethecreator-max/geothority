@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Scan } from "@/lib/types";
@@ -214,6 +214,7 @@ export default function ScanResultPage() {
   const [execPlan, setExecPlan] = useState<FixExecutionPlan | null>(null);
   const [executing, setExecuting] = useState(false);
   const [publishingArtifactId, setPublishingArtifactId] = useState<string | null>(null);
+  const [artifactStatusById, setArtifactStatusById] = useState<Record<string, { status: "draft" | "published"; cmsPostId: string | null }>>({});
   const supabase = createClient();
 
   // IMPORTANT: All hooks must be called before any conditional returns
@@ -349,10 +350,18 @@ export default function ScanResultPage() {
         body: JSON.stringify({ contentId: artifactId }),
       });
 
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Publish failed");
+        throw new Error(data.error || "Publish failed");
       }
+
+      setArtifactStatusById((prev) => ({
+        ...prev,
+        [artifactId]: {
+          status: "published",
+          cmsPostId: data.cmsPostId || null,
+        },
+      }));
 
       setExecPlan((prev) => {
         if (!prev) return prev;
@@ -371,6 +380,53 @@ export default function ScanResultPage() {
       setPublishingArtifactId(null);
     }
   };
+
+  const artifactIds = useMemo(
+    () =>
+      (execPlan?.steps || [])
+        .filter((step) => step.artifactType === "generated_content" && step.artifactId)
+        .map((step) => step.artifactId as string),
+    [execPlan]
+  );
+
+  useEffect(() => {
+    async function hydrateArtifactStatuses() {
+      if (artifactIds.length === 0) return;
+
+      const results = await Promise.all(
+        artifactIds.map(async (artifactId) => {
+          try {
+            const res = await fetch(`/api/content/${artifactId}`);
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.content) return null;
+            return {
+              artifactId,
+              status: data.content.status as "draft" | "published",
+              cmsPostId: data.content.cms_post_id as string | null,
+            };
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      const next = results.reduce<Record<string, { status: "draft" | "published"; cmsPostId: string | null }>>((acc, item) => {
+        if (item) {
+          acc[item.artifactId] = {
+            status: item.status,
+            cmsPostId: item.cmsPostId,
+          };
+        }
+        return acc;
+      }, {});
+
+      if (Object.keys(next).length > 0) {
+        setArtifactStatusById((prev) => ({ ...prev, ...next }));
+      }
+    }
+
+    hydrateArtifactStatuses();
+  }, [artifactIds]);
 
   if (loading) return <ScanSkeleton />;
 
@@ -695,6 +751,8 @@ export default function ScanResultPage() {
               {execPlan.steps.map((step) => {
                 const cfg = fixTypeConfig[step.fixType as FixItem["type"]] ?? fixTypeConfig.schema;
                 const StepIcon = cfg.icon;
+                const artifactStatus = step.artifactId ? artifactStatusById[step.artifactId] : null;
+                const isPublishedArtifact = artifactStatus?.status === "published";
                 const statusIcon = step.status === "completed" ? <Check className="w-4 h-4 text-emerald-400" /> : step.status === "failed" ? <XCircle className="w-4 h-4 text-rose-400" /> : step.status === "running" ? <Loader2 className="w-4 h-4 animate-spin text-emerald-400" /> : step.status === "needs_input" ? <ArrowRight className="w-4 h-4 text-amber-400" /> : <div className="w-4 h-4 rounded-full border border-gray-600" />;
                 return (
                   <div key={step.id} className={`rounded-lg border p-3 flex items-center gap-3 ${step.status === "completed" ? "border-emerald-500/20 bg-emerald-500/5" : step.status === "failed" ? "border-rose-500/20 bg-rose-500/5" : step.status === "needs_input" ? "border-amber-500/20 bg-amber-500/5" : "border-white/10 bg-white/5"}`}>
@@ -726,18 +784,24 @@ export default function ScanResultPage() {
                       {step.artifactType === "generated_content" && step.artifactId && step.status === "completed" && (
                         <>
                           <Link
-                            href={`/content?contentId=${step.artifactId}`}
+                            href={`/content/${step.artifactId}?contentId=${step.artifactId}`}
                             className="px-2 py-1 text-xs font-medium rounded-lg bg-white/5 text-gray-200 hover:bg-white/10 transition-colors"
                           >
-                            Open draft
+                            {isPublishedArtifact ? "Open published" : "Open draft"}
                           </Link>
-                          <button
-                            onClick={() => handlePublishArtifact(step.id, step.artifactId!)}
-                            disabled={publishingArtifactId === step.artifactId}
-                            className="px-2 py-1 text-xs font-medium rounded-lg bg-electric-500/20 text-electric-300 hover:bg-electric-500/30 disabled:opacity-60 transition-colors"
-                          >
-                            {publishingArtifactId === step.artifactId ? "Publishing..." : "Publish"}
-                          </button>
+                          {isPublishedArtifact ? (
+                            <span className="px-2 py-1 text-xs font-medium rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              Published{artifactStatus?.cmsPostId ? ` (#${artifactStatus.cmsPostId})` : ""}
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handlePublishArtifact(step.id, step.artifactId!)}
+                              disabled={publishingArtifactId === step.artifactId}
+                              className="px-2 py-1 text-xs font-medium rounded-lg bg-electric-500/20 text-electric-300 hover:bg-electric-500/30 disabled:opacity-60 transition-colors"
+                            >
+                              {publishingArtifactId === step.artifactId ? "Publishing..." : "Publish"}
+                            </button>
+                          )}
                         </>
                       )}
                       {step.artifactType === "listing_sync" && step.artifactId && step.status === "completed" && (
