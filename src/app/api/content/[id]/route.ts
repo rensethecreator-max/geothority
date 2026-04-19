@@ -42,6 +42,9 @@ export async function GET(
         configured:
           Boolean(profile?.cms_type) &&
           Boolean(profile?.cms_credentials && Object.keys(profile.cms_credentials).length > 0),
+        wordpressContentType: profile?.cms_credentials?.wordpressContentType === "posts" ? "posts" : "pages",
+        autoPublishFixes: Boolean(profile?.cms_credentials?.autoPublishFixes),
+        verifyAfterPublish: profile?.cms_credentials?.verifyAfterPublish !== false,
       },
     });
   } catch (error) {

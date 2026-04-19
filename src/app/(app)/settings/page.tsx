@@ -41,6 +41,9 @@ function SettingsContent() {
   const [wpUrl, setWpUrl] = useState("");
   const [wpUser, setWpUser] = useState("");
   const [wpPass, setWpPass] = useState("");
+  const [wpContentType, setWpContentType] = useState<"pages" | "posts">("pages");
+  const [autoPublishFixes, setAutoPublishFixes] = useState(false);
+  const [verifyAfterPublish, setVerifyAfterPublish] = useState(true);
   const [savingCms, setSavingCms] = useState(false);
   const [cmsSaved, setCmsSaved] = useState(false);
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
@@ -77,6 +80,9 @@ function SettingsContent() {
         if (data.cms_credentials) {
           setWpUrl(data.cms_credentials.siteUrl || "");
           setWpUser(data.cms_credentials.username || "");
+          setWpContentType(data.cms_credentials.wordpressContentType === "posts" ? "posts" : "pages");
+          setAutoPublishFixes(Boolean(data.cms_credentials.autoPublishFixes));
+          setVerifyAfterPublish(data.cms_credentials.verifyAfterPublish !== false);
         }
       }
       setLoading(false);
@@ -140,7 +146,14 @@ function SettingsContent() {
     setSavingCms(true);
 
     const credentials = cmsType === "wordpress"
-      ? { siteUrl: wpUrl, username: wpUser, appPassword: wpPass }
+      ? {
+          siteUrl: wpUrl,
+          username: wpUser,
+          appPassword: wpPass,
+          wordpressContentType: wpContentType,
+          autoPublishFixes,
+          verifyAfterPublish,
+        }
       : {};
 
     await supabase
@@ -455,6 +468,45 @@ function SettingsContent() {
                   WordPress → Users → Application Passwords. This is NOT your login password.
                 </p>
               </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Default publish target</label>
+                <select
+                  value={wpContentType}
+                  onChange={(e) => setWpContentType(e.target.value as "pages" | "posts")}
+                  className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-electric-500"
+                >
+                  <option value="pages">Pages</option>
+                  <option value="posts">Posts</option>
+                </select>
+              </div>
+              <label className="flex items-start gap-3 rounded-lg border border-[var(--border)] p-3">
+                <input
+                  type="checkbox"
+                  checked={autoPublishFixes}
+                  onChange={(e) => setAutoPublishFixes(e.target.checked)}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="text-sm font-medium">Auto-publish completed fix outputs</div>
+                  <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                    When Geothority creates a draft from a completed fix step, try to push it straight to WordPress using these saved settings.
+                  </div>
+                </div>
+              </label>
+              <label className="flex items-start gap-3 rounded-lg border border-[var(--border)] p-3">
+                <input
+                  type="checkbox"
+                  checked={verifyAfterPublish}
+                  onChange={(e) => setVerifyAfterPublish(e.target.checked)}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="text-sm font-medium">Verify after publish</div>
+                  <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                    After publishing, re-check WordPress and confirm the page or post exists before reporting success.
+                  </div>
+                </div>
+              </label>
             </div>
           )}
 

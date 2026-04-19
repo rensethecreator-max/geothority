@@ -215,6 +215,8 @@ export default function ScanResultPage() {
   const [executing, setExecuting] = useState(false);
   const [publishingArtifactId, setPublishingArtifactId] = useState<string | null>(null);
   const [artifactStatusById, setArtifactStatusById] = useState<Record<string, { status: "draft" | "published"; cmsPostId: string | null }>>({});
+  const [autoPublishFixes, setAutoPublishFixes] = useState(false);
+  const [autoPublishingStepIds, setAutoPublishingStepIds] = useState<string[]>([]);
   const supabase = createClient();
 
   // IMPORTANT: All hooks must be called before any conditional returns
@@ -224,14 +226,23 @@ export default function ScanResultPage() {
     async function loadScan() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase
-        .from("scans")
-        .select("*")
-        .eq("id", params.id)
-        .eq("user_id", user.id)
-        .single();
+
+      const [{ data }, { data: profile }] = await Promise.all([
+        supabase
+          .from("scans")
+          .select("*")
+          .eq("id", params.id)
+          .eq("user_id", user.id)
+          .single(),
+        supabase
+          .from("user_profiles")
+          .select("cms_credentials")
+          .eq("id", user.id)
+          .single(),
+      ]);
 
       if (data) setScan(data);
+      setAutoPublishFixes(Boolean(profile?.cms_credentials?.autoPublishFixes));
       setLoading(false);
     }
 
@@ -427,6 +438,23 @@ export default function ScanResultPage() {
 
     hydrateArtifactStatuses();
   }, [artifactIds]);
+
+  useEffect(() => {
+    if (!autoPublishFixes || !execPlan || publishingArtifactId) return;
+
+    const nextStep = execPlan.steps.find((step) => {
+      if (!step.artifactId || step.artifactType !== "generated_content") return false;
+      if (step.status !== "completed") return false;
+      if (artifactStatusById[step.artifactId]?.status === "published") return false;
+      if (autoPublishingStepIds.includes(step.id)) return false;
+      return true;
+    });
+
+    if (!nextStep?.artifactId) return;
+
+    setAutoPublishingStepIds((prev) => [...prev, nextStep.id]);
+    handlePublishArtifact(nextStep.id, nextStep.artifactId);
+  }, [autoPublishFixes, execPlan, artifactStatusById, publishingArtifactId, autoPublishingStepIds]);
 
   if (loading) return <ScanSkeleton />;
 

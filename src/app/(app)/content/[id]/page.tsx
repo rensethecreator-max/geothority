@@ -11,6 +11,9 @@ import type { GeneratedContent } from "@/lib/types";
 type CmsState = {
   type: string | null;
   configured: boolean;
+  wordpressContentType: "pages" | "posts";
+  autoPublishFixes: boolean;
+  verifyAfterPublish: boolean;
 };
 
 export default function ContentDetailPage() {
@@ -23,7 +26,18 @@ export default function ContentDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [content, setContent] = useState<GeneratedContent | null>(null);
-  const [cms, setCms] = useState<CmsState>({ type: null, configured: false });
+  const [cms, setCms] = useState<CmsState>({
+    type: null,
+    configured: false,
+    wordpressContentType: "pages",
+    autoPublishFixes: false,
+    verifyAfterPublish: true,
+  });
+  const [publishOptions, setPublishOptions] = useState({
+    wpContentType: "pages" as "pages" | "posts",
+    slug: "",
+    verifyAfterPublish: true,
+  });
   const [form, setForm] = useState({
     title: "",
     meta_description: "",
@@ -44,7 +58,20 @@ export default function ContentDetailPage() {
         if (!res.ok) throw new Error(data.error || "Failed to load content");
 
         setContent(data.content);
-        setCms(data.cms || { type: null, configured: false });
+        setCms(
+          data.cms || {
+            type: null,
+            configured: false,
+            wordpressContentType: "pages",
+            autoPublishFixes: false,
+            verifyAfterPublish: true,
+          }
+        );
+        setPublishOptions({
+          wpContentType: data.cms?.wordpressContentType === "posts" ? "posts" : "pages",
+          slug: data.content.title || "",
+          verifyAfterPublish: data.cms?.verifyAfterPublish !== false,
+        });
         setForm({
           title: data.content.title || "",
           meta_description: data.content.meta_description || "",
@@ -103,7 +130,12 @@ export default function ContentDetailPage() {
       const res = await fetch("/api/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contentId }),
+        body: JSON.stringify({
+          contentId,
+          wpContentType: publishOptions.wpContentType,
+          slug: publishOptions.slug,
+          verifyAfterPublish: publishOptions.verifyAfterPublish,
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -119,7 +151,11 @@ export default function ContentDetailPage() {
             }
           : prev
       );
-      setSuccess("Published successfully");
+      setSuccess(
+        data.verified
+          ? `Published and verified${data.liveUrl ? ` at ${data.liveUrl}` : ""}`
+          : "Published successfully"
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to publish content");
     } finally {
@@ -199,7 +235,7 @@ export default function ContentDetailPage() {
         <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-sm text-rose-300">{error}</div>
       )}
       {success && (
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm text-emerald-300">{success}</div>
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm text-emerald-300 break-all">{success}</div>
       )}
 
       {!cms.configured && content.status === "draft" && (
@@ -214,7 +250,14 @@ export default function ContentDetailPage() {
             <label className="text-sm font-medium block mb-2">Title</label>
             <input
               value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => {
+                const nextTitle = e.target.value;
+                setForm((prev) => ({ ...prev, title: nextTitle }));
+                setPublishOptions((prev) => ({
+                  ...prev,
+                  slug: prev.slug === "" || prev.slug === form.title ? nextTitle : prev.slug,
+                }));
+              }}
               className="w-full rounded-lg border border-[var(--border)] bg-black/20 px-3 py-2 text-sm outline-none focus:border-electric-500"
             />
           </div>
@@ -255,7 +298,52 @@ export default function ContentDetailPage() {
                 <div>Published: <span className="text-white">{new Date(content.published_at).toLocaleString()}</span></div>
               )}
               {content.cms_post_id && <div>CMS Post ID: <span className="text-white">{content.cms_post_id}</span></div>}
+              <div>Default target: <span className="text-white capitalize">{publishOptions.wpContentType}</span></div>
+              <div>Verification: <span className="text-white">{publishOptions.verifyAfterPublish ? "On" : "Off"}</span></div>
             </div>
+          </div>
+
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 space-y-3">
+            <h2 className="font-semibold">Publish Controls</h2>
+            <div>
+              <label className="text-sm font-medium block mb-2">WordPress target</label>
+              <select
+                value={publishOptions.wpContentType}
+                onChange={(e) => setPublishOptions((prev) => ({ ...prev, wpContentType: e.target.value as "pages" | "posts" }))}
+                className="w-full rounded-lg border border-[var(--border)] bg-black/20 px-3 py-2 text-sm outline-none focus:border-electric-500"
+              >
+                <option value="pages">Pages</option>
+                <option value="posts">Posts</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-2">Slug</label>
+              <input
+                value={publishOptions.slug}
+                onChange={(e) => setPublishOptions((prev) => ({ ...prev, slug: e.target.value }))}
+                className="w-full rounded-lg border border-[var(--border)] bg-black/20 px-3 py-2 text-sm outline-none focus:border-electric-500"
+                placeholder="city-service-page"
+              />
+            </div>
+            <label className="flex items-start gap-3 rounded-lg border border-[var(--border)] p-3">
+              <input
+                type="checkbox"
+                checked={publishOptions.verifyAfterPublish}
+                onChange={(e) => setPublishOptions((prev) => ({ ...prev, verifyAfterPublish: e.target.checked }))}
+                className="mt-1"
+              />
+              <div>
+                <div className="text-sm font-medium">Verify after publish</div>
+                <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                  Re-check WordPress after publish and confirm the content exists before reporting success.
+                </div>
+              </div>
+            </label>
+            {cms.autoPublishFixes && (
+              <div className="text-xs text-emerald-400 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
+                Auto-publish from fix execution is enabled in Settings.
+              </div>
+            )}
           </div>
 
           <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 space-y-3">

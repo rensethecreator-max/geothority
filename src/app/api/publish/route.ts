@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createServerSupabase();
@@ -12,7 +21,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { contentId, cmsType, cmsCredentials } = await req.json();
+    const {
+      contentId,
+      cmsType,
+      cmsCredentials,
+      wpContentType,
+      slug,
+      verifyAfterPublish,
+    } = await req.json();
 
     if (!contentId) {
       return NextResponse.json(
@@ -41,6 +57,15 @@ export async function POST(req: NextRequest) {
 
     const resolvedCmsType = cmsType || profile?.cms_type || null;
     const resolvedCmsCredentials = cmsCredentials || profile?.cms_credentials || null;
+    const resolvedWpContentType =
+      wpContentType || resolvedCmsCredentials?.wordpressContentType || "pages";
+    const resolvedVerifyAfterPublish =
+      typeof verifyAfterPublish === "boolean"
+        ? verifyAfterPublish
+        : resolvedCmsCredentials?.verifyAfterPublish !== false;
+    const resolvedSlug = typeof slug === "string" && slug.trim()
+      ? slugify(slug)
+      : slugify(content.title || "generated-page");
 
     if (
       resolvedCmsType !== "wordpress" ||
@@ -55,10 +80,13 @@ export async function POST(req: NextRequest) {
     }
 
     let cmsPostId: string | null = null;
+    let verified = false;
+    let liveUrl: string | null = null;
 
     try {
+      const wpEndpoint = resolvedWpContentType === "posts" ? "posts" : "pages";
       const wpRes = await fetch(
-        `${resolvedCmsCredentials.siteUrl}/wp-json/wp/v2/pages`,
+        `${resolvedCmsCredentials.siteUrl}/wp-json/wp/v2/${wpEndpoint}`,
         {
           method: "POST",
           headers: {
@@ -71,6 +99,7 @@ export async function POST(req: NextRequest) {
             title: content.title,
             content: content.content_html,
             status: "publish",
+            slug: resolvedSlug,
             meta: {
               _yoast_wpseo_metadesc: content.meta_description,
             },
@@ -88,6 +117,26 @@ export async function POST(req: NextRequest) {
 
       const wpData = await wpRes.json();
       cmsPostId = String(wpData.id);
+      liveUrl = wpData.link || null;
+
+      if (resolvedVerifyAfterPublish && cmsPostId) {
+        const verifyRes = await fetch(
+          `${resolvedCmsCredentials.siteUrl}/wp-json/wp/v2/${wpEndpoint}/${cmsPostId}`,
+          {
+            headers: {
+              Authorization: `Basic ${Buffer.from(
+                `${resolvedCmsCredentials.username}:${resolvedCmsCredentials.appPassword}`
+              ).toString("base64")}`,
+            },
+          }
+        );
+
+        verified = verifyRes.ok;
+        if (verified) {
+          const verifyData = await verifyRes.json().catch(() => null);
+          liveUrl = verifyData?.link || liveUrl;
+        }
+      }
     } catch (_wpErr) {
       return NextResponse.json(
         { error: "Failed to connect to WordPress" },
@@ -116,6 +165,10 @@ export async function POST(req: NextRequest) {
       success: true,
       cmsPostId,
       publishedAt: new Date().toISOString(),
+      verified,
+      liveUrl,
+      wpContentType: resolvedWpContentType,
+      slug: resolvedSlug,
     });
   } catch (error) {
     console.error("Publish API error:", error);
