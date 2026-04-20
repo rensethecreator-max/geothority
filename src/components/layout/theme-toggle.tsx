@@ -4,17 +4,17 @@ import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false); // Light mode default
 
   useEffect(() => {
-    // Default: dark mode
     try {
       const stored = localStorage.getItem("theme");
-      const dark = stored === null ? true : stored === "dark";
+      // Default: light mode (dark only if explicitly set)
+      const dark = stored === "dark";
       setIsDark(dark);
       applyTheme(dark);
     } catch {
-      applyTheme(true);
+      applyTheme(false); // Light default on error
     }
   }, []);
 

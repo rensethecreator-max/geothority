@@ -293,3 +293,117 @@
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
+
+/* ─── Homepage Light Mode ───────────────────────────── */
+.light-mode .geo-hero {
+  background: linear-gradient(180deg, #F0FDF9 0%, #F9FAFB 100%);
+}
+
+/* Homepage main container */
+.light-mode .min-h-screen.bg-\[\#0a0a0f\] {
+  background-color: var(--background) !important;
+  color: var(--foreground);
+}
+
+/* Homepage nav */
+.light-mode nav.bg-\[\#0a0a0f\]\/80 {
+  background-color: rgba(249, 250, 251, 0.85) !important;
+  border-color: var(--border);
+}
+.light-mode nav .text-gray-400 {
+  color: var(--muted-foreground);
+}
+.light-mode nav .text-gray-400:hover {
+  color: var(--foreground);
+}
+
+/* Section eyebrows */
+.light-mode .text-\[\#8ddccb\] {
+  color: #059669;
+}
+.light-mode .bg-\[\#7ce6c7\] {
+  background-color: #059669;
+}
+.light-mode .border-white\/10,
+.light-mode .border-white\/8,
+.light-mode .border-white\/12 {
+  border-color: var(--border);
+}
+.light-mode .bg-white\/\[0\.03\],
+.light-mode .bg-white\/\[0\.02\],
+.light-mode .bg-white\/\[0\.04\],
+.light-mode .bg-white\/\[0\.05\] {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+.light-mode .bg-black\/20,
+.light-mode .bg-\[\#09111a\],
+.light-mode .bg-\[\#09111c\],
+.light-mode .bg-\[\#0b1322\]\/92 {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.light-mode .text-white\/58,
+.light-mode .text-white\/60,
+.light-mode .text-white\/62,
+.light-mode .text-white\/65,
+.light-mode .text-white\/68,
+.light-mode .text-white\/70,
+.light-mode .text-white\/72,
+.light-mode .text-white\/75,
+.light-mode .text-white\/80,
+.light-mode .text-white\/85 {
+  color: var(--muted-foreground);
+}
+.light-mode .text-white\/40,
+.light-mode .text-white\/35,
+.light-mode .text-white\/38,
+.light-mode .text-white\/45 {
+  color: rgba(0, 0, 0, 0.35);
+}
+.light-mode .text-white\/30,
+.light-mode .text-white\/22,
+.light-mode .text-white\/15 {
+  color: rgba(0, 0, 0, 0.2);
+}
+.light-mode .text-white {
+  color: var(--foreground);
+}
+
+/* Versus cards */
+.light-mode .border-red-400\/20 {
+  border-color: rgba(239, 68, 68, 0.15);
+}
+.light-mode .bg-red-400\/5 {
+  background-color: rgba(239, 68, 68, 0.04);
+}
+.light-mode .border-emerald-400\/25,
+.light-mode .border-emerald-400\/20 {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+.light-mode .bg-emerald-400\/8,
+.light-mode .bg-emerald-400\/5 {
+  background-color: rgba(16, 185, 129, 0.06);
+}
+
+/* Animated hero light mode */
+.light-mode .bg-\[\#0b1322\]\/92 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: var(--border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+}
+.light-mode .bg-white\/\[0\.04\] {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.light-mode .bg-white\/8 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Footer light mode */
+.light-mode .text-gray-500 {
+  color: var(--muted-foreground);
+}
+.light-mode .text-gray-600 {
+  color: rgba(0, 0, 0, 0.35);
+}
+.light-mode .border-white\/5 {
+  border-color: var(--border);
+}
