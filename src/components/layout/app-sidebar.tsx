@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  Activity,
   Search,
   FileText,
   Eye,
@@ -36,6 +37,7 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/action-center", label: "Action Center", icon: Activity },
   { href: "/scan", label: "New Scan", icon: Search },
   { href: "/reports", label: "Reports", icon: ClipboardList },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
