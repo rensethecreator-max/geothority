@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { requirePlan } from "@/lib/plan-gate";
+import { getAutomationPolicy, isAutoAllowed } from "@/lib/automation-policies";
 import { streamContentGeneration } from "@/lib/content-generation";
 import type { ContentType, ContentBrief } from "@/lib/content-generation";
 
@@ -22,7 +23,18 @@ export async function POST(req: NextRequest) {
       targetKeyword,
       competitorContext,
       brief, // optional pre-generated brief
+      isAutoAction = false,
     } = await req.json();
+
+    if (isAutoAction) {
+      const policy = await getAutomationPolicy(user.id, "generate_content");
+      if (!isAutoAllowed(policy)) {
+        return new Response(
+          JSON.stringify({ error: "Automation policy blocks automatic content generation for this account." }),
+          { status: 403, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     if (!city || !businessName) {
       return new Response(

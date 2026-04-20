@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { verifyAndSync } from "@/lib/foursquare";
 import { requirePlan } from "@/lib/plan-gate";
+import { getAutomationPolicy, isAutoAllowed } from "@/lib/automation-policies";
 
 /**
  * POST /api/citations/sync
@@ -17,8 +18,18 @@ export async function POST(req: NextRequest) {
     const user = gate.user;
     const supabase = await createServerSupabase();
 
-    const { businessName, address, city, state, zip, phone, website } =
+    const { businessName, address, city, state, zip, phone, website, isAutoAction = false } =
       await req.json();
+
+    if (isAutoAction) {
+      const policy = await getAutomationPolicy(user.id, "listing_sync");
+      if (!isAutoAllowed(policy)) {
+        return NextResponse.json(
+          { error: "Automation policy blocks automatic listing sync for this account." },
+          { status: 403 }
+        );
+      }
+    }
 
     if (!businessName || !city || !state) {
       return NextResponse.json(

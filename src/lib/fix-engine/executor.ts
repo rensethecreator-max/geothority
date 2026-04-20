@@ -6,6 +6,11 @@
 
 import { createServiceClient } from "@/lib/supabase/server";
 import {
+  DEFAULT_AUTOMATION_POLICIES,
+  type AutomationActionKey,
+  type AutomationPolicyMode,
+} from "@/lib/types";
+import {
   type FixExecutionMode,
   type FixExecutionPlan,
   type FixStep,
@@ -56,7 +61,34 @@ interface FixExecutionPlanRow {
 
 let planCounter = 0;
 
-function canAutoRun(fixType: string, mode: FixExecutionMode): boolean {
+function mapFixTypeToPolicyAction(fixType: string): AutomationActionKey | null {
+  if (fixType === "listing_sync") return "listing_sync";
+  if (["schema", "faq", "about", "landing_page", "meta_tags", "ai_optimization"].includes(fixType)) {
+    return "generate_content";
+  }
+  return null;
+}
+
+async function loadAutomationPolicies(userId: string): Promise<Record<AutomationActionKey, AutomationPolicyMode>> {
+  const supabase = createServiceClient();
+  const { data } = await supabase
+    .from("user_profiles")
+    .select("automation_policies")
+    .eq("id", userId)
+    .single();
+
+  return {
+    ...DEFAULT_AUTOMATION_POLICIES,
+    ...((data?.automation_policies as Partial<Record<AutomationActionKey, AutomationPolicyMode>> | null) ?? {}),
+  };
+}
+
+function canAutoRun(
+  fixType: string,
+  mode: FixExecutionMode,
+  policyMode?: AutomationPolicyMode
+): boolean {
+  if (policyMode && policyMode !== "auto_apply") return false;
   if (mode === "GUIDED") return false;
   if (mode === "AUTO") return true;
   return AUTO_RUNNABLE_TYPES.has(fixType);
@@ -183,9 +215,12 @@ export async function buildExecutionPlan(
 ): Promise<FixExecutionPlan> {
   planCounter++;
   const planId = `plan_${Date.now()}_${planCounter}`;
+  const policies = await loadAutomationPolicies(userId);
 
   const steps: FixStep[] = fixes.map((fix, i) => {
-    const auto = canAutoRun(fix.type, mode) || fix.autoApplied;
+    const policyAction = mapFixTypeToPolicyAction(fix.type);
+    const policyMode = policyAction ? policies[policyAction] : undefined;
+    const auto = canAutoRun(fix.type, mode, policyMode) || fix.autoApplied;
     let status: FixStepStatus = "pending";
     let userAction: string | undefined;
 
@@ -193,7 +228,13 @@ export async function buildExecutionPlan(
       status = "pending";
     } else if (!auto) {
       status = "needs_input";
-      userAction = getUserActionHint(fix.type);
+      const baseHint = getUserActionHint(fix.type);
+      userAction =
+        policyMode === "approval_required"
+          ? `Approval required before automation. ${baseHint}`
+          : policyMode === "manual_only"
+            ? `Manual-only action. ${baseHint}`
+            : baseHint;
     }
 
     return {

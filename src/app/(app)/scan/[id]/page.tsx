@@ -77,6 +77,18 @@ interface FixStep {
   verification?: { fixType: string; passed: boolean; message: string; scoreBefore?: number; scoreAfter?: number; verifiedAt: string };
 }
 
+interface PlanVerification {
+  status: "pending" | "running" | "completed" | "failed";
+  layerScoresAfter?: Record<string, number>;
+  scoreBefore?: number;
+  scoreAfter?: number;
+  stepResults?: Array<{ fixType: string; passed: boolean; message: string; scoreBefore?: number; scoreAfter?: number; verifiedAt: string }>;
+  startedAt?: string;
+  completedAt?: string;
+  passedCount?: number;
+  failedCount?: number;
+}
+
 interface FixExecutionPlan {
   id: string;
   scanId: string;
@@ -89,6 +101,8 @@ interface FixExecutionPlan {
   failed: number;
   needsInput: number;
   status: "planning" | "executing" | "paused" | "completed" | "failed";
+  layerScoresBefore?: Record<string, number>;
+  verification?: PlanVerification;
 }
 
 /* ─── FixCard ─── */
@@ -217,6 +231,8 @@ export default function ScanResultPage() {
   const [artifactStatusById, setArtifactStatusById] = useState<Record<string, { status: "draft" | "published"; cmsPostId: string | null }>>({});
   const [autoPublishFixes, setAutoPublishFixes] = useState(false);
   const [autoPublishingStepIds, setAutoPublishingStepIds] = useState<string[]>([]);
+  const [verifyingPlan, setVerifyingPlan] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
   const supabase = createClient();
 
   // IMPORTANT: All hooks must be called before any conditional returns
@@ -227,7 +243,7 @@ export default function ScanResultPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [{ data }, { data: profile }] = await Promise.all([
+      const [{ data }, { data: profile }, { data: existingPlan }] = await Promise.all([
         supabase
           .from("scans")
           .select("*")
@@ -236,13 +252,39 @@ export default function ScanResultPage() {
           .single(),
         supabase
           .from("user_profiles")
-          .select("cms_credentials")
+          .select("cms_credentials, automation_policies")
           .eq("id", user.id)
           .single(),
+        supabase
+          .from("fix_execution_plans")
+          .select("*")
+          .eq("scan_id", params.id)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]);
 
       if (data) setScan(data);
-      setAutoPublishFixes(Boolean(profile?.cms_credentials?.autoPublishFixes));
+      if (existingPlan) {
+        setExecPlan({
+          id: existingPlan.id,
+          scanId: existingPlan.scan_id,
+          mode: existingPlan.mode,
+          steps: existingPlan.steps,
+          createdAt: existingPlan.created_at,
+          progress: existingPlan.progress,
+          total: existingPlan.total,
+          completed: existingPlan.completed,
+          failed: existingPlan.failed,
+          needsInput: existingPlan.needs_input,
+          status: existingPlan.status,
+          layerScoresBefore: existingPlan.layer_scores_before,
+          verification: existingPlan.verification,
+        });
+      }
+      const publishPolicy = profile?.automation_policies?.publish_to_cms;
+      setAutoPublishFixes(Boolean(profile?.cms_credentials?.autoPublishFixes) && publishPolicy === "auto_apply");
       setLoading(false);
     }
 
@@ -352,13 +394,13 @@ export default function ScanResultPage() {
     }
   };
 
-  const handlePublishArtifact = async (stepId: string, artifactId: string) => {
+  const handlePublishArtifact = async (stepId: string, artifactId: string, options?: { isAutoAction?: boolean }) => {
     setPublishingArtifactId(artifactId);
     try {
       const res = await fetch("/api/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contentId: artifactId }),
+        body: JSON.stringify({ contentId: artifactId, isAutoAction: Boolean(options?.isAutoAction) }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -389,6 +431,33 @@ export default function ScanResultPage() {
       setFixError(error instanceof Error ? error.message : "Publish failed");
     } finally {
       setPublishingArtifactId(null);
+    }
+  };
+
+  const handleVerifyPlan = async () => {
+    if (!execPlan || verifyingPlan) return;
+    setVerifyingPlan(true);
+    setVerificationError(null);
+
+    try {
+      const res = await fetch("/api/fix-engine/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: execPlan.id }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Verification failed");
+      }
+
+      if (data.plan) {
+        setExecPlan(data.plan);
+      }
+    } catch (error) {
+      setVerificationError(error instanceof Error ? error.message : "Verification failed");
+    } finally {
+      setVerifyingPlan(false);
     }
   };
 
@@ -453,7 +522,7 @@ export default function ScanResultPage() {
     if (!nextStep?.artifactId) return;
 
     setAutoPublishingStepIds((prev) => [...prev, nextStep.id]);
-    handlePublishArtifact(nextStep.id, nextStep.artifactId);
+    handlePublishArtifact(nextStep.id, nextStep.artifactId, { isAutoAction: true });
   }, [autoPublishFixes, execPlan, artifactStatusById, publishingArtifactId, autoPublishingStepIds]);
 
   if (loading) return <ScanSkeleton />;
@@ -772,6 +841,60 @@ export default function ScanResultPage() {
                 {execPlan.needsInput > 0 && <span className="text-amber-400">{execPlan.needsInput} need your action</span>}
                 <span className="ml-auto font-semibold text-emerald-400">{execPlan.progress}%</span>
               </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-[#0f1117] p-5 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h4 className="font-bold text-sm">Post-fix Verification</h4>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Compare this execution plan against a newer scan to confirm whether scores actually improved.
+                  </p>
+                </div>
+                <button
+                  onClick={handleVerifyPlan}
+                  disabled={verifyingPlan || execPlan.status === "executing"}
+                  className="px-3 py-2 text-xs font-medium rounded-lg bg-electric-500/20 text-electric-300 hover:bg-electric-500/30 disabled:opacity-50 transition-colors"
+                >
+                  {verifyingPlan ? "Verifying..." : "Verify Fixes"}
+                </button>
+              </div>
+
+              {verificationError && (
+                <div className="text-xs rounded-lg border border-rose-500/20 bg-rose-500/5 text-rose-300 px-3 py-2">
+                  {verificationError}
+                </div>
+              )}
+
+              {execPlan.verification && (
+                <div className={`rounded-lg border px-3 py-3 text-xs ${execPlan.verification.status === "completed" ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-300" : execPlan.verification.status === "failed" ? "border-rose-500/20 bg-rose-500/5 text-rose-300" : "border-amber-500/20 bg-amber-500/5 text-amber-200"}`}>
+                  <div className="flex flex-wrap gap-4">
+                    <span>Status: <span className="font-semibold uppercase">{execPlan.verification.status}</span></span>
+                    {typeof execPlan.verification.scoreBefore === "number" && typeof execPlan.verification.scoreAfter === "number" && (
+                      <span>
+                        Score: <span className="font-semibold">{execPlan.verification.scoreBefore}</span> → <span className="font-semibold">{execPlan.verification.scoreAfter}</span>
+                      </span>
+                    )}
+                    {typeof execPlan.verification.passedCount === "number" && (
+                      <span>{execPlan.verification.passedCount} passed</span>
+                    )}
+                    {typeof execPlan.verification.failedCount === "number" && (
+                      <span>{execPlan.verification.failedCount} failed</span>
+                    )}
+                  </div>
+                  {execPlan.verification.completedAt && (
+                    <div className="mt-2 text-[11px] opacity-80">
+                      Last checked {new Date(execPlan.verification.completedAt).toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!execPlan.verification && (
+                <div className="text-xs text-gray-500">
+                  Run a fresh scan after fixes, then press Verify Fixes to compare the before and after scores.
+                </div>
+              )}
             </div>
 
             {/* Step List */}
