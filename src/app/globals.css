@@ -407,3 +407,179 @@
 .light-mode .border-white\/5 {
   border-color: var(--border);
 }
+
+/* ─── Pricing Page Light Mode ────────────────────────── */
+.light-mode .bg-\[\#0a0a0f\] {
+  background-color: var(--background) !important;
+}
+.light-mode .bg-\[\#0f1117\] {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+.light-mode .bg-\[\#09111a\],
+.light-mode .bg-\[\#09111c\],
+.light-mode .bg-\[\#09111d\] {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Pricing toggle */
+.light-mode .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Cards with dark backgrounds */
+.light-mode .bg-black\/20,
+.light-mode .bg-black\/15,
+.light-mode .bg-black\/35 {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Gradient backgrounds on sections */
+.light-mode .bg-\[\#0e141f\]\/55 {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+.light-mode .bg-\[\#0f1117\]\/25 {
+  background-color: rgba(0, 0, 0, 0.01) !important;
+}
+
+/* Score colors - keep these as-is, they work in both modes */
+/* Emerald/teal gradients work great on both light and dark */
+
+/* Border and separator adjustments */
+.light-mode .border-white\/5,
+.light-mode .border-white\/6,
+.light-mode .border-white\/8,
+.light-mode .border-white\/10,
+.light-mode .border-white\/12,
+.light-mode .border-white\/15,
+.light-mode .border-white\/16,
+.light-mode .border-white\/20 {
+  border-color: var(--border);
+}
+
+/* Background fills */
+.light-mode .bg-white\/\[0\.02\],
+.light-mode .bg-white\/\[0\.03\],
+.light-mode .bg-white\/\[0\.04\],
+.light-mode .bg-white\/\[0\.05\] {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Text colors for light mode */
+.light-mode .text-white {
+  color: var(--foreground);
+}
+.light-mode .text-white\/90,
+.light-mode .text-white\/85,
+.light-mode .text-white\/80 {
+  color: var(--foreground);
+}
+.light-mode .text-white\/75,
+.light-mode .text-white\/72,
+.light-mode .text-white\/70 {
+  color: rgba(0, 0, 0, 0.75);
+}
+.light-mode .text-white\/65,
+.light-mode .text-white\/62,
+.light-mode .text-white\/60,
+.light-mode .text-white\/58 {
+  color: var(--muted-foreground);
+}
+.light-mode .text-white\/55,
+.light-mode .text-white\/50,
+.light-mode .text-white\/45 {
+  color: rgba(0, 0, 0, 0.5);
+}
+.light-mode .text-white\/40,
+.light-mode .text-white\/38,
+.light-mode .text-white\/35 {
+  color: rgba(0, 0, 0, 0.35);
+}
+.light-mode .text-white\/30,
+.light-mode .text-white\/28,
+.light-mode .text-white\/22,
+.light-mode .text-white\/20,
+.light-mode .text-white\/15,
+.light-mode .text-white\/10 {
+  color: rgba(0, 0, 0, 0.2);
+}
+
+/* Green accent text - keep readable in light mode */
+.light-mode .text-emerald-400 {
+  color: #059669;
+}
+.light-mode .text-\[\#8ddccb\] {
+  color: #059669;
+}
+.light-mode .text-\[\#9be8d2\] {
+  color: #047857;
+}
+.light-mode .text-\[\#7ce6c7\] {
+  color: #059669;
+}
+
+/* Green accent backgrounds */
+.light-mode .bg-\[\#7ce6c7\]\/10,
+.light-mode .bg-emerald-400\/10,
+.light-mode .bg-emerald-500\/10 {
+  background-color: rgba(5, 150, 105, 0.08);
+}
+.light-mode .bg-\[\#7ce6c7\]\/25,
+.light-mode .bg-emerald-400\/20,
+.light-mode .bg-emerald-500\/20 {
+  background-color: rgba(5, 150, 105, 0.1);
+}
+
+/* Green dots/indicators */
+.light-mode .bg-\[\#7ce6c7\] {
+  background-color: #059669;
+}
+.light-mode .shadow-\[0_0_16px_rgba\(124\,230\,199\,0\.7\)\],
+.light-mode .shadow-\[0_0_18px_rgba\(124\,230\,199\,0\.8\)\] {
+  box-shadow: 0 0 16px rgba(5, 150, 105, 0.3);
+}
+
+/* Purple/blue accents */
+.light-mode .text-\[\#8f94ff\] {
+  color: #6366f1;
+}
+.light-mode .bg-\[\#8f94ff\]\/10 {
+  background-color: rgba(99, 102, 241, 0.08);
+}
+
+/* Score bars */
+.light-mode .bg-white\/8 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Will Chatbot light mode */
+.light-mode .bg-\[\#0a0e17\] {
+  background-color: #FFFFFF !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.1) !important;
+}
+.light-mode .bg-emerald-500\/20 {
+  background-color: rgba(5, 150, 105, 0.12);
+}
+.light-mode .bg-white\/\[0\.04\] {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.light-mode .border-emerald-400\/20 {
+  border-color: rgba(5, 150, 105, 0.2);
+}
+.lightMode .border-white\/8 {
+  border-color: var(--border);
+}
+
+/* Footer and link colors */
+.light-mode .text-gray-300:hover,
+.light-mode .text-gray-300 {
+  color: var(--foreground);
+}
+.light-mode .text-gray-400 {
+  color: var(--muted-foreground);
+}
+
+/* Backdrop blur panels */
+.light-mode .backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+}
