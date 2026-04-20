@@ -583,3 +583,72 @@
 .light-mode .backdrop-blur-xl {
   backdrop-filter: blur(24px);
 }
+
+/* ─── Missing Light Mode Overrides for Pricing/Bundle/API-Docs ─── */
+
+/* bg-white/N (integer slash syntax) */
+.light-mode .bg-white\/3 {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+.light-mode .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+.light-mode .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+.light-mode .bg-white\/15 {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* hover states */
+.light-mode .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+.light-mode .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+.light-mode .hover\:bg-white\/15:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* API docs nav (div, not nav) */
+.light-mode .bg-\[\#0a0a0f\]\/80 {
+  background-color: rgba(249, 250, 251, 0.85) !important;
+}
+
+/* Pricing page card with bg-[#0f1117] and border-white/10 combos */
+.light-mode .bg-\[\#0f1117\].border-white\/10 {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-color: var(--border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Pricing toggle switch */
+.light-mode .bg-\[\#0f1117\].rounded-full {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Code blocks in API docs */
+.light-mode code.bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Pricing FAQ accordion */
+.light-mode .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Mobile nav menu in homepage */
+.light-mode .bg-\[\#0a0a0f\].px-4 {
+  background-color: rgba(249, 250, 251, 0.95) !important;
+}
+
+/* bg-white/[0.02] on table rows in API docs */
+.light-mode tr.bg-white\/\[0\.02\] {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Fix typo: lightMode → .light-mode (already fixed above, this covers remaining) */
+.light-mode .border-white\/8 {
+  border-color: var(--border);
+}
