@@ -235,3 +235,61 @@
   .scroll-reveal.slide-left { transform: translateX(-20px); }
   .scroll-reveal.slide-right { transform: translateX(20px); }
 }
+
+/* ─── Light Mode Overrides ─────────────────────────── */
+.light-mode .geo-panel {
+  border-color: rgba(0,0,0,0.08);
+  background: linear-gradient(180deg, rgba(0,0,0,0.01), rgba(0,0,0,0.03)), rgba(255,255,255,0.95);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+}
+
+.light-mode .geo-command-surface {
+  background: rgba(255,255,255,0.95);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 24px 80px rgba(0,0,0,0.06);
+}
+
+.light-mode .geo-territory-grid {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px),
+    radial-gradient(circle at 20% 20%, rgba(16,185,129,0.06), transparent 22%),
+    radial-gradient(circle at 80% 35%, rgba(99,102,241,0.05), transparent 24%);
+}
+
+.light-mode .geo-proof-card {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 12px 40px rgba(0,0,0,0.06);
+}
+
+.light-mode .geo-radar-shell {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 12px 40px rgba(0,0,0,0.05);
+}
+
+.light-mode .geo-stack-core {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 12px 40px rgba(0,0,0,0.05);
+}
+
+.light-mode .geo-surface-ambient::before {
+  background: linear-gradient(135deg, rgba(255,255,255,0.6), transparent 18%, transparent 82%, rgba(99,102,241,0.04));
+}
+
+/* Chat widget light mode */
+.light-mode .will-chat-panel {
+  background: #FFFFFF !important;
+  border-color: rgba(0,0,0,0.08) !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.12) !important;
+}
+
+/* Homepage hero light mode adjustments */
+.light-mode .geo-hero {
+  background: linear-gradient(180deg, #F0FDF9 0%, #F9FAFB 100%);
+}
+
+/* Animation for chat fade in */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}

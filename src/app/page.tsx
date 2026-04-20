@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -19,12 +19,87 @@ import {
   TrendingUp,
   Waypoints,
   ChevronRight,
+  Zap,
+  Bot,
+  Wand2,
+  Play,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { GeoTooltip } from "@/components/ui/geo-tooltip";
 import { LayerInfoTooltip } from "@/components/ui/info-tooltip";
 import { Logo } from "@/components/ui/logo";
-import { useState } from "react";
+
+/* ───────────────── Animated Hero Video Component ───────────────── */
+
+function HeroVideoLoop() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
+  return (
+    <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-[#09111c] border border-white/10 shadow-[0_30px_120px_rgba(6,12,24,0.55)]">
+      {/* Fallback gradient while video loads */}
+      {!videoLoaded && (
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-[#09111c] to-blue-500/10 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <Radar className="w-8 h-8 text-emerald-400" />
+            </div>
+            <div className="text-sm text-white/40">Loading demo...</div>
+          </div>
+        </div>
+      )}
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        onLoadedData={() => setVideoLoaded(true)}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
+      >
+        <source src="/hero/scan-fix-monitor.mp4" type="video/mp4" />
+      </video>
+      {/* Overlay gradient for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#09111c] via-transparent to-transparent opacity-60" />
+      {/* Bottom overlay with score animation */}
+      <div className="absolute bottom-0 left-0 right-0 p-6">
+        <div className="flex items-end justify-between">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-1">Live Scan</div>
+            <div className="text-white font-semibold text-lg">Trust Stack Score: <span className="text-emerald-400">78/100</span></div>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Auto-monitoring active
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────── Animated Score Counter ───────────────── */
+
+function AnimatedCounter({ target, duration = 2000 }: { target: number; duration?: number }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+    const increment = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= target) {
+        setCount(target);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [target, duration]);
+
+  return <span>{count}</span>;
+}
 
 /* ───────────────── Data ───────────────── */
 
@@ -32,6 +107,8 @@ const features: {
   icon: React.ElementType;
   title: string;
   description: string;
+  theirWay: string;
+  ourWay: string;
   stat: string;
   image: string;
   note?: string;
@@ -40,59 +117,72 @@ const features: {
 }[] = [
   {
     icon: Shield,
-    title: "See Your Complete Local SEO Picture in 90 Seconds",
+    title: "We Don't Just Show Problems — We Fix Them Automatically",
     description:
-      "Our 5-layer Trust Stack™ framework scores your Foundation, Trust Pages, Geo Content, Reviews, and AI Optimization. Know exactly what's holding you back - and what we'll handle first.",
-    stat: "5 layers, 1 actionable score",
+      "Other tools show you 47 issues and say \"fix these.\" Geothority shows you your #1 quick win and handles it with one click. Schema missing? Fixed. NAP inconsistent? Synced. No developer, no agency, no waiting.",
+    theirWay: "Here are your issues. Fix them yourself.",
+    ourWay: "Fix Automatically — one click, done.",
+    stat: "1 click to fix most issues",
+    badge: "Only on Geothority",
     image: "/cards/truststack.jpg",
-    statTip: "The Trust Stack scores your business across 5 authority layers and gives you one clear priority - so we always know what to handle first for you.",
+    statTip: "Most SEO tools just list problems. We actually fix them — automatically or with a single click. That's the difference between a report and a solution.",
   },
   {
     icon: MapPin,
-    title: "Verify 18 Directories. Sync Across 50+ More.",
+    title: "68+ Directories Verified and Synced — Automatically",
     description:
-      "We directly verify your listings across Google, Yelp, Bing, Apple Maps, and 14 more directories. Then we confirm and sync your presence across the Foursquare data network - covering Bing, Samsung, Uber, HERE Maps, and 50+ additional services.",
+      "We check your listings across Google, Yelp, Bing, Apple Maps, and 14 more directories. When we find inconsistencies, we don't just flag them — we push your correct info across 50+ services via the Foursquare network.",
+    theirWay: "Your listings are inconsistent. Good luck fixing them.",
+    ourWay: "Inconsistencies found. Push correct NAP now?",
     stat: "68+ directories covered",
-    note: "We directly verify 18 major directories. Plus verify your presence in the Foursquare data network covering 50+ additional services. That's 68+ directories covered.",
     image: "/cards/audit.jpg",
-    statTip: "Inconsistent listings confuse Google and hurt your rankings. We verify and sync your info across 68+ directories so search engines trust you.",
+    statTip: "Inconsistent listings confuse Google and hurt your rankings. We verify AND sync — most tools only verify.",
   },
   {
     icon: Brain,
-    title: "We Don't Just Check if AI Recommends You - We Make It Happen.",
+    title: "AI Assistants Don't Recommend You? We Make Them.",
     description:
-      "ChatGPT, Perplexity, and Google AI Overviews are replacing traditional search. We check if they mention your business - then we generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
-    stat: "3 search platforms tracked",
+      "ChatGPT, Perplexity, and Google AI are replacing traditional search. We check if they mention your business — then we generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
+    theirWay: "Track your AI visibility score.",
+    ourWay: "Generate the content that makes AI recommend you.",
+    stat: "3 AI platforms optimized",
     badge: "Only on Geothority",
     image: "/cards/quickwin.jpg",
-    statTip: "More people ask AI assistants for local recommendations. We make sure ChatGPT, Perplexity, and Google AI actually mention your business.",
+    statTip: "Tracking your AI score is nice. Generating the content that improves it is better. We do both.",
   },
   {
     icon: Code,
-    title: "Your Schema Markup, Fixed in 60 Seconds",
+    title: "Schema Generated and Deployed in 60 Seconds",
     description:
-      "Missing schema means Google can't understand your business. Our wizard generates valid JSON-LD for you in 3 clicks - no developer needed.",
-    stat: "9 schema types supported",
+      "Missing schema means Google can't understand your business. Other tools tell you it's missing. Our wizard generates valid JSON-LD for 9 business types in 3 clicks — and we can deploy it for you.",
+    theirWay: "Schema missing. Add it manually.",
+    ourWay: "Schema generated. Deploy it now?",
+    stat: "9 schema types, 3 clicks",
     image: "/cards/ai-ready.jpg",
-    statTip: "Schema is the technical code that tells Google what your business does. Without it, you are invisible in rich results and AI answers.",
+    statTip: "Schema is the code that tells Google what your business does. Without it, you're invisible in rich results and AI answers. We generate AND deploy it.",
   },
   {
     icon: FileText,
-    title: "City Landing Pages That Rank",
+    title: "City Pages Written by AI, Optimized by Data",
     description:
-      "We write SEO-optimized, city-specific pages with real local landmarks and entities. Ready to publish in under a minute.",
+      "We don't just generate content — we generate the RIGHT content. Our Content Adaptation Engine analyzes your visibility gaps and writes city-specific pages targeting the exact keywords and locations where you're losing ground.",
+    theirWay: "Write more content. Maybe it'll rank.",
+    ourWay: "Here's what to write, where, and why — generated and ready to publish.",
     stat: "1,200 words in 40 seconds",
     image: "/cards/content.jpg",
-    statTip: "City-specific landing pages rank for local searches - the #1 way new customers find you. AI generates them in seconds, not weeks.",
+    statTip: "Generic AI content doesn't rank. Our engine writes city-specific pages with real local landmarks and entities — content that Google and AI assistants trust.",
   },
   {
     icon: Eye,
-    title: "Your Competitors Don't Sleep. Neither Do We.",
+    title: "Competitors Make a Move? We Counter Automatically.",
     description:
-      "Weekly auto-scans track your Trust Stack score, monitor competitor moves, and email you when anything changes. We watch so you don't have to - and every scan links to a one-click action we handle for you.",
-    stat: "Weekly auto-monitoring",
+      "Weekly auto-scans track competitor changes — new photos, new reviews, new pages. When they gain ground, we don't just email you an alert. We generate the counter-move: a new page, a review push, a schema update. You approve or we auto-execute.",
+    theirWay: "Your competitor added 4 photos. Just so you know.",
+    ourWay: "Competitor gained on reviews. Counter-move ready — approve to deploy.",
+    stat: "Auto-countermove generated",
+    badge: "Only on Geothority",
     image: "/cards/watchdog.jpg",
-    statTip: "Set it and forget it. We scan your market weekly, detect competitor moves, and email you only when something needs attention - with the next step already queued up.",
+    statTip: "Alerts without actions are just noise. Every competitor alert comes with a recommended counter-move ready to deploy.",
   },
 ];
 
@@ -130,11 +220,11 @@ const stats = [
   { value: "500+", label: "Insurance professionals" },
   { value: "68+", label: "Authority signals mapped" },
   { value: "90s", label: "Time to first scan" },
-  { value: "3", label: "Search platforms tracked" },
+  { value: "3", label: "AI platforms optimized" },
 ];
 
 const pricingTiers = [
-  { name: "Free", price: 0, desc: "See your authority gaps", tip: "Get your free Trust Stack scan and see where you stand. No credit card needed - just clarity." },
+  { name: "Free", price: 0, desc: "See your authority gaps", tip: "Get your free Trust Stack scan and see where you stand. No credit card needed — just clarity." },
   { name: "Starter", price: 97, desc: "Best for individual agents", tip: "One business location fully managed: scans, fixes, schema, content, and weekly monitoring." },
   { name: "Growth", price: 197, desc: "Most popular", highlighted: true, tip: "Everything in Starter plus competitor tracking, AI optimization, priority support, and unlimited content generation." },
   { name: "Authority", price: 297, desc: "Multi-location control", tip: "Manage 2+ locations from one dashboard. Agency-grade tools with volume pricing for businesses with multiple locations." },
@@ -147,71 +237,30 @@ const commandMetrics = [
 ];
 
 const authoritySectors = [
-  { name: "Northwest", score: 84, status: "Owned", tip: "Your visibility strength in the northwest area of your market - listings, content, and review coverage combined." },
+  { name: "Northwest", score: 84, status: "Owned", tip: "Your visibility strength in the northwest area of your market — listings, content, and review coverage combined." },
   { name: "Central", score: 71, status: "Contested", tip: "The central core of your market where competition is fiercest. Contested means competitors are actively challenging your position." },
   { name: "South", score: 63, status: "Exposed", tip: "Your southern market area has gaps. Exposed means competitors outperform you here." },
   { name: "AI Recommendations", score: 88, status: "Advancing", tip: "Whether AI assistants like ChatGPT and Perplexity recommend your business. Advancing means you are gaining ground." },
 ];
 
-const storyChapters = [
-  {
-    eyebrow: "Diagnose",
-    title: "See your local SEO like a map, not a guessing game.",
-    description:
-      "Geothority scans your entire local presence and shows you what's working, what's broken, and where competitors are beating you. No more guessing.",
-    points: [
-      "5-layer Trust Stack score with prioritized action plan",
-      "Directory, reputation, geo-content, and AI mention coverage",
-      "Signal gaps surfaced as specific actions we can handle for you",
-    ],
-    pointTips: [
-      "Your Trust Stack score ranks all 5 authority layers so we know exactly what to handle first for maximum impact.",
-      "We check directories, reviews, local content, and AI recommendations so you see the full picture.",
-      "Every gap comes with a specific action we can take for you - not vague advice. You always know the next step.",
-    ],
-    metric: "Signal coverage across 68+ sources",
-    metricTip: "We monitor 68+ directories, AI platforms, and review sites for you so nothing slips through the cracks.",
-    icon: Radar,
-  },
-  {
-    eyebrow: "Deploy",
-    title: "We handle problems fast - generating exactly what you need, ready to deploy.",
-    description:
-      "Instead of hiring agencies, wrestling with spreadsheets, or writing content from scratch, we generate your schema, local pages, and listing fixes from one dashboard - in minutes, not weeks.",
-    points: [
-      "Schema wizard and AI search optimization",
-      "Entity-rich local pages with real-time generation",
-      "Listing sync and fix workflows designed for speed",
-    ],
-    pointTips: [
-      "Our 3-click schema wizard generates search-engine-ready code for you. We also optimize your presence for AI answer engines.",
-      "AI writes city-specific pages with real local landmarks - content that Google and AI assistants trust.",
-      "We fix listing errors and sync across 50+ directories from one dashboard.",
-    ],
-    metric: "From issue found to handled in minutes",
-    metricTip: "Most fixes take 2-3 clicks and we handle the rest. No waiting for an agency, no hiring a developer.",
-    icon: ScanSearch,
-  },
-  {
-    eyebrow: "Defend",
-    title: "Stay ahead with monitoring that catches problems before they hurt you.",
-    description:
-      "We keep scanning after the initial fix. You'll see what changed, know when competitors make moves, and get notified with the exact next step - before your rankings slip.",
-    points: [
-      "Weekly auto-scans with movement alerts",
-      "Competitor tracking tied to direct actions",
-      "Evidence-based reporting instead of vanity dashboards",
-    ],
-    pointTips: [
-      "Every week we re-scan your market. If anything changes, you get an email instantly.",
-      "See a competitor move? We link you to a one-click response so we can match it the same day.",
-      "Every metric ties to a real business outcome - more calls, more visibility, more authority.",
-    ],
-    metric: "Fresh data every week, not a stale report",
-    metricTip: "Your dashboard updates weekly with fresh data. No stale screenshots.",
-    icon: TrendingUp,
-  },
-];
+/* ───────────────── Versus Card Component ───────────────── */
+
+function VersusCard({ theirWay, ourWay }: { theirWay: string; ourWay: string }) {
+  return (
+    <div className="mt-5 grid grid-cols-2 gap-3">
+      <div className="rounded-xl border border-red-400/20 bg-red-400/5 p-3">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-red-400/70 mb-1.5">Other tools</div>
+        <div className="text-sm text-white/55">{theirWay}</div>
+      </div>
+      <div className="rounded-xl border border-emerald-400/25 bg-emerald-400/8 p-3">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/80 mb-1.5 flex items-center gap-1">
+          <Wand2 className="w-3 h-3" /> Geothority
+        </div>
+        <div className="text-sm text-white font-medium">{ourWay}</div>
+      </div>
+    </div>
+  );
+}
 
 /* ───────────────── Components ───────────────── */
 
@@ -380,7 +429,7 @@ function CommandSurface() {
           <div className="rounded-[22px] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
             <div className="mb-3 flex items-center justify-between text-sm text-white/70">
               <span className="flex items-center gap-1.5">Competitor activity <GeoTooltip tip="Tracks how your local visibility has changed relative to competitors over the past 30 days." side="right" iconClassName="w-3 h-3" /></span>
-              <span className="flex items-center gap-1 rounded-full bg-[#7ce6c7]/10 px-2.5 py-1 text-xs text-[#9be8d2]">+12% visibility <GeoTooltip tip="Your overall local search visibility improved 12% this month - more calls, more clicks, more customers finding you." side="bottom" iconClassName="w-2.5 h-2.5" /></span>
+              <span className="flex items-center gap-1 rounded-full bg-[#7ce6c7]/10 px-2.5 py-1 text-xs text-[#9be8d2]">+12% visibility <GeoTooltip tip="Your overall local search visibility improved 12% this month — more calls, more clicks, more customers finding you." side="bottom" iconClassName="w-2.5 h-2.5" /></span>
             </div>
             <div className="relative h-24 overflow-hidden rounded-2xl border border-white/8 bg-white/[0.04] p-3">
               <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-white/10" />
@@ -395,18 +444,6 @@ function CommandSurface() {
                   </linearGradient>
                 </defs>
               </svg>
-            </div>
-          </div>
-
-          <div className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-1.5">
-                <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Latest scan</div>
-              </div>
-                <div className="mt-2 text-sm text-white/72">12 issues found, 4 high priority</div>
-              </div>
-              <div className="flex items-center gap-1 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-2.5 py-1 text-xs text-[#c6c8ff]">Priority <GeoTooltip tip="High-impact issues that will move the needle most - we handle them first." side="left" iconClassName="w-2.5 h-2.5" /></div>
             </div>
           </div>
         </div>
@@ -461,21 +498,21 @@ export default function HomePage() {
         )}
       </nav>
 
-      {/* ─── Hero ─── */}
+      {/* ─── Hero with Animated Video ─── */}
       <section className="geo-hero relative overflow-hidden pt-28 pb-16 sm:pt-40 sm:pb-24">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(92,230,186,0.14),_transparent_34%),radial-gradient(circle_at_85%_20%,_rgba(110,116,255,0.14),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
         <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-40" />
 
         <div className="relative mx-auto grid max-w-7xl gap-14 px-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <div>
-            <SectionEyebrow>Local SEO, simplified</SectionEyebrow>
+            <SectionEyebrow>Local SEO, automated</SectionEyebrow>
 
             <h1 className="mt-6 max-w-2xl text-4xl font-semibold leading-[0.98] tracking-[-0.05em] text-white sm:text-5xl lg:text-[4rem] xl:text-[4.6rem]">
-              Get found locally on Google, Maps, and AI, without babysitting another SEO tool.
+              Other tools show you problems. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca]">We fix them.</span>
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-white/58 sm:text-lg sm:leading-8">
-              Geothority scans your local presence, shows you what is broken, and helps get the highest-impact fixes handled for you. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
+              Geothority scans your local presence, finds what&apos;s broken, and handles the fixes — automatically or with one click. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -489,31 +526,30 @@ export default function HomePage() {
                 href="#story"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.03] px-7 py-4 text-base font-medium text-white/85 transition-all hover:border-white/20 hover:bg-white/[0.05]"
               >
-                See how it works <ChevronRight className="h-4 w-4" />
+                <Play className="h-4 w-4" /> See how it works
               </Link>
             </div>
 
             <div className="mt-8 hidden sm:grid gap-3 grid-cols-3 max-w-2xl">
-              <SignalChip label="Authority signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
-              <SignalChip label="Time to first scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
-              <SignalChip label="Search platforms" value="3" tip="We track whether ChatGPT, Perplexity, and Google AI Overviews recommend your business when customers ask." />
+              <SignalChip label="Issues fixed automatically" value="80%+" tip="4 out of 5 common local SEO issues can be fixed automatically by Geothority — no developer needed." />
+              <SignalChip label="Time to first fix" value="60s" tip="From finding the issue to fixing it: about 60 seconds. Other tools just list problems." />
+              <SignalChip label="AI platforms optimized" value="3" tip="We make sure ChatGPT, Perplexity, and Google AI Overviews recommend your business." />
             </div>
 
             <div className="mt-8 grid gap-2 grid-cols-2 sm:hidden">
-              <SignalChip label="Signals mapped" value="68+" tip="We scan 68+ directories, platforms, and AI surfaces to map every signal that affects your local rankings." />
-              <SignalChip label="First scan" value="90s" tip="Enter your business URL and get a complete Trust Stack diagnosis in under 90 seconds, with no setup and no waiting." />
+              <SignalChip label="Auto-fixed" value="80%+" tip="4 out of 5 issues fixed automatically." />
+              <SignalChip label="Time to fix" value="60s" tip="From issue to fix in about a minute." />
             </div>
           </div>
 
           <div className="relative">
             <div className="pointer-events-none absolute inset-x-10 top-6 h-24 rounded-full bg-[#5ce6ba]/10 blur-3xl" />
-            <div className="pointer-events-none absolute -right-6 top-1/2 hidden h-40 w-40 -translate-y-1/2 rounded-full border border-white/8 bg-white/[0.03] xl:block" />
-            <CommandSurface />
+            <HeroVideoLoop />
           </div>
         </div>
       </section>
 
-      {/* ─── Quick flow summary ─── */}
+      {/* ─── Quick flow: 3 steps ─── */}
       <ScrollReveal animation="fade-up">
         <section className="py-10 sm:py-14 bg-[#0f1117]/25">
           <div className="max-w-6xl mx-auto px-4">
@@ -522,17 +558,17 @@ export default function HomePage() {
                 {
                   step: '01',
                   title: 'We scan',
-                  copy: 'We check your business across Google, directories, reviews, and AI surfaces in about 90 seconds.',
+                  copy: 'Your entire local presence — Google, 68+ directories, AI mentions, competitor moves — in about 90 seconds.',
                 },
                 {
                   step: '02',
-                  title: 'We prioritize',
-                  copy: 'You get a clear Trust Stack score and the highest-impact fixes to handle first.',
+                  title: 'We fix',
+                  copy: 'One-click fixes for schema, NAP sync, content generation. Or set it to auto-fix and we handle everything.',
                 },
                 {
                   step: '03',
-                  title: 'We keep watch',
-                  copy: 'Weekly monitoring keeps tabs on changes, competitor movement, and follow-up opportunities.',
+                  title: 'We monitor',
+                  copy: 'Weekly scans, competitor alerts with counter-moves ready to deploy, and email alerts when anything changes.',
                 },
               ].map((item) => (
                 <div key={item.step} className="rounded-[24px] border border-white/8 bg-white/[0.03] px-5 py-5">
@@ -546,6 +582,78 @@ export default function HomePage() {
         </section>
       </ScrollReveal>
 
+      {/* ─── Features: Problem → Auto-Fix ─── */}
+      <section id="features" className="py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4">
+          <ScrollReveal animation="fade-up">
+            <div className="mb-16 max-w-3xl">
+              <SectionEyebrow>What makes us different</SectionEyebrow>
+              <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
+                Every other tool shows problems. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#8f94ff]">We solve them.</span>
+              </h2>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
+                SEO tools have been doing the same thing for a decade: scan, report, and leave you to figure it out. Geothority is different — we fix things for you.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="space-y-10">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              const reverse = index % 2 === 1;
+              return (
+                <ScrollReveal key={feature.title} animation={reverse ? "slide-right" : "slide-left"}>
+                  <div className={`grid gap-6 lg:grid-cols-[1fr_1fr] ${reverse ? "lg:[&>div:first-child]:order-2" : ""}`}>
+                    <div className="geo-feature-shell rounded-[30px] border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+                      <div className="flex items-center gap-3 mb-5">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-400">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        {feature.badge && (
+                          <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
+                            {feature.badge}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+                        {feature.title}
+                      </h3>
+                      <p className="mt-4 text-base leading-7 text-white/60">
+                        {feature.description}
+                      </p>
+                      <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
+                    </div>
+
+                    <BrowserFrame className="h-full">
+                      <div className="relative h-full min-h-[280px] overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]">
+                        <Image
+                          src={feature.image}
+                          alt={feature.title}
+                          fill
+                          className="object-cover opacity-78"
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                        />
+                        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,24,0.15),rgba(8,14,24,0.86))]" />
+                        <div className="absolute inset-x-0 bottom-0 p-6">
+                          <div className="max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md shadow-[0_18px_60px_rgba(6,10,18,0.38)]">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Wand2 className="w-4 h-4 text-emerald-400" />
+                              <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">Auto-fix available</span>
+                            </div>
+                            <div className="text-lg font-semibold text-white">{feature.stat}</div>
+                            <p className="mt-2 text-sm text-white/60">{feature.statTip}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </BrowserFrame>
+                  </div>
+                </ScrollReveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ─── Trust Stack flagship ─── */}
       <ScrollReveal animation="scale-up">
         <section className="mx-auto max-w-7xl px-4 pb-16 sm:pb-24">
@@ -554,19 +662,19 @@ export default function HomePage() {
               <div>
                 <SectionEyebrow>Trust Stack 2.0</SectionEyebrow>
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
-                  One score that tells us what to handle first, and how fast you&apos;re improving.
+                  One score. Prioritized fixes. Auto-execution.
                 </h2>
                 <p className="mt-4 max-w-xl text-base leading-7 text-white/62 sm:text-lg">
-                  The Trust Stack scores your business across 5 key areas and ranks the highest-impact actions for you. No more guessing what matters. We always know the next step.
+                  The Trust Stack scores your business across 5 key areas and tells you exactly what to fix — then fixes it for you. No more guessing what matters.
                 </p>
                 <div className="mt-6 space-y-3 text-sm text-white/72">
                   {[
-                    "Technical foundation, so your site is set up for Google",
-                    "Listings, content, reviews, and AI recommendations, all scored in one place",
-                    "A prioritized action plan so we always know what to handle next",
+                    "Technical foundation scored and auto-fixable",
+                    "Listings, content, reviews, and AI — all scored in one place",
+                    "A prioritized queue of fixes we can execute for you",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
-                      <span className="mt-1 h-2 w-2 rounded-full bg-[#7ce6c7]" />
+                      <Wand2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -577,7 +685,7 @@ export default function HomePage() {
                 <div className="mb-5 flex items-center justify-between gap-4">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.24em] text-white/38">Trust Stack Object</div>
-                    <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">Your local SEO, scored and prioritized.</div>
+                    <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">Your local SEO, scored and auto-fixable.</div>
                   </div>
                   <div className="rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">Priority view</div>
                 </div>
@@ -587,10 +695,10 @@ export default function HomePage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-1.5">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Overall score</div>
-                    <GeoTooltip tip="Your composite authority score from 0-100 across all 5 Trust Stack layers. Higher means more trust signals working for you." side="right" iconClassName="w-3 h-3" />
-                  </div>
-                        <div className="mt-2 text-5xl font-semibold text-white">78</div>
+                          <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Overall score</div>
+                          <GeoTooltip tip="Your composite authority score from 0-100 across all 5 Trust Stack layers." side="right" iconClassName="w-3 h-3" />
+                        </div>
+                        <div className="mt-2 text-5xl font-semibold text-white"><AnimatedCounter target={78} /></div>
                       </div>
                       <div className="rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">
                         +14 this month
@@ -626,15 +734,22 @@ export default function HomePage() {
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Top priorities</div>
                         <GeoTooltip tip="Your ranked action queue. We handle these in order for the fastest visibility gains." side="right" iconClassName="w-3 h-3" />
                       </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
+                      <div className="mt-3 space-y-2">
                         {[
-                          "Improving trust page structure",
-                          "Repairing Apple Maps entity mismatch",
-                          "Expanding Tampa landing coverage",
-                        ].map((item, index) => (
-                          <span key={item} className={`rounded-full px-3 py-2 text-xs ${index === 0 ? "border border-[#7ce6c7]/25 bg-[#7ce6c7]/10 text-[#9be8d2]" : "border border-white/10 bg-white/[0.03] text-white/62"}`}>
-                            {item}
-                          </span>
+                          { text: "Improving trust page structure", fixable: true },
+                          { text: "Repairing Apple Maps entity mismatch", fixable: true },
+                          { text: "Expanding Tampa landing coverage", fixable: false },
+                        ].map((item) => (
+                          <div key={item.text} className="flex items-center justify-between gap-2">
+                            <span className={`rounded-full px-3 py-1.5 text-xs ${item.fixable ? "border border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : "border border-white/10 bg-white/[0.03] text-white/62"}`}>
+                              {item.text}
+                            </span>
+                            {item.fixable && (
+                              <button className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-400 hover:text-emerald-300 whitespace-nowrap">
+                                Fix Now →
+                              </button>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -644,7 +759,7 @@ export default function HomePage() {
                     <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                       <div className="flex items-center gap-1.5">
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">What&apos;s working, what&apos;s not</div>
-                        <GeoTooltip tip="Shows which authority layers are actively improving your rankings and which are holding you back. We tackle the bottlenecks first." side="right" iconClassName="w-3 h-3" />
+                        <GeoTooltip tip="Shows which authority layers are actively improving your rankings and which are holding you back." side="right" iconClassName="w-3 h-3" />
                       </div>
                       <div className="mt-3 flex items-center gap-3">
                         <div className="h-16 w-16 rounded-full border border-white/10 bg-[#0b1726] flex items-center justify-center">
@@ -653,17 +768,20 @@ export default function HomePage() {
                         <p className="text-sm leading-6 text-white/60">AI visibility and directory listings are pulling you up. Trust pages are the main thing holding you back.</p>
                       </div>
                     </div>
-                    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                    <div className="rounded-[24px] border border-emerald-400/20 bg-emerald-400/5 p-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Next step</div>
-                        <GeoTooltip tip="Based on your Trust Stack data, this is the single action that will improve your local visibility the most right now." side="right" iconClassName="w-3 h-3" />
+                        <Wand2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/80">Recommended fix</div>
                       </div>
                       <div className="mt-3 text-sm font-medium text-white">Publish two city trust pages and repair the Apple Maps entity mismatch</div>
-                      <div className="mt-2 text-sm text-white/55">Estimated impact: +7 to +11 visibility points</div>
+                      <div className="mt-2 text-sm text-emerald-400/70">Estimated impact: +7 to +11 visibility points</div>
+                      <button className="mt-3 px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30 transition-colors">
+                        Fix Automatically
+                      </button>
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(143,148,255,0.09),rgba(255,255,255,0.03))] p-4">
                       <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Weekly update</div>
-                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities, so you always know where you stand and what we&apos;re handling next.</p>
+                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities — and we can auto-execute fixes based on your preferences.</p>
                     </div>
                   </div>
                 </div>
@@ -673,79 +791,6 @@ export default function HomePage() {
         </section>
       </ScrollReveal>
 
-      {/* ─── Story chapters ─── */}
-      <section id="story" className="py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4">
-          <ScrollReveal animation="fade-up">
-            <div className="mb-16 max-w-3xl">
-              <SectionEyebrow>How it works</SectionEyebrow>
-              <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Three steps: <span className="text-white/72">we scan, we handle, we monitor.</span>
-              </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Geothority isn&apos;t a pile of disconnected tools. It&apos;s one system that finds your problems, handles them for you, and keeps watching.
-              </p>
-            </div>
-          </ScrollReveal>
-
-          <div className="space-y-10">
-            {storyChapters.map((chapter, index) => {
-              const Icon = chapter.icon;
-              const reverse = index % 2 === 1;
-              return (
-                <ScrollReveal key={chapter.title} animation={reverse ? "slide-right" : "slide-left"}>
-                  <div className={`grid gap-6 lg:grid-cols-[0.9fr_1.1fr] ${reverse ? "lg:[&>div:first-child]:order-2" : ""}`}>
-                    <div className="geo-feature-shell rounded-[30px] border border-white/10 bg-white/[0.02] p-6 sm:p-8">
-                      <SectionEyebrow>{chapter.eyebrow}</SectionEyebrow>
-                      <div className="mt-5 flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-[#8de7d0]">
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <div className="text-sm uppercase tracking-[0.18em] text-white/35">{chapter.metric}</div>
-                      </div>
-                      <h3 className="mt-5 max-w-xl text-2xl font-semibold leading-[1.02] tracking-[-0.04em] text-white sm:text-4xl">
-                        {chapter.title}
-                      </h3>
-                      <p className="mt-4 max-w-xl text-base leading-7 text-white/60 sm:text-lg">
-                        {chapter.description}
-                      </p>
-                      <div className="mt-6 space-y-3">
-                        {chapter.points.map((point) => (
-                          <div key={point} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-black/15 px-4 py-3 text-sm text-white/72">
-                            <span className="mt-1 h-2 w-2 rounded-full bg-[#7ce6c7]" />
-                            <span>{point}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <BrowserFrame className="h-full">
-                      <div className="relative h-full min-h-[320px] overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]">
-                        <Image
-                          src={features[index * 2]?.image || features[index]?.image}
-                          alt={chapter.title}
-                          fill
-                          className="object-cover opacity-78"
-                          sizes="(max-width: 1024px) 100vw, 50vw"
-                        />
-                        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,24,0.15),rgba(8,14,24,0.86))]" />
-                        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
-                          <div className="max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md shadow-[0_18px_60px_rgba(6,10,18,0.38)]">
-                            <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">What you see</div>
-                            <div className="mt-2 text-xl font-semibold text-white">{chapter.eyebrow} the local market</div>
-                            <p className="mt-3 text-sm leading-6 text-white/65">{chapter.metric}. Real data from your business, updated with every scan.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </BrowserFrame>
-                  </div>
-                </ScrollReveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* ─── Proof ─── */}
       <section className="bg-[#0e141f]/55 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4">
@@ -753,11 +798,8 @@ export default function HomePage() {
             <div className="mb-14 max-w-3xl">
               <SectionEyebrow>Real results from real businesses</SectionEyebrow>
               <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
-                Trusted by insurance professionals who care about measurable territory gains.
+                Insurance professionals who replaced agencies and outranked competitors.
               </h2>
-              <p className="mt-5 text-lg leading-8 text-white/60">
-                These are actual results from Geothority users - not marketing fluff.
-              </p>
             </div>
           </ScrollReveal>
 
@@ -810,10 +852,10 @@ export default function HomePage() {
             <div className="mb-12 text-center">
               <SectionEyebrow>Simple pricing</SectionEyebrow>
               <h2 className="mt-5 mx-auto max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Pick the plan that fits your business.
+                Start free. Upgrade when you want fixes handled for you.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Every plan includes a free scan. Paid plans add fixes, monitoring, and ongoing support.
+                Every plan starts with a free scan. Paid plans add automatic fixes, monitoring, and ongoing optimization.
               </p>
             </div>
           </ScrollReveal>
@@ -830,7 +872,7 @@ export default function HomePage() {
                 >
                   {t.highlighted && (
                     <div className="absolute -top-3 left-6 rounded-full border border-[#7ce6c7]/25 bg-[#7ce6c7]/12 px-3 py-1 text-xs font-semibold text-[#9be8d2]">
-                      Recommended
+                      Most Popular
                     </div>
                   )}
                   <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">{t.name}</div>
@@ -847,10 +889,10 @@ export default function HomePage() {
                   </div>
                   <div className="mt-3 text-sm leading-6 text-white/58">{t.desc}</div>
                   <div className="mt-6 rounded-2xl border border-white/8 bg-black/15 p-4 text-sm text-white/68">
-                    {t.name === "Free" && "Get your free scan and see where you stand."}
-                    {t.name === "Starter" && "Everything you need to manage one location."}
-                    {t.name === "Growth" && "The most popular plan - fixes, monitoring, AI optimization, and unlimited content."}
-                    {t.name === "Authority" && "Manage 2+ locations with agency-grade tools and volume pricing."}
+                    {t.name === "Free" && "See your Trust Stack score and where you stand. No card needed."}
+                    {t.name === "Starter" && "One location: scan, auto-fix schema, sync listings, weekly monitoring."}
+                    {t.name === "Growth" && "The works: competitor tracking, AI optimization, auto-fix everything, unlimited content."}
+                    {t.name === "Authority" && "Multi-location + agency tools + white-label reports + API access."}
                   </div>
                   <Link
                     href={t.price === 0 ? "/signup" : "/pricing"}
@@ -860,7 +902,7 @@ export default function HomePage() {
                         : "border border-white/10 bg-white/[0.03] text-white/86 hover:bg-white/[0.05]"
                     }`}
                   >
-                    {t.price === 0 ? "Start Free" : "See Details"}
+                    {t.price === 0 ? "Start Free" : "Start 14-Day Trial"}
                   </Link>
                 </div>
               </ScrollReveal>
@@ -874,14 +916,15 @@ export default function HomePage() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(92,230,186,0.14),_transparent_35%),linear-gradient(180deg,rgba(12,19,33,0.25),rgba(10,10,15,0.02))]" />
         <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-30" />
         <div className="relative mx-auto max-w-5xl px-4">
+
           <ScrollReveal animation="fade-up">
             <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_24px_100px_rgba(5,10,18,0.45)] sm:px-10 sm:py-14">
               <SectionEyebrow>Get your free scan</SectionEyebrow>
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                See your Trust Stack score, local weak spots, and AI search presence - free, in 90 seconds. We&apos;ll show you exactly what we&apos;ll handle.
+                Stop reading about problems. Start fixing them.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                No credit card. No sales call. Just a clear view of where you stand and what we&apos;ll handle next.
+                No credit card. No sales call. Just a clear view of where you stand and what we&apos;ll fix for you — in 90 seconds.
               </p>
               <Link
                 href="/signup"
@@ -948,28 +991,19 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Our Products - cross-sell row */}
           <div className="border-t border-white/5 pt-8 mb-8">
             <h4 className="font-semibold text-sm mb-4 text-gray-400">Our Products</h4>
             <div className="flex flex-col sm:flex-row gap-4">
-              <a
-                href="https://geothority.com"
-                className="flex items-center gap-3 group"
-              >
+              <a href="https://geothority.com" className="flex items-center gap-3 group">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-bold">G</span>
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors">Geothority</div>
-                  <div className="text-xs text-gray-600">Local SEO Scanner &amp; Fixer</div>
+                  <div className="text-xs text-gray-600">Local SEO Scanner &amp; Auto-Fixer</div>
                 </div>
               </a>
-              <a
-                href="https://starcepta.com?ref=geothority"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 group"
-              >
+              <a href="https://starcepta.com?ref=geothority" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-bold">S</span>
                 </div>
@@ -978,12 +1012,7 @@ export default function HomePage() {
                   <div className="text-xs text-gray-600">Automated Review Collection</div>
                 </div>
               </a>
-              <a
-                href="https://4minuteseo.com?ref=geothority"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 group"
-              >
+              <a href="https://4minuteseo.com?ref=geothority" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-bold">4</span>
                 </div>
@@ -1003,7 +1032,7 @@ export default function HomePage() {
               </span>
             </div>
             <p className="text-xs text-gray-600">
-              Dominate local search & AI - for insurance agents and local businesses.
+              Dominate local search &amp; AI — for insurance agents and local businesses.
             </p>
           </div>
         </div>

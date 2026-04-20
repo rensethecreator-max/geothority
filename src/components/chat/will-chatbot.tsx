@@ -1,77 +1,89 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Loader2, MessageCircle } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  X,
+  Send,
+  Loader2,
+  MessageCircle,
+  Zap,
+  Search,
+  Shield,
+  Bot,
+  Wand2,
+  TrendingUp,
+  ChevronRight,
+} from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  type?: "text" | "action";
+  actions?: Array<{ label: string; href: string; icon?: React.ElementType }>;
 }
 
+const STORAGE_KEY = "geo-onboarding-done";
 const WILL_OPENED_KEY = "will_has_opened";
 const WILL_INTERACTED_KEY = "will_has_interacted";
 
-function getContextGreeting(pathname: string): string {
-  if (pathname === "/" || pathname === "") {
-    return "Welcome to Geothority! Want me to show you how we help insurance agents dominate local search?";
-  }
-  if (pathname === "/dashboard") {
-    return "Hey! I'm Will, your Geothority assistant. Need help reading your Trust Stack™ scores or figuring out what to fix first?";
-  }
-  if (pathname.startsWith("/scan")) {
-    return "Here are your results! Want me to explain what each Trust Stack™ layer means and what to fix first?";
-  }
-  if (pathname === "/content" || pathname.startsWith("/content/generate")) {
-    return "This is our AI Content Generator. Let me show you how to create geo-targeted landing pages that rank. What city and service do you want to target?";
-  }
-  if (pathname === "/competitors") {
-    return "This is our Competitor Watchdog. Let me show you how to track - and outmaneuver - your top local competitors.";
-  }
-  if (pathname === "/analytics") {
-    return "This is your Analytics hub. I can help you understand what the numbers mean and which trends to act on.";
-  }
-  if (pathname === "/gbp-monitor") {
-    return "This is the GBP Monitor. Let me show you how to catch and fix Google Business Profile issues before they hurt your rankings.";
-  }
-  if (pathname === "/schema-generator") {
-    return "This is our Schema Generator. Want me to walk you through creating schema markup that gets you into AI Overviews?";
-  }
-  if (pathname === "/ai-overview") {
-    return "This is our AI Overview Optimizer. Let me show you how to get recommended by ChatGPT, Perplexity, and Google AI.";
-  }
-  // Default
-  return "Hey! I'm Will, your Geothority assistant. I can help you understand your Trust Stack™ scores, figure out what to fix first, or troubleshoot anything. What can I help with?";
+const QUICK_ACTIONS = [
+  { label: "Run a scan", href: "/scan", icon: Search },
+  { label: "Show quick wins", href: "/dashboard", icon: Zap },
+  { label: "Fix my schema", href: "/schema-generator", icon: Wand2 },
+  { label: "Check AI visibility", href: "/ai-visibility", icon: TrendingUp },
+];
+
+function getContextGreeting(pathname: string): Message {
+  const greetings: Record<string, { content: string; actions?: Message["actions"] }> = {
+    "/": {
+      content: "Hey! I'm Will, your Geothority AI assistant. I can help you understand your local SEO, fix issues automatically, or find out if AI assistants recommend your business. What can I help with?",
+      actions: [
+        { label: "Run free scan", href: "/scan", icon: Search },
+        { label: "See how it works", href: "#features", icon: Zap },
+      ],
+    },
+    "/dashboard": {
+      content: "Welcome to your dashboard! I can see your Trust Stack scores and help you prioritize what to fix next. Want me to walk you through it?",
+      actions: [
+        { label: "Show quick wins", href: "/dashboard", icon: Zap },
+        { label: "Run new scan", href: "/scan", icon: Search },
+      ],
+    },
+    "/scan": {
+      content: "Ready to scan? Just enter your business URL and I'll analyze your entire local presence in about 90 seconds. Want me to explain what the scan covers?",
+    },
+  };
+
+  // Find matching greeting or default
+  const match = Object.entries(greetings).find(([path]) => pathname.startsWith(path));
+  const greeting = match?.[1] || {
+    content: "Hey! I'm Will, your Geothority AI assistant. I can help you understand your Trust Stack scores, fix issues automatically, or explore any feature. What can I help with?",
+  };
+
+  return {
+    role: "assistant",
+    content: greeting.content,
+    type: "action",
+    actions: greeting.actions,
+  };
 }
 
 export function WillChatbot() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
-  const pathname = usePathname();
-
-  const contextGreeting = getContextGreeting(pathname);
-
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: contextGreeting,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
 
-  // Update greeting when page changes (only if no conversation has started)
+  // Initialize greeting based on current page
   useEffect(() => {
-    setMessages((prev) => {
-      if (prev.length === 1 && prev[0].role === "assistant") {
-        return [{ role: "assistant", content: getContextGreeting(pathname) }];
-      }
-      return prev;
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setMessages([getContextGreeting(pathname)]);
   }, [pathname]);
 
   // Auto-open on first visit after 3s
@@ -79,246 +91,237 @@ export function WillChatbot() {
     const hasOpened = typeof window !== "undefined" && localStorage.getItem(WILL_OPENED_KEY);
     const hasInteracted = typeof window !== "undefined" && localStorage.getItem(WILL_INTERACTED_KEY);
 
-    if (!hasOpened && !hasInteracted) {
-      const openTimer = setTimeout(() => {
+    if (!hasOpened) {
+      const timer = setTimeout(() => {
         setIsOpen(true);
-        localStorage.setItem(WILL_OPENED_KEY, "1");
+        try { localStorage.setItem(WILL_OPENED_KEY, "1"); } catch { /* ignore */ }
       }, 3000);
-      return () => clearTimeout(openTimer);
+      return () => clearTimeout(timer);
     }
-  }, []);
 
-  // Show nudge bubble after 5s on first visit (only if not opened)
+    // Show nudge bubble if they haven't interacted
+    if (!hasInteracted && !nudgeDismissed) {
+      const timer = setTimeout(() => setShowNudge(true), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [nudgeDismissed]);
+
+  // Auto-focus input when opened
   useEffect(() => {
-    const hasInteracted = typeof window !== "undefined" && localStorage.getItem(WILL_INTERACTED_KEY);
-    if (hasInteracted || isOpen) return;
-
-    const nudgeTimer = setTimeout(() => {
-      if (!isOpen) setShowNudge(true);
-    }, 5000);
-
-    // Hide nudge after 12s
-    const hideTimer = setTimeout(() => {
-      setShowNudge(false);
-    }, 12000);
-
-    return () => {
-      clearTimeout(nudgeTimer);
-      clearTimeout(hideTimer);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Hide nudge when chat opens
-  useEffect(() => {
-    if (isOpen) setShowNudge(false);
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
   }, [isOpen]);
 
+  // Scroll to bottom on new messages
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isOpen]);
-
-  const markInteracted = () => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(WILL_INTERACTED_KEY, "1");
-      localStorage.setItem(WILL_OPENED_KEY, "1");
-    }
-  };
-
-  const handleOpen = () => {
-    setIsOpen(true);
-    setShowNudge(false);
-    markInteracted();
-  };
-
-  const handleClose = () => {
-    setIsOpen(false);
-    markInteracted();
-  };
-
-  const dismissNudge = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowNudge(false);
-    setNudgeDismissed(true);
-    markInteracted();
-  };
-
-  const sendMessage = async () => {
+  const handleSend = async () => {
     if (!input.trim() || isLoading) return;
-    markInteracted();
 
     const userMessage: Message = { role: "user", content: input.trim() };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+
+    try { localStorage.setItem(WILL_INTERACTED_KEY, "1"); } catch { /* ignore */ }
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: newMessages.map((m) => ({
+          messages: [...messages, userMessage].map((m) => ({
             role: m.role,
             content: m.content,
           })),
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to get response");
-
-      const data = await res.json();
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: data.message },
-      ]);
+      if (res.ok) {
+        const data = await res.json();
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: data.message || data.error || "I'm having trouble right now. Please try again.",
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "I'm having a moment — please try again in a few seconds.",
+          },
+        ]);
+      }
     } catch {
-      setMessages([
-        ...newMessages,
+      setMessages((prev) => [
+        ...prev,
         {
           role: "assistant",
-          content:
-            "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
+          content: "Connection issue. Please try again.",
         },
       ]);
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
+  };
+
+  const handleQuickAction = (href: string) => {
+    if (href.startsWith("#")) {
+      // Anchor link — close chat and scroll
+      setIsOpen(false);
+      const el = document.querySelector(href);
+      el?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push(href);
+    }
+    try { localStorage.setItem(WILL_INTERACTED_KEY, "1"); } catch { /* ignore */ }
   };
 
   return (
     <>
-      {/* Nudge Bubble */}
-      {showNudge && !nudgeDismissed && !isOpen && (
+      {/* Nudge bubble */}
+      {showNudge && !isOpen && !nudgeDismissed && (
         <div
-          className="fixed bottom-24 right-6 z-50 animate-in slide-in-from-bottom-2 fade-in duration-300"
-          onClick={handleOpen}
+          className="fixed bottom-24 right-6 z-50 max-w-[260px] rounded-2xl border border-white/10 bg-[#0f1117] px-4 py-3 shadow-xl animate-fade-in cursor-pointer"
+          onClick={() => { setIsOpen(true); setShowNudge(false); }}
         >
-          <div className="relative bg-[var(--card)] border border-[var(--border)] rounded-2xl rounded-br-sm px-4 py-2.5 shadow-lg cursor-pointer hover:border-electric-500/50 transition-colors max-w-[220px]">
-            <p className="text-xs font-medium text-[var(--foreground)] leading-snug">
-              Need help getting started? 👋
-            </p>
-            {/* Dismiss X */}
-            <button
-              onClick={dismissNudge}
-              className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center hover:bg-[var(--card)] transition-colors"
-              aria-label="Dismiss"
-            >
-              <X className="w-2.5 h-2.5 text-[var(--muted-foreground)]" />
-            </button>
-            {/* Tail */}
-            <div className="absolute -bottom-1.5 right-4 w-3 h-3 bg-[var(--card)] border-r border-b border-[var(--border)] rotate-45" />
-          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowNudge(false); setNudgeDismissed(true); }}
+            className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-white/50 hover:text-white text-xs"
+          >
+            ×
+          </button>
+          <p className="text-sm text-white/80">
+            Need help? I can explain your scores or fix issues for you. 👋
+          </p>
         </div>
       )}
 
-      {/* Chat Button */}
+      {/* Chat toggle button */}
       <button
-        onClick={handleOpen}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-electric-500 hover:bg-electric-600 text-white shadow-lg shadow-electric-500/25 flex items-center justify-center transition-all duration-200 ${
-          isOpen ? "scale-0 opacity-0" : "scale-100 opacity-100"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all hover:scale-105 ${
+          isOpen
+            ? "bg-white/10 border border-white/20"
+            : "bg-gradient-to-br from-emerald-500 to-teal-500 shadow-[0_8px_30px_rgba(92,230,186,0.3)]"
         }`}
-        aria-label="Open chat with Will"
       >
-        <MessageCircle className="w-6 h-6" />
+        {isOpen ? (
+          <X className="w-5 h-5 text-white" />
+        ) : (
+          <Bot className="w-6 h-6 text-white" />
+        )}
       </button>
 
-      {/* Chat Panel */}
-      <div
-        className={`fixed bottom-6 right-6 z-50 w-[340px] h-[480px] bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
-          isOpen
-            ? "scale-100 opacity-100 translate-y-0"
-            : "scale-95 opacity-0 translate-y-4 pointer-events-none"
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-electric-500 text-white">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-bold">W</span>
+      {/* Chat panel */}
+      {isOpen && (
+        <div className="fixed bottom-24 right-6 z-50 w-[380px] max-h-[600px] rounded-2xl border border-white/10 bg-[#0a0e17] shadow-[0_24px_80px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden animate-fade-in">
+          {/* Header */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/8 bg-gradient-to-r from-emerald-500/10 to-teal-500/5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+              <Bot className="w-4 h-4 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-sm">Will · Geothority Assistant</div>
-              <div className="text-[10px] opacity-80 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 inline-block" />
-                Online · Powered by AI
-              </div>
+              <div className="text-sm font-semibold text-white">Will</div>
+              <div className="text-[10px] text-emerald-400/80">Geothority AI Assistant</div>
+            </div>
+            <div className="ml-auto flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] text-white/40">Online</span>
             </div>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-            aria-label="Close chat"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
 
-        {/* Messages */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-            >
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px] max-h-[400px]">
+            {messages.map((msg, i) => (
               <div
-                className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-electric-500 text-white rounded-br-md"
-                    : "bg-[var(--muted)] text-[var(--foreground)] rounded-bl-md"
-                }`}
+                key={i}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                {msg.content}
-              </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-[var(--muted)] rounded-2xl rounded-bl-md px-4 py-3">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-[var(--muted-foreground)] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-2 h-2 bg-[var(--muted-foreground)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-2 h-2 bg-[var(--muted-foreground)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div
+                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    msg.role === "user"
+                      ? "bg-emerald-500/20 border border-emerald-400/20 text-white"
+                      : "bg-white/[0.04] border border-white/8 text-white/85"
+                  }`}
+                >
+                  {msg.content}
+                  {msg.actions && msg.actions.length > 0 && (
+                    <div className="mt-3 space-y-1.5">
+                      {msg.actions.map((action) => (
+                        <button
+                          key={action.label}
+                          onClick={() => handleQuickAction(action.href)}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-400/20 bg-emerald-400/5 text-emerald-300 text-xs font-medium hover:bg-emerald-400/10 transition-colors text-left"
+                        >
+                          {action.icon && <action.icon className="w-3.5 h-3.5 flex-shrink-0" />}
+                          {action.label}
+                          <ChevronRight className="w-3 h-3 ml-auto opacity-50" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-white/[0.04] border border-white/8 rounded-2xl px-4 py-3">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
-        {/* Input */}
-        <div className="p-3 border-t border-[var(--border)]">
-          <div className="flex items-center gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              placeholder="Ask about your scores..."
-              className="flex-1 bg-[var(--muted)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] rounded-xl px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-electric-500"
-            />
-            <button
-              onClick={sendMessage}
-              disabled={isLoading || !input.trim()}
-              className="p-2 bg-electric-500 hover:bg-electric-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
+          {/* Quick actions (always visible at bottom) */}
+          <div className="px-4 pt-2 pb-1">
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+              {QUICK_ACTIONS.map((action) => (
+                <button
+                  key={action.label}
+                  onClick={() => handleQuickAction(action.href)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/8 bg-white/[0.03] text-[11px] text-white/60 whitespace-nowrap hover:border-white/15 hover:text-white/80 transition-colors flex-shrink-0"
+                >
+                  {action.icon && <action.icon className="w-3 h-3" />}
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Input */}
+          <div className="px-4 py-3 border-t border-white/8">
+            <div className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Ask Will anything about local SEO..."
+                className="flex-1 bg-white/[0.04] border border-white/8 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-400/30 focus:ring-1 focus:ring-emerald-400/20 transition-colors"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center text-white disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+              >
                 <Send className="w-4 h-4" />
-              )}
-            </button>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
