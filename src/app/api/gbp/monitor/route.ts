@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { getAutomationPolicy, isAutoAllowed } from "@/lib/automation-policies";
 
 // GET /api/gbp/monitor — list monitors for current user
 export async function GET(_req: NextRequest) {
@@ -36,7 +37,17 @@ export async function POST(req: NextRequest) {
 
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { businessName, placeId, city, state, scanFrequency } = await req.json();
+    const { businessName, placeId, city, state, scanFrequency, isAutoAction = false } = await req.json();
+
+    if (isAutoAction) {
+      const policy = await getAutomationPolicy(user.id, "gbp_actions");
+      if (!isAutoAllowed(policy)) {
+        return NextResponse.json(
+          { error: "Automation policy blocks automatic GBP actions for this account." },
+          { status: 403 }
+        );
+      }
+    }
 
     if (!businessName || !city || !state) {
       return NextResponse.json(
@@ -85,6 +96,17 @@ export async function DELETE(req: NextRequest) {
     const monitorId = searchParams.get("id");
 
     if (!monitorId) return NextResponse.json({ error: "Monitor ID required" }, { status: 400 });
+
+    const isAutoAction = searchParams.get("isAutoAction") === "true";
+    if (isAutoAction) {
+      const policy = await getAutomationPolicy(user.id, "gbp_actions");
+      if (!isAutoAllowed(policy)) {
+        return NextResponse.json(
+          { error: "Automation policy blocks automatic GBP actions for this account." },
+          { status: 403 }
+        );
+      }
+    }
 
     const { error } = await supabase
       .from("gbp_monitors")

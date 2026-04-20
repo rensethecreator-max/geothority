@@ -32,6 +32,14 @@ interface PlanSummary {
   needs_input: number;
   created_at: string;
   updated_at: string;
+  verification?: {
+    status: "pending" | "running" | "completed" | "failed";
+    scoreBefore?: number;
+    scoreAfter?: number;
+    passedCount?: number;
+    failedCount?: number;
+    completedAt?: string;
+  } | null;
 }
 
 interface SyncSummary {
@@ -178,10 +186,7 @@ function PlanRow({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div>
               <div className="text-gray-400 mb-0.5">Scan</div>
-              <Link
-                href={`/scan/${plan.scan_id}`}
-                className="text-blue-500 hover:underline truncate block"
-              >
+              <Link href={`/scan/${plan.scan_id}`} className="text-blue-500 hover:underline truncate block">
                 {plan.scan_id.slice(0, 12)}…
               </Link>
             </div>
@@ -198,6 +203,21 @@ function PlanRow({
               <div>{plan.mode}</div>
             </div>
           </div>
+          {plan.verification && (
+            <div className={`mt-3 rounded-lg px-3 py-2 text-xs ${plan.verification.status === "completed" ? "bg-emerald-500/10 text-emerald-400" : plan.verification.status === "failed" ? "bg-red-500/10 text-red-400" : "bg-amber-500/10 text-amber-300"}`}>
+              <div className="flex flex-wrap gap-3">
+                <span>Verification: <span className="font-semibold uppercase">{plan.verification.status}</span></span>
+                {typeof plan.verification.scoreBefore === "number" && typeof plan.verification.scoreAfter === "number" && (
+                  <span>Score {plan.verification.scoreBefore} → {plan.verification.scoreAfter}</span>
+                )}
+                {typeof plan.verification.passedCount === "number" && <span>{plan.verification.passedCount} passed</span>}
+                {typeof plan.verification.failedCount === "number" && <span>{plan.verification.failedCount} failed</span>}
+              </div>
+              {plan.verification.completedAt && (
+                <div className="mt-1 opacity-80">{formatDistanceToNow(new Date(plan.verification.completedAt), { addSuffix: true })}</div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("fix_execution_plans")
-      .select("id, scan_id, mode, status, progress, total, completed, failed, needs_input, created_at, updated_at")
+      .select("id, scan_id, mode, status, progress, total, completed, failed, needs_input, created_at, updated_at, verification")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
       .limit(limit);

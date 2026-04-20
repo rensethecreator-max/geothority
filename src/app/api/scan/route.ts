@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { url, businessName, city, state } = await req.json();
+    const { url, businessName, city, state, sourceScanId } = await req.json();
 
     // Input length validation (prevents prompt injection + cost abuse)
     if (url?.length > MAX_URL_LENGTH || businessName?.length > MAX_NAME_LENGTH ||
@@ -67,14 +67,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!url || !businessName || !city || !state) {
+    let resolvedUrl = url;
+    let resolvedBusinessName = businessName;
+    let resolvedCity = city;
+    let resolvedState = state;
+
+    if (sourceScanId && (!resolvedUrl || !resolvedBusinessName || !resolvedCity || !resolvedState)) {
+      const { data: sourceScan } = await supabase
+        .from("scans")
+        .select("url, business_name, city, state")
+        .eq("id", sourceScanId)
+        .eq("user_id", user.id)
+        .single();
+
+      if (!sourceScan) {
+        return NextResponse.json({ error: "Source scan not found" }, { status: 404 });
+      }
+
+      resolvedUrl = resolvedUrl || sourceScan.url;
+      resolvedBusinessName = resolvedBusinessName || sourceScan.business_name;
+      resolvedCity = resolvedCity || sourceScan.city;
+      resolvedState = resolvedState || sourceScan.state;
+    }
+
+    if (!resolvedUrl || !resolvedBusinessName || !resolvedCity || !resolvedState) {
       return NextResponse.json(
         { error: "URL, business name, city, and state are required" },
         { status: 400 }
       );
     }
 
-    const result = await scanWebsite(url, businessName, city, state);
+    const result = await scanWebsite(resolvedUrl, resolvedBusinessName, resolvedCity, resolvedState);
 
     const { data: scan, error } = await supabase
       .from("scans")
@@ -113,10 +136,10 @@ export async function POST(req: NextRequest) {
     // Update user profile with business info
     await supabase.from("user_profiles").upsert({
       id: user.id,
-      business_name: businessName,
-      city,
-      state,
-      website_url: url,
+      business_name: resolvedBusinessName,
+      city: resolvedCity,
+      state: resolvedState,
+      website_url: resolvedUrl,
     });
 
     return NextResponse.json({ scan });

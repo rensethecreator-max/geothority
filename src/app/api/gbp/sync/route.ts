@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { syncGBPData } from "@/lib/google-business/sync";
 import { requirePlan } from "@/lib/plan-gate";
+import { getAutomationPolicy, isAutoAllowed } from "@/lib/automation-policies";
 
 /**
  * POST /api/gbp/sync
@@ -23,6 +24,17 @@ export async function POST(request: NextRequest) {
         { error: "Not authenticated", message: "Please sign in to continue." },
         { status: 401 }
       );
+    }
+
+    const body = await request.json().catch(() => ({}));
+    if (body?.isAutoAction) {
+      const policy = await getAutomationPolicy(session.user.id, "gbp_actions");
+      if (!isAutoAllowed(policy)) {
+        return NextResponse.json(
+          { error: "Automation policy blocks automatic GBP actions for this account." },
+          { status: 403 }
+        );
+      }
     }
 
     const accessToken = session.provider_token;

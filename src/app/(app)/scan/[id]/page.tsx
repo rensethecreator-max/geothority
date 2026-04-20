@@ -440,10 +440,23 @@ export default function ScanResultPage() {
     setVerificationError(null);
 
     try {
+      const rescanRes = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceScanId: execPlan.scanId }),
+      });
+
+      const rescanData = await rescanRes.json().catch(() => ({}));
+      if (!rescanRes.ok) {
+        throw new Error(rescanData.error || "Rescan failed");
+      }
+
+      const afterScanId = rescanData.scan?.id;
+
       const res = await fetch("/api/fix-engine/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: execPlan.id }),
+        body: JSON.stringify({ planId: execPlan.id, afterScanId }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -848,7 +861,7 @@ export default function ScanResultPage() {
                 <div>
                   <h4 className="font-bold text-sm">Post-fix Verification</h4>
                   <p className="text-xs text-gray-500 mt-1">
-                    Compare this execution plan against a newer scan to confirm whether scores actually improved.
+                    Run a fresh rescan, then compare the before and after scores to confirm whether the fixes actually improved performance.
                   </p>
                 </div>
                 <button
@@ -856,7 +869,7 @@ export default function ScanResultPage() {
                   disabled={verifyingPlan || execPlan.status === "executing"}
                   className="px-3 py-2 text-xs font-medium rounded-lg bg-electric-500/20 text-electric-300 hover:bg-electric-500/30 disabled:opacity-50 transition-colors"
                 >
-                  {verifyingPlan ? "Verifying..." : "Verify Fixes"}
+                  {verifyingPlan ? "Rescanning + Verifying..." : "Rescan + Verify Fixes"}
                 </button>
               </div>
 
@@ -892,7 +905,7 @@ export default function ScanResultPage() {
 
               {!execPlan.verification && (
                 <div className="text-xs text-gray-500">
-                  Run a fresh scan after fixes, then press Verify Fixes to compare the before and after scores.
+                  Press Rescan + Verify Fixes to trigger a fresh scan and compare the before and after scores automatically.
                 </div>
               )}
             </div>
