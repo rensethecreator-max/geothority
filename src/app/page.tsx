@@ -660,7 +660,7 @@ export default function HomePage() {
                             loop
                             muted
                             playsInline
-                            className="absolute inset-0 w-full h-full object-cover opacity-70"
+                            className="absolute inset-0 w-full h-full object-cover opacity-52 scale-[1.02] [filter:brightness(0.58)_contrast(1.14)_saturate(0.9)]"
                           >
                             <source src={feature.video} type="video/mp4" />
                           </video>
@@ -673,9 +673,17 @@ export default function HomePage() {
                             sizes="(max-width: 1024px) 100vw, 50vw"
                           />
                         )}
-                        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,24,0.15),rgba(8,14,24,0.86))]" />
+                        <div
+                          className={feature.video
+                            ? "absolute inset-0 bg-[linear-gradient(180deg,rgba(5,10,20,0.30),rgba(5,10,20,0.58)_42%,rgba(5,10,20,0.88))]"
+                            : "absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,24,0.15),rgba(8,14,24,0.86))]"
+                          }
+                        />
                         <div className="absolute inset-x-0 bottom-0 p-6">
-                          <div className="max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md shadow-[0_18px_60px_rgba(6,10,18,0.38)]">
+                          <div className={feature.video
+                            ? "max-w-md rounded-[24px] border border-white/12 bg-[rgba(6,10,18,0.72)] p-5 backdrop-blur-xl shadow-[0_18px_60px_rgba(6,10,18,0.48)]"
+                            : "max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md shadow-[0_18px_60px_rgba(6,10,18,0.38)]"
+                          }>
                             <div className="flex items-center gap-2 mb-2">
                               <Wand2 className="w-4 h-4 text-emerald-400" />
                               <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">Auto-fix available</span>
