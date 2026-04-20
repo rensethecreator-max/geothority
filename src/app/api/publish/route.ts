@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { getAutomationPolicy, isAutoAllowed } from "@/lib/automation-policies";
 
 function slugify(value: string) {
   return value
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest) {
       wpContentType,
       slug,
       verifyAfterPublish,
+      isAutoAction,
     } = await req.json();
 
     if (!contentId) {
@@ -51,9 +53,20 @@ export async function POST(req: NextRequest) {
 
     const { data: profile } = await supabase
       .from("user_profiles")
-      .select("cms_type, cms_credentials")
+      .select("cms_type, cms_credentials, automation_policies")
       .eq("id", user.id)
       .single();
+
+    // Check automation policy for auto-publish attempts
+    if (isAutoAction) {
+      const policy = await getAutomationPolicy(user.id, "publish_to_cms");
+      if (!isAutoAllowed(policy)) {
+        return NextResponse.json(
+          { error: `Auto-publish is disabled by your automation policy (currently: ${policy}). Change it in Settings → Automation Policies.`, policy },
+          { status: 403 }
+        );
+      }
+    }
 
     const resolvedCmsType = cmsType || profile?.cms_type || null;
     const resolvedCmsCredentials = cmsCredentials || profile?.cms_credentials || null;

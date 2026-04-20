@@ -11,6 +11,7 @@ import {
   type FixStep,
   type FixStepStatus,
   type FixVerificationResult,
+  type PlanVerification,
 } from "./types";
 
 const executions = new Map<string, FixExecutionPlan>();
@@ -171,7 +172,8 @@ export async function buildExecutionPlan(
   userId: string,
   scanId: string,
   mode: FixExecutionMode,
-  fixes: FixItemInput[]
+  fixes: FixItemInput[],
+  layerScoresBefore?: Record<string, number>
 ): Promise<FixExecutionPlan> {
   planCounter++;
   const planId = `plan_${Date.now()}_${planCounter}`;
@@ -216,6 +218,7 @@ export async function buildExecutionPlan(
     failed: 0,
     needsInput: steps.filter((s) => s.status === "needs_input").length,
     status: "planning",
+    layerScoresBefore: layerScoresBefore ?? undefined,
   };
 
   return saveExecution(plan);
@@ -729,4 +732,148 @@ export async function verifyAllFixes(
   }
 
   return results;
+}
+
+/**
+ * Auto-verify: fetch the original scan's layer scores as "before"
+ * and either use a newly provided scan's scores as "after" or look up
+ * the latest scan for the same user+business.
+ */
+export async function autoVerifyPlan(
+  planId: string,
+  userId: string,
+  afterScanId?: string
+): Promise<PlanVerification> {
+  const plan = await getExecution(planId, userId);
+  if (!plan) throw new Error(`Plan ${planId} not found`);
+
+  // If plan already has a running verification, don't duplicate
+  if (plan.verification?.status === "running") {
+    throw new Error("Verification already in progress");
+  }
+
+  plan.verification = {
+    status: "running",
+    startedAt: new Date().toISOString(),
+  };
+  await saveExecution(plan);
+
+  try {
+    const supabase = createServiceClient();
+
+    // Fetch before scores: prefer plan's captured scores, then fall back to original scan
+    let layerScoresBefore = plan.layerScoresBefore;
+    let scoreBefore: number | undefined;
+    if (!layerScoresBefore) {
+      const { data: originalScan } = await supabase
+        .from("scans")
+        .select("layer_scores, overall_score")
+        .eq("id", plan.scanId)
+        .eq("user_id", userId)
+        .single();
+      if (originalScan) {
+        layerScoresBefore = originalScan.layer_scores as Record<string, number> | undefined;
+        scoreBefore = originalScan.overall_score as number | undefined;
+      }
+    }
+    if (!layerScoresBefore) {
+      layerScoresBefore = { layer1: 0, layer2: 0, layer3: 0, layer4: 0, layer5: 0 };
+    }
+    if (scoreBefore === undefined) {
+      scoreBefore =
+        (layerScoresBefore.layer1 ?? 0) * 0.25 +
+        (layerScoresBefore.layer2 ?? 0) * 0.2 +
+        (layerScoresBefore.layer3 ?? 0) * 0.25 +
+        (layerScoresBefore.layer4 ?? 0) * 0.15 +
+        (layerScoresBefore.layer5 ?? 0) * 0.15;
+      scoreBefore = Math.round(scoreBefore);
+    }
+
+    // Persist before scores on the plan if not already there
+    if (!plan.layerScoresBefore) {
+      plan.layerScoresBefore = layerScoresBefore;
+    }
+
+    // Fetch after scores: use provided scan, or find the latest scan after the plan was created
+    let layerScoresAfter: Record<string, number> | undefined;
+    let scoreAfter: number | undefined;
+
+    if (afterScanId) {
+      const { data: afterScan } = await supabase
+        .from("scans")
+        .select("layer_scores, overall_score")
+        .eq("id", afterScanId)
+        .eq("user_id", userId)
+        .single();
+      if (afterScan) {
+        layerScoresAfter = afterScan.layer_scores as Record<string, number> | undefined;
+        scoreAfter = afterScan.overall_score as number | undefined;
+      }
+    } else {
+      // Look for any scan for this user created after the plan
+      const { data: newerScans } = await supabase
+        .from("scans")
+        .select("id, layer_scores, overall_score, created_at")
+        .eq("user_id", userId)
+        .gt("created_at", plan.createdAt)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (newerScans && newerScans.length > 0) {
+        layerScoresAfter = newerScans[0].layer_scores as Record<string, number> | undefined;
+        scoreAfter = newerScans[0].overall_score as number | undefined;
+      }
+    }
+
+    if (!layerScoresAfter) {
+      plan.verification = {
+        status: "failed",
+        layerScoresAfter: undefined,
+        scoreBefore,
+        scoreAfter: undefined,
+        startedAt: plan.verification.startedAt,
+        completedAt: new Date().toISOString(),
+        passedCount: 0,
+        failedCount: 0,
+      };
+      await saveExecution(plan);
+      throw new Error("No post-fix scan found. Run a new scan first, or provide afterScanId.");
+    }
+
+    if (scoreAfter === undefined) {
+      scoreAfter =
+        (layerScoresAfter.layer1 ?? 0) * 0.25 +
+        (layerScoresAfter.layer2 ?? 0) * 0.2 +
+        (layerScoresAfter.layer3 ?? 0) * 0.25 +
+        (layerScoresAfter.layer4 ?? 0) * 0.15 +
+        (layerScoresAfter.layer5 ?? 0) * 0.15;
+      scoreAfter = Math.round(scoreAfter);
+    }
+
+    // Run per-step verification
+    const stepResults = await verifyAllFixes(planId, layerScoresBefore, layerScoresAfter, userId);
+    const passedCount = stepResults.filter((r) => r.passed).length;
+    const failedCount = stepResults.filter((r) => !r.passed).length;
+
+    plan.verification = {
+      status: "completed",
+      layerScoresAfter,
+      scoreBefore,
+      scoreAfter,
+      stepResults,
+      startedAt: plan.verification.startedAt,
+      completedAt: new Date().toISOString(),
+      passedCount,
+      failedCount,
+    };
+    await saveExecution(plan);
+    return plan.verification;
+  } catch (err) {
+    plan.verification = {
+      ...(plan.verification ?? {}),
+      status: "failed",
+      completedAt: new Date().toISOString(),
+    };
+    await saveExecution(plan);
+    throw err;
+  }
 }

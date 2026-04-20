@@ -26,7 +26,7 @@ export async function GET(
         .single(),
       supabase
         .from("user_profiles")
-        .select("cms_type, cms_credentials")
+        .select("cms_type, cms_credentials, automation_policies")
         .eq("id", user.id)
         .single(),
     ]);
@@ -46,6 +46,7 @@ export async function GET(
         autoPublishFixes: Boolean(profile?.cms_credentials?.autoPublishFixes),
         verifyAfterPublish: profile?.cms_credentials?.verifyAfterPublish !== false,
       },
+      automationPolicies: profile?.automation_policies ?? null,
     });
   } catch (error) {
     console.error("Content GET error:", error);

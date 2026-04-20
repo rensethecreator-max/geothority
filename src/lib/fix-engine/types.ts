@@ -56,6 +56,30 @@ export interface FixExecutionPlan {
   failed: number;
   needsInput: number;
   status: "planning" | "executing" | "paused" | "completed" | "failed";
+  /** Pre-fix layer scores captured from the original scan at plan creation. */
+  layerScoresBefore?: Record<string, number>;
+  /** Verification state for the overall plan. */
+  verification?: PlanVerification;
+}
+
+export interface PlanVerification {
+  status: "pending" | "running" | "completed" | "failed";
+  /** Layer scores captured after re-scan or user-supplied. */
+  layerScoresAfter?: Record<string, number>;
+  /** Overall score before fixes. */
+  scoreBefore?: number;
+  /** Overall score after fixes. */
+  scoreAfter?: number;
+  /** Per-step verification results. */
+  stepResults?: FixVerificationResult[];
+  /** When verification was triggered. */
+  startedAt?: string;
+  /** When verification completed. */
+  completedAt?: string;
+  /** How many steps passed verification. */
+  passedCount?: number;
+  /** How many steps failed verification. */
+  failedCount?: number;
 }
 
 export interface FixVerificationResult {

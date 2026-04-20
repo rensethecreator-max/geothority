@@ -4,11 +4,12 @@
 // tracking and post-fix verification.
 // ============================================================
 
-export { executeFixPackage, getFixExecutionStatus, verifyFix } from "./executor";
+export { executeFixPackage, getFixExecutionStatus, verifyFix, autoVerifyPlan } from "./executor";
 export type {
   FixExecutionMode,
   FixExecutionPlan,
   FixStep,
   FixStepStatus,
   FixVerificationResult,
+  PlanVerification,
 } from "./types";

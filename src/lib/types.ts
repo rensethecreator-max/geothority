@@ -1,3 +1,32 @@
+/** Automation policy modes for each action type */
+export type AutomationPolicyMode = "auto_apply" | "approval_required" | "manual_only";
+
+export type AutomationActionKey =
+  | "publish_to_cms"
+  | "generate_content"
+  | "listing_sync"
+  | "gbp_actions";
+
+export const AUTOMATION_ACTIONS: { key: AutomationActionKey; label: string; description: string }[] = [
+  { key: "publish_to_cms", label: "Publish to CMS", description: "Push generated content to your connected CMS" },
+  { key: "generate_content", label: "Generate Content", description: "AI-generated pages, posts, and copy" },
+  { key: "listing_sync", label: "Listing Sync", description: "Sync NAP data to aggregators and directories" },
+  { key: "gbp_actions", label: "Google Business Actions", description: "Posts, updates, and reply actions on GBP" },
+];
+
+export const DEFAULT_AUTOMATION_POLICIES: Record<AutomationActionKey, AutomationPolicyMode> = {
+  publish_to_cms: "approval_required",
+  generate_content: "auto_apply",
+  listing_sync: "auto_apply",
+  gbp_actions: "approval_required",
+};
+
+export const POLICY_MODE_LABELS: Record<AutomationPolicyMode, string> = {
+  auto_apply: "Auto-apply",
+  approval_required: "Approval required",
+  manual_only: "Manual only",
+};
+
 export interface UserProfile {
   id: string;
   business_name: string | null;
@@ -9,6 +38,7 @@ export interface UserProfile {
   stripe_customer_id: string | null;
   cms_type: "wordpress" | "wix" | "squarespace" | null;
   cms_credentials: Record<string, string> | null;
+  automation_policies: Record<AutomationActionKey, AutomationPolicyMode> | null;
   created_at: string;
 }
 

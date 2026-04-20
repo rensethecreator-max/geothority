@@ -16,7 +16,15 @@ import {
   Trash2,
   AlertTriangle,
   Save,
+  Shield,
 } from "lucide-react";
+import {
+  type AutomationActionKey,
+  type AutomationPolicyMode,
+  AUTOMATION_ACTIONS,
+  DEFAULT_AUTOMATION_POLICIES,
+  POLICY_MODE_LABELS,
+} from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
 
@@ -47,6 +55,11 @@ function SettingsContent() {
   const [savingCms, setSavingCms] = useState(false);
   const [cmsSaved, setCmsSaved] = useState(false);
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
+
+  // Automation policy state
+  const [policies, setPolicies] = useState<Record<AutomationActionKey, AutomationPolicyMode>>({ ...DEFAULT_AUTOMATION_POLICIES });
+  const [savingPolicies, setSavingPolicies] = useState(false);
+  const [policiesSaved, setPoliciesSaved] = useState(false);
 
   // Account deletion state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -83,6 +96,9 @@ function SettingsContent() {
           setWpContentType(data.cms_credentials.wordpressContentType === "posts" ? "posts" : "pages");
           setAutoPublishFixes(Boolean(data.cms_credentials.autoPublishFixes));
           setVerifyAfterPublish(data.cms_credentials.verifyAfterPublish !== false);
+        }
+        if (data.automation_policies) {
+          setPolicies({ ...DEFAULT_AUTOMATION_POLICIES, ...(data.automation_policies as Partial<Record<AutomationActionKey, AutomationPolicyMode>>) });
         }
       }
       setLoading(false);
@@ -139,6 +155,18 @@ function SettingsContent() {
       setDeleteError("Network error. Please try again.");
       setDeleting(false);
     }
+  };
+
+  const handleSavePolicies = async () => {
+    if (!profile) return;
+    setSavingPolicies(true);
+    await supabase
+      .from("user_profiles")
+      .update({ automation_policies: policies })
+      .eq("id", profile.id);
+    setSavingPolicies(false);
+    setPoliciesSaved(true);
+    setTimeout(() => setPoliciesSaved(false), 3000);
   };
 
   const handleSaveCms = async () => {
@@ -527,6 +555,49 @@ function SettingsContent() {
               </>
             ) : (
               "Save CMS Settings"
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Automation Policies */}
+      <div className="bg-[var(--card)] rounded-xl border border-[var(--border)]">
+        <div className="p-4 border-b border-[var(--border)] flex items-center gap-2">
+          <Shield className="w-4 h-4 text-electric-500" />
+          <h2 className="font-semibold">Automation Policies</h2>
+        </div>
+        <div className="p-4 space-y-3">
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Control how Geothority handles each action type. "Auto-apply" executes immediately, "Approval required" waits for your go-ahead, and "Manual only" disables automation entirely.
+          </p>
+          {AUTOMATION_ACTIONS.map(({ key, label, description }) => (
+            <div key={key} className="flex items-start justify-between gap-4 rounded-lg border border-[var(--border)] p-3">
+              <div className="flex-1">
+                <div className="text-sm font-medium">{label}</div>
+                <div className="text-xs text-[var(--muted-foreground)]">{description}</div>
+              </div>
+              <select
+                value={policies[key]}
+                onChange={(e) => setPolicies({ ...policies, [key]: e.target.value as AutomationPolicyMode })}
+                className="bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-electric-500"
+              >
+                {(Object.keys(POLICY_MODE_LABELS) as AutomationPolicyMode[]).map((mode) => (
+                  <option key={mode} value={mode}>{POLICY_MODE_LABELS[mode]}</option>
+                ))}
+              </select>
+            </div>
+          ))}
+          <button
+            onClick={handleSavePolicies}
+            disabled={savingPolicies}
+            className="flex items-center gap-2 px-4 py-2 bg-electric-500 hover:bg-electric-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            {policiesSaved ? (
+              <><CheckCircle2 className="w-4 h-4" /> Saved!</>
+            ) : savingPolicies ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+            ) : (
+              "Save Policies"
             )}
           </button>
         </div>
