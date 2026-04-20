@@ -23,6 +23,7 @@ import {
   Bot,
   Wand2,
   Play,
+  CheckCircle2,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { GeoTooltip } from "@/components/ui/geo-tooltip";
@@ -134,7 +135,7 @@ const features: {
   ourWay: string;
   stat: string;
   image: string;
-  video?: string;
+  preview: "fix" | "citations" | "ai" | "schema" | "content" | "monitor";
   note?: string;
   badge?: string;
   statTip?: string;
@@ -149,7 +150,7 @@ const features: {
     stat: "1 click to fix most issues",
     badge: "Only on Geothority",
     image: "/cards/truststack.jpg",
-    video: "/hero/scan-fix-monitor.mp4",
+    preview: "fix",
     statTip: "Most SEO tools just list problems. We actually fix them — automatically or with a single click. That's the difference between a report and a solution.",
   },
   {
@@ -161,7 +162,7 @@ const features: {
     ourWay: "Inconsistencies found. Push correct NAP now?",
     stat: "68+ directories covered",
     image: "/cards/audit.jpg",
-    video: "/hero/fix.mp4",
+    preview: "citations",
     statTip: "Inconsistent listings confuse Google and hurt your rankings. We verify AND sync — most tools only verify.",
   },
   {
@@ -174,7 +175,7 @@ const features: {
     stat: "3 AI platforms optimized",
     badge: "Only on Geothority",
     image: "/cards/quickwin.jpg",
-    video: "/hero/ai-visibility.mp4",
+    preview: "ai",
     statTip: "Tracking your AI score is nice. Generating the content that improves it is better. We do both.",
   },
   {
@@ -186,6 +187,7 @@ const features: {
     ourWay: "Schema generated. Deploy it now?",
     stat: "9 schema types, 3 clicks",
     image: "/cards/ai-ready.jpg",
+    preview: "schema",
     statTip: "Schema is the code that tells Google what your business does. Without it, you're invisible in rich results and AI answers. We generate AND deploy it.",
   },
   {
@@ -197,7 +199,7 @@ const features: {
     ourWay: "Here's what to write, where, and why — generated and ready to publish.",
     stat: "1,200 words in 40 seconds",
     image: "/cards/content.jpg",
-    video: "/hero/content-engine.mp4",
+    preview: "content",
     statTip: "Generic AI content doesn't rank. Our engine writes city-specific pages with real local landmarks and entities — content that Google and AI assistants trust.",
   },
   {
@@ -210,7 +212,7 @@ const features: {
     stat: "Auto-countermove generated",
     badge: "Only on Geothority",
     image: "/cards/watchdog.jpg",
-    video: "/hero/monitor.mp4",
+    preview: "monitor",
     statTip: "Alerts without actions are just noise. Every competitor alert comes with a recommended counter-move ready to deploy.",
   },
 ];
@@ -311,6 +313,202 @@ function BrowserFrame({
         <div className="ml-3 flex-1 h-5 rounded-full bg-white/5" />
       </div>
       <div className="p-6 sm:p-7">{children}</div>
+    </div>
+  );
+}
+
+function FeaturePreview({
+  preview,
+  stat,
+  statTip,
+}: {
+  preview: "fix" | "citations" | "ai" | "schema" | "content" | "monitor";
+  stat: string;
+  statTip?: string;
+}) {
+  const overlay = (
+    <div className="absolute inset-x-4 bottom-4 z-20 rounded-[22px] border border-white/12 bg-[rgba(7,12,24,0.82)] p-4 backdrop-blur-xl shadow-[0_18px_60px_rgba(6,10,18,0.48)] sm:inset-x-5 sm:bottom-5 sm:p-5">
+      <div className="mb-2 flex items-center gap-2">
+        <Wand2 className="h-4 w-4 text-emerald-400" />
+        <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">Auto-fix available</span>
+      </div>
+      <div className="text-base font-semibold text-white sm:text-lg">{stat}</div>
+      {statTip && <p className="mt-2 text-sm leading-6 text-white/68">{statTip}</p>}
+    </div>
+  );
+
+  const shell = "relative h-full min-h-[320px] overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]";
+
+  if (preview === "fix") {
+    return (
+      <div className={shell}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_20%,rgba(16,185,129,0.18),transparent_18%),linear-gradient(180deg,#08111d_0%,#0b1625_100%)]" />
+        <div className="absolute inset-0 p-5 sm:p-6">
+          <div className="mb-4 flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Quick win</div>
+              <div className="mt-1 text-sm font-medium text-white">Missing LocalBusiness schema</div>
+            </div>
+            <div className="rounded-full border border-red-400/20 bg-red-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-red-300">Priority</div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
+            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Recommended fix</div>
+              <div className="mt-3 space-y-2 text-sm text-white/75">
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Generate JSON-LD</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Repair directory mismatch</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Deploy to site</div>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-4">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-300/80">Impact</div>
+              <div className="mt-3 text-3xl font-semibold text-white">+8</div>
+              <div className="mt-1 text-xs text-emerald-200/70">visibility points</div>
+            </div>
+          </div>
+        </div>
+        {overlay}
+      </div>
+    );
+  }
+
+  if (preview === "citations") {
+    return (
+      <div className={shell}>
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#09111d_0%,#0b1625_100%)]" />
+        <div className="absolute inset-0 p-5 sm:p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Directory sync</div>
+            <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-emerald-300">Live push</div>
+          </div>
+          <div className="space-y-3">
+            {[
+              ["Google", "(813) 555-0142", true],
+              ["Apple Maps", "(813) 555-0142", true],
+              ["Bing", "(813) 555-0142", true],
+              ["Yelp", "Refreshing", false],
+            ].map(([name, value, synced]) => (
+              <div key={name as string} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                <div>
+                  <div className="text-sm font-medium text-white">{name}</div>
+                  <div className="text-xs text-white/45">{value}</div>
+                </div>
+                <div className={`rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] ${synced ? "border border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border border-amber-400/20 bg-amber-400/10 text-amber-300"}`}>
+                  {synced ? "Synced" : "Queued"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {overlay}
+      </div>
+    );
+  }
+
+  if (preview === "ai") {
+    return (
+      <div className={shell}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_18%,rgba(99,102,241,0.18),transparent_18%),linear-gradient(180deg,#08111d_0%,#0a1524_100%)]" />
+        <div className="absolute inset-0 p-5 sm:p-6">
+          <div className="mb-4 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">AI query</div>
+            <div className="mt-2 text-sm font-medium text-white">Best insurance agent in Tampa</div>
+          </div>
+          <div className="space-y-3">
+            {[
+              "ChatGPT recommends Smith Insurance Agency",
+              "Perplexity cites Smith Insurance Agency",
+              "Google AI Overview includes Smith Insurance Agency",
+            ].map((item) => (
+              <div key={item} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                <span className="max-w-[75%] text-sm text-white/75">{item}</span>
+                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              </div>
+            ))}
+          </div>
+        </div>
+        {overlay}
+      </div>
+    );
+  }
+
+  if (preview === "schema") {
+    return (
+      <div className={shell}>
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#09111d_0%,#0b1625_100%)]" />
+        <div className="absolute inset-0 grid gap-4 p-5 sm:grid-cols-[1fr_0.9fr] sm:p-6">
+          <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Schema builder</div>
+            <div className="mt-3 space-y-2 text-sm text-white/72">
+              <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-2">Business Type: InsuranceAgency</div>
+              <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-2">Area Served: Tampa, St. Pete, Brandon</div>
+              <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-2">SameAs: Google, Yelp, Facebook</div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-4">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-300/80">Deploy status</div>
+            <div className="mt-3 space-y-2 text-sm text-white/75">
+              <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> JSON-LD generated</div>
+              <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Validation passed</div>
+              <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Ready to publish</div>
+            </div>
+          </div>
+        </div>
+        {overlay}
+      </div>
+    );
+  }
+
+  if (preview === "content") {
+    return (
+      <div className={shell}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_30%,rgba(16,185,129,0.16),transparent_16%),linear-gradient(180deg,#08111d_0%,#0a1524_100%)]" />
+        <div className="absolute inset-0 p-5 sm:p-6">
+          <div className="mb-4 rounded-2xl border border-amber-400/20 bg-amber-400/8 p-4">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-amber-300/80">Visibility gap</div>
+            <div className="mt-2 text-sm font-medium text-white">Missing: Tampa homeowners insurance page</div>
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Generated content</div>
+              <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-emerald-300">Ready</div>
+            </div>
+            <div className="text-sm font-medium text-white">Tampa Homeowners Insurance Guide</div>
+            <div className="mt-2 h-2 rounded-full bg-white/8">
+              <div className="h-2 w-[78%] rounded-full bg-gradient-to-r from-emerald-400 to-cyan-300" />
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[10px] uppercase tracking-[0.16em] text-white/45">
+              <div className="rounded-xl border border-white/8 bg-black/20 px-2 py-2">1,247 words</div>
+              <div className="rounded-xl border border-white/8 bg-black/20 px-2 py-2">3 entities</div>
+              <div className="rounded-xl border border-white/8 bg-black/20 px-2 py-2">SEO brief</div>
+            </div>
+          </div>
+        </div>
+        {overlay}
+      </div>
+    );
+  }
+
+  return (
+    <div className={shell}>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_24%,rgba(245,158,11,0.12),transparent_16%),linear-gradient(180deg,#08111d_0%,#0a1524_100%)]" />
+      <div className="absolute inset-0 p-5 sm:p-6">
+        <div className="mb-4 rounded-2xl border border-amber-400/20 bg-amber-400/8 p-4">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-amber-300/80">Competitor alert</div>
+          <div className="mt-2 text-sm font-medium text-white">Top competitor launched a new Tampa service page</div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Detected move</div>
+            <div className="mt-3 text-sm text-white/72">Fresh content, new local entities, internal links updated.</div>
+          </div>
+          <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-4">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-300/80">Countermove ready</div>
+            <div className="mt-3 text-sm text-white/80">Generate stronger city page and queue review campaign.</div>
+          </div>
+        </div>
+      </div>
+      {overlay}
     </div>
   );
 }
@@ -653,46 +851,7 @@ export default function HomePage() {
                     </div>
 
                     <BrowserFrame className="h-full">
-                      <div className="relative h-full min-h-[280px] overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]">
-                        {feature.video ? (
-                          <video
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="absolute inset-0 w-full h-full object-cover opacity-52 scale-[1.02] [filter:brightness(0.58)_contrast(1.14)_saturate(0.9)]"
-                          >
-                            <source src={feature.video} type="video/mp4" />
-                          </video>
-                        ) : (
-                          <Image
-                            src={feature.image}
-                            alt={feature.title}
-                            fill
-                            className="object-cover opacity-78"
-                            sizes="(max-width: 1024px) 100vw, 50vw"
-                          />
-                        )}
-                        <div
-                          className={feature.video
-                            ? "absolute inset-0 bg-[linear-gradient(180deg,rgba(5,10,20,0.30),rgba(5,10,20,0.58)_42%,rgba(5,10,20,0.88))]"
-                            : "absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,24,0.15),rgba(8,14,24,0.86))]"
-                          }
-                        />
-                        <div className="absolute inset-x-0 bottom-0 p-6">
-                          <div className={feature.video
-                            ? "max-w-md rounded-[24px] border border-white/12 bg-[rgba(6,10,18,0.72)] p-5 backdrop-blur-xl shadow-[0_18px_60px_rgba(6,10,18,0.48)]"
-                            : "max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md shadow-[0_18px_60px_rgba(6,10,18,0.38)]"
-                          }>
-                            <div className="flex items-center gap-2 mb-2">
-                              <Wand2 className="w-4 h-4 text-emerald-400" />
-                              <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">Auto-fix available</span>
-                            </div>
-                            <div className="text-lg font-semibold text-white">{feature.stat}</div>
-                            <p className="mt-2 text-sm text-white/60">{feature.statTip}</p>
-                          </div>
-                        </div>
-                      </div>
+                      <FeaturePreview preview={feature.preview} stat={feature.stat} statTip={feature.statTip} />
                     </BrowserFrame>
                   </div>
                 </ScrollReveal>
@@ -706,7 +865,7 @@ export default function HomePage() {
       <ScrollReveal animation="scale-up">
         <section className="mx-auto max-w-7xl px-4 pb-16 sm:pb-24">
           <BrowserFrame>
-            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr] xl:items-center">
               <div>
                 <SectionEyebrow>Trust Stack 2.0</SectionEyebrow>
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
@@ -729,16 +888,16 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="geo-feature-shell rounded-[30px] border border-white/10 bg-[#09111c] p-5 sm:p-6">
-                <div className="mb-5 flex items-center justify-between gap-4">
+              <div className="geo-feature-shell rounded-[30px] border border-white/10 bg-[#09111c] p-4 sm:p-6">
+                <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.24em] text-white/38">Trust Stack Object</div>
-                    <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">Your local SEO, scored and auto-fixable.</div>
+                    <div className="mt-2 text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">Your local SEO, scored and auto-fixable.</div>
                   </div>
-                  <div className="rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">Priority view</div>
+                  <div className="self-start rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">Priority view</div>
                 </div>
 
-                <div className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
+                <div className="grid gap-4 2xl:grid-cols-[1.02fr_0.98fr]">
                   <div className="geo-stack-core rounded-[26px] border border-white/10 bg-white/[0.03] p-5">
                     <div className="flex items-center justify-between">
                       <div>
@@ -753,7 +912,7 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 grid gap-3 grid-cols-3 sm:grid-cols-5">
+                    <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                       {[
                         ["Foundation", "61", 1],
                         ["Trust", "74", 2],
@@ -762,7 +921,7 @@ export default function HomePage() {
                         ["AI", "88", 5],
                       ].map(([label, value, layer], index) => (
                         <div key={label} className="rounded-2xl border border-white/8 bg-black/20 p-3 text-center">
-                          <div className="flex items-center justify-center gap-1">
+                          <div className="flex min-h-[30px] items-start justify-center gap-1">
                             <div className="text-[10px] uppercase tracking-[0.16em] text-white/35">{label}</div>
                             <LayerInfoTooltip layerNum={layer as number} side="top" />
                           </div>
@@ -788,12 +947,12 @@ export default function HomePage() {
                           { text: "Repairing Apple Maps entity mismatch", fixable: true },
                           { text: "Expanding Tampa landing coverage", fixable: false },
                         ].map((item) => (
-                          <div key={item.text} className="flex items-center justify-between gap-2">
-                            <span className={`rounded-full px-3 py-1.5 text-xs ${item.fixable ? "border border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : "border border-white/10 bg-white/[0.03] text-white/62"}`}>
+                          <div key={item.text} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <span className={`rounded-2xl px-3 py-2 text-xs leading-5 ${item.fixable ? "border border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : "border border-white/10 bg-white/[0.03] text-white/62"}`}>
                               {item.text}
                             </span>
                             {item.fixable && (
-                              <button className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-400 hover:text-emerald-300 whitespace-nowrap">
+                              <button className="text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-400 hover:text-emerald-300 whitespace-nowrap sm:text-right">
                                 Fix Now →
                               </button>
                             )}
@@ -809,8 +968,8 @@ export default function HomePage() {
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">What&apos;s working, what&apos;s not</div>
                         <GeoTooltip tip="Shows which authority layers are actively improving your rankings and which are holding you back." side="right" iconClassName="w-3 h-3" />
                       </div>
-                      <div className="mt-3 flex items-center gap-3">
-                        <div className="h-16 w-16 rounded-full border border-white/10 bg-[#0b1726] flex items-center justify-center">
+                      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#0b1726]">
                           <span className="text-lg font-semibold text-white">High</span>
                         </div>
                         <p className="text-sm leading-6 text-white/60">AI visibility and directory listings are pulling you up. Trust pages are the main thing holding you back.</p>
