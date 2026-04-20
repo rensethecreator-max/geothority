@@ -28,6 +28,7 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { GeoTooltip } from "@/components/ui/geo-tooltip";
 import { LayerInfoTooltip } from "@/components/ui/info-tooltip";
 import { Logo } from "@/components/ui/logo";
+import { AnimatedHero } from "@/components/home/animated-hero";
 
 /* ───────────────── Animated Hero Video Component ───────────────── */
 
@@ -565,8 +566,7 @@ export default function HomePage() {
           </div>
 
           <div className="relative">
-            <div className="pointer-events-none absolute inset-x-10 top-6 h-24 rounded-full bg-[#5ce6ba]/10 blur-3xl" />
-            <HeroVideoLoop />
+            <AnimatedHero />
           </div>
         </div>
       </section>

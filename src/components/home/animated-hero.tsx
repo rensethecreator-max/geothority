@@ -1,0 +1,499 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Waypoints, Wand2, Radar, Brain, FileText, CheckCircle2, AlertTriangle, ArrowUp } from "lucide-react";
+
+/**
+ * AnimatedHero — Cycles through 5 scenes showcasing Geothority's core value.
+ * Uses Framer Motion for smooth, controlled animations.
+ * No narration, no video — pure React, our actual UI language.
+ * 
+ * Scenes:
+ * 1. Scan starts → Trust Stack score reveals
+ * 2. Quick Win → One-click fix → score improves
+ * 3. Competitor alert → Counter-move generated
+ * 4. AI Visibility → 3/3 platforms recommend you
+ * 5. Content gap → Auto-generated city page
+ */
+
+const SCENE_DURATION = 5000; // 5 seconds per scene
+
+// ─── Shared animation variants ────────────────────────────────
+
+const fadeUp = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+
+const fadeIn = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+const scaleIn = {
+  initial: { opacity: 0, scale: 0.92 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.95 },
+};
+
+const stagger = {
+  animate: { transition: { staggerChildren: 0.15 } },
+};
+
+// ─── Score bar component ──────────────────────────────────────
+
+function ScoreBar({ label, score, delay, color }: { label: string; score: number; delay: number; color: string }) {
+  return (
+    <motion.div
+      className="flex items-center gap-3"
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.4 }}
+    >
+      <div className="w-20 text-[10px] uppercase tracking-[0.14em] text-white/45">{label}</div>
+      <div className="flex-1 h-2 rounded-full bg-white/8 overflow-hidden">
+        <motion.div
+          className={`h-full rounded-full ${color}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${score}%` }}
+          transition={{ delay: delay + 0.2, duration: 0.8, ease: "easeOut" }}
+        />
+      </div>
+      <div className="w-8 text-right text-xs font-semibold text-white/80">{score}</div>
+    </motion.div>
+  );
+}
+
+// ─── Scene 1: Scan + Trust Stack ──────────────────────────────
+
+function SceneScan() {
+  return (
+    <div className="space-y-5">
+      {/* URL bar */}
+      <motion.div {...fadeUp} transition={{ delay: 0, duration: 0.5 }} className="flex items-center gap-3">
+        <div className="flex-1 h-9 rounded-xl bg-white/5 border border-white/8 px-3 flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full border-2 border-white/20" />
+          <motion.span
+            className="text-sm text-white/70 font-mono"
+            initial={{ width: 0 }}
+            animate={{ width: "auto" }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            smithinsurance.com
+          </motion.span>
+        </div>
+        <motion.div
+          className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-xs font-semibold text-[#071019]"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.2, duration: 0.3 }}
+        >
+          Scan
+        </motion.div>
+      </motion.div>
+
+      {/* Scanning indicator */}
+      <motion.div
+        className="flex items-center gap-2 text-xs text-emerald-400/80"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5 }}
+      >
+        <motion.div
+          className="w-2 h-2 rounded-full bg-emerald-400"
+          animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+          transition={{ repeat: Infinity, duration: 1.2 }}
+        />
+        Scanning 68+ authority signals...
+      </motion.div>
+
+      {/* Trust Stack scores */}
+      <motion.div
+        className="space-y-3 rounded-xl border border-white/8 bg-white/[0.02] p-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.2, duration: 0.5 }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <Waypoints className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-[10px] uppercase tracking-[0.2em] text-white/45">Trust Stack</span>
+          </div>
+          <motion.div
+            className="text-lg font-bold text-white"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2.5 }}
+          >
+            73<span className="text-sm text-white/40">/100</span>
+          </motion.div>
+        </div>
+
+        <ScoreBar label="Foundation" score={61} delay={2.6} color="bg-gradient-to-r from-red-400 to-amber-400" />
+        <ScoreBar label="Trust" score={74} delay={2.8} color="bg-gradient-to-r from-amber-400 to-emerald-400" />
+        <ScoreBar label="Geo" score={82} delay={3.0} color="bg-gradient-to-r from-emerald-400 to-emerald-300" />
+        <ScoreBar label="Reviews" score={79} delay={3.2} color="bg-gradient-to-r from-emerald-400 to-emerald-300" />
+        <ScoreBar label="AI" score={88} delay={3.4} color="bg-gradient-to-r from-emerald-300 to-teal-300" />
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Scene 2: Quick Win + Auto-Fix ────────────────────────────
+
+function SceneFix() {
+  return (
+    <div className="space-y-4">
+      {/* Quick Win card */}
+      <motion.div
+        className="rounded-xl border border-red-400/25 bg-red-400/5 p-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <AlertTriangle className="w-4 h-4 text-red-400" />
+          <span className="text-[10px] uppercase tracking-[0.18em] text-red-400/80">Quick Win — High Priority</span>
+        </div>
+        <div className="text-sm font-semibold text-white mb-1">Missing LocalBusiness schema markup</div>
+        <div className="text-xs text-white/50">Your site has no structured data. Google can&apos;t understand your business.</div>
+      </motion.div>
+
+      {/* Fix button */}
+      <motion.button
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-sm font-semibold text-[#071019] flex items-center justify-center gap-2"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1.5, duration: 0.4 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Wand2 className="w-4 h-4" />
+        Fix Automatically
+      </motion.button>
+
+      {/* Fixing progress */}
+      <motion.div
+        className="space-y-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2.2, duration: 0.5 }}
+      >
+        <div className="flex items-center gap-2 text-xs">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5 }}>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          </motion.div>
+          <span className="text-white/70">Schema markup generated</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.9 }}>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          </motion.div>
+          <span className="text-white/70">NAP inconsistencies resolved</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.3 }}>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          </motion.div>
+          <span className="text-white/70">Schema deployed to site</span>
+        </div>
+      </motion.div>
+
+      {/* Score improvement */}
+      <motion.div
+        className="flex items-center justify-between rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 3.6, duration: 0.4 }}
+      >
+        <span className="text-xs text-white/60">Trust Stack Score</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-white/40">73</span>
+          <ArrowUp className="w-3 h-3 text-emerald-400" />
+          <span className="text-lg font-bold text-emerald-400">81</span>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Scene 3: Competitor Alert + Counter-move ─────────────────
+
+function SceneMonitor() {
+  return (
+    <div className="space-y-4">
+      {/* Alert notification */}
+      <motion.div
+        className="rounded-xl border border-amber-400/25 bg-amber-400/5 p-4 flex items-start gap-3"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <Radar className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-amber-400/80 mb-1">Competitor Alert</div>
+          <div className="text-sm font-medium text-white">City Insurance added a new service page for Tampa</div>
+        </div>
+      </motion.div>
+
+      {/* Counter-move card */}
+      <motion.div
+        className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.8, duration: 0.5 }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <Wand2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/80">Counter-move ready</span>
+        </div>
+        <div className="text-sm font-medium text-white mb-1">Generate Tampa service page</div>
+        <div className="text-xs text-white/50 mb-3">Better optimized, with local landmarks and entity markup</div>
+        <motion.div
+          className="px-3 py-2 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-xs font-semibold text-emerald-300 inline-flex items-center gap-1.5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.5 }}
+        >
+          <CheckCircle2 className="w-3 h-3" /> Approve &amp; Deploy
+        </motion.div>
+      </motion.div>
+
+      {/* Weekly status */}
+      <motion.div
+        className="flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.02] p-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 3.2 }}
+      >
+        <span className="text-xs text-white/50">Weekly monitoring</span>
+        <div className="flex items-center gap-1.5">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-xs text-emerald-400">Active</span>
+        </div>
+      </motion.div>
+
+      {/* Trend */}
+      <motion.div
+        className="flex items-center justify-between text-xs"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 3.5 }}
+      >
+        <span className="text-white/40">30-day visibility</span>
+        <span className="text-emerald-400 font-semibold flex items-center gap-1">
+          <ArrowUp className="w-3 h-3" /> +12%
+        </span>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Scene 4: AI Visibility ───────────────────────────────────
+
+function SceneAIVisibility() {
+  const engines = [
+    { name: "ChatGPT", color: "bg-emerald-400", delay: 0.5 },
+    { name: "Perplexity", color: "bg-blue-400", delay: 1.2 },
+    { name: "Google AI", color: "bg-purple-400", delay: 1.9 },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Query */}
+      <motion.div
+        className="rounded-xl border border-white/8 bg-white/[0.03] p-3"
+        {...fadeUp}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="text-[10px] uppercase tracking-[0.2em] text-white/35 mb-1.5">AI Search Query</div>
+        <div className="text-sm text-white/80 font-medium">&ldquo;Best insurance agent in Tampa&rdquo;</div>
+      </motion.div>
+
+      {/* Engine results */}
+      <div className="space-y-2">
+        {engines.map((engine) => (
+          <motion.div
+            key={engine.name}
+            className="rounded-xl border border-white/8 bg-white/[0.02] p-3 flex items-center justify-between"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: engine.delay, duration: 0.4 }}
+          >
+            <div className="flex items-center gap-2.5">
+              <div className={`w-2 h-2 rounded-full ${engine.color}`} />
+              <span className="text-sm text-white/80">{engine.name}</span>
+            </div>
+            <motion.div
+              className="flex items-center gap-1.5"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: engine.delay + 0.5 }}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs text-emerald-400 font-medium">Recommends you</span>
+            </motion.div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Score */}
+      <motion.div
+        className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-4 text-center"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 3.0 }}
+      >
+        <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/70 mb-1">AI Visibility Score</div>
+        <div className="text-3xl font-bold text-emerald-400">3/3</div>
+        <div className="text-xs text-white/40 mt-1">All platforms recommend your business</div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Scene 5: Content Engine ──────────────────────────────────
+
+function SceneContent() {
+  return (
+    <div className="space-y-4">
+      {/* Visibility gap */}
+      <motion.div
+        className="rounded-xl border border-amber-400/25 bg-amber-400/5 p-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <Brain className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-[10px] uppercase tracking-[0.18em] text-amber-400/80">Visibility Gap</span>
+        </div>
+        <div className="text-sm font-medium text-white">Missing: Tampa homeowners insurance coverage</div>
+        <div className="text-xs text-white/50 mt-1">Competitors rank for this — you don&apos;t have a page for it</div>
+      </motion.div>
+
+      {/* Generate button */}
+      <motion.div
+        className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-sm font-semibold text-[#071019] flex items-center justify-center gap-2"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1.5 }}
+      >
+        <FileText className="w-4 h-4" />
+        Generate Targeted Page
+      </motion.div>
+
+      {/* Generated content preview */}
+      <motion.div
+        className="rounded-xl border border-white/8 bg-white/[0.02] p-4 space-y-2"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.5, duration: 0.5 }}
+      >
+        <div className="text-[10px] uppercase tracking-[0.2em] text-white/35 mb-1">Generated Content</div>
+        <div className="text-sm font-semibold text-white">Tampa Homeowners Insurance Guide</div>
+        <div className="text-xs text-white/50 leading-relaxed">
+          Protect your Tampa home with comprehensive coverage. From Bayshore Boulevard to Hyde Park, local
+          homeowners trust Smith Insurance for...
+        </div>
+        <div className="flex items-center gap-3 text-[10px] text-white/40 mt-2">
+          <span>1,247 words</span>
+          <span>•</span>
+          <span>3 local entities</span>
+          <span>•</span>
+          <span className="text-emerald-400">SEO optimized</span>
+        </div>
+      </motion.div>
+
+      {/* Gap closed */}
+      <motion.div
+        className="flex items-center justify-between rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 3.5 }}
+      >
+        <span className="text-xs text-white/60">Tampa homeowners gap</span>
+        <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+          <CheckCircle2 className="w-3 h-3" /> Closed
+        </span>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Scene indicator dots ─────────────────────────────────────
+
+function SceneIndicator({ current, total }: { current: number; total: number }) {
+  const labels = ["Scan", "Fix", "Monitor", "AI", "Content"];
+  return (
+    <div className="flex items-center justify-center gap-2 mt-4">
+      {Array.from({ length: total }).map((_, i) => (
+        <div
+          key={i}
+          className={`h-1.5 rounded-full transition-all duration-500 ${
+            i === current
+              ? "w-8 bg-emerald-400"
+              : "w-1.5 bg-white/15"
+          }`}
+          title={labels[i]}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Main Animated Hero Component ─────────────────────────────
+
+const SCENES = [SceneScan, SceneFix, SceneMonitor, SceneAIVisibility, SceneContent];
+
+export function AnimatedHero() {
+  const [scene, setScene] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setScene((prev) => (prev + 1) % SCENES.length);
+    }, SCENE_DURATION);
+    return () => clearInterval(timer);
+  }, []);
+
+  const CurrentScene = SCENES[scene];
+
+  return (
+    <div className="relative w-full">
+      {/* Glow effect behind */}
+      <div className="pointer-events-none absolute inset-x-10 top-6 h-24 rounded-full bg-emerald-400/8 blur-3xl" />
+
+      {/* Main panel */}
+      <div className="relative rounded-2xl border border-white/10 bg-[#0b1322]/92 backdrop-blur-sm shadow-[0_30px_120px_rgba(6,12,24,0.55)] overflow-hidden">
+        {/* Browser chrome */}
+        <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/6 bg-white/[0.015]">
+          <div className="w-2.5 h-2.5 rounded-full bg-rose-400/50" />
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-300/50" />
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-300/50" />
+          <div className="ml-3 flex-1 h-4.5 rounded-full bg-white/[0.04]" />
+        </div>
+
+        {/* Scene content */}
+        <div className="p-6 min-h-[380px] flex flex-col justify-between">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={scene}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="flex-1"
+            >
+              <CurrentScene />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Scene indicator */}
+          <SceneIndicator current={scene} total={SCENES.length} />
+        </div>
+      </div>
+    </div>
+  );
+}
