@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Shield,
@@ -326,15 +327,49 @@ function FeaturePreview({
   stat: string;
   statTip?: string;
 }) {
+  const meta = {
+    fix: { label: "Auto-fix", kicker: "Turn issue reports into execution", accent: "from-emerald-400 to-cyan-300" },
+    citations: { label: "Citation sync", kicker: "Keep local data consistent everywhere", accent: "from-cyan-300 to-emerald-300" },
+    ai: { label: "AI visibility", kicker: "Shape what assistants recommend", accent: "from-emerald-400 to-violet-300" },
+    schema: { label: "Schema deploy", kicker: "Generate and publish structured data", accent: "from-emerald-300 to-sky-300" },
+    content: { label: "Content engine", kicker: "Build pages from real gaps", accent: "from-emerald-400 to-teal-300" },
+    monitor: { label: "Countermoves", kicker: "Answer competitor moves automatically", accent: "from-amber-300 to-emerald-300" },
+  }[preview];
+
   const overlay = (
-    <div className="absolute inset-x-4 bottom-4 z-20 rounded-[22px] border border-white/12 bg-[rgba(7,12,24,0.82)] p-4 backdrop-blur-xl shadow-[0_18px_60px_rgba(6,10,18,0.48)] sm:inset-x-5 sm:bottom-5 sm:p-5">
-      <div className="mb-2 flex items-center gap-2">
-        <Wand2 className="h-4 w-4 text-emerald-400" />
-        <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">Auto-fix available</span>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      className="absolute inset-x-4 bottom-4 z-20 rounded-[22px] border border-white/12 bg-[rgba(7,12,24,0.86)] p-4 backdrop-blur-xl shadow-[0_18px_60px_rgba(6,10,18,0.52)] sm:inset-x-5 sm:bottom-5 sm:p-5"
+    >
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <div className="mb-1 flex items-center gap-2">
+            <Wand2 className="h-4 w-4 text-emerald-400" />
+            <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">{meta.label}</span>
+          </div>
+          <div className="text-[11px] uppercase tracking-[0.16em] text-white/38">{meta.kicker}</div>
+        </div>
+        <motion.div
+          className={`h-2.5 w-2.5 rounded-full bg-gradient-to-r ${meta.accent}`}
+          animate={{ opacity: [0.55, 1, 0.55], scale: [1, 1.18, 1] }}
+          transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
+        />
       </div>
-      <div className="text-base font-semibold text-white sm:text-lg">{stat}</div>
-      {statTip && <p className="mt-2 text-sm leading-6 text-white/68">{statTip}</p>}
-    </div>
+      <div className="text-lg font-semibold leading-tight text-white sm:text-[1.15rem]">{stat}</div>
+      {statTip && <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/68">{statTip}</p>}
+      <div className="mt-3 h-1.5 rounded-full bg-white/8">
+        <motion.div
+          className={`h-1.5 rounded-full bg-gradient-to-r ${meta.accent}`}
+          initial={{ width: "22%" }}
+          whileInView={{ width: "74%" }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.9, ease: "easeOut", delay: 0.15 }}
+        />
+      </div>
+    </motion.div>
   );
 
   const shell = "relative h-full min-h-[320px] overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]";
@@ -344,25 +379,29 @@ function FeaturePreview({
       <div className={shell}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_20%,rgba(16,185,129,0.18),transparent_18%),linear-gradient(180deg,#08111d_0%,#0b1625_100%)]" />
         <div className="absolute inset-0 p-5 sm:p-6">
-          <div className="mb-4 flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+          <motion.div
+            className="mb-4 flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3"
+            animate={{ y: [0, -2, 0] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          >
             <div>
               <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Quick win</div>
               <div className="mt-1 text-sm font-medium text-white">Missing LocalBusiness schema</div>
             </div>
             <div className="rounded-full border border-red-400/20 bg-red-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-red-300">Priority</div>
-          </div>
+          </motion.div>
           <div className="grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
             <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
               <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Recommended fix</div>
               <div className="mt-3 space-y-2 text-sm text-white/75">
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Generate JSON-LD</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Repair directory mismatch</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Deploy to site</div>
+                <motion.div className="flex items-center gap-2" animate={{ opacity: [0.55, 1, 0.55] }} transition={{ repeat: Infinity, duration: 2.6, delay: 0.1 }}><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Generate JSON-LD</motion.div>
+                <motion.div className="flex items-center gap-2" animate={{ opacity: [0.55, 1, 0.55] }} transition={{ repeat: Infinity, duration: 2.6, delay: 0.45 }}><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Repair directory mismatch</motion.div>
+                <motion.div className="flex items-center gap-2" animate={{ opacity: [0.55, 1, 0.55] }} transition={{ repeat: Infinity, duration: 2.6, delay: 0.8 }}><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Deploy to site</motion.div>
               </div>
             </div>
             <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-4">
               <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-300/80">Impact</div>
-              <div className="mt-3 text-3xl font-semibold text-white">+8</div>
+              <motion.div className="mt-3 text-3xl font-semibold text-white" animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 3.2, ease: "easeInOut" }}>+8</motion.div>
               <div className="mt-1 text-xs text-emerald-200/70">visibility points</div>
             </div>
           </div>
@@ -388,7 +427,7 @@ function FeaturePreview({
               ["Bing", "(813) 555-0142", true],
               ["Yelp", "Refreshing", false],
             ].map(([name, value, synced]) => (
-              <div key={name as string} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+              <motion.div key={name as string} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3" animate={{ x: [0, 2, 0] }} transition={{ repeat: Infinity, duration: 4, delay: synced ? 0.1 : 0.6 }}>
                 <div>
                   <div className="text-sm font-medium text-white">{name}</div>
                   <div className="text-xs text-white/45">{value}</div>
@@ -396,7 +435,7 @@ function FeaturePreview({
                 <div className={`rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] ${synced ? "border border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border border-amber-400/20 bg-amber-400/10 text-amber-300"}`}>
                   {synced ? "Synced" : "Queued"}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -420,10 +459,10 @@ function FeaturePreview({
               "Perplexity cites Smith Insurance Agency",
               "Google AI Overview includes Smith Insurance Agency",
             ].map((item) => (
-              <div key={item} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+              <motion.div key={item} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3" animate={{ borderColor: ["rgba(255,255,255,0.08)", "rgba(16,185,129,0.18)", "rgba(255,255,255,0.08)"] }} transition={{ repeat: Infinity, duration: 3.2 }}>
                 <span className="max-w-[75%] text-sm text-white/75">{item}</span>
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -437,22 +476,22 @@ function FeaturePreview({
       <div className={shell}>
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#09111d_0%,#0b1625_100%)]" />
         <div className="absolute inset-0 grid gap-4 p-5 sm:grid-cols-[1fr_0.9fr] sm:p-6">
-          <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+          <motion.div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4" animate={{ y: [0, -2, 0] }} transition={{ repeat: Infinity, duration: 4.2, ease: "easeInOut" }}>
             <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Schema builder</div>
             <div className="mt-3 space-y-2 text-sm text-white/72">
               <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-2">Business Type: InsuranceAgency</div>
               <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-2">Area Served: Tampa, St. Pete, Brandon</div>
               <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-2">SameAs: Google, Yelp, Facebook</div>
             </div>
-          </div>
-          <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-4">
+          </motion.div>
+          <motion.div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-4" animate={{ boxShadow: ["0 0 0 rgba(16,185,129,0)", "0 0 24px rgba(16,185,129,0.08)", "0 0 0 rgba(16,185,129,0)"] }} transition={{ repeat: Infinity, duration: 3.4 }}>
             <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-300/80">Deploy status</div>
             <div className="mt-3 space-y-2 text-sm text-white/75">
               <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> JSON-LD generated</div>
               <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Validation passed</div>
               <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Ready to publish</div>
             </div>
-          </div>
+          </motion.div>
         </div>
         {overlay}
       </div>
@@ -475,7 +514,7 @@ function FeaturePreview({
             </div>
             <div className="text-sm font-medium text-white">Tampa Homeowners Insurance Guide</div>
             <div className="mt-2 h-2 rounded-full bg-white/8">
-              <div className="h-2 w-[78%] rounded-full bg-gradient-to-r from-emerald-400 to-cyan-300" />
+              <motion.div className="h-2 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-300" initial={{ width: "24%" }} animate={{ width: ["24%", "78%", "78%"] }} transition={{ duration: 2.4, ease: "easeOut" }} />
             </div>
             <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[10px] uppercase tracking-[0.16em] text-white/45">
               <div className="rounded-xl border border-white/8 bg-black/20 px-2 py-2">1,247 words</div>
@@ -498,14 +537,14 @@ function FeaturePreview({
           <div className="mt-2 text-sm font-medium text-white">Top competitor launched a new Tampa service page</div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+          <motion.div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4" animate={{ y: [0, -2, 0] }} transition={{ repeat: Infinity, duration: 4.2, ease: "easeInOut" }}>
             <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Detected move</div>
             <div className="mt-3 text-sm text-white/72">Fresh content, new local entities, internal links updated.</div>
-          </div>
-          <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-4">
+          </motion.div>
+          <motion.div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/8 p-4" animate={{ boxShadow: ["0 0 0 rgba(16,185,129,0)", "0 0 24px rgba(16,185,129,0.08)", "0 0 0 rgba(16,185,129,0)"] }} transition={{ repeat: Infinity, duration: 3.2 }}>
             <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-300/80">Countermove ready</div>
             <div className="mt-3 text-sm text-white/80">Generate stronger city page and queue review campaign.</div>
-          </div>
+          </motion.div>
         </div>
       </div>
       {overlay}
