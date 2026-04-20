@@ -28,6 +28,7 @@ import {
   Crosshair,
   Target,
   TrendingUp,
+  Send,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -48,6 +49,8 @@ const navItems = [
   { href: "/gbp-posts", label: "GBP Posts", icon: PenTool },
   { href: "/gbp-health", label: "GBP Connection", icon: Shield },
   { href: "/citations", label: "Citation Control", icon: MapPin },
+  { href: "/nap-push", label: "NAP Push", icon: Send },
+  { href: "/trust-score", label: "Trust Score", icon: Shield },
   { href: "/schema-generator", label: "Schema Generator", icon: Code },
   { href: "/settings/embed", label: "Install on Your Site", icon: Globe },
   { href: "/expansion", label: "Smart Expansion", icon: TrendingUp },
@@ -55,6 +58,7 @@ const navItems = [
   { href: "/serp-features", label: "SERP Optimizer", icon: Target },
   { href: "/ai-overview", label: "AI Overview ⭐", icon: Sparkles },
   { href: "/ai-visibility", label: "AI Scorecard", icon: TrendingUp },
+  { href: "/settings/api-keys", label: "API Keys", icon: Code },
   { href: "/google-business", label: "Google Business", icon: Building2 },
   { href: "/billing", label: "Billing", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings },

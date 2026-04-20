@@ -1,6 +1,8 @@
 /**
  * SyncJob Pipeline — Orchestrates pushing canonical business data to aggregators
  * Handles queueing, execution, retries, logging, and result tracking.
+ * Now persists to Supabase (aggregator_sync_jobs + aggregator_sync_logs)
+ * with in-memory fallback for serverless cold starts.
  */
 
 import { v4 as uuid } from "uuid";
@@ -16,12 +18,63 @@ import type {
 } from "./types";
 import { createAdapter } from "./adapter-registry";
 
-// ─── In-memory job store (swap for DB in production) ─────────────────────
+// ─── In-memory job store (fallback + cache) ─────────────────────
 const jobStore = new Map<string, SyncJob>();
 const logStore = new Map<string, SyncJobLog[]>();
 
 function now(): string {
   return new Date().toISOString();
+}
+
+// ─── Supabase persistence helpers ─────────────────────────────────
+
+async function getSupabase() {
+  try {
+    const { createServerSupabase } = await import("@/lib/supabase/server");
+    return await createServerSupabase();
+  } catch {
+    return null;
+  }
+}
+
+async function persistJob(job: SyncJob) {
+  const supabase = await getSupabase();
+  if (!supabase) return;
+
+  const row = {
+    id: job.id,
+    user_id: job.userId,
+    provider: job.provider,
+    status: job.status,
+    business_data: job.businessData,
+    result: job.result,
+    error: job.error,
+    attempts: job.retryCount,
+    max_retries: job.maxRetries,
+    last_attempt_at: job.startedAt,
+    completed_at: job.completedAt,
+    updated_at: now(),
+  };
+
+  await supabase
+    .from("aggregator_sync_jobs")
+    .upsert(row, { onConflict: "id" });
+}
+
+async function persistLog(jobId: string, level: string, message: string, metadata: Record<string, unknown> = {}) {
+  const supabase = await getSupabase();
+  if (!supabase) return;
+
+  const job = jobStore.get(jobId);
+  if (!job) return;
+
+  await supabase.from("aggregator_sync_logs").insert({
+    job_id: jobId,
+    user_id: job.userId,
+    level,
+    message,
+    data: Object.keys(metadata).length > 0 ? metadata : null,
+  });
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────
@@ -54,6 +107,7 @@ export function queueSyncJob(opts: SyncJobOptions): SyncJob {
   jobStore.set(job.id, job);
   logStore.set(job.id, []);
   addLog(job.id, "info", `Job queued for ${opts.provider}`);
+  void persistJob(job);
   return job;
 }
 
@@ -67,9 +121,7 @@ export async function executeJob(jobId: string): Promise<SyncJob> {
   job.startedAt = now();
   addLog(job.id, "info", "Job execution started");
 
-  // ── Canonical Identity Pre-Sync Validation (Honesty Layer) ───────
-  // Normalize + validate business data before pushing to aggregators.
-  // Never push stale/invalid data.
+  // ── Canonical Identity Pre-Sync Validation ───────
   const canonicalProfile = normalizeBusinessProfile({
     businessName: job.businessData.businessName,
     streetAddress: job.businessData.streetAddress,
@@ -101,10 +153,10 @@ export async function executeJob(jobId: string): Promise<SyncJob> {
     job.error = `Canonical validation failed: ${errors.map((e) => `${e.field}: ${e.message}`).join("; ")}`;
     job.completedAt = now();
     addLog(job.id, "error", `Blocked by canonical validation: ${job.error}`);
+    void persistJob(job);
     return job;
   }
-  addLog(job.id, "info", `Canonical profile validated (hash: ${canonicalProfile.identityHash}), confidence fields: ${canonicalProfile.businessName}, ${canonicalProfile.phone}`);
-  // ── End Pre-Sync Validation ─────────────────────────────────────
+  addLog(job.id, "info", `Canonical profile validated (hash: ${canonicalProfile.identityHash})`);
 
   try {
     const adapter = createAdapter({
@@ -132,6 +184,7 @@ export async function executeJob(jobId: string): Promise<SyncJob> {
     addLog(job.id, "error", `Exception: ${err.message}`);
   }
 
+  void persistJob(job);
   return job;
 }
 
@@ -160,6 +213,7 @@ export function cancelJob(jobId: string): SyncJob {
   job.status = "cancelled";
   job.completedAt = now();
   addLog(job.id, "info", "Job cancelled");
+  void persistJob(job);
   return job;
 }
 
@@ -202,7 +256,7 @@ export async function syncAllProviders(
     })
   );
 
-  const results = await Promise.allSettled(jobs.map((j) => executeJob(j.id)));
+  await Promise.allSettled(jobs.map((j) => executeJob(j.id)));
   return jobs;
 }
 
@@ -212,10 +266,25 @@ function addLog(jobId: string, level: SyncJobLog["level"], message: string, meta
   const logs = logStore.get(jobId) ?? [];
   logs.push({ id: uuid(), jobId, level, message, timestamp: now(), metadata });
   logStore.set(jobId, logs);
+  void persistLog(jobId, level, message, metadata);
 }
 
-/** Stub: In production, fetch encrypted credentials from DB or vault */
-async function getCredentials(_userId: string, _provider: AggregatorProvider): Promise<Record<string, string>> {
-  // Will be replaced with DB lookup via Supabase
-  return {};
+/** Fetch credentials from Supabase aggregator config */
+async function getCredentials(userId: string, provider: AggregatorProvider): Promise<Record<string, string>> {
+  const supabase = await getSupabase();
+  if (!supabase) return {};
+
+  try {
+    const { data } = await supabase
+      .from("aggregator_user_configs")
+      .select("credentials")
+      .eq("user_id", userId)
+      .eq("provider", provider)
+      .eq("enabled", true)
+      .single();
+
+    return data?.credentials ?? {};
+  } catch {
+    return {};
+  }
 }
