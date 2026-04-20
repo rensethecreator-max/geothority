@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Waypoints, Wand2, Radar, Brain, FileText, CheckCircle2, AlertTriangle, ArrowUp, Building2, MapPinned, Sparkles } from "lucide-react";
+import { Waypoints, Wand2, Radar, Brain, FileText, CheckCircle2, AlertTriangle, ArrowUp, Building2, MapPinned, Sparkles, Star } from "lucide-react";
 
 /**
  * AnimatedHero — Cycles through longer story scenes showcasing Geothority's core value.
@@ -10,7 +10,7 @@ import { Waypoints, Wand2, Radar, Brain, FileText, CheckCircle2, AlertTriangle, 
  * No narration, no video — pure React, our actual UI language.
  */
 
-const SCENE_DURATION = 9500; // long enough to actually read the story
+const SCENE_DURATION = 11500; // cinematic pacing, enough time to absorb each beat
 
 // ─── Shared animation variants ────────────────────────────────
 
@@ -533,59 +533,138 @@ function SceneGBP() {
   );
 }
 
-// ─── Scene indicator dots ─────────────────────────────────────
+// ─── Scene 8: Review Momentum ────────────────────────────────
+
+function SceneReviews() {
+  return (
+    <div className="space-y-4">
+      <motion.div
+        className="rounded-xl border border-white/8 bg-white/[0.03] p-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <div className="mb-2 flex items-center gap-2">
+          <Star className="h-3.5 w-3.5 text-amber-400" />
+          <span className="text-[10px] uppercase tracking-[0.18em] text-amber-400/80">Review Momentum</span>
+        </div>
+        <div className="text-sm font-medium text-white">A 5-star review arrives and the follow-up engine stays active</div>
+        <div className="mt-1 text-xs text-white/50">We help generate more trust signals instead of waiting for reviews to happen randomly.</div>
+      </motion.div>
+
+      <motion.div
+        className="grid grid-cols-2 gap-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.1 }}
+      >
+        <motion.div className="rounded-xl border border-white/8 bg-white/[0.02] p-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5 }}>
+          <div className="text-[10px] uppercase tracking-[0.16em] text-white/40 mb-2">New review</div>
+          <div className="flex items-center gap-1 text-amber-400 mb-2">
+            {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-current" />)}
+          </div>
+          <div className="text-xs text-white/70">“Fast, clear, and actually helpful. Best insurance team in Tampa.”</div>
+        </motion.div>
+        <motion.div className="rounded-xl border border-white/8 bg-white/[0.02] p-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.0 }}>
+          <div className="text-[10px] uppercase tracking-[0.16em] text-white/40 mb-2">Automation</div>
+          <div className="space-y-2 text-xs text-white/70">
+            <div className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Response drafted</div>
+            <div className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Review request sequence active</div>
+            <div className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Reputation trend improving</div>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <motion.div
+        className="flex items-center justify-between rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 3.0 }}
+      >
+        <span className="text-xs text-white/60">Review velocity</span>
+        <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1"><ArrowUp className="h-3 w-3" /> +28% this month</span>
+      </motion.div>
+    </div>
+  );
+}
 
 type SceneDefinition = {
+  act: "Diagnose" | "Defend" | "Grow";
   label: string;
   title: string;
   benefit: string;
+  metric: string;
   component: () => JSX.Element;
 };
 
 const SCENES: SceneDefinition[] = [
   {
+    act: "Diagnose",
     label: "Scan",
     title: "See the whole trust stack in one scan",
     benefit: "We surface what is broken, what matters most, and where growth is leaking.",
+    metric: "68+ signals scanned",
     component: SceneScan,
   },
   {
+    act: "Diagnose",
     label: "Fix",
     title: "Turn issues into one-click fixes",
     benefit: "Instead of handing you a report, Geothority does the work and improves the score.",
+    metric: "73 → 81 trust score",
     component: SceneFix,
   },
   {
-    label: "Monitor",
-    title: "Counter competitor moves automatically",
-    benefit: "Every alert turns into a suggested response, not just another notification.",
-    component: SceneMonitor,
-  },
-  {
-    label: "AI",
-    title: "Win the new AI recommendation layer",
-    benefit: "We track whether AI assistants mention you, then generate what improves those answers.",
-    component: SceneAIVisibility,
-  },
-  {
-    label: "Content",
-    title: "Build the exact pages your market is missing",
-    benefit: "Content comes from visibility gaps, not random blogging, so every page has a reason to exist.",
-    component: SceneContent,
-  },
-  {
+    act: "Defend",
     label: "Citations",
     title: "Keep listings consistent everywhere",
     benefit: "Wrong NAP data quietly kills trust. We find drift and push corrections across the ecosystem.",
+    metric: "84% → 97% consistency",
     component: SceneCitations,
   },
   {
+    act: "Defend",
     label: "GBP",
     title: "Keep your Google Business Profile fresh automatically",
     benefit: "Hours, categories, and posts stay current without becoming another weekly task for your team.",
+    metric: "Weekly GBP freshness active",
     component: SceneGBP,
   },
+  {
+    act: "Defend",
+    label: "Monitor",
+    title: "Counter competitor moves automatically",
+    benefit: "Every alert turns into a suggested response, not just another notification.",
+    metric: "+12% visibility lift",
+    component: SceneMonitor,
+  },
+  {
+    act: "Grow",
+    label: "AI",
+    title: "Win the new AI recommendation layer",
+    benefit: "We track whether AI assistants mention you, then generate what improves those answers.",
+    metric: "3/3 AI engines recommending you",
+    component: SceneAIVisibility,
+  },
+  {
+    act: "Grow",
+    label: "Content",
+    title: "Build the exact pages your market is missing",
+    benefit: "Content comes from visibility gaps, not random blogging, so every page has a reason to exist.",
+    metric: "1,247 words generated with local entities",
+    component: SceneContent,
+  },
+  {
+    act: "Grow",
+    label: "Reviews",
+    title: "Keep reputation momentum compounding",
+    benefit: "New reviews become more trust, more social proof, and more signals for Maps and conversions.",
+    metric: "+28% review velocity",
+    component: SceneReviews,
+  },
 ];
+
+const ACTS: SceneDefinition["act"][] = ["Diagnose", "Defend", "Grow"];
 
 function SceneIndicator({ current }: { current: number }) {
   return (
@@ -625,16 +704,37 @@ export function AnimatedHero() {
   return (
     <div className="relative w-full">
       <div className="pointer-events-none absolute inset-x-10 top-6 h-24 rounded-full bg-emerald-400/8 blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-20 top-24 h-40 rounded-full bg-cyan-400/6 blur-3xl" />
 
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0b1322]/92 backdrop-blur-sm shadow-[0_30px_120px_rgba(6,12,24,0.55)]">
-        <div className="flex items-center gap-1.5 border-b border-white/6 bg-white/[0.015] px-4 py-2.5">
+      <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0b1322]/92 backdrop-blur-sm shadow-[0_30px_120px_rgba(6,12,24,0.55)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.10),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_26%)]" />
+
+        <div className="relative flex items-center gap-1.5 border-b border-white/6 bg-white/[0.015] px-4 py-2.5">
           <div className="h-2.5 w-2.5 rounded-full bg-rose-400/50" />
           <div className="h-2.5 w-2.5 rounded-full bg-amber-300/50" />
           <div className="h-2.5 w-2.5 rounded-full bg-emerald-300/50" />
           <div className="ml-3 h-4.5 flex-1 rounded-full bg-white/[0.04]" />
+          <div className="hidden rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-emerald-300 sm:inline-flex">Autonomous local growth</div>
         </div>
 
-        <div className="border-b border-white/6 bg-[linear-gradient(180deg,rgba(16,185,129,0.08),rgba(16,185,129,0.01))] px-6 py-4">
+        <div className="relative border-b border-white/6 bg-[linear-gradient(180deg,rgba(16,185,129,0.08),rgba(16,185,129,0.01))] px-6 py-4">
+          <div className="mb-3 flex flex-wrap gap-2">
+            {ACTS.map((act) => {
+              const active = currentMeta.act === act;
+              return (
+                <div
+                  key={act}
+                  className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] transition-all ${
+                    active
+                      ? "border-emerald-400/35 bg-emerald-400/12 text-emerald-300"
+                      : "border-white/8 bg-white/[0.02] text-white/38"
+                  }`}
+                >
+                  {act}
+                </div>
+              );
+            })}
+          </div>
           <AnimatePresence mode="wait">
             <motion.div
               key={currentMeta.label}
@@ -643,14 +743,14 @@ export function AnimatedHero() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.35 }}
             >
-              <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/80">{currentMeta.label}</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/80">{currentMeta.act} • {currentMeta.label}</div>
               <div className="mt-1 text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">{currentMeta.title}</div>
               <p className="mt-1.5 max-w-2xl text-sm leading-6 text-white/60">{currentMeta.benefit}</p>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        <div className="flex min-h-[470px] flex-col justify-between p-6">
+        <div className="relative flex min-h-[520px] flex-col justify-between p-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={scene}
@@ -663,6 +763,25 @@ export function AnimatedHero() {
               <CurrentScene />
             </motion.div>
           </AnimatePresence>
+
+          <div className="mt-6 grid gap-3 border-t border-white/6 pt-5 sm:grid-cols-4">
+            <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">Current step</div>
+              <div className="mt-1 text-sm font-semibold text-white">{currentMeta.metric}</div>
+            </div>
+            <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">Why it matters</div>
+              <div className="mt-1 text-sm font-semibold text-white">Less manual SEO busywork</div>
+            </div>
+            <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">What changes</div>
+              <div className="mt-1 text-sm font-semibold text-white">Trust, visibility, and conversion signals improve</div>
+            </div>
+            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-3">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/70">Geothority difference</div>
+              <div className="mt-1 text-sm font-semibold text-white">We automate the response, not just the diagnosis</div>
+            </div>
+          </div>
 
           <SceneIndicator current={scene} />
         </div>
