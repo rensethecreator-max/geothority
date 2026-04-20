@@ -2,22 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Waypoints, Wand2, Radar, Brain, FileText, CheckCircle2, AlertTriangle, ArrowUp } from "lucide-react";
+import { Waypoints, Wand2, Radar, Brain, FileText, CheckCircle2, AlertTriangle, ArrowUp, Building2, MapPinned, Sparkles } from "lucide-react";
 
 /**
- * AnimatedHero — Cycles through 5 scenes showcasing Geothority's core value.
+ * AnimatedHero — Cycles through longer story scenes showcasing Geothority's core value.
  * Uses Framer Motion for smooth, controlled animations.
  * No narration, no video — pure React, our actual UI language.
- * 
- * Scenes:
- * 1. Scan starts → Trust Stack score reveals
- * 2. Quick Win → One-click fix → score improves
- * 3. Competitor alert → Counter-move generated
- * 4. AI Visibility → 3/3 platforms recommend you
- * 5. Content gap → Auto-generated city page
  */
 
-const SCENE_DURATION = 5000; // 5 seconds per scene
+const SCENE_DURATION = 9500; // long enough to actually read the story
 
 // ─── Shared animation variants ────────────────────────────────
 
@@ -423,30 +416,198 @@ function SceneContent() {
   );
 }
 
+// ─── Scene 6: Citation Sync ───────────────────────────────────
+
+function SceneCitations() {
+  return (
+    <div className="space-y-4">
+      <motion.div
+        className="rounded-xl border border-amber-400/25 bg-amber-400/5 p-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <MapPinned className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-[10px] uppercase tracking-[0.18em] text-amber-400/80">Citation Drift Found</span>
+        </div>
+        <div className="text-sm font-medium text-white">3 listings show the wrong phone number</div>
+        <div className="text-xs text-white/50 mt-1">Apple Maps, Bing Places, and Yelp are out of sync with Google</div>
+      </motion.div>
+
+      <motion.div
+        className="rounded-xl border border-white/8 bg-white/[0.02] p-4 space-y-2"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.6 }}
+      >
+        {[
+          "Apple Maps updated",
+          "Bing Places corrected",
+          "Yelp submitted for refresh",
+          "Foursquare network push queued",
+        ].map((item, index) => (
+          <motion.div
+            key={item}
+            className="flex items-center justify-between rounded-lg border border-white/8 bg-white/[0.02] px-3 py-2"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 2.1 + index * 0.5 }}
+          >
+            <span className="text-xs text-white/75">{item}</span>
+            <span className="text-[10px] font-semibold text-emerald-400">SYNCED</span>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      <motion.div
+        className="flex items-center justify-between rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 4.4 }}
+      >
+        <span className="text-xs text-white/60">Citation consistency</span>
+        <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+          <ArrowUp className="w-3 h-3" /> 84% → 97%
+        </span>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Scene 7: GBP Automation ─────────────────────────────────
+
+function SceneGBP() {
+  return (
+    <div className="space-y-4">
+      <motion.div
+        className="rounded-xl border border-white/8 bg-white/[0.03] p-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/80">Google Business Profile</span>
+        </div>
+        <div className="text-sm font-medium text-white">Hours, category, and post cadence need attention</div>
+        <div className="text-xs text-white/50 mt-1">We prepare the corrections and publish the update automatically</div>
+      </motion.div>
+
+      <motion.div
+        className="grid grid-cols-2 gap-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.3 }}
+      >
+        <motion.div className="rounded-xl border border-white/8 bg-white/[0.02] p-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.7 }}>
+          <div className="text-[10px] uppercase tracking-[0.16em] text-white/40 mb-2">Auto-correct</div>
+          <div className="space-y-2 text-xs text-white/70">
+            <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Primary category fixed</div>
+            <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Holiday hours updated</div>
+          </div>
+        </motion.div>
+        <motion.div className="rounded-xl border border-white/8 bg-white/[0.02] p-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.2 }}>
+          <div className="text-[10px] uppercase tracking-[0.16em] text-white/40 mb-2">Publish</div>
+          <div className="space-y-2 text-xs text-white/70">
+            <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Spring savings post queued</div>
+            <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Offer CTA linked</div>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <motion.div
+        className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-4"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 3.2 }}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/80">Outcome</span>
+        </div>
+        <div className="text-sm font-semibold text-white">Your profile stays fresh without manual weekly busywork</div>
+        <div className="text-xs text-white/55 mt-1">That means better local trust signals and more map conversions.</div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ─── Scene indicator dots ─────────────────────────────────────
 
-function SceneIndicator({ current, total }: { current: number; total: number }) {
-  const labels = ["Scan", "Fix", "Monitor", "AI", "Content"];
+type SceneDefinition = {
+  label: string;
+  title: string;
+  benefit: string;
+  component: () => JSX.Element;
+};
+
+const SCENES: SceneDefinition[] = [
+  {
+    label: "Scan",
+    title: "See the whole trust stack in one scan",
+    benefit: "We surface what is broken, what matters most, and where growth is leaking.",
+    component: SceneScan,
+  },
+  {
+    label: "Fix",
+    title: "Turn issues into one-click fixes",
+    benefit: "Instead of handing you a report, Geothority does the work and improves the score.",
+    component: SceneFix,
+  },
+  {
+    label: "Monitor",
+    title: "Counter competitor moves automatically",
+    benefit: "Every alert turns into a suggested response, not just another notification.",
+    component: SceneMonitor,
+  },
+  {
+    label: "AI",
+    title: "Win the new AI recommendation layer",
+    benefit: "We track whether AI assistants mention you, then generate what improves those answers.",
+    component: SceneAIVisibility,
+  },
+  {
+    label: "Content",
+    title: "Build the exact pages your market is missing",
+    benefit: "Content comes from visibility gaps, not random blogging, so every page has a reason to exist.",
+    component: SceneContent,
+  },
+  {
+    label: "Citations",
+    title: "Keep listings consistent everywhere",
+    benefit: "Wrong NAP data quietly kills trust. We find drift and push corrections across the ecosystem.",
+    component: SceneCitations,
+  },
+  {
+    label: "GBP",
+    title: "Keep your Google Business Profile fresh automatically",
+    benefit: "Hours, categories, and posts stay current without becoming another weekly task for your team.",
+    component: SceneGBP,
+  },
+];
+
+function SceneIndicator({ current }: { current: number }) {
   return (
-    <div className="flex items-center justify-center gap-2 mt-4">
-      {Array.from({ length: total }).map((_, i) => (
+    <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+      {SCENES.map((scene, i) => (
         <div
-          key={i}
-          className={`h-1.5 rounded-full transition-all duration-500 ${
+          key={scene.label}
+          className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] transition-all duration-500 ${
             i === current
-              ? "w-8 bg-emerald-400"
-              : "w-1.5 bg-white/15"
+              ? "border-emerald-400/35 bg-emerald-400/10 text-emerald-300"
+              : "border-white/8 bg-white/[0.02] text-white/38"
           }`}
-          title={labels[i]}
-        />
+          title={scene.title}
+        >
+          {scene.label}
+        </div>
       ))}
     </div>
   );
 }
 
 // ─── Main Animated Hero Component ─────────────────────────────
-
-const SCENES = [SceneScan, SceneFix, SceneMonitor, SceneAIVisibility, SceneContent];
 
 export function AnimatedHero() {
   const [scene, setScene] = useState(0);
@@ -458,40 +619,52 @@ export function AnimatedHero() {
     return () => clearInterval(timer);
   }, []);
 
-  const CurrentScene = SCENES[scene];
+  const CurrentScene = SCENES[scene].component;
+  const currentMeta = SCENES[scene];
 
   return (
     <div className="relative w-full">
-      {/* Glow effect behind */}
       <div className="pointer-events-none absolute inset-x-10 top-6 h-24 rounded-full bg-emerald-400/8 blur-3xl" />
 
-      {/* Main panel */}
-      <div className="relative rounded-2xl border border-white/10 bg-[#0b1322]/92 backdrop-blur-sm shadow-[0_30px_120px_rgba(6,12,24,0.55)] overflow-hidden">
-        {/* Browser chrome */}
-        <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/6 bg-white/[0.015]">
-          <div className="w-2.5 h-2.5 rounded-full bg-rose-400/50" />
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-300/50" />
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-300/50" />
-          <div className="ml-3 flex-1 h-4.5 rounded-full bg-white/[0.04]" />
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0b1322]/92 backdrop-blur-sm shadow-[0_30px_120px_rgba(6,12,24,0.55)]">
+        <div className="flex items-center gap-1.5 border-b border-white/6 bg-white/[0.015] px-4 py-2.5">
+          <div className="h-2.5 w-2.5 rounded-full bg-rose-400/50" />
+          <div className="h-2.5 w-2.5 rounded-full bg-amber-300/50" />
+          <div className="h-2.5 w-2.5 rounded-full bg-emerald-300/50" />
+          <div className="ml-3 h-4.5 flex-1 rounded-full bg-white/[0.04]" />
         </div>
 
-        {/* Scene content */}
-        <div className="p-6 min-h-[380px] flex flex-col justify-between">
+        <div className="border-b border-white/6 bg-[linear-gradient(180deg,rgba(16,185,129,0.08),rgba(16,185,129,0.01))] px-6 py-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentMeta.label}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/80">{currentMeta.label}</div>
+              <div className="mt-1 text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">{currentMeta.title}</div>
+              <p className="mt-1.5 max-w-2xl text-sm leading-6 text-white/60">{currentMeta.benefit}</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="flex min-h-[470px] flex-col justify-between p-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={scene}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
+              transition={{ duration: 0.45, ease: "easeInOut" }}
               className="flex-1"
             >
               <CurrentScene />
             </motion.div>
           </AnimatePresence>
 
-          {/* Scene indicator */}
-          <SceneIndicator current={scene} total={SCENES.length} />
+          <SceneIndicator current={scene} />
         </div>
       </div>
     </div>
