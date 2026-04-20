@@ -124,6 +124,49 @@ export async function POST(req: NextRequest) {
       topRecommendations,
     };
 
+    // Persist results to ai_visibility_checks for scorecard tracking
+    try {
+      const checkRows = [
+        {
+          user_id: user.id,
+          query,
+          city,
+          vertical: businessType || null,
+          business_name: businessName,
+          engine: "google_ai",
+          found: googleResult.found,
+          mentioned_text: googleResult.mentionedText,
+          snippet: googleResult.snippet?.slice(0, 2000),
+          confidence: googleResult.confidence,
+          is_real: false,
+          competitors: [],
+          check_source: "manual",
+          checked_at: new Date().toISOString(),
+        },
+        ...aiResults
+          .filter((r) => r.status !== "skipped")
+          .map((r) => ({
+            user_id: user.id,
+            query,
+            city,
+            vertical: businessType || null,
+            business_name: businessName,
+            engine: r.engine,
+            found: r.found,
+            mentioned_text: r.mentioned || null,
+            snippet: r.snippet?.slice(0, 2000) || null,
+            confidence: r.confidence || "none",
+            is_real: r.isReal,
+            competitors: r.competitors || [],
+            check_source: "manual" as const,
+            checked_at: new Date().toISOString(),
+          })),
+      ];
+      await supabase.from("ai_visibility_checks").insert(checkRows);
+    } catch (persistErr) {
+      console.error("Failed to persist AI visibility checks:", persistErr);
+    }
+
     // Add cache header for transparency
     const headers = fromCache ? { "X-Cache": "HIT" } : { "X-Cache": "MISS" };
     return NextResponse.json(response, { headers });
