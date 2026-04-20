@@ -717,7 +717,7 @@ export function AnimatedHero() {
           <div className="hidden rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-emerald-300 sm:inline-flex">Autonomous local growth</div>
         </div>
 
-        <div className="relative border-b border-white/6 bg-[linear-gradient(180deg,rgba(16,185,129,0.08),rgba(16,185,129,0.01))] px-6 py-4">
+        <div className="relative min-h-[174px] border-b border-white/6 bg-[linear-gradient(180deg,rgba(16,185,129,0.08),rgba(16,185,129,0.01))] px-6 py-4 sm:min-h-[160px]">
           <div className="mb-3 flex flex-wrap gap-2">
             {ACTS.map((act) => {
               const active = currentMeta.act === act;
@@ -750,40 +750,46 @@ export function AnimatedHero() {
           </AnimatePresence>
         </div>
 
-        <div className="relative flex min-h-[520px] flex-col justify-between p-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={scene}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.45, ease: "easeInOut" }}
-              className="flex-1"
-            >
-              <CurrentScene />
-            </motion.div>
-          </AnimatePresence>
+        <div className="relative flex min-h-[620px] flex-col p-6 sm:min-h-[640px]">
+          <div className="relative h-[320px] sm:h-[340px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={scene}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.45, ease: "easeInOut" }}
+                className="absolute inset-0"
+              >
+                <CurrentScene />
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-          <div className="mt-6 grid gap-3 border-t border-white/6 pt-5 sm:grid-cols-4">
-            <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">Current step</div>
-              <div className="mt-1 text-sm font-semibold text-white">{currentMeta.metric}</div>
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">Why it matters</div>
-              <div className="mt-1 text-sm font-semibold text-white">Less manual SEO busywork</div>
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">What changes</div>
-              <div className="mt-1 text-sm font-semibold text-white">Trust, visibility, and conversion signals improve</div>
-            </div>
-            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-3">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/70">Geothority difference</div>
-              <div className="mt-1 text-sm font-semibold text-white">We automate the response, not just the diagnosis</div>
+          <div className="mt-6 min-h-[152px] border-t border-white/6 pt-5 sm:min-h-[116px]">
+            <div className="grid gap-3 sm:grid-cols-4">
+              <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">Current step</div>
+                <div className="mt-1 text-sm font-semibold text-white">{currentMeta.metric}</div>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">Why it matters</div>
+                <div className="mt-1 text-sm font-semibold text-white">Less manual SEO busywork</div>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-white/35">What changes</div>
+                <div className="mt-1 text-sm font-semibold text-white">Trust, visibility, and conversion signals improve</div>
+              </div>
+              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-3">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/70">Geothority difference</div>
+                <div className="mt-1 text-sm font-semibold text-white">We automate the response, not just the diagnosis</div>
+              </div>
             </div>
           </div>
 
-          <SceneIndicator current={scene} />
+          <div className="mt-5">
+            <SceneIndicator current={scene} />
+          </div>
         </div>
       </div>
     </div>
