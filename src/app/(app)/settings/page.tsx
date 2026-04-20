@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { UserProfile } from "@/lib/types";
 import { PLANS, type PlanKey } from "@/lib/stripe";
 import { DashboardSkeleton } from "@/components/shared/loading-skeleton";
+import { ApiKeyGrid } from "@/components/settings/api-key-grid";
 import {
   CreditCard,
   Link2,
@@ -17,6 +18,7 @@ import {
   AlertTriangle,
   Save,
   Shield,
+  Key,
 } from "lucide-react";
 import {
   type AutomationActionKey,
@@ -197,14 +199,16 @@ function SettingsContent() {
     setTimeout(() => setCmsSaved(false), 3000);
   };
 
+  const [billingAnnual, setBillingAnnual] = useState(false);
+
   const handleUpgrade = async (plan: string) => {
     setUpgradingPlan(plan);
-    trackEvent("upgrade_clicked", { plan, currentPlan: profile?.plan || "free" });
+    trackEvent("upgrade_clicked", { plan, currentPlan: profile?.plan || "free", annual: billingAnnual });
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, annual: billingAnnual }),
       });
 
       if (res.ok) {
@@ -399,30 +403,55 @@ function SettingsContent() {
           </div>
 
           {currentPlan === "free" && (
-            <div className="grid md:grid-cols-3 gap-3">
-              {(Object.keys(PLANS) as PlanKey[]).map((key) => {
-                const plan = PLANS[key];
-                return (
-                  <button
-                    key={key}
-                    onClick={() => handleUpgrade(key)}
-                    disabled={upgradingPlan === key}
-                    className="p-4 bg-[var(--background)] rounded-lg border border-[var(--border)] hover:border-electric-500/50 transition-colors text-left"
-                  >
-                    <div className="font-semibold text-sm">{plan.name}</div>
-                    <div className="text-lg font-bold mt-1">${plan.price}/mo</div>
-                    <div className="flex items-center gap-1 mt-2 text-xs text-electric-500">
-                      {upgradingPlan === key ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <ArrowUpRight className="w-3 h-3" />
+            <>
+              {/* Annual toggle */}
+              <div className="flex items-center gap-3 mb-3">
+                <span className={`text-sm font-medium ${!billingAnnual ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"}`}>Monthly</span>
+                <button
+                  onClick={() => setBillingAnnual(!billingAnnual)}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${billingAnnual ? "bg-emerald-500" : "bg-[var(--muted)]"}`}
+                >
+                  <span className={`absolute top-0.5 ${billingAnnual ? "left-5" : "left-0.5"} w-4 h-4 bg-white rounded-full transition-all shadow-sm`} />
+                </button>
+                <span className={`text-sm font-medium ${billingAnnual ? "text-[var(--foreground)]" : "text-[var(--muted-foreground)]"}`}>
+                  Annual
+                  <span className="ml-1 text-xs text-emerald-500 font-semibold">Save ~17%</span>
+                </span>
+              </div>
+              <div className="grid md:grid-cols-3 gap-3">
+                {(Object.keys(PLANS) as PlanKey[]).map((key) => {
+                  const plan = PLANS[key];
+                  const displayPrice = billingAnnual && plan.annualPrice
+                    ? `$${Math.round(plan.annualPrice / 12)}/mo`
+                    : `$${plan.price}/mo`;
+                  const annualNote = billingAnnual
+                    ? `$${plan.annualPrice}/yr billed annually`
+                    : null;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleUpgrade(key)}
+                      disabled={upgradingPlan === key}
+                      className="p-4 bg-[var(--background)] rounded-lg border border-[var(--border)] hover:border-electric-500/50 transition-colors text-left"
+                    >
+                      <div className="font-semibold text-sm">{plan.name}</div>
+                      <div className="text-lg font-bold mt-1">{displayPrice}</div>
+                      {annualNote && (
+                        <div className="text-xs text-emerald-500 mt-0.5">{annualNote}</div>
                       )}
-                      {upgradingPlan === key ? "Redirecting..." : "Upgrade"}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                      <div className="flex items-center gap-1 mt-2 text-xs text-electric-500">
+                        {upgradingPlan === key ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <ArrowUpRight className="w-3 h-3" />
+                        )}
+                        {upgradingPlan === key ? "Redirecting..." : "Start 14-Day Trial"}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
 
           {currentPlan !== "free" && (
@@ -437,6 +466,23 @@ function SettingsContent() {
               .
             </p>
           )}
+        </div>
+      </div>
+
+      {/* API Key Configuration */}
+      <div className="bg-[var(--card)] rounded-xl border border-[var(--border)]">
+        <div className="p-4 border-b border-[var(--border)] flex items-center gap-2">
+          <Key className="w-4 h-4 text-electric-500" />
+          <h2 className="font-semibold">API Configuration</h2>
+        </div>
+        <div className="p-4 space-y-3">
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Geothority integrates with several services. Keys marked <span className="text-red-400 font-medium">Required</span> are needed for core features. Others enhance specific capabilities.
+          </p>
+          <ApiKeyGrid />
+          <p className="text-xs text-[var(--muted-foreground)] pt-1">
+            API keys are configured via environment variables. See <code className="px-1 py-0.5 bg-[var(--muted)] rounded text-[11px]">.env.example</code> for the full list.
+          </p>
         </div>
       </div>
 

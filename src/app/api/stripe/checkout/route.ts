@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { plan } = await req.json();
+    const { plan, annual } = await req.json();
 
     if (!plan || !PLANS[plan as PlanKey]) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
@@ -21,6 +21,15 @@ export async function POST(req: NextRequest) {
 
     const selectedPlan = PLANS[plan as PlanKey];
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3010";
+
+    // Use annual price ID if requested and available
+    const priceId = annual && selectedPlan.annualPriceId
+      ? selectedPlan.annualPriceId
+      : selectedPlan.priceId;
+
+    if (!priceId) {
+      return NextResponse.json({ error: "Price not configured for this plan" }, { status: 400 });
+    }
 
     // Get or create Stripe customer
     const { data: profile } = await supabase
@@ -49,15 +58,24 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: selectedPlan.priceId,
+          price: priceId,
           quantity: 1,
         },
       ],
-      success_url: `${appUrl}/settings?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      // 14-day free trial — no charge until trial ends
+      subscription_data: {
+        trial_period_days: 14,
+        metadata: {
+          supabase_id: user.id,
+          plan: plan,
+        },
+      },
+      success_url: `${appUrl}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/pricing?canceled=true`,
       metadata: {
         supabase_id: user.id,
         plan: plan,
+        annual: annual ? "true" : "false",
       },
     });
 

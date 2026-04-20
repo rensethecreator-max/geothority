@@ -20,6 +20,7 @@ import { InfoTooltip, LayerInfoTooltip } from "@/components/ui/info-tooltip";
 import Link from "next/link";
 import { StarceptaBanner } from "@/components/upsell/StarceptaBanner";
 import { HealthPulse } from "@/components/dashboard/health-pulse";
+import { SetupChecklist } from "@/components/dashboard/setup-checklist";
 import {
   LineChart,
   Line,
@@ -143,17 +144,60 @@ export default function DashboardPage() {
       );
     }
 
-    // Onboarding done but no scans yet - show empty state
+    // Onboarding done but no scans yet - show guided empty state
     return (
-      <div>
+      <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-        <EmptyState
-          icon={Search}
-          title="No scans yet"
-          description="Run your first website scan to see your Local Trust Stack™ analysis, discover quick wins, and start improving your local search visibility."
-          actionLabel="Run Your First Scan"
-          actionHref="/scan"
-        />
+
+        {/* Hero CTA */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-electric-500/20 via-emerald-500/10 to-transparent border border-electric-500/20 p-8 mb-6">
+          <div className="relative z-10">
+            <h2 className="text-xl font-bold mb-2">Ready to dominate local search?</h2>
+            <p className="text-sm text-[var(--muted-foreground)] mb-5 max-w-lg">
+              Run your first scan to get your 5-Layer Trust Stack™ score, discover quick wins,
+              and start outranking your competitors.
+            </p>
+            <Link
+              href="/scan"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-electric-500 hover:bg-electric-400 text-white rounded-lg text-sm font-semibold transition-colors"
+            >
+              <Search className="w-4 h-4" />
+              Run Your First Scan
+            </Link>
+          </div>
+          <div className="absolute top-4 right-4 w-32 h-32 rounded-full bg-electric-500/5 blur-2xl" />
+        </div>
+
+        {/* What you get cards */}
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="rounded-xl bg-[var(--card)] border border-[var(--border)] p-5">
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3">
+              <Zap className="w-4 h-4 text-emerald-400" />
+            </div>
+            <h3 className="font-semibold text-sm mb-1">Trust Stack Score</h3>
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              5-layer audit covering schema, NAP, content, reviews, and citation health.
+            </p>
+          </div>
+          <div className="rounded-xl bg-[var(--card)] border border-[var(--border)] p-5">
+            <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3">
+              <TrendingUp className="w-4 h-4 text-blue-400" />
+            </div>
+            <h3 className="font-semibold text-sm mb-1">Quick Wins</h3>
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              Prioritized fixes ranked by impact. One click to generate the fix.
+            </p>
+          </div>
+          <div className="rounded-xl bg-[var(--card)] border border-[var(--border)] p-5">
+            <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center mb-3">
+              <Search className="w-4 h-4 text-amber-400" />
+            </div>
+            <h3 className="font-semibold text-sm mb-1">AI Visibility</h3>
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              See if AI assistants like ChatGPT recommend your business to local searchers.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -236,6 +280,9 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {/* API Key Setup Checklist */}
+      <SetupChecklist />
 
       {/* Starcepta Review Cross-Sell Banner */}
       {!bannerDismissed && (

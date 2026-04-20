@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { sendAIVisibilityChangeAlert } from "@/lib/email-alerts";
 
 /**
  * Cron endpoint: Recurring AI visibility checks for all users with query sets.
@@ -100,6 +101,40 @@ export async function POST(req: NextRequest) {
         .from("ai_query_sets")
         .update({ last_checked_at: new Date().toISOString() })
         .eq("id", qs.id);
+    }
+
+    // Send email alerts for AI visibility score changes
+    for (const qs of staleQuerySets) {
+      try {
+        // Get previous and current scorecard
+        const { data: scorecard } = await supabase
+          .from("ai_visibility_scorecards")
+          .select("overall_score, previous_overall_score, score_delta")
+          .eq("user_id", qs.user_id)
+          .single();
+
+        if (scorecard && scorecard.score_delta !== null && scorecard.score_delta !== 0) {
+          // Get user email
+          const { data: authData } = await supabase.auth.admin.getUserById(qs.user_id);
+          const email = authData?.user?.email;
+          const { data: profile } = await supabase.from("business_profiles").select("business_name").eq("user_id", qs.user_id).single();
+
+          if (email) {
+            const prev = scorecard.previous_overall_score ?? 0;
+            const curr = scorecard.overall_score;
+            await sendAIVisibilityChangeAlert(email, profile?.business_name || "Your Business", [
+              {
+                engine: "Overall AI Visibility",
+                previous: `${prev}/100`,
+                current: `${curr}/100`,
+                delta: scorecard.score_delta,
+              },
+            ]);
+          }
+        }
+      } catch (alertErr) {
+        console.error(`[cron/ai-visibility] Email alert failed for ${qs.user_id}:`, alertErr);
+      }
     }
 
     return NextResponse.json({

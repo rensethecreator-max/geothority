@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { getKeysSummary } from "@/lib/api-key-check";
 
 /**
  * GET /api/health
- * Basic health check: DB connectivity, API status, version.
+ * Basic health check: DB connectivity, API key status, version.
  */
 export async function GET() {
-  const checks: Record<string, string> = {
+  const checks: Record<string, string | object> = {
     status: "ok",
     version: process.env.npm_package_version || "0.1.0",
     timestamp: new Date().toISOString(),
@@ -23,19 +24,17 @@ export async function GET() {
     checks.status = "degraded";
   }
 
-  // Check if critical env vars are set (don't leak values)
-  checks.supabaseConfigured = !!(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
-    ? "yes"
-    : "no";
-  checks.stripeConfigured = !!process.env.STRIPE_SECRET_KEY ? "yes" : "no";
-  checks.googleMapsConfigured = !!process.env.GOOGLE_MAPS_API_KEY
-    ? "yes"
-    : "no";
-  checks.openaiConfigured = !!process.env.OPENAI_API_KEY ? "yes" : "no";
-  checks.resendConfigured = !!process.env.RESEND_API_KEY ? "yes" : "no";
+  // API key status summary
+  const keySummary = getKeysSummary();
+  checks.apiKeys = {
+    configured: `${keySummary.configured}/${keySummary.total}`,
+    criticalMissing: keySummary.criticalMissing,
+    recommendedMissing: keySummary.recommendedMissing,
+  };
+
+  if (keySummary.criticalMissing.length > 0) {
+    checks.status = "degraded";
+  }
 
   const statusCode = checks.status === "ok" ? 200 : 503;
   return NextResponse.json(checks, { status: statusCode });

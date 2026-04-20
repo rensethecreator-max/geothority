@@ -6,6 +6,7 @@ import {
   changeToNotification,
   type ProfileAttributeSnapshot,
 } from "@/lib/competitor-change-detection";
+import { sendCompetitorAlerts } from "@/lib/email-alerts";
 
 /**
  * GET /api/cron/competitor-monitoring
@@ -93,6 +94,7 @@ type SnapshotPersistRow = {
 
 type UserContext = {
   userId: string;
+  email: string | null;
   businessName: string | null;
   businessType: string | null;
   location: string | null;
@@ -216,6 +218,8 @@ export async function GET(req: NextRequest) {
         const freshSnapshots = await fetchPreviousSnapshots(supabase, userId);
 
         // ── 3e. Detect changes and generate notifications ───────────
+        const allDetectedChanges: Array<{ title: string; description: string; severity: string }> = [];
+
         for (const comp of competitors) {
           const snapData = freshSnapshots[comp.id];
           if (!snapData?.latest || !snapData?.previous) continue;
@@ -258,6 +262,7 @@ export async function GET(req: NextRequest) {
           }
 
           for (const change of detectedChanges) {
+            allDetectedChanges.push({ title: change.title, description: change.description, severity: change.severity || "info" });
             try {
               const { error: notifError } = await supabase.from("notifications").insert({
                 user_id: userId,
@@ -277,6 +282,15 @@ export async function GET(req: NextRequest) {
               errors.push(`Notification failed for user ${userId}: ${String(notifErr)}`);
             }
           }
+        }
+
+        // Send email alerts for detected changes (batched across all competitors)
+        if (allDetectedChanges.length > 0 && userCtx.email) {
+          await sendCompetitorAlerts(
+            userCtx.email,
+            userCtx.businessName || "Your Business",
+            allDetectedChanges
+          );
         }
 
         usersProcessed++;
@@ -360,8 +374,22 @@ async function getUserContext(
     description: latestScan?.raw_scan_data?.description,
   });
 
+  // Get user email for alert emails
+  let email: string | null = null;
+  try {
+    const adminClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: authData } = await adminClient.auth.admin.getUserById(userId);
+    email = authData?.user?.email ?? null;
+  } catch {
+    // Service role may not be available
+  }
+
   return {
     userId,
+    email,
     businessName,
     businessType,
     location,

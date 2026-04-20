@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createHash } from "crypto";
+import { sendCitationDriftAlert } from "@/lib/email-alerts";
 
 /**
  * GET /api/cron/citation-drift
@@ -160,6 +161,33 @@ export async function GET(req: NextRequest) {
       const { error: notifError } = await supabase.from("notifications").insert(notifications);
       if (notifError) {
         console.error("[cron/citation-drift] Notification insert error:", notifError);
+      }
+
+      // Send email alerts grouped by user
+      const driftByUser = new Map<string, Array<{ directory: string; field: string; expected: string; found: string; severity: string }>>();
+      for (const notif of notifications) {
+        if (!driftByUser.has(notif.user_id)) driftByUser.set(notif.user_id, []);
+        // Parse the notification for drift details
+        driftByUser.get(notif.user_id)!.push({
+          directory: notif.title.replace("Citation drift detected on ", ""),
+          field: "NAP",
+          expected: "Your canonical business info",
+          found: "Potentially outdated listing",
+          severity: notif.type === "warning" ? "warning" : "info",
+        });
+      }
+
+      for (const [userId, drifts] of Array.from(driftByUser.entries())) {
+        try {
+          const { data: authData } = await supabase.auth.admin.getUserById(userId);
+          const email = authData?.user?.email;
+          const { data: profile } = await supabase.from("business_profiles").select("business_name").eq("user_id", userId).single();
+          if (email) {
+            await sendCitationDriftAlert(email, profile?.business_name || "Your Business", drifts);
+          }
+        } catch (emailErr) {
+          console.error(`[cron/citation-drift] Email alert failed for ${userId}:`, emailErr);
+        }
       }
     }
 
