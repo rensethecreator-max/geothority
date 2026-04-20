@@ -50,6 +50,8 @@ interface FixExecutionPlanRow {
   status: FixExecutionPlan["status"];
   created_at: string;
   updated_at: string;
+  layer_scores_before?: Record<string, number>;
+  verification?: PlanVerification;
 }
 
 let planCounter = 0;
@@ -94,6 +96,8 @@ function toPlan(row: FixExecutionPlanRow): FixExecutionPlan {
     failed: row.failed,
     needsInput: row.needs_input,
     status: row.status,
+    layerScoresBefore: row.layer_scores_before,
+    verification: row.verification,
   };
 }
 
@@ -111,6 +115,8 @@ function toRow(plan: FixExecutionPlan): Omit<FixExecutionPlanRow, "updated_at"> 
     needs_input: plan.needsInput,
     status: plan.status,
     created_at: plan.createdAt,
+    layer_scores_before: plan.layerScoresBefore,
+    verification: plan.verification,
   };
 }
 

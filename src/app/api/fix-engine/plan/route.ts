@@ -31,7 +31,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No fix package found. Run fix-all first." }, { status: 404 });
     }
 
-    const plan = await buildExecutionPlan(user.id, scanId, mode, fixPkg.fixes);
+    // Capture layer scores from the original scan for later verification
+    let layerScoresBefore: Record<string, number> | undefined;
+    const { data: scanRow } = await supabase
+      .from("scans")
+      .select("layer_scores")
+      .eq("id", scanId)
+      .eq("user_id", user.id)
+      .single();
+    if (scanRow?.layer_scores) {
+      layerScoresBefore = scanRow.layer_scores as Record<string, number>;
+    }
+
+    const plan = await buildExecutionPlan(user.id, scanId, mode, fixPkg.fixes, layerScoresBefore);
     return NextResponse.json(plan);
   } catch (err) {
     console.error("Fix engine plan error:", err);
