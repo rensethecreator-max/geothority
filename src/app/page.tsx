@@ -336,13 +336,13 @@ function FeaturePreview({
     monitor: { label: "Countermoves", kicker: "Answer competitor moves automatically", accent: "from-amber-300 to-emerald-300" },
   }[preview];
 
-  const overlay = (
+  const FooterCard = () => (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.35 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
-      className="absolute inset-x-4 bottom-4 z-20 rounded-[22px] border border-white/12 bg-[rgba(7,12,24,0.86)] p-4 backdrop-blur-xl shadow-[0_18px_60px_rgba(6,10,18,0.52)] sm:inset-x-5 sm:bottom-5 sm:p-5"
+      className="relative z-10 border-t border-white/8 bg-[rgba(7,12,24,0.96)] px-5 py-4 sm:px-6"
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
@@ -372,13 +372,13 @@ function FeaturePreview({
     </motion.div>
   );
 
-  const shell = "relative h-full min-h-[320px] overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]";
+  const shell = "relative flex h-full min-h-[340px] flex-col overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]";
 
   if (preview === "fix") {
     return (
       <div className={shell}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_20%,rgba(16,185,129,0.18),transparent_18%),linear-gradient(180deg,#08111d_0%,#0b1625_100%)]" />
-        <div className="absolute inset-0 p-5 sm:p-6">
+        <div className="relative flex-1 p-5 sm:p-6">
           <motion.div
             className="mb-4 flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3"
             animate={{ y: [0, -2, 0] }}
@@ -406,7 +406,7 @@ function FeaturePreview({
             </div>
           </div>
         </div>
-        {overlay}
+        <FooterCard />
       </div>
     );
   }
@@ -415,7 +415,7 @@ function FeaturePreview({
     return (
       <div className={shell}>
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#09111d_0%,#0b1625_100%)]" />
-        <div className="absolute inset-0 p-5 sm:p-6">
+        <div className="relative flex-1 p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between">
             <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Directory sync</div>
             <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-emerald-300">Live push</div>
@@ -439,7 +439,7 @@ function FeaturePreview({
             ))}
           </div>
         </div>
-        {overlay}
+        <FooterCard />
       </div>
     );
   }
@@ -448,7 +448,7 @@ function FeaturePreview({
     return (
       <div className={shell}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_18%,rgba(99,102,241,0.18),transparent_18%),linear-gradient(180deg,#08111d_0%,#0a1524_100%)]" />
-        <div className="absolute inset-0 p-5 sm:p-6">
+        <div className="relative flex-1 p-5 sm:p-6">
           <div className="mb-4 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
             <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">AI query</div>
             <div className="mt-2 text-sm font-medium text-white">Best insurance agent in Tampa</div>
@@ -466,7 +466,7 @@ function FeaturePreview({
             ))}
           </div>
         </div>
-        {overlay}
+        <FooterCard />
       </div>
     );
   }
@@ -475,7 +475,7 @@ function FeaturePreview({
     return (
       <div className={shell}>
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#09111d_0%,#0b1625_100%)]" />
-        <div className="absolute inset-0 grid gap-4 p-5 sm:grid-cols-[1fr_0.9fr] sm:p-6">
+        <div className="relative grid flex-1 gap-4 p-5 sm:grid-cols-[1fr_0.9fr] sm:p-6">
           <motion.div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4" animate={{ y: [0, -2, 0] }} transition={{ repeat: Infinity, duration: 4.2, ease: "easeInOut" }}>
             <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Schema builder</div>
             <div className="mt-3 space-y-2 text-sm text-white/72">
@@ -493,7 +493,7 @@ function FeaturePreview({
             </div>
           </motion.div>
         </div>
-        {overlay}
+        <FooterCard />
       </div>
     );
   }
@@ -502,7 +502,7 @@ function FeaturePreview({
     return (
       <div className={shell}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_30%,rgba(16,185,129,0.16),transparent_16%),linear-gradient(180deg,#08111d_0%,#0a1524_100%)]" />
-        <div className="absolute inset-0 p-5 sm:p-6">
+        <div className="relative flex-1 p-5 sm:p-6">
           <div className="mb-4 rounded-2xl border border-amber-400/20 bg-amber-400/8 p-4">
             <div className="text-[10px] uppercase tracking-[0.18em] text-amber-300/80">Visibility gap</div>
             <div className="mt-2 text-sm font-medium text-white">Missing: Tampa homeowners insurance page</div>
@@ -523,7 +523,7 @@ function FeaturePreview({
             </div>
           </div>
         </div>
-        {overlay}
+        <FooterCard />
       </div>
     );
   }
@@ -531,7 +531,7 @@ function FeaturePreview({
   return (
     <div className={shell}>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_24%,rgba(245,158,11,0.12),transparent_16%),linear-gradient(180deg,#08111d_0%,#0a1524_100%)]" />
-      <div className="absolute inset-0 p-5 sm:p-6">
+      <div className="relative flex-1 p-5 sm:p-6">
         <div className="mb-4 rounded-2xl border border-amber-400/20 bg-amber-400/8 p-4">
           <div className="text-[10px] uppercase tracking-[0.18em] text-amber-300/80">Competitor alert</div>
           <div className="mt-2 text-sm font-medium text-white">Top competitor launched a new Tampa service page</div>
@@ -547,7 +547,7 @@ function FeaturePreview({
           </motion.div>
         </div>
       </div>
-      {overlay}
+      <FooterCard />
     </div>
   );
 }
