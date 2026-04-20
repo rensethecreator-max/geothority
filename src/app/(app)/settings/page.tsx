@@ -568,7 +568,7 @@ function SettingsContent() {
         </div>
         <div className="p-4 space-y-3">
           <p className="text-sm text-[var(--muted-foreground)]">
-            Control how Geothority handles each action type. "Auto-apply" executes immediately, "Approval required" waits for your go-ahead, and "Manual only" disables automation entirely.
+            Control how Geothority handles each action type. &quot;Auto-apply&quot; executes immediately, &quot;Approval required&quot; waits for your go-ahead, and &quot;Manual only&quot; disables automation entirely.
           </p>
           {AUTOMATION_ACTIONS.map(({ key, label, description }) => (
             <div key={key} className="flex items-start justify-between gap-4 rounded-lg border border-[var(--border)] p-3">
