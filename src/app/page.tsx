@@ -34,6 +34,25 @@ import { Logo } from "@/components/ui/logo";
 function HeroVideoLoop() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [currentClip, setCurrentClip] = useState(0);
+
+  const clips = [
+    "/hero/scan-fix-monitor.mp4",
+    "/hero/fix.mp4",
+    "/hero/monitor.mp4",
+  ];
+
+  const handleClipEnd = () => {
+    const next = (currentClip + 1) % clips.length;
+    setCurrentClip(next);
+    setVideoLoaded(false);
+  };
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
+  }, [currentClip]);
 
   return (
     <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-[#09111c] border border-white/10 shadow-[0_30px_120px_rgba(6,12,24,0.55)]">
@@ -55,9 +74,10 @@ function HeroVideoLoop() {
         muted
         playsInline
         onLoadedData={() => setVideoLoaded(true)}
+        onEnded={handleClipEnd}
         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
       >
-        <source src="/hero/scan-fix-monitor.mp4" type="video/mp4" />
+        <source src={clips[currentClip]} type="video/mp4" />
       </video>
       {/* Overlay gradient for text readability */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#09111c] via-transparent to-transparent opacity-60" />
