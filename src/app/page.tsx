@@ -134,6 +134,7 @@ const features: {
   ourWay: string;
   stat: string;
   image: string;
+  video?: string;
   note?: string;
   badge?: string;
   statTip?: string;
@@ -148,6 +149,7 @@ const features: {
     stat: "1 click to fix most issues",
     badge: "Only on Geothority",
     image: "/cards/truststack.jpg",
+    video: "/hero/scan-fix-monitor.mp4",
     statTip: "Most SEO tools just list problems. We actually fix them — automatically or with a single click. That's the difference between a report and a solution.",
   },
   {
@@ -159,6 +161,7 @@ const features: {
     ourWay: "Inconsistencies found. Push correct NAP now?",
     stat: "68+ directories covered",
     image: "/cards/audit.jpg",
+    video: "/hero/fix.mp4",
     statTip: "Inconsistent listings confuse Google and hurt your rankings. We verify AND sync — most tools only verify.",
   },
   {
@@ -171,6 +174,7 @@ const features: {
     stat: "3 AI platforms optimized",
     badge: "Only on Geothority",
     image: "/cards/quickwin.jpg",
+    video: "/hero/ai-visibility.mp4",
     statTip: "Tracking your AI score is nice. Generating the content that improves it is better. We do both.",
   },
   {
@@ -193,6 +197,7 @@ const features: {
     ourWay: "Here's what to write, where, and why — generated and ready to publish.",
     stat: "1,200 words in 40 seconds",
     image: "/cards/content.jpg",
+    video: "/hero/content-engine.mp4",
     statTip: "Generic AI content doesn't rank. Our engine writes city-specific pages with real local landmarks and entities — content that Google and AI assistants trust.",
   },
   {
@@ -205,6 +210,7 @@ const features: {
     stat: "Auto-countermove generated",
     badge: "Only on Geothority",
     image: "/cards/watchdog.jpg",
+    video: "/hero/monitor.mp4",
     statTip: "Alerts without actions are just noise. Every competitor alert comes with a recommended counter-move ready to deploy.",
   },
 ];
@@ -648,13 +654,25 @@ export default function HomePage() {
 
                     <BrowserFrame className="h-full">
                       <div className="relative h-full min-h-[280px] overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]">
-                        <Image
-                          src={feature.image}
-                          alt={feature.title}
-                          fill
-                          className="object-cover opacity-78"
-                          sizes="(max-width: 1024px) 100vw, 50vw"
-                        />
+                        {feature.video ? (
+                          <video
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="absolute inset-0 w-full h-full object-cover opacity-70"
+                          >
+                            <source src={feature.video} type="video/mp4" />
+                          </video>
+                        ) : (
+                          <Image
+                            src={feature.image}
+                            alt={feature.title}
+                            fill
+                            className="object-cover opacity-78"
+                            sizes="(max-width: 1024px) 100vw, 50vw"
+                          />
+                        )}
                         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,24,0.15),rgba(8,14,24,0.86))]" />
                         <div className="absolute inset-x-0 bottom-0 p-6">
                           <div className="max-w-md rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-md shadow-[0_18px_60px_rgba(6,10,18,0.38)]">
