@@ -40,6 +40,8 @@ function HeroVideoLoop() {
     "/hero/scan-fix-monitor.mp4",
     "/hero/fix.mp4",
     "/hero/monitor.mp4",
+    "/hero/ai-visibility.mp4",
+    "/hero/content-engine.mp4",
   ];
 
   const handleClipEnd = () => {
