@@ -5,7 +5,7 @@ import { Resend } from "resend";
  * Uses Resend for delivery. All alerts are HTML-formatted.
  */
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM_ADDRESS || "Geothority <alerts@geothority.io>";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
 
@@ -58,7 +58,7 @@ export async function sendCompetitorAlerts(
   `;
 
   try {
-    await resend.emails.send({
+    await resend?.emails?.send({
       from: FROM,
       to: email,
       subject: `Competitor Alert: ${alerts.length} change${alerts.length > 1 ? "s" : ""} detected — ${businessName}`,
@@ -116,7 +116,7 @@ export async function sendCitationDriftAlert(
   `;
 
   try {
-    await resend.emails.send({
+    await resend?.emails?.send({
       from: FROM,
       to: email,
       subject: `Citation Drift: ${drifts.length} inconsistenc${drifts.length > 1 ? "ies" : "y"} found — ${businessName}`,
@@ -169,7 +169,7 @@ export async function sendAIVisibilityChangeAlert(
   `;
 
   try {
-    await resend.emails.send({
+    await resend?.emails?.send({
       from: FROM,
       to: email,
       subject: `AI Visibility: ${changes.some(c => c.delta > 0) ? "gained" : "lost"} ground on ${changes.length} platform${changes.length > 1 ? "s" : ""} — ${businessName}`,
@@ -214,7 +214,7 @@ export async function sendGBPAlert(
   `;
 
   try {
-    await resend.emails.send({
+    await resend?.emails?.send({
       from: FROM,
       to: email,
       subject: `GBP Alert: ${alerts[0].title} — ${businessName}`,

@@ -7,16 +7,18 @@ export const DEFAULT_LLM_MODEL = useOpenRouter
   ? "google/gemini-2.5-flash"
   : "gpt-4o-mini";
 
-export const openai = new OpenAI({
-  apiKey,
-  baseURL: useOpenRouter ? "https://openrouter.ai/api/v1" : undefined,
-  defaultHeaders: useOpenRouter
-    ? {
-        "HTTP-Referer": "https://www.geothority.io",
-        "X-Title": "Geothority",
-      }
-    : undefined,
-});
+export const openai = apiKey
+  ? new OpenAI({
+      apiKey,
+      baseURL: useOpenRouter ? "https://openrouter.ai/api/v1" : undefined,
+      defaultHeaders: useOpenRouter
+        ? {
+            "HTTP-Referer": "https://www.geothority.io",
+            "X-Title": "Geothority",
+          }
+        : undefined,
+    })
+  : null;
 
 export const ACTIVE_LLM_PROVIDER = useOpenRouter ? "openrouter" : "openai";
 
