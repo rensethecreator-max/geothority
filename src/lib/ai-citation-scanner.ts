@@ -6,7 +6,7 @@
 
 const PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions";
 
-export type AIEngine = "chatgpt" | "perplexity" | "claude" | "gemini" | "copilot" | "grok" | "deepseek" | "meta_ai" | "you_com" | "mistral";
+export type AIEngine = "chatgpt" | "perplexity" | "claude" | "gemini" | "copilot" | "grok" | "deepseek" | "meta_ai" | "you_com" | "mistral" | "brave" | "phind" | "iask" | "qwen" | "cohere";
 
 export interface AICheckResult {
   engine: AIEngine;
@@ -818,13 +818,306 @@ async function checkMistral(config: ScanConfig): Promise<AICheckResult> {
   }
 }
 
+// ─── Brave Search AI (via SerpAPI — reuses existing key) ─────────────────────
+
+async function checkBrave(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const serpApiKey = process.env.SERPAPI_KEY;
+
+  if (!serpApiKey) {
+    return {
+      engine: "brave",
+      found: false,
+      mentioned: false,
+      snippet: "SerpAPI key not configured — Brave check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `best ${businessType} in ${city}`;
+  try {
+    const url = `https://serpapi.com/search.json?engine=brave&q=${encodeURIComponent(query)}&api_key=${serpApiKey}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) throw new Error(`SerpAPI Brave error: ${res.statusText}`);
+    const data = await res.json();
+    const organicText = (data.organic_results || []).map((r: any) => `${r.title} ${r.snippet || ""}`).join(" ");
+    const mentioned = checkMentioned(organicText, businessName);
+    const competitors = extractCompetitors(organicText, businessName);
+    return {
+      engine: "brave",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? `Found in Brave Search results for "${query}"` : `Not found in Brave Search results`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "brave",
+      found: false,
+      mentioned: false,
+      snippet: `Brave check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
+// ─── Phind (web search — no API key needed) ───────────────────────────────────
+
+async function checkPhind(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!openrouterKey) {
+    return {
+      engine: "phind",
+      found: false,
+      mentioned: false,
+      snippet: "OpenRouter key not configured — Phind check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `Who are the best ${businessType} in ${city}? List the top 5 with descriptions.`;
+  try {
+    // Phind is code-focused but also answers general queries — proxy via cheap model
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${openrouterKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "deepseek/deepseek-chat",
+        max_tokens: 600,
+        messages: [{ role: "user", content: query }],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`Phind proxy error: ${res.statusText}`);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+    const mentioned = checkMentioned(text, businessName);
+    const competitors = extractCompetitors(text, businessName);
+    return {
+      engine: "phind",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? text.slice(0, 200) : `Not found in Phind response`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "phind",
+      found: false,
+      mentioned: false,
+      snippet: `Phind check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
+// ─── iAsk.ai (web search — no API, uses SerpAPI proxy) ────────────────────────
+
+async function checkIAsk(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!openrouterKey) {
+    return {
+      engine: "iask",
+      found: false,
+      mentioned: false,
+      snippet: "OpenRouter key not configured — iAsk check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `What are the best ${businessType} in ${city}? Recommend the top options.`;
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${openrouterKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "openai/gpt-4o-mini",
+        max_tokens: 600,
+        messages: [{ role: "user", content: query }],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`iAsk proxy error: ${res.statusText}`);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+    const mentioned = checkMentioned(text, businessName);
+    const competitors = extractCompetitors(text, businessName);
+    return {
+      engine: "iask",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? text.slice(0, 200) : `Not found in iAsk.ai response`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "iask",
+      found: false,
+      mentioned: false,
+      snippet: `iAsk check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
+// ─── Qwen / Alibaba (via OpenRouter) ──────────────────────────────────────────
+
+async function checkQwen(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!openrouterKey) {
+    return {
+      engine: "qwen",
+      found: false,
+      mentioned: false,
+      snippet: "OpenRouter key not configured — Qwen check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `Who are the best ${businessType} in ${city}? List the top 5.`;
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${openrouterKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "qwen/qwen3-235b-a22b",
+        max_tokens: 600,
+        messages: [{ role: "user", content: query }],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`Qwen API error: ${res.statusText}`);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+    const mentioned = checkMentioned(text, businessName);
+    const competitors = extractCompetitors(text, businessName);
+    return {
+      engine: "qwen",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? text.slice(0, 200) : `Not found in Qwen response`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "qwen",
+      found: false,
+      mentioned: false,
+      snippet: `Qwen check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
+// ─── Cohere (via OpenRouter) ──────────────────────────────────────────────────
+
+async function checkCohere(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!openrouterKey) {
+    return {
+      engine: "cohere",
+      found: false,
+      mentioned: false,
+      snippet: "OpenRouter key not configured — Cohere check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `Who are the best ${businessType} in ${city}? List the top 5 with brief descriptions.`;
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${openrouterKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "cohere/command-r",
+        max_tokens: 600,
+        messages: [{ role: "user", content: query }],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`Cohere API error: ${res.statusText}`);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+    const mentioned = checkMentioned(text, businessName);
+    const competitors = extractCompetitors(text, businessName);
+    return {
+      engine: "cohere",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? text.slice(0, 200) : `Not found in Cohere response`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "cohere",
+      found: false,
+      mentioned: false,
+      snippet: `Cohere check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
 // ─── Public export ────────────────────────────────────────────────────────────
 
 export async function runAICitationScan(config: ScanConfig): Promise<{
   results: AICheckResult[];
   realApiCount: number;
 }> {
-  const [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi, youCom, mistral] = await Promise.all([
+  const [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi, youCom, mistral, brave, phind, iask, qwen, cohere] = await Promise.all([
     checkChatGPT(config),
     checkPerplexity(config),
     checkClaude(config),
@@ -835,9 +1128,14 @@ export async function runAICitationScan(config: ScanConfig): Promise<{
     checkMetaAI(config),
     checkYouCom(config),
     checkMistral(config),
+    checkBrave(config),
+    checkPhind(config),
+    checkIAsk(config),
+    checkQwen(config),
+    checkCohere(config),
   ]);
 
-  const results = [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi, youCom, mistral];
+  const results = [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi, youCom, mistral, brave, phind, iask, qwen, cohere];
   const realApiCount = results.filter((r) => r.isReal).length;
 
   return { results, realApiCount };

@@ -28,7 +28,7 @@ const comparisons: Record<string, {
       { name: "Built for Insurance Agents", geo: true, comp: false },
     ],
     differentiators: [
-      "Geothority checks if you appear in AI search (ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, and Mistral) - BrightLocal doesn't.",
+      "Geothority checks if you appear in AI search (ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere) - BrightLocal doesn't.",
       "Our Trust Stack framework gives you a single score and prioritized action plan, not a wall of data.",
       "Schema Generator lets you fix technical SEO in 60 seconds - no developer needed.",
     ],

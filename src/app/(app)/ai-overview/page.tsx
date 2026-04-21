@@ -106,6 +106,36 @@ const ENGINE_META: Record<
     color: "text-rose-400",
     glow: "shadow-rose-500/20",
   },
+  brave: {
+    label: "Brave",
+    icon: "🦁",
+    color: "text-amber-500",
+    glow: "shadow-amber-500/20",
+  },
+  phind: {
+    label: "Phind",
+    icon: "🔎",
+    color: "text-violet-400",
+    glow: "shadow-violet-500/20",
+  },
+  iask: {
+    label: "iAsk.ai",
+    icon: "💬",
+    color: "text-lime-400",
+    glow: "shadow-lime-500/20",
+  },
+  qwen: {
+    label: "Qwen",
+    icon: "🐉",
+    color: "text-red-400",
+    glow: "shadow-red-500/20",
+  },
+  cohere: {
+    label: "Cohere",
+    icon: "🧠",
+    color: "text-fuchsia-400",
+    glow: "shadow-fuchsia-500/20",
+  },
 };
 
 const VISIBILITY_STYLES = {
@@ -440,6 +470,8 @@ export default function AiOverviewPage() {
     "Checking Copilot & Grok...",
     "Querying DeepSeek & Meta AI...",
     "Scanning You.com & Mistral...",
+    "Checking Brave & Phind...",
+    "Querying iAsk, Qwen & Cohere...",
     "Analyzing visibility signals...",
   ];
   const [stepIdx, setStepIdx] = useState(0);
@@ -590,7 +622,7 @@ export default function AiOverviewPage() {
             <div>
               <p className="font-semibold text-[var(--foreground)] mb-1">Growth Plan Required</p>
               <p className="text-sm text-[var(--muted-foreground)] mb-3">
-                AI Overview tracking requires the Growth plan or above. Upgrade to see where you rank in ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, and Mistral.
+                AI Overview tracking requires the Growth plan or above. Upgrade to see where you rank in ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere.
               </p>
               <Link
                 href="/billing"
@@ -641,13 +673,13 @@ export default function AiOverviewPage() {
             </div>
           )}
 
-          {/* 11-card grid: Google + 10 AI engines
-              Layout: on mobile 2-col grid, on large 4-col */}
+          {/* 16-card grid: Google + 15 AI engines
+              Layout: on mobile 2-col grid, on large 4-col or 5-col */}
           <div className="space-y-4">
             {/* Google full width */}
             <GoogleResultCard result={result.googleResult} />
 
-            {/* 10 AI engines: 2x2 on mobile, 4-col on large */}
+            {/* 15 AI engines: 2x2 on mobile, 4-col on large */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {result.aiResults.map((r) => (
                 <AIEngineCard key={r.engine} result={r} />

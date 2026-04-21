@@ -97,7 +97,7 @@ const cities: Record<string, {
     faqs: [
       { q: "Is local SEO competitive in Austin?", a: "Increasingly so. Austin's rapid growth means new businesses arrive constantly. Getting your Trust Stack established now - before competition intensifies further - is critical." },
       { q: "How do I rank in Austin suburbs like Cedar Park and Round Rock?", a: "Create separate GBP listings and landing pages for each suburb you serve. Geothority's city page generator creates optimized pages for each location in seconds." },
-      { q: "Does Austin's tech-heavy population affect local SEO?", a: "Yes - Austin searchers are more likely to use AI assistants for local recommendations. Geothority's AI Overview Checker helps you appear in ChatGPT, Perplexity, Claude, Copilot, Grok, Meta AI, You.com, and Mistral results." },
+      { q: "Does Austin's tech-heavy population affect local SEO?", a: "Yes - Austin searchers are more likely to use AI assistants for local recommendations. Geothority's AI Overview Checker helps you appear in ChatGPT, Perplexity, Claude, Copilot, Grok, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere results." },
       { q: "What's the fastest way to rank in Austin?", a: "GBP optimization and citation consistency are the fastest wins in any market. Geothority's Trust Stack scan tells you exactly which quick wins to tackle first." },
       { q: "Can I rank for both 'Austin' and specific neighborhood searches?", a: "Yes. Your main GBP covers Austin broadly. Add neighborhood-specific landing pages for SoCo, East Austin, or wherever you serve to capture those hyperlocal searches." },
     ],
@@ -185,7 +185,7 @@ const cities: Record<string, {
       { q: "Does Geothority cover Atlanta suburbs like Alpharetta and Sandy Springs?", a: "Yes. Create separate GBP listings and landing pages for each suburb. Many suburban Atlanta markets are less competitive than Midtown or Buckhead - easier wins available." },
       { q: "How do I rank across multiple Atlanta neighborhoods?", a: "Create individual landing pages for each area you serve (Buckhead, Midtown, Decatur, etc.) with neighborhood-specific content. Geothority's page generator builds these fast." },
       { q: "What's the biggest local SEO mistake Atlanta businesses make?", a: "Targeting 'Atlanta' broadly instead of their specific neighborhoods. The local pack is hyper-geographic. Geothority's competitor analysis shows exactly who you're up against in each area." },
-      { q: "Is AI search important for Atlanta businesses?", a: "Yes - Atlanta has a large tech-forward professional population that uses AI assistants heavily. Geothority's AI Overview Checker ensures you appear in ChatGPT, Perplexity, Claude, Copilot, Grok, Meta AI, You.com, and Mistral recommendations." },
+      { q: "Is AI search important for Atlanta businesses?", a: "Yes - Atlanta has a large tech-forward professional population that uses AI assistants heavily. Geothority's AI Overview Checker ensures you appear in ChatGPT, Perplexity, Claude, Copilot, Grok, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere recommendations." },
     ],
   },
   "dallas": {
