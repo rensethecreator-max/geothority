@@ -104,6 +104,10 @@ const ENGINE_META: Record<string, { label: string; icon: string; color: string }
   perplexity: { label: "Perplexity", icon: "⚡", color: "text-purple-400" },
   claude: { label: "Claude", icon: "🔶", color: "text-orange-400" },
   gemini: { label: "Gemini", icon: "✨", color: "text-cyan-400" },
+  copilot: { label: "Copilot", icon: "🔷", color: "text-blue-500" },
+  grok: { label: "Grok", icon: "𝕏", color: "text-zinc-300" },
+  deepseek: { label: "DeepSeek", icon: "🐋", color: "text-sky-400" },
+  meta_ai: { label: "Meta AI", icon: "♾️", color: "text-indigo-400" },
 };
 
 const VIS_CONFIG: Record<string, { color: string; bg: string; border: string; label: string }> = {
@@ -280,7 +284,7 @@ export default function AIVisibilityPage() {
           <Sparkles className="w-12 h-12 text-electric-500 mx-auto mb-4" />
           <h2 className="text-lg font-semibold mb-2">No AI Visibility Data Yet</h2>
           <p className="text-sm text-[var(--muted-foreground)] mb-4 max-w-md mx-auto">
-            Run your first AI Overview check to establish your baseline visibility score across all major AI platforms — ChatGPT, Perplexity, Google AI, and Claude.
+            Run your first AI Overview check to establish your baseline visibility score across all major AI platforms — ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, and Meta AI.
           </p>
           <Link
             href="/ai-overview"

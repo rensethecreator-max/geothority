@@ -475,7 +475,7 @@ export default function PricingPage() {
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.aiOverviewChecker} AI search tracker
-                    <GeoTooltip tip="Checks if ChatGPT, Perplexity, Google AI Overviews, and Claude recommend your business when customers search for your services." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                    <GeoTooltip tip="Checks if ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, and Meta AI recommend your business when customers search for your services." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
 
                   {/* Reports */}
@@ -543,7 +543,7 @@ export default function PricingPage() {
                   <SectionHeader label="Content & Search" />
                   <FeatureRow label="Local Page Generation" free="1 / mo" starter="5 / mo" growth="Unlimited" authority="Unlimited" tip="Generate city-specific landing pages, service descriptions, and local content that Google and AI assistants trust. More pages means more local searches you rank for." />
                   <FeatureRow label="Schema Generator" free={true} starter={true} growth={true} authority={true} tip="Schema is the technical code that tells search engines exactly what your business does. Our 3-click wizard generates it for you - no developer needed." />
-                  <FeatureRow label="AI Search Tracker" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="Checks whether ChatGPT, Perplexity, Google AI Overviews, and Claude recommend your business when customers ask. Full + Monitor means we track changes over time and alert you." />
+                  <FeatureRow label="AI Search Tracker" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="Checks whether ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, and Meta AI recommend your business when customers ask. Full + Monitor means we track changes over time and alert you." />
 
                   <SectionHeader label="Monitoring & Alerts" />
                   <FeatureRow label="GBP Monitor" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="Your Google Business Profile is the most important listing you have. We watch it for changes, suspensions, and optimization opportunities so you never lose ground." />

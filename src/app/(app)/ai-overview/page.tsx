@@ -70,6 +70,30 @@ const ENGINE_META: Record<
     color: "text-cyan-400",
     glow: "shadow-cyan-500/20",
   },
+  copilot: {
+    label: "Copilot",
+    icon: "🔷",
+    color: "text-blue-500",
+    glow: "shadow-blue-600/20",
+  },
+  grok: {
+    label: "Grok",
+    icon: "𝕏",
+    color: "text-zinc-300",
+    glow: "shadow-zinc-400/20",
+  },
+  deepseek: {
+    label: "DeepSeek",
+    icon: "🐋",
+    color: "text-sky-400",
+    glow: "shadow-sky-500/20",
+  },
+  meta_ai: {
+    label: "Meta AI",
+    icon: "♾️",
+    color: "text-indigo-400",
+    glow: "shadow-indigo-500/20",
+  },
 };
 
 const VISIBILITY_STYLES = {
@@ -401,6 +425,8 @@ export default function AiOverviewPage() {
     "Querying ChatGPT...",
     "Querying Perplexity...",
     "Querying Claude & Gemini...",
+    "Checking Copilot & Grok...",
+    "Querying DeepSeek & Meta AI...",
     "Analyzing visibility signals...",
   ];
   const [stepIdx, setStepIdx] = useState(0);
@@ -551,7 +577,7 @@ export default function AiOverviewPage() {
             <div>
               <p className="font-semibold text-[var(--foreground)] mb-1">Growth Plan Required</p>
               <p className="text-sm text-[var(--muted-foreground)] mb-3">
-                AI Overview tracking requires the Growth plan or above. Upgrade to see where you rank in ChatGPT, Perplexity, Google AI, and Claude.
+                AI Overview tracking requires the Growth plan or above. Upgrade to see where you rank in ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, and Meta AI.
               </p>
               <Link
                 href="/billing"
@@ -602,13 +628,13 @@ export default function AiOverviewPage() {
             </div>
           )}
 
-          {/* 5-card grid: Google + 4 AI engines
-              Layout: on mobile 2x2 grid for the 4 AI engines + Google full width top */}
+          {/* 9-card grid: Google + 8 AI engines
+              Layout: on mobile 2-col grid, on large 4-col */}
           <div className="space-y-4">
             {/* Google full width */}
             <GoogleResultCard result={result.googleResult} />
 
-            {/* 4 AI engines: 2x2 on mobile, 4-col on large */}
+            {/* 8 AI engines: 2x2 on mobile, 4-col on large */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {result.aiResults.map((r) => (
                 <AIEngineCard key={r.engine} result={r} />

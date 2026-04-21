@@ -170,10 +170,10 @@ const features: {
     icon: Brain,
     title: "AI Assistants Don't Recommend You? We Make Them.",
     description:
-      "ChatGPT, Perplexity, Google AI, and Claude are replacing traditional search. We check if they mention your business — then we generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
+      "ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, and Meta AI are replacing traditional search. We check if they mention your business — then we generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
     theirWay: "Track your AI visibility score.",
     ourWay: "Generate the content that makes AI recommend you.",
-    stat: "4 AI platforms optimized",
+    stat: "8 AI platforms optimized",
     badge: "Only on Geothority",
     image: "/cards/quickwin.jpg",
     preview: "ai",
@@ -252,7 +252,7 @@ const stats = [
   { value: "500+", label: "Insurance professionals" },
   { value: "68+", label: "Authority signals mapped" },
   { value: "90s", label: "Time to first scan" },
-  { value: "4", label: "AI platforms optimized" },
+  { value: "8", label: "AI platforms optimized" },
 ];
 
 const pricingTiers = [
@@ -264,7 +264,7 @@ const pricingTiers = [
 
 const commandMetrics = [
   { label: "Trust Stack", value: "78", detail: "+14 this month", tip: "Your composite Trust Stack score across all 5 authority layers. Higher means more trust signals working for you in local search." },
-  { label: "AI recommendations", value: "4/4", detail: "ChatGPT, Perplexity, Google AI, Claude", tip: "You are recommended by all 4 major AI assistants when customers ask about your services. This is the new frontier of local search." },
+  { label: "AI recommendations", value: "8/8", detail: "ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI", tip: "You are recommended by all 8 major AI assistants when customers ask about your services. This is the new frontier of local search." },
   { label: "Competitor delta", value: "+22", detail: "ahead of local median", tip: "You are 22 points ahead of the average competitor in your market area. A positive delta means you are winning the authority game." },
 ];
 
@@ -799,7 +799,7 @@ export default function HomePage() {
             <div className="mt-8 hidden sm:grid gap-3 grid-cols-3 max-w-2xl">
               <SignalChip label="Issues fixed automatically" value="80%+" tip="4 out of 5 common local SEO issues can be fixed automatically by Geothority — no developer needed." />
               <SignalChip label="Time to first fix" value="60s" tip="From finding the issue to fixing it: about 60 seconds. Other tools just list problems." />
-              <SignalChip label="AI platforms optimized" value="4" tip="We make sure ChatGPT, Perplexity, Google AI Overviews, and Claude recommend your business." />
+              <SignalChip label="AI platforms optimized" value="8" tip="We make sure ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, and Meta AI recommend your business." />
             </div>
 
             <div className="mt-8 grid gap-2 grid-cols-2 sm:hidden">

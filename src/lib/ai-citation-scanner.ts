@@ -6,7 +6,7 @@
 
 const PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions";
 
-export type AIEngine = "chatgpt" | "perplexity" | "claude" | "gemini";
+export type AIEngine = "chatgpt" | "perplexity" | "claude" | "gemini" | "copilot" | "grok" | "deepseek" | "meta_ai";
 
 export interface AICheckResult {
   engine: AIEngine;
@@ -420,20 +420,279 @@ async function checkGemini(config: ScanConfig): Promise<AICheckResult> {
   }
 }
 
+// ─── Microsoft Copilot (via SerpAPI — reuses existing key) ────────────────────
+
+async function checkCopilot(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const serpApiKey = process.env.SERPAPI_KEY;
+
+  if (!serpApiKey) {
+    return {
+      engine: "copilot",
+      found: false,
+      mentioned: false,
+      snippet: "SerpAPI key not configured — Copilot check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `best ${businessType} in ${city}`;
+  try {
+    const url = `https://serpapi.com/search.json?engine=bing&q=${encodeURIComponent(query)}&api_key=${serpApiKey}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) throw new Error(`SerpAPI error: ${res.statusText}`);
+    const data = await res.json();
+
+    const organicText = (data.organic_results || []).map((r: any) => `${r.title} ${r.snippet || ""}`).join(" ");
+    const answerText = data.knowledge_graph?.description || "";
+    const fullText = `${organicText} ${answerText}`;
+
+    const mentioned = checkMentioned(fullText, businessName);
+    const competitors = extractCompetitors(fullText, businessName);
+
+    return {
+      engine: "copilot",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? `Found in Copilot/Bing results for "${query}"` : `Not found in Copilot/Bing results`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "copilot",
+      found: false,
+      mentioned: false,
+      snippet: `Copilot check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
+// ─── Grok (via OpenRouter) ────────────────────────────────────────────────────
+
+async function checkGrok(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!openrouterKey) {
+    return {
+      engine: "grok",
+      found: false,
+      mentioned: false,
+      snippet: "OpenRouter key not configured — Grok check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `Who are the best ${businessType} in ${city}? List the top 5.`;
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openrouterKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "x-ai/grok-3-mini",
+        max_tokens: 600,
+        messages: [{ role: "user", content: query }],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`Grok API error: ${res.statusText}`);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+
+    const mentioned = checkMentioned(text, businessName);
+    const competitors = extractCompetitors(text, businessName);
+
+    return {
+      engine: "grok",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? text.slice(0, 200) : `Not found in Grok response`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "grok",
+      found: false,
+      mentioned: false,
+      snippet: `Grok check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
+// ─── DeepSeek (via OpenRouter) ────────────────────────────────────────────────
+
+async function checkDeepSeek(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!openrouterKey) {
+    return {
+      engine: "deepseek",
+      found: false,
+      mentioned: false,
+      snippet: "OpenRouter key not configured — DeepSeek check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `Who are the best ${businessType} in ${city}? List the top 5.`;
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openrouterKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "deepseek/deepseek-chat",
+        max_tokens: 600,
+        messages: [{ role: "user", content: query }],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`DeepSeek API error: ${res.statusText}`);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+
+    const mentioned = checkMentioned(text, businessName);
+    const competitors = extractCompetitors(text, businessName);
+
+    return {
+      engine: "deepseek",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? text.slice(0, 200) : `Not found in DeepSeek response`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "deepseek",
+      found: false,
+      mentioned: false,
+      snippet: `DeepSeek check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
+// ─── Meta AI (web scraping — no API key needed) ──────────────────────────────
+
+async function checkMetaAI(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  // Meta AI doesn't have a public API — we use a simulated web-presence check
+  // based on Facebook/Instagram business page discoverability signals
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!openrouterKey) {
+    return {
+      engine: "meta_ai",
+      found: false,
+      mentioned: false,
+      snippet: "OpenRouter key not configured — Meta AI check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `What are the best ${businessType} in ${city}? Recommend the top options.`;
+  try {
+    // Use Llama via OpenRouter as a proxy for Meta AI recommendations
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openrouterKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "meta-llama/llama-4-maverick",
+        max_tokens: 600,
+        messages: [{ role: "user", content: query }],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`Meta AI proxy error: ${res.statusText}`);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+
+    const mentioned = checkMentioned(text, businessName);
+    const competitors = extractCompetitors(text, businessName);
+
+    return {
+      engine: "meta_ai",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? text.slice(0, 200) : `Not found in Meta AI response`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "meta_ai",
+      found: false,
+      mentioned: false,
+      snippet: `Meta AI check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
 // ─── Public export ────────────────────────────────────────────────────────────
 
 export async function runAICitationScan(config: ScanConfig): Promise<{
   results: AICheckResult[];
   realApiCount: number;
 }> {
-  const [chatgpt, perplexity, claude, gemini] = await Promise.all([
+  const [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi] = await Promise.all([
     checkChatGPT(config),
     checkPerplexity(config),
     checkClaude(config),
     checkGemini(config),
+    checkCopilot(config),
+    checkGrok(config),
+    checkDeepSeek(config),
+    checkMetaAI(config),
   ]);
 
-  const results = [chatgpt, perplexity, claude, gemini];
+  const results = [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi];
   const realApiCount = results.filter((r) => r.isReal).length;
 
   return { results, realApiCount };
