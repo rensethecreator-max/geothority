@@ -28,13 +28,13 @@ const comparisons: Record<string, {
       { name: "Built for Insurance Agents", geo: true, comp: false },
     ],
     differentiators: [
-      "Geothority checks if you appear in AI search (ChatGPT, Perplexity, Google AI Overviews) - BrightLocal doesn't.",
+      "Geothority checks if you appear in AI search (ChatGPT, Perplexity, Google AI Overviews, and Claude) - BrightLocal doesn't.",
       "Our Trust Stack framework gives you a single score and prioritized action plan, not a wall of data.",
       "Schema Generator lets you fix technical SEO in 60 seconds - no developer needed.",
     ],
     faqs: [
       { q: "Is BrightLocal better for agencies?", a: "BrightLocal has more agency features like white-label reports. Geothority is better for individual businesses who want actionable guidance, not raw data." },
-      { q: "Does BrightLocal check AI search visibility?", a: "No. Geothority is one of the few platforms that checks whether AI assistants like ChatGPT and Perplexity recommend your business." },
+      { q: "Does BrightLocal check AI search visibility?", a: "No. Geothority is one of the few platforms that checks whether AI assistants like ChatGPT, Perplexity, and Claude recommend your business." },
       { q: "Which is more affordable?", a: "Geothority offers a free tier with 3 daily scans. BrightLocal starts at $39/month with no free option." },
       { q: "Can I use both?", a: "Yes, they complement each other. Use BrightLocal for agency reporting and Geothority for AI optimization and Trust Stack scoring." },
       { q: "Which has better citation checking?", a: "Geothority checks 18 directories including Yelp (via API). BrightLocal checks major directories and offers citation building services." },
@@ -60,7 +60,7 @@ const comparisons: Record<string, {
     ],
     differentiators: [
       "Moz Local syncs your listings but doesn't tell you how to rank. Geothority gives you a complete optimization roadmap.",
-      "Geothority's AI Overview Checker is unique - see if ChatGPT and Perplexity recommend you.",
+      "Geothority's AI Overview Checker is unique - see if ChatGPT, Perplexity, and Claude recommend you.",
       "Our content generator creates SEO-optimized city landing pages in seconds.",
     ],
     faqs: [
@@ -96,7 +96,7 @@ const comparisons: Record<string, {
     ],
     faqs: [
       { q: "Is Semrush overkill for local businesses?", a: "Often, yes. Semrush has incredible depth but most local businesses use less than 10% of its features. Geothority gives you exactly what you need." },
-      { q: "Does Semrush check AI search visibility?", a: "Semrush is adding AI features but doesn't specifically check if ChatGPT or Perplexity recommend your business." },
+      { q: "Does Semrush check AI search visibility?", a: "Semrush is adding AI features but doesn't specifically check if ChatGPT, Perplexity, or Claude recommend your business." },
       { q: "Which is easier to use?", a: "Geothority, by far. Scan your site in 90 seconds and get a clear action plan. Semrush has a steep learning curve." },
       { q: "Is Semrush better for keyword research?", a: "Yes, Semrush has the best keyword research tools in the industry. But for local ranking factors (citations, GBP, reviews, schema), Geothority is more focused." },
       { q: "Can I switch from Semrush?", a: "Many of our users switched from Semrush because they wanted local-specific guidance without the complexity. Try Geothority free and compare." },
@@ -159,7 +159,7 @@ const comparisons: Record<string, {
     faqs: [
       { q: "Is Yext worth the price for small businesses?", a: "For a single location, Yext's value proposition is weaker. Geothority offers more actionable local SEO guidance at a fraction of the cost." },
       { q: "What happens if I cancel Yext?", a: "Some listings managed by Yext may revert. Geothority helps you build organic authority that persists even if you cancel." },
-      { q: "Does Yext check AI search?", a: "Yext is building AI features but doesn't specifically check ChatGPT/Perplexity visibility like Geothority does." },
+      { q: "Does Yext check AI search?", a: "Yext is building AI features but doesn't specifically check ChatGPT, Perplexity, or Claude visibility like Geothority does." },
       { q: "Which syncs more directories?", a: "Yext syncs 80+ directories. Geothority checks 18 but focuses on the ones that matter most for local ranking." },
       { q: "Is Geothority easier to use?", a: "Much easier. Scan in 90 seconds, get your Trust Stack score, follow the action plan. No contracts, no setup calls needed." },
     ],

@@ -643,7 +643,7 @@ const SCENES: SceneDefinition[] = [
     label: "AI",
     title: "Win the new AI recommendation layer",
     benefit: "We track whether AI assistants mention you, then generate what improves those answers.",
-    metric: "3/3 AI engines recommending you",
+    metric: "4/4 AI engines recommending you",
     component: SceneAIVisibility,
   },
   {

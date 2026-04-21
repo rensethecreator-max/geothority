@@ -106,7 +106,7 @@ export const LAYER_TOOLTIP_DATA: Record<
   },
   5: {
     what: "Technical signals that help AI assistants recommend your business",
-    why: "ChatGPT, Perplexity, and Google AI Overviews are replacing traditional search. Without proper schema and entity markup, AI won't know you exist.",
+    why: "ChatGPT, Perplexity, Google AI Overviews, and Claude are replacing traditional search. Without proper schema and entity markup, AI won't know you exist.",
     how: "We check for structured data, FAQ schema, entity density, and the signals that get you cited in AI-powered answers.",
   },
 };

@@ -194,7 +194,7 @@ export default function DashboardPage() {
             </div>
             <h3 className="font-semibold text-sm mb-1">AI Visibility</h3>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              See if AI assistants like ChatGPT recommend your business to local searchers.
+              See if AI assistants like ChatGPT and Claude recommend your business to local searchers.
             </p>
           </div>
         </div>

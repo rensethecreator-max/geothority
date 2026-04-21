@@ -551,7 +551,7 @@ export default function AiOverviewPage() {
             <div>
               <p className="font-semibold text-[var(--foreground)] mb-1">Growth Plan Required</p>
               <p className="text-sm text-[var(--muted-foreground)] mb-3">
-                AI Overview tracking requires the Growth plan or above. Upgrade to see where you rank in ChatGPT, Perplexity, and Google AI.
+                AI Overview tracking requires the Growth plan or above. Upgrade to see where you rank in ChatGPT, Perplexity, Google AI, and Claude.
               </p>
               <Link
                 href="/billing"

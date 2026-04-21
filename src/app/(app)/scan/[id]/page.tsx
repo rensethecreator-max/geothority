@@ -186,7 +186,7 @@ function FixCard({ fix }: { fix: FixItem }) {
             <div className="space-y-4">
               <p className="text-xs text-violet-400 font-medium mb-3 flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5" />
-                These changes help AI assistants like ChatGPT and Perplexity recognize and recommend your business.
+                These changes help AI assistants like ChatGPT, Perplexity, and Claude recognize and recommend your business.
               </p>
               {Object.entries(aiParsed).map(([key, val]) => (
                 <div key={key} className="space-y-1">
@@ -818,7 +818,7 @@ export default function ScanResultPage() {
                   <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 font-medium">High Impact</span>
                 </div>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  These changes help AI assistants like ChatGPT and Perplexity recognize and recommend your business. Generate the exact content and schema that <em>makes</em> AI recommend you - not just checks if it does.
+                  These changes help AI assistants like ChatGPT, Perplexity, and Claude recognize and recommend your business. Generate the exact content and schema that <em>makes</em> AI recommend you - not just checks if it does.
                 </p>
                 {aiGroupFixes.map((fix, i) => (
                   <FixCard key={i} fix={fix} />

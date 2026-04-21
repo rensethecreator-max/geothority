@@ -22,7 +22,7 @@ const industries: Record<string, {
     painPoints: [
       {
         title: "You're invisible in AI search",
-        desc: "When someone asks ChatGPT or Perplexity 'who's the best insurance agent near me,' they probably don't see your name. Most agents have zero AI presence.",
+        desc: "When someone asks ChatGPT, Perplexity, or Claude 'who's the best insurance agent near me,' they probably don't see your name. Most agents have zero AI presence.",
       },
       {
         title: "Your Google Business Profile is half-built",

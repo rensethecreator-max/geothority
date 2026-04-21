@@ -7,7 +7,7 @@ import type { ContentType, ContentBrief, LocalRelevanceConfig, AISummarizationCo
 /** System prompt shared across all content generation */
 const BASE_SYSTEM_PROMPT = `You are an expert local SEO content writer. You create high-quality, locally-relevant content that:
 1. Ranks well in traditional search (Google organic + Maps)
-2. Is easily summarized by AI systems (Google AI Overview, ChatGPT, Perplexity)
+2. Is easily summarized by AI systems (Google AI Overview, ChatGPT, Perplexity, and Claude)
 3. Uses natural city mentions tied to real local landmarks and neighborhoods
 4. Includes proper semantic HTML structure and heading hierarchy
 5. Contains trust signals (licensing, experience, local expertise)

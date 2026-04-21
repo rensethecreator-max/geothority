@@ -108,7 +108,7 @@ async function generateAIOptimizationPackage(businessName: string, businessType:
 
   const prompt = `Generate a complete AI Optimization Package for a ${businessType} called "${businessName}" in ${location || "their area"} at ${url}.
 
-This package should help AI assistants like ChatGPT and Perplexity recognize and recommend this business.
+This package should help AI assistants like ChatGPT, Perplexity, and Claude recognize and recommend this business.
 
 Return a JSON object with exactly these keys:
 1. "faqSchema" - JSON-LD FAQPage schema with 8 questions optimized for AI extraction (natural language, full sentences in answers, mention business name and location)

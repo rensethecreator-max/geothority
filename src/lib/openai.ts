@@ -34,7 +34,7 @@ Key concepts you know about:
 - Quick Wins: the single highest-impact fix — most can be auto-fixed with one click
 - Auto-fix: Schema generation, NAP sync, content creation, citation fixes can all be handled automatically
 - Content Adaptation Engine: Analyzes visibility gaps and generates the RIGHT content, not just any content
-- AI Visibility: We check if ChatGPT, Perplexity, and Google AI recommend your business — then generate the content that makes them recommend you
+- AI Visibility: We check if ChatGPT, Perplexity, Google AI, and Claude recommend your business — then generate the content that makes them recommend you
 - Competitor Watchdog: Detects competitor changes AND generates counter-moves ready to deploy
 - Trust Signal Score: 8-signal composite score (Platinum/Gold/Silver/Bronze) — nobody else has this
 - Expansion Intelligence: Impact-scored city/service targets for growth planning
