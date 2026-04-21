@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { Eye, EyeOff, ArrowRight, Mail } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { Logo } from "@/components/ui/logo";
@@ -12,6 +12,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const redirect = searchParams.get("redirect") || "/dashboard";
+  const safeRedirect = redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/dashboard";
   const error = searchParams.get("error");
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
   const supabase = createClient();
@@ -22,12 +23,18 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
+  const authCallbackUrl = useMemo(() => {
+    if (typeof window === "undefined") return undefined;
+    const url = new URL("/api/auth/callback", window.location.origin);
+    url.searchParams.set("redirect", safeRedirect);
+    return url.toString();
+  }, [safeRedirect]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/api/auth/callback?redirect=${redirect}` },
+      options: authCallbackUrl ? { redirectTo: authCallbackUrl } : undefined,
     });
     if (error) { setMessage({ type: "error", text: error.message }); setLoading(false); }
   };
@@ -44,13 +51,13 @@ function LoginForm() {
         setLoading(false);
       } else {
         trackEvent("signin_completed");
-        router.push(redirect);
+        router.push(safeRedirect);
       }
     } else {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/api/auth/callback?redirect=${redirect}` },
+        options: authCallbackUrl ? { emailRedirectTo: authCallbackUrl } : undefined,
       });
       if (error) {
         setMessage({ type: "error", text: error.message });
