@@ -98,21 +98,21 @@ interface VisibilityData {
   engineSummary: Record<string, EngineSummary>;
 }
 
-const ENGINE_META: Record<string, { label: string; icon: string; color: string }> = {
+const ENGINE_META: Record<string, { label: string; icon: string; color: string; note?: string }> = {
   google_ai: { label: "Google AI", icon: "🔍", color: "text-blue-400" },
   chatgpt: { label: "ChatGPT", icon: "🤖", color: "text-emerald-400" },
   perplexity: { label: "Perplexity", icon: "⚡", color: "text-purple-400" },
   claude: { label: "Claude", icon: "🔶", color: "text-orange-400" },
   gemini: { label: "Gemini", icon: "✨", color: "text-cyan-400" },
-  copilot: { label: "Copilot", icon: "🔷", color: "text-blue-500" },
+  copilot: { label: "Copilot", icon: "🔷", color: "text-blue-500", note: "Inferred from Bing" },
   grok: { label: "Grok", icon: "𝕏", color: "text-zinc-300" },
   deepseek: { label: "DeepSeek", icon: "🐋", color: "text-sky-400" },
-  meta_ai: { label: "Meta AI", icon: "♾️", color: "text-indigo-400" },
+  meta_ai: { label: "Meta AI", icon: "♾️", color: "text-indigo-400", note: "Approximation via Llama" },
   you_com: { label: "You.com", icon: "🎯", color: "text-teal-400" },
   mistral: { label: "Mistral", icon: "🌪️", color: "text-rose-400" },
-  brave: { label: "Brave", icon: "🦁", color: "text-amber-500" },
-  phind: { label: "Phind", icon: "🔎", color: "text-violet-400" },
-  iask: { label: "iAsk.ai", icon: "💬", color: "text-lime-400" },
+  brave: { label: "Brave", icon: "🦁", color: "text-amber-500", note: "Inferred from Brave Search" },
+  phind: { label: "Phind", icon: "🔎", color: "text-violet-400", note: "Simulated" },
+  iask: { label: "iAsk.ai", icon: "💬", color: "text-lime-400", note: "Simulated" },
   qwen: { label: "Qwen", icon: "🐉", color: "text-red-400" },
   cohere: { label: "Cohere", icon: "🧠", color: "text-fuchsia-400" },
 };
@@ -166,6 +166,7 @@ function ScoreRing({ score, size = 120 }: { score: number; size?: number }) {
 
 function EngineScoreBar({ engine, score }: { engine: string; score: number }) {
   const meta = ENGINE_META[engine] ?? { label: engine, icon: "📊", color: "text-gray-400" };
+  const note = meta.note;
   const barColor =
     score >= 60 ? "bg-emerald-500" : score >= 35 ? "bg-amber-500" : score >= 10 ? "bg-orange-500" : "bg-red-500/40";
 
@@ -175,6 +176,7 @@ function EngineScoreBar({ engine, score }: { engine: string; score: number }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm font-medium">{meta.label}</span>
+          {note && <span className="text-[9px] text-white/30 italic ml-1">{note}</span>}
           <span className={`text-sm font-bold ${score >= 60 ? "text-emerald-400" : score >= 35 ? "text-amber-400" : score > 0 ? "text-orange-400" : "text-red-400"}`}>
             {score}
           </span>
@@ -471,11 +473,13 @@ export default function AIVisibilityPage() {
           <div className="grid sm:grid-cols-5 gap-3">
             {Object.entries(data.engineSummary).map(([engine, summary]) => {
               const meta = ENGINE_META[engine] ?? { label: engine, icon: "📊", color: "text-gray-400" };
+              const note = meta.note;
               const rate = summary.checks > 0 ? Math.round((summary.found / summary.checks) * 100) : 0;
               return (
                 <div key={engine} className="text-center p-3 rounded-lg border border-[var(--border)]">
                   <div className="text-xl mb-1">{meta.icon}</div>
                   <div className="text-xs font-medium mb-1">{meta.label}</div>
+                  {note && <div className="text-[9px] text-white/30 italic">{note}</div>}
                   <div className={`text-lg font-bold ${rate >= 50 ? "text-emerald-400" : rate > 0 ? "text-amber-400" : "text-red-400"}`}>
                     {rate}%
                   </div>

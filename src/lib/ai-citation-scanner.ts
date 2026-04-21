@@ -376,13 +376,15 @@ async function checkGemini(config: ScanConfig): Promise<AICheckResult> {
   const query = `Who are the best ${businessType} in ${city}? List the top 5 recommendations.`;
 
   try {
+    // Use Gemini 2.0 Flash with Google Search grounding for real-time, cited results
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: query }] }],
+          tools: [{ google_search: {} }],
           generationConfig: { maxOutputTokens: 600, temperature: 0.3 },
         }),
         signal: AbortSignal.timeout(20000),
@@ -1111,11 +1113,152 @@ async function checkCohere(config: ScanConfig): Promise<AICheckResult> {
   }
 }
 
+// ─── AI Recommendation Score ─────────────────────────────────────────────────
+
+export interface AIRecommendationScore {
+  score: number; // 0-100
+  grade: "A+" | "A" | "B+" | "B" | "C+" | "C" | "D" | "F";
+  competitorFrequencyRatio: number; // e.g., 3.4 = competitors recommended 3.4x more often
+  layerScores: {
+    aiSearch: number; // weighted 35% — Google AI Overviews, Perplexity, You.com, Copilot, Brave, Phind
+    llm: number; // weighted 25% — ChatGPT, Claude, Gemini, Grok, DeepSeek, Mistral, Qwen, Cohere
+    influence: number; // weighted 15% — placeholder, always 50 for now
+    google: number; // weighted 25% — Google AI Overviews specifically
+  };
+  details: string; // human-readable summary
+}
+
+const PLATFORM_WEIGHTS: Record<string, number> = {
+  google_ai_overviews: 25,
+  perplexity: 12,
+  chatgpt: 10,
+  claude: 8,
+  gemini: 8,
+  copilot: 7,
+  you_com: 7,
+  grok: 5,
+  brave: 5,
+  deepseek: 4,
+  meta_ai: 4,
+  mistral: 3,
+  phind: 3,
+  iask: 2,
+  qwen: 2,
+  cohere: 3,
+};
+
+const TOTAL_WEIGHT = Object.values(PLATFORM_WEIGHTS).reduce((a, b) => a + b, 0); // ~108
+
+const LAYER_GROUPS: Record<string, (keyof typeof PLATFORM_WEIGHTS)[]> = {
+  aiSearch: ["google_ai_overviews", "perplexity", "you_com", "copilot", "brave", "phind"],
+  llm: ["chatgpt", "claude", "gemini", "grok", "deepseek", "mistral", "qwen", "cohere"],
+  google: ["google_ai_overviews"],
+};
+
+function getGrade(score: number): AIRecommendationScore["grade"] {
+  if (score >= 90) return "A+";
+  if (score >= 80) return "A";
+  if (score >= 70) return "B+";
+  if (score >= 60) return "B";
+  if (score >= 50) return "C+";
+  if (score >= 40) return "C";
+  if (score >= 25) return "D";
+  return "F";
+}
+
+export function calculateAIRecommendationScore(results: AICheckResult[]): AIRecommendationScore {
+  // Map engine names to platform weight keys
+  const engineToKey: Record<string, string> = {
+    chatgpt: "chatgpt",
+    perplexity: "perplexity",
+    claude: "claude",
+    gemini: "gemini",
+    copilot: "copilot",
+    grok: "grok",
+    deepseek: "deepseek",
+    meta_ai: "meta_ai",
+    you_com: "you_com",
+    mistral: "mistral",
+    brave: "brave",
+    phind: "phind",
+    iask: "iask",
+    qwen: "qwen",
+    cohere: "cohere",
+  };
+
+  let earnedWeight = 0;
+  let mentionCount = 0;
+  let nonMentionCount = 0;
+
+  const engineMentioned: Record<string, boolean> = {};
+
+  for (const r of results) {
+    const key = engineToKey[r.engine];
+    if (!key) continue; // skip unknown engines
+    const weight = PLATFORM_WEIGHTS[key] ?? 0;
+    if (r.mentioned) {
+      earnedWeight += weight;
+      mentionCount++;
+      engineMentioned[key] = true;
+    } else {
+      nonMentionCount++;
+      engineMentioned[key] = false;
+    }
+  }
+
+  const rawScore = (earnedWeight / TOTAL_WEIGHT) * 100;
+  const score = Math.round(rawScore * 10) / 10;
+  const grade = getGrade(score);
+
+  // Competitor frequency ratio: non-mentions / mentions, capped at 10
+  const competitorFrequencyRatio =
+    mentionCount === 0
+      ? 10
+      : Math.min(nonMentionCount / mentionCount, 10);
+  const ratioDisplay = Math.round(competitorFrequencyRatio * 10) / 10;
+
+  // Layer scores
+  function calcLayerScore(engines: string[]): number {
+    let earned = 0;
+    let total = 0;
+    for (const eng of engines) {
+      const w = PLATFORM_WEIGHTS[eng as keyof typeof PLATFORM_WEIGHTS];
+      if (w === undefined) continue;
+      total += w;
+      if (engineMentioned[eng]) earned += w;
+    }
+    return total === 0 ? 0 : Math.round((earned / total) * 1000) / 10;
+  }
+
+  const aiSearch = calcLayerScore(LAYER_GROUPS.aiSearch);
+  const llm = calcLayerScore(LAYER_GROUPS.llm);
+  const google = calcLayerScore(LAYER_GROUPS.google);
+
+  const details =
+    competitorFrequencyRatio > 1
+      ? `AI systems are recommending your competitors ${ratioDisplay}x more often than you`
+      : "AI systems recommend you as often as or more than competitors";
+
+  return {
+    score,
+    grade,
+    competitorFrequencyRatio: ratioDisplay,
+    layerScores: {
+      aiSearch,
+      llm,
+      influence: 50, // placeholder
+      google,
+    },
+    details,
+  };
+}
+
 // ─── Public export ────────────────────────────────────────────────────────────
 
 export async function runAICitationScan(config: ScanConfig): Promise<{
   results: AICheckResult[];
   realApiCount: number;
+  recommendationScore: AIRecommendationScore;
 }> {
   const [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi, youCom, mistral, brave, phind, iask, qwen, cohere] = await Promise.all([
     checkChatGPT(config),
@@ -1138,5 +1281,6 @@ export async function runAICitationScan(config: ScanConfig): Promise<{
   const results = [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi, youCom, mistral, brave, phind, iask, qwen, cohere];
   const realApiCount = results.filter((r) => r.isReal).length;
 
-  return { results, realApiCount };
+  const recommendationScore = calculateAIRecommendationScore(results);
+  return { results, realApiCount, recommendationScore };
 }

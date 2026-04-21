@@ -7,6 +7,8 @@ import {
   Search,
   Loader2,
   CheckCircle2,
+  CheckCircle,
+  AlertTriangle,
   XCircle,
   TrendingUp,
   Lightbulb,
@@ -38,7 +40,7 @@ interface AiOverviewResponse {
 
 const ENGINE_META: Record<
   string,
-  { label: string; icon: string; color: string; glow: string }
+  { label: string; icon: string; color: string; glow: string; note?: string }
 > = {
   google: {
     label: "Google AI Overview",
@@ -75,6 +77,7 @@ const ENGINE_META: Record<
     icon: "🔷",
     color: "text-blue-500",
     glow: "shadow-blue-600/20",
+    note: "Inferred from Bing",
   },
   grok: {
     label: "Grok",
@@ -93,6 +96,7 @@ const ENGINE_META: Record<
     icon: "♾️",
     color: "text-indigo-400",
     glow: "shadow-indigo-500/20",
+    note: "Approximation via Llama",
   },
   you_com: {
     label: "You.com",
@@ -111,18 +115,21 @@ const ENGINE_META: Record<
     icon: "🦁",
     color: "text-amber-500",
     glow: "shadow-amber-500/20",
+    note: "Inferred from Brave Search",
   },
   phind: {
     label: "Phind",
     icon: "🔎",
     color: "text-violet-400",
     glow: "shadow-violet-500/20",
+    note: "Simulated",
   },
   iask: {
     label: "iAsk.ai",
     icon: "💬",
     color: "text-lime-400",
     glow: "shadow-lime-500/20",
+    note: "Simulated",
   },
   qwen: {
     label: "Qwen",
@@ -336,6 +343,7 @@ function GoogleResultCard({ result }: { result: GoogleAiOverviewResult }) {
 function AIEngineCard({ result }: { result: AICheckResult }) {
   const [expanded, setExpanded] = useState(false);
   const meta = ENGINE_META[result.engine] || ENGINE_META.chatgpt;
+  const note = meta.note;
   const isFound = result.found;
 
   return (
@@ -356,6 +364,7 @@ function AIEngineCard({ result }: { result: AICheckResult }) {
           <span className="text-xl">{meta.icon}</span>
           <div>
             <h3 className={`font-semibold text-sm ${meta.color}`}>{meta.label}</h3>
+            {note && <span className="text-[9px] text-white/30 italic">{note}</span>}
             {result.status === "checked" && (
               <p className="text-xs text-[var(--muted-foreground)]">
                 Confidence: {result.confidence}
@@ -661,7 +670,7 @@ export default function AiOverviewPage() {
                       ].filter((r) => r.found).length
                     }
                   </strong>{" "}
-                  of 5 AI platforms for &ldquo;{result.query}&rdquo;
+                  of 15 AI platforms for &ldquo;{result.query}&rdquo;
                 </p>
               </div>
               {result.realApiCount > 0 && (
@@ -672,6 +681,31 @@ export default function AiOverviewPage() {
               )}
             </div>
           )}
+
+          {/* Competitor frequency insight */}
+          {(() => {
+            const total = [...result.aiResults, result.googleResult].length;
+            const mentions = [...result.aiResults, result.googleResult].filter(r => r.found).length;
+            const notMentions = total - mentions;
+            const ratio = mentions > 0 ? (notMentions / mentions).toFixed(1) : '∞';
+            return mentions < total ? (
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-amber-400">AI systems are recommending your competitors {ratio}x more often than you</p>
+                  <p className="text-sm text-[var(--muted-foreground)] mt-1">You appear in {mentions} of {total} AI platforms. Your competitors appear in nearly all of them. Below are the specific platforms where you&apos;re missing.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-emerald-400">AI systems recommend you across all platforms</p>
+                  <p className="text-sm text-[var(--muted-foreground)] mt-1">You appear in {mentions} of {total} AI platforms. Keep monitoring to maintain this position.</p>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* 16-card grid: Google + 15 AI engines
               Layout: on mobile 2-col grid, on large 4-col or 5-col */}
