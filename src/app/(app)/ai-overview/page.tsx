@@ -17,7 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import type { AICheckResult } from "@/lib/ai-citation-scanner";
+import type { AICheckResult, AIRecommendationScore } from "@/lib/ai-citation-scanner";
 
 interface GoogleAiOverviewResult {
   source: "google";
@@ -34,6 +34,7 @@ interface AiOverviewResponse {
   googleResult: GoogleAiOverviewResult;
   aiResults: AICheckResult[];
   realApiCount: number;
+  recommendationScore?: AIRecommendationScore;
   overallVisibility: "high" | "medium" | "low" | "none";
   topRecommendations: string[];
 }
@@ -363,8 +364,29 @@ function AIEngineCard({ result }: { result: AICheckResult }) {
         <div className="flex items-center gap-2">
           <span className="text-xl">{meta.icon}</span>
           <div>
-            <h3 className={`font-semibold text-sm ${meta.color}`}>{meta.label}</h3>
-            {note && <span className="text-[9px] text-white/30 italic">{note}</span>}
+            <h3 className={`font-semibold text-sm ${meta.color}`}>
+              {meta.label}
+              {note && (
+                <>
+                  <span className="text-[9px] text-white/30 italic ml-1">({note})</span>
+                  <InfoTooltip
+                    content={
+                      note === "Simulated"
+                        ? `This result is simulated using a similar AI model. ${meta.label} does not offer a public API, so this reflects likely behavior.`
+                        : note === "Inferred from Bing"
+                        ? `Copilot uses Bing search results. This result is based on your visibility in Bing.`
+                        : note === "Inferred from Brave Search"
+                        ? `Brave AI uses Brave search results. This result is based on your visibility in Brave Search.`
+                        : note === "Approximation via Llama"
+                        ? `Meta AI does not offer a public API. This result uses Meta's Llama model as an approximation of Meta AI behavior.`
+                        : note
+                    }
+                    side="top"
+                    iconClassName="w-3 h-3 opacity-40 hover:opacity-100 ml-0.5 inline"
+                  />
+                </>
+              )}
+            </h3>
             {result.status === "checked" && (
               <p className="text-xs text-[var(--muted-foreground)]">
                 Confidence: {result.confidence}
@@ -702,6 +724,97 @@ export default function AiOverviewPage() {
                 <div>
                   <p className="font-semibold text-emerald-400">AI systems recommend you across all platforms</p>
                   <p className="text-sm text-[var(--muted-foreground)] mt-1">You appear in {mentions} of {total} AI platforms. Keep monitoring to maintain this position.</p>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* AI Recommendation Score */}
+          {result.recommendationScore && (() => {
+            const rs = result.recommendationScore;
+            const gradeColors: Record<string, string> = {
+              "A+": "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+              "A": "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+              "B+": "text-teal-400 bg-teal-500/10 border-teal-500/30",
+              "B": "text-teal-400 bg-teal-500/10 border-teal-500/30",
+              "C+": "text-amber-400 bg-amber-500/10 border-amber-500/30",
+              "C": "text-amber-400 bg-amber-500/10 border-amber-500/30",
+              "D": "text-orange-400 bg-orange-500/10 border-orange-500/30",
+              "F": "text-red-400 bg-red-500/10 border-red-500/30",
+            };
+            const gc = gradeColors[rs.grade] || gradeColors["C"];
+            return (
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">AI Recommendation Score</h3>
+                    <InfoTooltip
+                      content="This score measures how often AI systems recommend your business compared to competitors, weighted by platform importance."
+                      side="top"
+                      iconClassName="w-3.5 h-3.5 opacity-40 hover:opacity-100"
+                    />
+                  </div>
+                  <div className={`text-2xl font-bold px-3 py-1 rounded-lg border ${gc}`}>
+                    {rs.grade}
+                  </div>
+                </div>
+
+                {/* Score bar */}
+                <div className="w-full bg-white/5 rounded-full h-2.5 mb-4">
+                  <div
+                    className={`h-2.5 rounded-full transition-all duration-500 ${
+                      rs.score >= 70 ? "bg-emerald-500" : rs.score >= 40 ? "bg-amber-500" : "bg-red-500"
+                    }`}
+                    style={{ width: `${rs.score}%` }}
+                  />
+                </div>
+
+                {/* Breakdown */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                  <div className="rounded-lg bg-white/5 p-2">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="text-[10px] uppercase tracking-wide text-white/50">AI Search</span>
+                      <InfoTooltip
+                        content="These platforms drive the most real-world customer decisions. Missing here has the biggest impact on your business."
+                        side="top"
+                        iconClassName="w-2.5 h-2.5 opacity-30 hover:opacity-80"
+                      />
+                    </div>
+                    <div className="text-lg font-bold text-blue-400">{Math.round(rs.layerScores.aiSearch)}%</div>
+                  </div>
+                  <div className="rounded-lg bg-white/5 p-2">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="text-[10px] uppercase tracking-wide text-white/50">LLM Reach</span>
+                      <InfoTooltip
+                        content="AI assistants like ChatGPT, Claude, and Gemini. Their recommendations influence millions of users daily."
+                        side="top"
+                        iconClassName="w-2.5 h-2.5 opacity-30 hover:opacity-80"
+                      />
+                    </div>
+                    <div className="text-lg font-bold text-purple-400">{Math.round(rs.layerScores.llm)}%</div>
+                  </div>
+                  <div className="rounded-lg bg-white/5 p-2">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="text-[10px] uppercase tracking-wide text-white/50">Google AI</span>
+                      <InfoTooltip
+                        content="Google AI Overviews appears at the top of search results for billions of queries. This is the single most important AI signal."
+                        side="top"
+                        iconClassName="w-2.5 h-2.5 opacity-30 hover:opacity-80"
+                      />
+                    </div>
+                    <div className="text-lg font-bold text-cyan-400">{Math.round(rs.layerScores.google)}%</div>
+                  </div>
+                  <div className="rounded-lg bg-white/5 p-2">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="text-[10px] uppercase tracking-wide text-white/50">Enterprise</span>
+                      <InfoTooltip
+                        content="These platforms have smaller audiences but help reinforce your overall AI visibility and signal trust."
+                        side="top"
+                        iconClassName="w-2.5 h-2.5 opacity-30 hover:opacity-80"
+                      />
+                    </div>
+                    <div className="text-lg font-bold text-rose-400">{Math.round(rs.layerScores.influence)}%</div>
+                  </div>
                 </div>
               </div>
             );

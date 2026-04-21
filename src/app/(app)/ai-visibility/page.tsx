@@ -170,13 +170,32 @@ function EngineScoreBar({ engine, score }: { engine: string; score: number }) {
   const barColor =
     score >= 60 ? "bg-emerald-500" : score >= 35 ? "bg-amber-500" : score >= 10 ? "bg-orange-500" : "bg-red-500/40";
 
+  const getNoteTooltip = (n: string, label: string) => {
+    if (n === "Simulated") return `This result is simulated using a similar AI model. ${label} does not offer a public API, so this reflects likely behavior.`;
+    if (n === "Inferred from Bing") return "Copilot uses Bing search results. This result is based on your visibility in Bing.";
+    if (n === "Inferred from Brave Search") return "Brave AI uses Brave search results. This result is based on your visibility in Brave Search.";
+    if (n === "Approximation via Llama") return "Meta AI does not offer a public API. This result uses Meta's Llama model as an approximation of Meta AI behavior.";
+    return n;
+  };
+
   return (
     <div className="flex items-center gap-3">
       <span className="text-lg w-6 text-center">{meta.icon}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-sm font-medium">{meta.label}</span>
-          {note && <span className="text-[9px] text-white/30 italic ml-1">{note}</span>}
+          <span className="text-sm font-medium flex items-center gap-1">
+            {meta.label}
+            {note && (
+              <>
+                <span className="text-[9px] text-white/30 italic">({note})</span>
+                <InfoTooltip
+                  content={getNoteTooltip(note, meta.label)}
+                  side="top"
+                  iconClassName="w-2.5 h-2.5 opacity-30 hover:opacity-80"
+                />
+              </>
+            )}
+          </span>
           <span className={`text-sm font-bold ${score >= 60 ? "text-emerald-400" : score >= 35 ? "text-amber-400" : score > 0 ? "text-orange-400" : "text-red-400"}`}>
             {score}
           </span>

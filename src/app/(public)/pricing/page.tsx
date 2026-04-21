@@ -465,7 +465,25 @@ export default function PricingPage() {
                     </li>
                   )}
 
-                  {/* AI */}
+                  {/* AI Visibility */}
+                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">AI Visibility</li>
+                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
+                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    15 AI platforms monitored
+                    <GeoTooltip tip="We check if your business appears in ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere. No competitor monitors more than 2-3." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                  </li>
+                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
+                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    Automatic AI fixes
+                    <GeoTooltip tip="We don't just detect problems — we automatically generate and apply fixes including FAQ schema, entity-rich content, structured markup, and GBP posts. Most competitors only show you what's wrong." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                  </li>
+                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
+                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    AI Recommendation Score
+                    <GeoTooltip tip="A weighted A+ through F score measuring how often AI systems recommend your business vs competitors. Know exactly where you stand." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                  </li>
+
+                  {/* Content */}
                   <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">Content & Pages</li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -540,10 +558,15 @@ export default function PricingPage() {
                   <FeatureRow label="Fix This Direct Links" free={true} starter={true} growth={true} authority={true} tip="Every issue we find comes with a one-click link that takes you straight to the fix - no hunting through dashboards or guessing what to do next." />
                   <FeatureRow label="NAP Monitoring" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="NAP stands for Name, Address, Phone. We watch your listings around the clock and alert you the moment something changes - so your info stays consistent everywhere." />
 
+                  <SectionHeader label="AI Visibility" />
+                  <FeatureRow label="15 AI Platforms Monitored" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="We check if your business appears in ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere. No competitor monitors more than 2-3 AI platforms." />
+                  <FeatureRow label="Automatic AI Fixes" free={true} starter={true} growth={true} authority={true} tip="We don't just detect problems — we automatically generate and apply fixes including FAQ schema, entity-rich content, structured markup, and GBP posts. Most competitors only show you what's wrong." />
+                  <FeatureRow label="AI Recommendation Score (A+ to F)" free={true} starter={true} growth={true} authority={true} tip="A weighted scoring system that measures how often AI systems recommend your business vs competitors. Know exactly where you stand in AI-powered search." />
+                  <FeatureRow label="Competitor Frequency Tracking" free={false} starter={true} growth={true} authority={true} tip="See how often AI recommends your competitors vs you — e.g., 'AI systems recommend your competitors 3.4x more often than you.' Emotional urgency that drives action." />
+
                   <SectionHeader label="Content & Search" />
                   <FeatureRow label="Local Page Generation" free="1 / mo" starter="5 / mo" growth="Unlimited" authority="Unlimited" tip="Generate city-specific landing pages, service descriptions, and local content that Google and AI assistants trust. More pages means more local searches you rank for." />
                   <FeatureRow label="Schema Generator" free={true} starter={true} growth={true} authority={true} tip="Schema is the technical code that tells search engines exactly what your business does. Our 3-click wizard generates it for you - no developer needed." />
-                  <FeatureRow label="AI Search Tracker" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="Checks whether ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere recommend your business when customers ask. Full + Monitor means we track changes over time and alert you." />
 
                   <SectionHeader label="Monitoring & Alerts" />
                   <FeatureRow label="GBP Monitor" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="Your Google Business Profile is the most important listing you have. We watch it for changes, suspensions, and optimization opportunities so you never lose ground." />
