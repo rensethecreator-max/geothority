@@ -340,7 +340,7 @@ function SceneAIVisibility() {
         transition={{ delay: 3.0 }}
       >
         <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/70 mb-1">AI Visibility Score</div>
-        <div className="text-3xl font-bold text-emerald-400">3/3</div>
+        <div className="text-3xl font-bold text-emerald-400">4/4</div>
         <div className="text-xs text-white/40 mt-1">All platforms recommend your business</div>
       </motion.div>
     </div>
