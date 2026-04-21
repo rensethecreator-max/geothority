@@ -94,6 +94,18 @@ const ENGINE_META: Record<
     color: "text-indigo-400",
     glow: "shadow-indigo-500/20",
   },
+  you_com: {
+    label: "You.com",
+    icon: "🎯",
+    color: "text-teal-400",
+    glow: "shadow-teal-500/20",
+  },
+  mistral: {
+    label: "Mistral",
+    icon: "🌪️",
+    color: "text-rose-400",
+    glow: "shadow-rose-500/20",
+  },
 };
 
 const VISIBILITY_STYLES = {
@@ -427,6 +439,7 @@ export default function AiOverviewPage() {
     "Querying Claude & Gemini...",
     "Checking Copilot & Grok...",
     "Querying DeepSeek & Meta AI...",
+    "Scanning You.com & Mistral...",
     "Analyzing visibility signals...",
   ];
   const [stepIdx, setStepIdx] = useState(0);
@@ -577,7 +590,7 @@ export default function AiOverviewPage() {
             <div>
               <p className="font-semibold text-[var(--foreground)] mb-1">Growth Plan Required</p>
               <p className="text-sm text-[var(--muted-foreground)] mb-3">
-                AI Overview tracking requires the Growth plan or above. Upgrade to see where you rank in ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, and Meta AI.
+                AI Overview tracking requires the Growth plan or above. Upgrade to see where you rank in ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, and Mistral.
               </p>
               <Link
                 href="/billing"
@@ -628,13 +641,13 @@ export default function AiOverviewPage() {
             </div>
           )}
 
-          {/* 9-card grid: Google + 8 AI engines
+          {/* 11-card grid: Google + 10 AI engines
               Layout: on mobile 2-col grid, on large 4-col */}
           <div className="space-y-4">
             {/* Google full width */}
             <GoogleResultCard result={result.googleResult} />
 
-            {/* 8 AI engines: 2x2 on mobile, 4-col on large */}
+            {/* 10 AI engines: 2x2 on mobile, 4-col on large */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {result.aiResults.map((r) => (
                 <AIEngineCard key={r.engine} result={r} />

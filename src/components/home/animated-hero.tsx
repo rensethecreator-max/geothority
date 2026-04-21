@@ -340,7 +340,7 @@ function SceneAIVisibility() {
         transition={{ delay: 3.0 }}
       >
         <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/70 mb-1">AI Visibility Score</div>
-        <div className="text-3xl font-bold text-emerald-400">8/8</div>
+        <div className="text-3xl font-bold text-emerald-400">10/10</div>
         <div className="text-xs text-white/40 mt-1">All platforms recommend your business</div>
       </motion.div>
     </div>
@@ -643,7 +643,7 @@ const SCENES: SceneDefinition[] = [
     label: "AI",
     title: "Win the new AI recommendation layer",
     benefit: "We track whether AI assistants mention you, then generate what improves those answers.",
-    metric: "8/8 AI engines recommending you",
+    metric: "10/10 AI engines recommending you",
     component: SceneAIVisibility,
   },
   {

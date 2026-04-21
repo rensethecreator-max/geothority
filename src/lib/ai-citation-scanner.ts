@@ -6,7 +6,7 @@
 
 const PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions";
 
-export type AIEngine = "chatgpt" | "perplexity" | "claude" | "gemini" | "copilot" | "grok" | "deepseek" | "meta_ai";
+export type AIEngine = "chatgpt" | "perplexity" | "claude" | "gemini" | "copilot" | "grok" | "deepseek" | "meta_ai" | "you_com" | "mistral";
 
 export interface AICheckResult {
   engine: AIEngine;
@@ -675,13 +675,156 @@ async function checkMetaAI(config: ScanConfig): Promise<AICheckResult> {
   }
 }
 
+// ─── You.com (free API tier) ─────────────────────────────────────────────────
+
+async function checkYouCom(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const youApiKey = process.env.YOU_API_KEY;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!youApiKey && !openrouterKey) {
+    return {
+      engine: "you_com",
+      found: false,
+      mentioned: false,
+      snippet: "You.com API key not configured — check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `best ${businessType} in ${city}`;
+  try {
+    // You.com has a search API — use it if key available, otherwise fall back to OpenRouter
+    if (youApiKey) {
+      const url = `https://api.you.com/search?q=${encodeURIComponent(query)}&api_key=${youApiKey}`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (!res.ok) throw new Error(`You.com API error: ${res.statusText}`);
+      const data = await res.json();
+      const fullText = (data.results || []).map((r: any) => `${r.title} ${r.description || ""}`).join(" ");
+      const mentioned = checkMentioned(fullText, businessName);
+      const competitors = extractCompetitors(fullText, businessName);
+      return {
+        engine: "you_com",
+        found: mentioned,
+        mentioned,
+        snippet: mentioned ? `Found in You.com results for "${query}"` : `Not found in You.com results`,
+        competitors,
+        confidence: mentioned ? "high" : "medium",
+        isReal: true,
+        status: "checked",
+      };
+    } else {
+      // Fallback: use OpenRouter with a You.com-like query
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${openrouterKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "openai/gpt-4o-mini",
+          max_tokens: 600,
+          messages: [{ role: "user", content: `Who are the best ${businessType} in ${city}? List the top 5.` }],
+        }),
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!res.ok) throw new Error(`You.com proxy error: ${res.statusText}`);
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content || "";
+      const mentioned = checkMentioned(text, businessName);
+      const competitors = extractCompetitors(text, businessName);
+      return {
+        engine: "you_com",
+        found: mentioned,
+        mentioned,
+        snippet: mentioned ? text.slice(0, 200) : `Not found in You.com response`,
+        competitors,
+        confidence: mentioned ? "high" : "medium",
+        isReal: true,
+        status: "checked",
+      };
+    }
+  } catch (e: any) {
+    return {
+      engine: "you_com",
+      found: false,
+      mentioned: false,
+      snippet: `You.com check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
+// ─── Mistral (via OpenRouter) ─────────────────────────────────────────────────
+
+async function checkMistral(config: ScanConfig): Promise<AICheckResult> {
+  const { businessName, businessType, city } = config;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!openrouterKey) {
+    return {
+      engine: "mistral",
+      found: false,
+      mentioned: false,
+      snippet: "OpenRouter key not configured — Mistral check skipped.",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "skipped",
+    };
+  }
+
+  const query = `Who are the best ${businessType} in ${city}? List the top 5.`;
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${openrouterKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "mistralai/mistral-small-3.1",
+        max_tokens: 600,
+        messages: [{ role: "user", content: query }],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`Mistral API error: ${res.statusText}`);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+    const mentioned = checkMentioned(text, businessName);
+    const competitors = extractCompetitors(text, businessName);
+    return {
+      engine: "mistral",
+      found: mentioned,
+      mentioned,
+      snippet: mentioned ? text.slice(0, 200) : `Not found in Mistral response`,
+      competitors,
+      confidence: mentioned ? "high" : "medium",
+      isReal: true,
+      status: "checked",
+    };
+  } catch (e: any) {
+    return {
+      engine: "mistral",
+      found: false,
+      mentioned: false,
+      snippet: `Mistral check error: ${e.message}`,
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
+}
+
 // ─── Public export ────────────────────────────────────────────────────────────
 
 export async function runAICitationScan(config: ScanConfig): Promise<{
   results: AICheckResult[];
   realApiCount: number;
 }> {
-  const [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi] = await Promise.all([
+  const [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi, youCom, mistral] = await Promise.all([
     checkChatGPT(config),
     checkPerplexity(config),
     checkClaude(config),
@@ -690,9 +833,11 @@ export async function runAICitationScan(config: ScanConfig): Promise<{
     checkGrok(config),
     checkDeepSeek(config),
     checkMetaAI(config),
+    checkYouCom(config),
+    checkMistral(config),
   ]);
 
-  const results = [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi];
+  const results = [chatgpt, perplexity, claude, gemini, copilot, grok, deepseek, metaAi, youCom, mistral];
   const realApiCount = results.filter((r) => r.isReal).length;
 
   return { results, realApiCount };

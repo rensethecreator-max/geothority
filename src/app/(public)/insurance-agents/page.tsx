@@ -37,7 +37,7 @@ const painPoints = [
   {
     icon: TrendingUp,
     problem: "AI search is sending people to your competitors",
-    solution: "ChatGPT, Perplexity, Claude, Copilot, Grok, DeepSeek, and Meta AI pull from the same signals as Google. Geothority optimizes you for both traditional search and AI discovery simultaneously.",
+    solution: "ChatGPT, Perplexity, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, and Mistral pull from the same signals as Google. Geothority optimizes you for both traditional search and AI discovery simultaneously.",
   },
 ];
 
