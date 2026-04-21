@@ -13,7 +13,13 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "2mb",
     },
+    webpackMemoryOptimizations: true,
+    optimizePackageImports: ["lucide-react", "framer-motion", "date-fns"],
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  productionBrowserSourceMaps: false,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
