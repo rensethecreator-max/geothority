@@ -131,7 +131,7 @@ const faqSchema = {
       name: "Is my data secure with Geothority?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. Geothority uses industry-standard security practices: all data is encrypted at rest and in transit (TLS 1.3), we use Supabase with row-level security for database access control, and we never sell or share your data with third parties. We are SOC 2 compliant and follow the principle of least-privilege for all API access. OAuth tokens for Google Business Profile are stored encrypted and can be revoked at any time from your settings page.",
+        text: "Yes. Geothority uses industry-standard security practices: all data is encrypted at rest and in transit (TLS 1.3), we use Supabase with row-level security for database access control, and we never sell or share your data with third parties. We follow the principle of least-privilege for all API access. OAuth tokens for Google Business Profile are stored encrypted and can be revoked at any time from your settings page.",
       },
     },
     {

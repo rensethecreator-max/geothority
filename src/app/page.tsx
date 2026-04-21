@@ -1192,9 +1192,9 @@ export default function HomePage() {
               <div className="space-y-2.5">
                 <Link href="/pricing" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Pricing</Link>
                 <Link href="/bundle" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Local Dominance Bundle</Link>
-                <Link href="/citations" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Citation Checker</Link>
-                <Link href="/ai-overview" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">AI Overview</Link>
-                <Link href="/schema-generator" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Schema Generator</Link>
+                <Link href="/for/insurance-agents" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Insurance Agents</Link>
+                <Link href="/bundle" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Local Dominance Bundle</Link>
+                <Link href="/faq" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">FAQ</Link>
               </div>
             </div>
             <div>
@@ -1240,7 +1240,7 @@ export default function HomePage() {
           <div className="border-t border-white/5 pt-8 mb-8">
             <h4 className="font-semibold text-sm mb-4 text-gray-400">Our Products</h4>
             <div className="flex flex-col sm:flex-row gap-4">
-              <a href="https://geothority.com" className="flex items-center gap-3 group">
+              <a href="/" className="flex items-center gap-3 group">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-bold">G</span>
                 </div>

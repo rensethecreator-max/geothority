@@ -605,7 +605,7 @@ export default function PricingPage() {
               </div>
               <div className="flex sm:justify-end">
                 <Link
-                  href="/contact"
+                  href="mailto:hello@geothority.io"
                   className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold px-8 py-4 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] transition-all"
                 >
                   Contact Us

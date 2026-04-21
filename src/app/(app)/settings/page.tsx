@@ -458,7 +458,7 @@ function SettingsContent() {
             <p className="text-xs text-[var(--muted-foreground)]">
               To change your plan or cancel, please contact{" "}
               <a
-                href="mailto:will@4minuteworkday.com"
+                href="mailto:hello@geothority.io"
                 className="text-electric-500 hover:underline"
               >
                 support

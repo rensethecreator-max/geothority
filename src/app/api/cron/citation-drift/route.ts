@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
 
   console.log("[cron/citation-drift] Starting drift check");
 

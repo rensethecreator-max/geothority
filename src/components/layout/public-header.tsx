@@ -27,7 +27,7 @@ export function PublicHeader() {
               Features
             </Link>
             <Link
-              href="/insurance-agents"
+              href="/for/insurance-agents"
               className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             >
               Insurance Agents
@@ -76,7 +76,7 @@ export function PublicHeader() {
               Features
             </Link>
             <Link
-              href="/insurance-agents"
+              href="/for/insurance-agents"
               onClick={() => setMobileOpen(false)}
               className="block text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >

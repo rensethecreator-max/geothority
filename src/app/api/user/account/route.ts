@@ -42,7 +42,7 @@ export async function DELETE(req: NextRequest) {
     if (error) {
       console.error("[account-delete] Supabase admin delete error:", error);
       return NextResponse.json(
-        { error: "Failed to delete account. Please contact support@geothority.com." },
+        { error: "Failed to delete account. Please contact hello@geothority.io." },
         { status: 500 }
       );
     }

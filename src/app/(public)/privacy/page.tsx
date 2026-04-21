@@ -85,7 +85,7 @@ export default function PrivacyPage() {
 
             <section>
               <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">9. Contact</h2>
-              <p>For privacy questions, contact us at: <a href="mailto:will@4minuteworkday.com" className="text-emerald-500 hover:underline">will@4minuteworkday.com</a></p>
+              <p>For privacy questions, contact us at: <a href="mailto:hello@geothority.io" className="text-emerald-500 hover:underline">hello@geothority.io</a></p>
             </section>
           </div>
         </div>

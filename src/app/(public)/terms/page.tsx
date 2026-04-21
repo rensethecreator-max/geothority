@@ -88,7 +88,7 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">11. Contact</h2>
-              <p>Questions about these terms? Contact us at: <a href="mailto:will@4minuteworkday.com" className="text-emerald-500 hover:underline">will@4minuteworkday.com</a></p>
+              <p>Questions about these terms? Contact us at: <a href="mailto:hello@geothority.io" className="text-emerald-500 hover:underline">hello@geothority.io</a></p>
             </section>
           </div>
         </div>

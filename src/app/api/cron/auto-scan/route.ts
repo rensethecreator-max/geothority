@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
 
   // Use service client so we can query without user auth context
   const supabase = createServiceClient();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
 
   try {
     // Get all users with scans, grouped by most recent scan

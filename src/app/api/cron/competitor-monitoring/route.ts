@@ -118,7 +118,7 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
 
   const startedAt = new Date().toISOString();
   console.log(`[cron/competitor-monitoring] Starting at ${startedAt}`);
