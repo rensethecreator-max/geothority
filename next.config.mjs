@@ -13,7 +13,6 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "2mb",
     },
-    webpackMemoryOptimizations: true,
     optimizePackageImports: ["lucide-react", "framer-motion", "date-fns"],
   },
   typescript: {

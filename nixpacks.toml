@@ -1,0 +1,10 @@
+[phases.setup]
+
+[phases.install]
+cmd = "npm ci --omit=dev"
+
+[phases.build]
+cmd = "NODE_OPTIONS='--max-old-space-size=768' next build"
+
+[start]
+cmd = "next start"
