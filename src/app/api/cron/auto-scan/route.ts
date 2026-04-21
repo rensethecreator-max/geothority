@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 function buildEmailHtml(params: {
   businessName: string;
@@ -236,7 +236,7 @@ export async function GET(request: NextRequest) {
           scanUrl,
         });
 
-        await resend.emails.send({
+        await resend?.emails?.send({
           from: "Geothority <reports@geothority.com>",
           to: userEmail,
           subject,
