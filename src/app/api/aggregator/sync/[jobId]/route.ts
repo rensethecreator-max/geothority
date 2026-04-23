@@ -6,12 +6,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getJob, getJobLogs, executeJob, retryJob, cancelJob } from "@/lib/aggregator/sync-job";
 
-function getUserId(req: NextRequest): string {
-  return req.headers.get("x-user-id") ?? "anonymous";
-}
+import { getAuthUser } from "@/lib/auth-helpers";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
@@ -19,8 +17,9 @@ export async function GET(
   if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
 
   // Authorization: only own jobs
-  const userId = getUserId(_req);
-  if (job.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
+  if (job.userId !== auth.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const logs = getJobLogs(jobId);
   return NextResponse.json({ job, logs });
@@ -31,10 +30,11 @@ export async function POST(
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
-  const userId = getUserId(req);
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
   const job = getJob(jobId);
   if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
-  if (job.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (job.userId !== auth.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await req.json();
   const action = body.action as string;

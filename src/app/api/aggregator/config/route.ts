@@ -9,22 +9,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserConfig, updateSyncPreferences, setProviderConfig, removeProvider } from "@/lib/aggregator/config-service";
 import { testProviderConnection } from "@/lib/aggregator/config-service";
 import type { AggregatorProvider, SyncFrequency } from "@/lib/aggregator/types";
-
-function getUserId(req: NextRequest): string {
-  // Stub: extract from auth session
-  return req.headers.get("x-user-id") ?? "anonymous";
-}
+import { getAuthUser } from "@/lib/auth-helpers";
 
 /** GET — Retrieve user config */
 export async function GET(req: NextRequest) {
-  const userId = getUserId(req);
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
+  const userId = auth.user.id;
   const config = getUserConfig(userId);
   return NextResponse.json(config);
 }
 
 /** POST — Update preferences or provider config */
 export async function POST(req: NextRequest) {
-  const userId = getUserId(req);
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
+  const userId = auth.user.id;
   const body = await req.json();
 
   // Provider-level operation

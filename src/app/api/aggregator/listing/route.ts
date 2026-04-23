@@ -8,13 +8,13 @@ import { getUserConfig } from "@/lib/aggregator/config-service";
 import { createAdapter } from "@/lib/aggregator/adapter-registry";
 import type { AggregatorProvider } from "@/lib/aggregator/types";
 
-function getUserId(req: NextRequest): string {
-  return req.headers.get("x-user-id") ?? "anonymous";
-}
+import { getAuthUser } from "@/lib/auth-helpers";
 
 /** GET ?provider=semrush&businessId=abc123 */
 export async function GET(req: NextRequest) {
-  const userId = getUserId(req);
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
+  const userId = auth.user.id;
   const { searchParams } = new URL(req.url);
   const provider = searchParams.get("provider") as AggregatorProvider | null;
   const businessId = searchParams.get("businessId");
@@ -43,7 +43,9 @@ export async function GET(req: NextRequest) {
 
 /** POST { action: "delete", provider, businessId } */
 export async function POST(req: NextRequest) {
-  const userId = getUserId(req);
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
+  const userId = auth.user.id;
   const body = await req.json();
   const { action, provider, businessId } = body as {
     action: string;

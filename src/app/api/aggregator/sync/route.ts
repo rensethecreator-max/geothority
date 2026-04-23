@@ -16,13 +16,13 @@ import {
 } from "@/lib/aggregator/sync-job";
 import type { AggregatorProvider, CanonicalBusinessData } from "@/lib/aggregator/types";
 
-function getUserId(req: NextRequest): string {
-  return req.headers.get("x-user-id") ?? "anonymous";
-}
+import { getAuthUser } from "@/lib/auth-helpers";
 
 /** GET — List jobs or get a specific job */
 export async function GET(req: NextRequest) {
-  const userId = getUserId(req);
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
+  const userId = auth.user.id;
   const { searchParams } = new URL(req.url);
   const jobId = searchParams.get("jobId");
 
@@ -40,7 +40,9 @@ export async function GET(req: NextRequest) {
 
 /** POST — Queue, execute, retry, or cancel a sync job */
 export async function POST(req: NextRequest) {
-  const userId = getUserId(req);
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
+  const userId = auth.user.id;
   const body = await req.json();
 
   // Sync to all providers

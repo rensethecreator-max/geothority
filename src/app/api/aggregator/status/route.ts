@@ -10,14 +10,14 @@ import { healthCheckAll, getUserConfig } from "@/lib/aggregator/config-service";
 import { listJobs } from "@/lib/aggregator/sync-job";
 import type { AggregatorProvider, SyncJob } from "@/lib/aggregator/types";
 
-function getUserId(req: NextRequest): string {
-  return req.headers.get("x-user-id") ?? "anonymous";
-}
+import { getAuthUser } from "@/lib/auth-helpers";
 
 const ALL_PROVIDERS: AggregatorProvider[] = ["semrush", "vendasta", "yext"];
 
 export async function GET(req: NextRequest) {
-  const userId = getUserId(req);
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
+  const userId = auth.user.id;
 
   const [providerHealth, config] = await Promise.all([
     healthCheckAll(userId),
