@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isMissingOnboardingColumnError } from "@/lib/supabase/ensure-user-profile";
 
 // All paths that require authentication
 const PROTECTED_PATHS = [
@@ -94,11 +95,15 @@ export async function updateSession(request: NextRequest) {
   const isAppPath = isProtected && !pathname.startsWith("/admin") && !pathname.startsWith("/api");
   if (isAppPath && user && pathname !== "/onboarding" && pathname !== "/billing") {
     try {
-      const { data: profileCheck } = await supabase
+      const { data: profileCheck, error: profileError } = await supabase
         .from("user_profiles")
         .select("onboarding_completed")
         .eq("id", user.id)
         .single();
+
+      if (profileError && !isMissingOnboardingColumnError(profileError)) {
+        throw profileError;
+      }
 
       // Only redirect if profile exists and onboarding is explicitly false
       if (profileCheck && profileCheck.onboarding_completed === false) {

@@ -1,7 +1,15 @@
-import type { SupabaseClient, User } from "@supabase/supabase-js";
+import type { PostgrestError, SupabaseClient, User } from "@supabase/supabase-js";
 
-function isMissingOnboardingColumn(message?: string | null) {
-  return typeof message === "string" && /user_profiles\.onboarding_completed.*does not exist/i.test(message);
+export function isMissingOnboardingColumnError(error?: Pick<PostgrestError, "message" | "code"> | null) {
+  const message = error?.message;
+
+  return (
+    typeof message === "string"
+    && (
+      /user_profiles\.onboarding_completed.*does not exist/i.test(message)
+      || /Could not find the 'onboarding_completed' column of 'user_profiles' in the schema cache/i.test(message)
+    )
+  );
 }
 
 export async function ensureUserProfileExists(
@@ -18,7 +26,7 @@ export async function ensureUserProfileExists(
     ignoreDuplicates: true,
   });
 
-  if (!isMissingOnboardingColumn(error?.message)) {
+  if (!isMissingOnboardingColumnError(error)) {
     return { error, usedFallback: false };
   }
 

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
-import { PLANS, type PlanKey } from "@/lib/stripe";
+import { findPlanByPriceId, getBillingCycleFromPrice, requireStripe } from "@/lib/stripe";
 
 /**
  * Verify Stripe webhook signature, supporting secret rotation.
@@ -16,6 +15,8 @@ function verifyWebhookSignature(body: string, sig: string): Stripe.Event | null 
     process.env.STRIPE_WEBHOOK_SECRET_PREVIOUS,
   ].filter(Boolean) as string[];
 
+  const stripe = requireStripe();
+
   for (const secret of secrets) {
     try {
       return stripe.webhooks.constructEvent(body, sig, secret);
@@ -26,9 +27,23 @@ function verifyWebhookSignature(body: string, sig: string): Stripe.Event | null 
   return null;
 }
 
+function getCustomerId(customer: string | Stripe.Customer | Stripe.DeletedCustomer | null) {
+  return typeof customer === "string" ? customer : customer?.id ?? null;
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const sig = req.headers.get("stripe-signature");
+
+  if (!sig) {
+    return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+  }
+
+  try {
+    requireStripe();
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message ?? "Stripe is not configured" }, { status: 503 });
+  }
 
   const event = verifyWebhookSignature(body, sig);
   if (!event) {
@@ -42,45 +57,53 @@ export async function POST(req: NextRequest) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const supabaseId = session.metadata?.supabase_id;
-      const plan = session.metadata?.plan;
 
-      if (supabaseId && plan) {
-        // Determine if this was an annual subscription
-        const isAnnual = session.metadata?.annual === "true";
+      if (supabaseId) {
+        const customerId = getCustomerId(session.customer);
+        const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+        let resolvedPlan = session.metadata?.plan ?? null;
+        let billingCycle = session.metadata?.billing_cycle === "annual" ? "annual" : "monthly";
+        let subscriptionStatus = session.payment_status === "paid" ? "active" : null;
+        let trialEndsAt: string | null = null;
+
+        if (subscriptionId) {
+          try {
+            const stripe = requireStripe();
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+              expand: ["items.data.price"],
+            });
+            const primaryPrice = subscription.items.data[0]?.price;
+
+            resolvedPlan = resolvedPlan ?? findPlanByPriceId(primaryPrice?.id ?? null);
+            billingCycle = getBillingCycleFromPrice(primaryPrice);
+            subscriptionStatus = subscription.status;
+            trialEndsAt = subscription.trial_end
+              ? new Date(subscription.trial_end * 1000).toISOString()
+              : null;
+          } catch {
+            // Subscription lookup failed — non-critical
+          }
+        }
 
         await supabase
           .from("user_profiles")
           .upsert({
             id: supabaseId,
-            plan,
-            stripe_customer_id: session.customer as string,
-            billing_cycle: isAnnual ? "annual" : "monthly",
+            ...(resolvedPlan ? { plan: resolvedPlan } : {}),
+            ...(customerId ? { stripe_customer_id: customerId } : {}),
+            billing_cycle: billingCycle,
+            subscription_status: subscriptionStatus ?? (trialEndsAt ? "trialing" : "active"),
+            trial_ends_at: trialEndsAt,
           });
-
-        // If trial, set trial_end date
-        const subscriptionId = session.subscription as string;
-        if (subscriptionId) {
-          try {
-            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-            if (subscription.trial_end) {
-              await supabase
-                .from("user_profiles")
-                .update({
-                  trial_ends_at: new Date(subscription.trial_end * 1000).toISOString(),
-                })
-                .eq("id", supabaseId);
-            }
-          } catch {
-            // Subscription lookup failed — non-critical
-          }
-        }
       }
       break;
     }
 
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
+      const customerId = getCustomerId(subscription.customer);
+
+      if (!customerId) break;
 
       const { data: profile } = await supabase
         .from("user_profiles")
@@ -90,13 +113,16 @@ export async function POST(req: NextRequest) {
 
       if (profile) {
         const status = subscription.status;
+        const primaryPrice = subscription.items.data[0]?.price;
+        const resolvedPlan = subscription.metadata?.plan || findPlanByPriceId(primaryPrice?.id ?? null);
+        const billingCycle = getBillingCycleFromPrice(primaryPrice);
 
-        // Handle trial -> active transition
         if (status === "trialing") {
-          // Keep the plan but mark as trialing
           await supabase
             .from("user_profiles")
             .update({
+              ...(resolvedPlan ? { plan: resolvedPlan } : {}),
+              billing_cycle: billingCycle,
               subscription_status: "trialing",
               trial_ends_at: subscription.trial_end
                 ? new Date(subscription.trial_end * 1000).toISOString()
@@ -107,6 +133,8 @@ export async function POST(req: NextRequest) {
           await supabase
             .from("user_profiles")
             .update({
+              ...(resolvedPlan ? { plan: resolvedPlan } : {}),
+              billing_cycle: billingCycle,
               subscription_status: "active",
               trial_ends_at: null,
             })
@@ -114,7 +142,7 @@ export async function POST(req: NextRequest) {
         } else if (status === "canceled" || status === "unpaid" || status === "past_due") {
           await supabase
             .from("user_profiles")
-            .update({ plan: "free", subscription_status: status })
+            .update({ plan: "free", billing_cycle: billingCycle, subscription_status: status })
             .eq("id", profile.id);
         }
       }
@@ -123,7 +151,9 @@ export async function POST(req: NextRequest) {
 
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
+      const customerId = getCustomerId(subscription.customer);
+
+      if (!customerId) break;
 
       const { data: profile } = await supabase
         .from("user_profiles")
@@ -136,6 +166,7 @@ export async function POST(req: NextRequest) {
           .from("user_profiles")
           .update({
             plan: "free",
+            billing_cycle: getBillingCycleFromPrice(subscription.items.data[0]?.price),
             subscription_status: "canceled",
             trial_ends_at: null,
           })
@@ -147,7 +178,9 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.trial_will_end": {
       // Send reminder email 3 days before trial ends
       const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
+      const customerId = getCustomerId(subscription.customer);
+
+      if (!customerId) break;
 
       const { data: profile } = await supabase
         .from("user_profiles")

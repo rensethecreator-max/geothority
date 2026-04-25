@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Eye, EyeOff, ArrowRight, Mail } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { Logo } from "@/components/ui/logo";
@@ -29,6 +29,11 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
+  const completeSignInRedirect = useCallback(() => {
+    router.refresh();
+    window.location.replace(safeRedirect);
+  }, [router, safeRedirect]);
+
   useEffect(() => {
     if (resetSuccess) {
       setMessage({ type: "success", text: "Password updated. Sign in with your new password." });
@@ -44,7 +49,7 @@ function LoginForm() {
       } = await supabase.auth.getSession();
 
       if (active && session) {
-        router.replace(safeRedirect);
+        completeSignInRedirect();
       }
     };
 
@@ -54,7 +59,7 @@ function LoginForm() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
-        router.replace(safeRedirect);
+        completeSignInRedirect();
       }
     });
 
@@ -62,7 +67,7 @@ function LoginForm() {
       active = false;
       subscription.unsubscribe();
     };
-  }, [router, safeRedirect, supabase]);
+  }, [completeSignInRedirect, supabase]);
   const authCallbackUrl = useMemo(() => {
     if (typeof window === "undefined") return undefined;
     const url = new URL("/api/auth/callback", window.location.origin);
@@ -91,7 +96,7 @@ function LoginForm() {
         setLoading(false);
       } else {
         trackEvent("signin_completed");
-        router.push(safeRedirect);
+        completeSignInRedirect();
       }
     } else {
       const { data, error } = await supabase.auth.signUp({
@@ -104,7 +109,7 @@ function LoginForm() {
       } else {
         trackEvent("signup_completed", { method: "email" });
         if (data.session) {
-          router.push(safeRedirect);
+          completeSignInRedirect();
           return;
         }
         setMessage({ type: "success", text: "Check your email for a confirmation link." });

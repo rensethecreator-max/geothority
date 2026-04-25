@@ -2,12 +2,26 @@ import Stripe from "stripe";
 
 // Only instantiate Stripe on the server side (where STRIPE_SECRET_KEY is available)
 // The pricing page imports PLANS but NOT the stripe instance, so this is safe
-export const stripe = typeof window === 'undefined' && process.env.STRIPE_SECRET_KEY
+export const stripe = typeof window === "undefined" && process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: "2024-12-18.acacia" as any,
       typescript: true,
     })
-  : null as unknown as Stripe;
+  : null;
+
+export function isStripeConfigured() {
+  return !!stripe;
+}
+
+export function requireStripe(): Stripe {
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Missing STRIPE_SECRET_KEY.");
+  }
+
+  return stripe;
+}
+
+export type BillingCycle = "monthly" | "annual";
 
 export const PLANS = {
   starter: {
@@ -73,3 +87,29 @@ export const PLANS = {
 } as const;
 
 export type PlanKey = keyof typeof PLANS;
+
+export function getPlanPriceId(plan: PlanKey, annual = false) {
+  const selectedPlan = PLANS[plan];
+
+  if (annual) {
+    return selectedPlan.annualPriceId || null;
+  }
+
+  return selectedPlan.priceId || null;
+}
+
+export function getBillingCycleFromPrice(price?: Pick<Stripe.Price, "recurring"> | null): BillingCycle {
+  return price?.recurring?.interval === "year" ? "annual" : "monthly";
+}
+
+export function findPlanByPriceId(priceId?: string | null): PlanKey | null {
+  if (!priceId) return null;
+
+  for (const [planKey, plan] of Object.entries(PLANS) as Array<[PlanKey, (typeof PLANS)[PlanKey]]>) {
+    if (plan.priceId === priceId || plan.annualPriceId === priceId) {
+      return planKey;
+    }
+  }
+
+  return null;
+}

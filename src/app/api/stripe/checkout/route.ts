@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { stripe, PLANS, type PlanKey } from "@/lib/stripe";
+import { getPlanPriceId, requireStripe, PLANS, type PlanKey } from "@/lib/stripe";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,19 +13,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { plan, annual } = await req.json();
+    const payload = await req.json().catch(() => null);
+    const plan = payload?.plan;
+    const annual = payload?.annual === true;
 
     if (!plan || !PLANS[plan as PlanKey]) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    const selectedPlan = PLANS[plan as PlanKey];
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3010";
+    const selectedPlanKey = plan as PlanKey;
+    const selectedPlan = PLANS[selectedPlanKey];
+    const stripe = requireStripe();
+    const appUrl = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
 
-    // Use annual price ID if requested and available
-    const priceId = annual && selectedPlan.annualPriceId
-      ? selectedPlan.annualPriceId
-      : selectedPlan.priceId;
+    if (annual && !selectedPlan.annualPriceId) {
+      return NextResponse.json(
+        { error: "Annual billing is not configured for this plan yet." },
+        { status: 400 }
+      );
+    }
+
+    const priceId = getPlanPriceId(selectedPlanKey, annual);
 
     if (!priceId) {
       return NextResponse.json({ error: "Price not configured for this plan" }, { status: 400 });
@@ -67,15 +75,17 @@ export async function POST(req: NextRequest) {
         trial_period_days: 14,
         metadata: {
           supabase_id: user.id,
-          plan: plan,
+          plan,
+          billing_cycle: annual ? "annual" : "monthly",
         },
       },
       success_url: `${appUrl}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/pricing?canceled=true`,
       metadata: {
         supabase_id: user.id,
-        plan: plan,
+        plan,
         annual: annual ? "true" : "false",
+        billing_cycle: annual ? "annual" : "monthly",
       },
     });
 

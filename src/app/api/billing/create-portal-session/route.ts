@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-helpers";
 import { createServiceClient } from "@/lib/supabase/server";
-import { stripe } from "@/lib/stripe";
+import { requireStripe } from "@/lib/stripe";
+
+function getSafeReturnPath(returnPath?: string) {
+  return returnPath && returnPath.startsWith("/") && !returnPath.startsWith("//")
+    ? returnPath
+    : "/settings";
+}
 
 export async function POST(req: NextRequest) {
   const auth = await getAuthUser(req);
   if ("error" in auth) return auth.error;
   const { user } = auth;
 
-  const { returnPath = "/settings" } = await req.json().catch(() => ({}));
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3010";
-  const portalReturnUrl = process.env.STRIPE_PORTAL_RETURN_URL ?? `${appUrl}${returnPath}`;
+  const { returnPath } = await req.json().catch(() => ({}));
+  const safeReturnPath = getSafeReturnPath(returnPath);
+  const appUrl = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
+  const portalReturnUrl = process.env.STRIPE_PORTAL_RETURN_URL ?? `${appUrl}${safeReturnPath}`;
 
   const supabase = createServiceClient();
   const { data: profile } = await supabase
@@ -27,6 +34,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const stripe = requireStripe();
     const session = await stripe.billingPortal.sessions.create({
       customer: profile.stripe_customer_id,
       return_url: portalReturnUrl,
