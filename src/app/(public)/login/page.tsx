@@ -16,7 +16,7 @@ function LoginForm() {
   const error = searchParams.get("error");
   const resetSuccess = searchParams.get("reset") === "success";
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
 
@@ -34,6 +34,35 @@ function LoginForm() {
       setMessage({ type: "success", text: "Password updated. Sign in with your new password." });
     }
   }, [resetSuccess]);
+
+  useEffect(() => {
+    let active = true;
+
+    const syncExistingSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (active && session) {
+        router.replace(safeRedirect);
+      }
+    };
+
+    void syncExistingSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+        router.replace(safeRedirect);
+      }
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, [router, safeRedirect, supabase]);
   const authCallbackUrl = useMemo(() => {
     if (typeof window === "undefined") return undefined;
     const url = new URL("/api/auth/callback", window.location.origin);

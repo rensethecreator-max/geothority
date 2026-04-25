@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { ensureUserProfileExists } from "@/lib/supabase/ensure-user-profile";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -37,9 +38,16 @@ export async function GET(request: NextRequest) {
       } = await supabase.auth.getUser();
 
       if (user) {
-        await supabase.from("user_profiles").upsert({
-          id: user.id,
-        });
+        const profileSeed = await ensureUserProfileExists(supabase, user);
+
+        if (profileSeed.error) {
+          console.error("Failed to ensure user profile during auth callback", {
+            userId: user.id,
+            message: profileSeed.error.message,
+            code: profileSeed.error.code,
+            drift: profileSeed.usedFallback ? "missing_onboarding_completed_column" : undefined,
+          });
+        }
       }
 
       return NextResponse.redirect(new URL(redirect, requestUrl.origin));
