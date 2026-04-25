@@ -13,7 +13,12 @@ export interface KeyStatus {
   category: "critical" | "recommended" | "optional";
 }
 
-const KEY_DEFS: Array<Omit<KeyStatus, "configured">> = [
+type KeyDef = Omit<KeyStatus, "configured"> & {
+  envVars?: string[];
+  isConfigured?: () => boolean;
+};
+
+const KEY_DEFS: KeyDef[] = [
   // Critical — features are broken without these
   {
     key: "OpenAI",
@@ -32,8 +37,10 @@ const KEY_DEFS: Array<Omit<KeyStatus, "configured">> = [
   {
     key: "Foursquare",
     envVar: "FOURSQUARE_API_KEY",
+    envVars: ["FOURSQUARE_API_KEY", "FOURSQUARE_CLIENT_ID", "FOURSQUARE_CLIENT_SECRET"],
+    isConfigured: () => !!process.env.FOURSQUARE_API_KEY || !!(process.env.FOURSQUARE_CLIENT_ID && process.env.FOURSQUARE_CLIENT_SECRET),
     required: true,
-    impact: "Listing sync across 50+ directories",
+    impact: "Foursquare network lookup and listing distribution coverage across 50+ downstream directories",
     category: "critical",
   },
   {
@@ -87,10 +94,12 @@ const KEY_DEFS: Array<Omit<KeyStatus, "configured">> = [
     category: "recommended",
   },
   {
-    key: "Google OAuth Client ID",
-    envVar: "GOOGLE_CLIENT_ID",
+    key: "Google OAuth Runtime Credentials",
+    envVar: "GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET",
+    envVars: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+    isConfigured: () => !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
     required: false,
-    impact: "GBP OAuth connection for real data",
+    impact: "Server-side GBP token refresh and direct Google publish flows after Supabase OAuth is connected",
     category: "recommended",
   },
   // Optional — nice-to-have
@@ -127,13 +136,13 @@ const KEY_DEFS: Array<Omit<KeyStatus, "configured">> = [
 export function getApiKeyStatus(): KeyStatus[] {
   return KEY_DEFS.map((def) => ({
     ...def,
-    configured: !!process.env[def.envVar],
+    configured: def.isConfigured ? def.isConfigured() : !!process.env[def.envVar],
   }));
 }
 
 export function getMinViableKeysConfigured(): boolean {
   const critical = KEY_DEFS.filter((d) => d.category === "critical");
-  return critical.every((d) => !!process.env[d.envVar]);
+  return critical.every((d) => (d.isConfigured ? d.isConfigured() : !!process.env[d.envVar]));
 }
 
 export function getKeysSummary(): {

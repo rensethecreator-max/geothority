@@ -47,6 +47,46 @@ function checkStripeWebhookSecret(): { ok: boolean; description: string } {
   return { ok: true, description: "Stripe webhook secret looks valid" };
 }
 
+function checkStripeAnnualConfig(): { ok: boolean; description: string } {
+  const annualVars = [
+    "NEXT_PUBLIC_STRIPE_STARTER_ANNUAL_PRICE_ID",
+    "NEXT_PUBLIC_STRIPE_GROWTH_ANNUAL_PRICE_ID",
+    "NEXT_PUBLIC_STRIPE_AUTHORITY_ANNUAL_PRICE_ID",
+    "NEXT_PUBLIC_STRIPE_AGENCY_ANNUAL_PRICE_ID",
+  ];
+
+  const missing = annualVars.filter((key) => !process.env[key]);
+  if (missing.length > 0) {
+    return {
+      ok: false,
+      description: `Annual billing is marketed in-app, but these Stripe annual price IDs are missing: ${missing.join(", ")}`,
+    };
+  }
+
+  return { ok: true, description: "Annual Stripe price IDs are configured" };
+}
+
+function checkFoursquareConfig(): { ok: boolean; description: string } {
+  const hasApiKey = !!process.env.FOURSQUARE_API_KEY;
+  const hasLegacyPair = !!process.env.FOURSQUARE_CLIENT_ID && !!process.env.FOURSQUARE_CLIENT_SECRET;
+
+  if (!hasApiKey && !hasLegacyPair) {
+    return {
+      ok: false,
+      description: "Foursquare lookup is not configured. Add FOURSQUARE_API_KEY (preferred) or legacy FOURSQUARE_CLIENT_ID + FOURSQUARE_CLIENT_SECRET.",
+    };
+  }
+
+  if (!hasApiKey && hasLegacyPair) {
+    return {
+      ok: true,
+      description: "Foursquare is configured through legacy client credentials. Consider migrating to FOURSQUARE_API_KEY to match the rest of the app.",
+    };
+  }
+
+  return { ok: true, description: "Foursquare API key is configured" };
+}
+
 async function checkTables(supabase: ReturnType<typeof createServiceClient>) {
   const results: Array<{ table: string; exists: boolean }> = [];
   for (const tableName of REQUIRED_TABLES) {
@@ -64,9 +104,12 @@ async function checkGoogleApiConfig(): Promise<{ ok: boolean; description: strin
   const hasClientId = !!process.env.GOOGLE_CLIENT_ID;
   const hasClientSecret = !!process.env.GOOGLE_CLIENT_SECRET;
   if (!hasClientId || !hasClientSecret) {
-    return { ok: false, description: "Google API credentials (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET) not configured" };
+    return {
+      ok: false,
+      description: "GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are missing. Supabase Google sign-in can still work, but server-side GBP token refresh and publish flows will fail.",
+    };
   }
-  return { ok: true, description: "Google API credentials present" };
+  return { ok: true, description: "Google runtime credentials present for server-side GBP refresh/publishing" };
 }
 
 async function logIssue(
@@ -130,10 +173,24 @@ export async function GET(req: NextRequest) {
       if (id) newIssues.push(id);
     }
 
-    // 5. Google API config
+    // 5. Google runtime config
     const googleCheck = await checkGoogleApiConfig();
     if (!googleCheck.ok) {
       const id = await logIssue(supabase, "google_api_config", "medium", googleCheck.description);
+      if (id) newIssues.push(id);
+    }
+
+    // 6. Foursquare config
+    const foursquareCheck = checkFoursquareConfig();
+    if (!foursquareCheck.ok) {
+      const id = await logIssue(supabase, "foursquare_config", "medium", foursquareCheck.description);
+      if (id) newIssues.push(id);
+    }
+
+    // 7. Annual Stripe pricing config
+    const annualStripeCheck = checkStripeAnnualConfig();
+    if (!annualStripeCheck.ok) {
+      const id = await logIssue(supabase, "stripe_annual_config", "medium", annualStripeCheck.description);
       if (id) newIssues.push(id);
     }
 

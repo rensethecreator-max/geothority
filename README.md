@@ -19,6 +19,9 @@ npm install
 #    Add your Google OAuth Client ID and Secret
 #    Set redirect URL to: http://localhost:3010/api/auth/callback
 
+#    Optional but recommended for server-side GBP refresh/publishing:
+#    also set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local
+
 # 4. Start development server
 npm run dev
 # → http://localhost:3010
@@ -56,15 +59,16 @@ src/
     └── types.ts           # TypeScript types
 ```
 
-## Stripe Products (Live)
+## Stripe Products / Env Mapping
 
 Created via `scripts/setup-stripe.ts`:
 
 | Plan | Price | Stripe Price ID |
 |------|-------|-----------------|
-| Audit Only | $47/mo | `price_1TGol1JRm4sicjxqtiVT7oii` |
-| Starter | $149/mo | `price_1TGol1JRm4sicjxqCopNUSTP` |
-| Pro | $299/mo | `price_1TGol2JRm4sicjxqeQMHmTfc` |
+| Starter | $97/mo or $970/yr | `NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID` / `NEXT_PUBLIC_STRIPE_STARTER_ANNUAL_PRICE_ID` |
+| Growth | $197/mo or $1970/yr | `NEXT_PUBLIC_STRIPE_GROWTH_PRICE_ID` / `NEXT_PUBLIC_STRIPE_GROWTH_ANNUAL_PRICE_ID` |
+| Authority | $297/mo or $2970/yr | `NEXT_PUBLIC_STRIPE_AUTHORITY_PRICE_ID` / `NEXT_PUBLIC_STRIPE_AUTHORITY_ANNUAL_PRICE_ID` |
+| Agency | $997/mo or $9970/yr | `NEXT_PUBLIC_STRIPE_AGENCY_PRICE_ID` / `NEXT_PUBLIC_STRIPE_AGENCY_ANNUAL_PRICE_ID` |
 
 ## Mobile Distribution
 
@@ -92,6 +96,6 @@ See `.env.local` for all required variables. Key ones:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `OPENAI_API_KEY`
 - `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_PRICE_AUDIT` / `STRIPE_PRICE_STARTER` / `STRIPE_PRICE_PRO`
+- `NEXT_PUBLIC_STRIPE_*_PRICE_ID` and `NEXT_PUBLIC_STRIPE_*_ANNUAL_PRICE_ID` for each paid plan
 - `RESEND_API_KEY`
 # Geothority — Redeploying with all env vars

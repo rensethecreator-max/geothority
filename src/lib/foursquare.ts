@@ -1,6 +1,7 @@
 /**
  * Foursquare Places API integration for listing verification & sync.
- * Uses V2 API with Client ID + Client Secret authentication.
+ * Prefers the current Places API key flow (`FOURSQUARE_API_KEY`).
+ * Falls back to legacy V2 Client ID + Client Secret auth when needed.
  * 
  * Capabilities:
  *   - Search/verify: Find businesses in Foursquare's database (feeds 50+ directories)
@@ -9,12 +10,20 @@
  */
 
 const FSQ_V2_BASE = "https://api.foursquare.com/v2";
+const FSQ_V3_BASE = "https://api.foursquare.com/v3";
 const FSQ_VERSION = "20260413";
 
 function getCredentials() {
+  const apiKey = process.env.FOURSQUARE_API_KEY;
   const clientId = process.env.FOURSQUARE_CLIENT_ID;
   const clientSecret = process.env.FOURSQUARE_CLIENT_SECRET;
-  return { clientId, clientSecret, configured: !!(clientId && clientSecret) };
+  return {
+    apiKey,
+    clientId,
+    clientSecret,
+    configured: !!apiKey || !!(clientId && clientSecret),
+    mode: apiKey ? "apiKey" as const : clientId && clientSecret ? "legacy" as const : null,
+  };
 }
 
 function authParams(): string {
@@ -63,20 +72,58 @@ export async function searchFoursquare(
   city: string,
   state: string
 ): Promise<FoursquareVenue | null> {
-  const { configured } = getCredentials();
+  const { configured, apiKey, mode } = getCredentials();
   if (!configured) return null;
 
   try {
     const query = encodeURIComponent(businessName);
     const near = encodeURIComponent(`${city}, ${state}`);
-    const res = await fetch(
-      `${FSQ_V2_BASE}/venues/search?query=${query}&near=${near}&limit=5&${authParams()}`,
-      { signal: AbortSignal.timeout(10000) }
-    );
 
-    if (!res.ok) return null;
-    const data = await res.json();
-    const venues: FoursquareVenue[] = data.response?.venues || [];
+    let venues: FoursquareVenue[] = [];
+
+    if (mode === "apiKey" && apiKey) {
+      const res = await fetch(
+        `${FSQ_V3_BASE}/places/search?query=${query}&near=${near}&limit=5`,
+        {
+          headers: { Authorization: apiKey },
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+
+      if (!res.ok) return null;
+
+      const data = await res.json();
+      venues = (data.results || []).map((place: any) => ({
+        id: place.fsq_id,
+        name: place.name,
+        location: {
+          address: place.location?.address,
+          city: place.location?.locality,
+          state: place.location?.region,
+          postalCode: place.location?.postcode,
+          country: place.location?.country,
+          formattedAddress: place.location?.formatted_address
+            ? [place.location.formatted_address]
+            : undefined,
+          lat: place.geocodes?.main?.latitude,
+          lng: place.geocodes?.main?.longitude,
+        },
+        categories: (place.categories || []).map((category: any) => ({
+          id: String(category.id),
+          name: category.name,
+          icon: category.icon,
+        })),
+      }));
+    } else {
+      const res = await fetch(
+        `${FSQ_V2_BASE}/venues/search?query=${query}&near=${near}&limit=5&${authParams()}`,
+        { signal: AbortSignal.timeout(10000) }
+      );
+
+      if (!res.ok) return null;
+      const data = await res.json();
+      venues = data.response?.venues || [];
+    }
 
     // Find best match by name
     return (
@@ -110,7 +157,7 @@ export async function verifyAndSync(business: {
       success: false,
       directory: "Foursquare Network (50+ directories)",
       action: "error",
-      details: "Foursquare integration not configured. Available on paid plans.",
+      details: "Foursquare integration is not configured. Add FOURSQUARE_API_KEY (preferred) or legacy FOURSQUARE_CLIENT_ID + FOURSQUARE_CLIENT_SECRET.",
     };
   }
 

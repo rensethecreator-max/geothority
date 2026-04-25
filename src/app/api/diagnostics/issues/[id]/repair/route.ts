@@ -82,7 +82,21 @@ export async function POST(
 
     case "google_api_config": {
       actionType = "config_guidance";
-      result = "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your Vercel environment variables.";
+      result = "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your Vercel environment variables if you want server-side GBP token refresh and direct publishing. Supabase Google auth provider setup is still required separately.";
+      status = "pending";
+      break;
+    }
+
+    case "foursquare_config": {
+      actionType = "config_guidance";
+      result = "Add FOURSQUARE_API_KEY (preferred) or legacy FOURSQUARE_CLIENT_ID and FOURSQUARE_CLIENT_SECRET so listing sync checks can run against Foursquare consistently.";
+      status = "pending";
+      break;
+    }
+
+    case "stripe_annual_config": {
+      actionType = "config_guidance";
+      result = "Create Stripe yearly prices for each paid plan and set the matching NEXT_PUBLIC_STRIPE_*_ANNUAL_PRICE_ID variables, or stop advertising annual billing until they exist.";
       status = "pending";
       break;
     }

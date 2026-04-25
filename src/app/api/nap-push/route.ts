@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { requirePlan } from "@/lib/plan-gate";
+import { verifyAndSync } from "@/lib/foursquare";
 
 /**
  * POST /api/nap-push — Start a NAP push batch
@@ -241,10 +242,24 @@ async function pushToDirectory(dir: any, data: Record<string, any>): Promise<{ s
   // Direct API push implementations per directory
   if (dir.name?.toLowerCase().includes("foursquare")) {
     try {
-      const fsqRes = await fetch("https://api.foursquare.com/v3/places/search", {
-        headers: { Authorization: process.env.FOURSQUARE_API_KEY || "" },
+      const result = await verifyAndSync({
+        name: data.businessName,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        phone: data.phone,
+        website: data.website,
       });
-      return { success: true, message: "Synced with Foursquare", url: `https://foursquare.com/v/placeholder` };
+
+      if (result.action === "error" || result.action === "not_found") {
+        return { success: false, message: result.details, url: result.claimUrl };
+      }
+
+      return {
+        success: true,
+        message: result.details,
+        url: result.claimUrl || (result.venue ? `https://foursquare.com/v/${result.venue.id}` : undefined),
+      };
     } catch {
       return { success: false, message: "Foursquare API error" };
     }

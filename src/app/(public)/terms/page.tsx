@@ -31,8 +31,9 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">3. Subscription & Payment</h2>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Subscriptions are billed monthly via Stripe.</li>
+                <li>Subscriptions are billed via Stripe on either a monthly or annual cycle, depending on the plan you choose at checkout.</li>
                 <li>All plans include a free website scan before subscribing.</li>
+                <li>If a trial is shown at checkout, billing begins automatically when that trial ends unless you cancel first.</li>
                 <li>You may cancel your subscription at any time; access continues until the end of the billing period.</li>
                 <li>Refunds are available within 14 days of initial purchase if no content has been published.</li>
                 <li>Prices may change with 30 days notice via email.</li>
