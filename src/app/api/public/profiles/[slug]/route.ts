@@ -32,7 +32,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 
   // Check eligibility
   const { data: user } = await supabase
-    .from("profiles")
+    .from("user_profiles")
     .select("id, plan, business_name, city, state")
     .eq("id", scan.user_id)
     .single();

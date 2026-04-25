@@ -50,7 +50,7 @@ export async function generateStaticParams() {
     if (!scans?.length) return [];
 
     const userIds = Array.from(new Set(scans.map((s: any) => s.user_id)));
-    const { data: users } = await supabase.from("profiles").select("id, plan").in("id", userIds);
+    const { data: users } = await supabase.from("user_profiles").select("id, plan").in("id", userIds);
     const eligibleIds = new Set(
       (users ?? []).filter((u: any) => isEligibleForPublicProfile(u.plan)).map((u: any) => u.id)
     );
@@ -118,7 +118,7 @@ async function fetchProfile(slug: string): Promise<PublicBusinessProfile | null>
   const scan = scans.find((s: any) => slugify(s.url) === slug) ?? scans[0];
 
   const { data: user } = await supabase
-    .from("profiles")
+    .from("user_profiles")
     .select("id, plan, business_name, city, state")
     .eq("id", scan.user_id)
     .single();

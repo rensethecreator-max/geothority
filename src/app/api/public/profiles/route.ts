@@ -34,9 +34,11 @@ export async function GET(req: NextRequest) {
 
   // Filter by eligibility
   const userIds = Array.from(new Set((scans ?? []).map((s: any) => s.user_id)));
-  const { data: users } = userIds.length
-    ? await supabase.from("profiles").select("id, plan, business_name").in("id", userIds)
-    : { data: [] };
+  const { data: users, error: usersError } = userIds.length
+    ? await supabase.from("user_profiles").select("id, plan, business_name").in("id", userIds)
+    : { data: [], error: null };
+
+  if (usersError) return apiError("Failed to fetch profile eligibility", 500);
 
   const eligibleUserIds = new Set(
     (users ?? []).filter((u: any) => isEligibleForPublicProfile(u.plan)).map((u: any) => u.id)

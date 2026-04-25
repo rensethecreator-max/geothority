@@ -28,7 +28,7 @@ export async function GET() {
   }
 
   const userIds = Array.from(new Set(scans.map((s: any) => s.user_id)));
-  const { data: users } = await supabase.from("profiles").select("id, plan").in("id", userIds);
+  const { data: users } = await supabase.from("user_profiles").select("id, plan").in("id", userIds);
   const eligibleIds = new Set(
     (users ?? []).filter((u: any) => isEligibleForPublicProfile(u.plan)).map((u: any) => u.id)
   );

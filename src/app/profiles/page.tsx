@@ -28,16 +28,24 @@ export const metadata: Metadata = {
 export default async function ProfilesDirectoryPage() {
   const supabase = createServiceClient();
 
-  const { data: scans } = await supabase
+  const { data: scans, error: scansError } = await supabase
     .from("scans")
     .select("user_id, url, business_name, city, state, geothority_score, created_at")
     .order("geothority_score", { ascending: false, nullsFirst: false })
     .limit(500);
 
+  if (scansError) {
+    throw new Error(`Failed to load public profiles: ${scansError.message}`);
+  }
+
   const userIds = Array.from(new Set((scans ?? []).map((s: any) => s.user_id)));
-  const { data: users } = userIds.length
-    ? await supabase.from("profiles").select("id, plan").in("id", userIds)
-    : { data: [] };
+  const { data: users, error: usersError } = userIds.length
+    ? await supabase.from("user_profiles").select("id, plan").in("id", userIds)
+    : { data: [], error: null };
+
+  if (usersError) {
+    throw new Error(`Failed to load profile eligibility: ${usersError.message}`);
+  }
 
   const eligibleIds = new Set(
     (users ?? []).filter((u: any) => isEligibleForPublicProfile(u.plan)).map((u: any) => u.id)

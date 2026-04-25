@@ -5,11 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   X,
   Send,
-  Loader2,
-  MessageCircle,
   Zap,
   Search,
-  Shield,
   Bot,
   Wand2,
   TrendingUp,
@@ -23,7 +20,6 @@ interface Message {
   actions?: Array<{ label: string; href: string; icon?: React.ElementType }>;
 }
 
-const STORAGE_KEY = "geo-onboarding-done";
 const WILL_OPENED_KEY = "will_has_opened";
 const WILL_INTERACTED_KEY = "will_has_interacted";
 
@@ -73,6 +69,7 @@ function getContextGreeting(pathname: string): Message {
 
 export function WillChatbot() {
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
@@ -83,6 +80,10 @@ export function WillChatbot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const shouldHide = HIDDEN_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Initialize greeting based on current page
   useEffect(() => {
@@ -186,7 +187,7 @@ export function WillChatbot() {
     try { localStorage.setItem(WILL_INTERACTED_KEY, "1"); } catch { /* ignore */ }
   };
 
-  if (shouldHide) return null;
+  if (!isMounted || shouldHide) return null;
 
   return (
     <>
