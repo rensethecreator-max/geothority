@@ -27,6 +27,8 @@ const STORAGE_KEY = "geo-onboarding-done";
 const WILL_OPENED_KEY = "will_has_opened";
 const WILL_INTERACTED_KEY = "will_has_interacted";
 
+const HIDDEN_PATH_PREFIXES = ["/login", "/signup", "/forgot-password", "/reset-password"];
+
 const QUICK_ACTIONS = [
   { label: "Run a scan", href: "/scan", icon: Search },
   { label: "Show quick wins", href: "/dashboard", icon: Zap },
@@ -37,28 +39,28 @@ const QUICK_ACTIONS = [
 function getContextGreeting(pathname: string): Message {
   const greetings: Record<string, { content: string; actions?: Message["actions"] }> = {
     "/": {
-      content: "Hey! I'm Will, your Geothority AI assistant. I can help you understand your local SEO, fix issues automatically, or find out if AI assistants recommend your business. What can I help with?",
+      content: "Hey! I'm Will, your Geothority AI assistant. I can help you understand your local SEO, explain which fixes are available in-product, and show how your business appears across AI answer surfaces. What can I help with?",
       actions: [
         { label: "Run free scan", href: "/scan", icon: Search },
         { label: "See how it works", href: "#features", icon: Zap },
       ],
     },
     "/dashboard": {
-      content: "Welcome to your dashboard! I can see your Trust Stack scores and help you prioritize what to fix next. Want me to walk you through it?",
+      content: "Welcome to your dashboard! I can help you read your Trust Stack scores, see which fixes are automatic vs guided, and prioritize what to do next. Want me to walk you through it?",
       actions: [
         { label: "Show quick wins", href: "/dashboard", icon: Zap },
         { label: "Run new scan", href: "/scan", icon: Search },
       ],
     },
     "/scan": {
-      content: "Ready to scan? Just enter your business URL and I'll analyze your entire local presence in about 90 seconds. Want me to explain what the scan covers?",
+      content: "Ready to scan? Enter your business URL and I'll run a first-pass local presence scan in about 90 seconds. Want me to explain what the scan covers and what comes back as recommendations vs direct fixes?",
     },
   };
 
   // Find matching greeting or default
   const match = Object.entries(greetings).find(([path]) => pathname.startsWith(path));
   const greeting = match?.[1] || {
-    content: "Hey! I'm Will, your Geothority AI assistant. I can help you understand your Trust Stack scores, fix issues automatically, or explore any feature. What can I help with?",
+    content: "Hey! I'm Will, your Geothority AI assistant. I can help you understand your Trust Stack scores, explain available fixes, or explore any feature. What can I help with?",
   };
 
   return {
@@ -80,6 +82,7 @@ export function WillChatbot() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
+  const shouldHide = HIDDEN_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   // Initialize greeting based on current page
   useEffect(() => {
@@ -183,6 +186,8 @@ export function WillChatbot() {
     try { localStorage.setItem(WILL_INTERACTED_KEY, "1"); } catch { /* ignore */ }
   };
 
+  if (shouldHide) return null;
+
   return (
     <>
       {/* Nudge bubble */}
@@ -198,7 +203,7 @@ export function WillChatbot() {
             ×
           </button>
           <p className="text-sm text-white/80">
-            Need help? I can explain your scores or fix issues for you. 👋
+            Need help? I can explain your scores and show what Geothority can handle directly. 👋
           </p>
         </div>
       )}

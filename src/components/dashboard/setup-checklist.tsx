@@ -52,7 +52,7 @@ export function SetupChecklist() {
               : `${recommendedMissing.length} recommended key${recommendedMissing.length > 1 ? "s" : ""} not configured`}
           </h3>
           <p className="text-xs text-[var(--muted-foreground)] mb-3">
-            Some features will show simulated or limited results until these are configured.
+            Some features will show limited or simulated results until these are configured. We surface that here so you can trust which workflows are fully live.
           </p>
 
           <div className="space-y-2">

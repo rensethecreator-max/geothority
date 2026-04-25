@@ -444,7 +444,7 @@ export default function PricingPage() {
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     Citation check (18 dirs)
-                    <GeoTooltip tip="We verify your business info across 18 major directories so Google trusts your listings." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                    <GeoTooltip tip="We verify your business info across 18 major directories so you can see where core listing data is consistent and where it needs work." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   <li className="flex items-center gap-2.5 text-sm">
                     {plan.features.listingSync ? (
@@ -455,7 +455,7 @@ export default function PricingPage() {
                     <span className={plan.features.listingSync ? "text-gray-300" : "text-gray-600"}>
                       Listing sync (50+ dirs)
                     </span>
-                    <GeoTooltip tip="Automatically push correct info to 50+ directories - no manual updates needed." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                    <GeoTooltip tip="Push correct info to 50+ directories through connected distribution partners where supported. Coverage depends on the network and integration state." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   {plan.features.napMonitoring !== "None" && (
                     <li className="flex items-center gap-2.5 text-sm text-gray-300">
@@ -470,12 +470,12 @@ export default function PricingPage() {
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     15 AI platforms monitored
-                    <GeoTooltip tip="We check if your business appears in ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere. No competitor monitors more than 2-3." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                    <GeoTooltip tip="We check whether your business appears across major AI answer surfaces including ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     Automatic AI fixes
-                    <GeoTooltip tip="We don't just detect problems — we automatically generate and apply fixes including FAQ schema, entity-rich content, structured markup, and GBP posts. Most competitors only show you what's wrong." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                    <GeoTooltip tip="We turn AI visibility findings into executable work: suggested FAQ schema, entity-rich content, structured markup, and GBP recommendations. Some changes can be applied directly; others are prepared for review." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -488,7 +488,7 @@ export default function PricingPage() {
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.aiContentGen} local pages
-                    <GeoTooltip tip="Generate city-specific pages and local content that Google trusts. More pages = more searches you rank for." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                    <GeoTooltip tip="Generate city-specific pages and local content from your detected gaps so each draft has a strategic reason to exist." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -512,7 +512,7 @@ export default function PricingPage() {
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.scoreHistory} score history
-                    <GeoTooltip tip="See how your Trust Stack has improved over time - proof your efforts are working." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
+                    <GeoTooltip tip="See how your Trust Stack changes over time and tie those changes back to completed fixes and new issues." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
                 </ul>
               </div>
@@ -556,11 +556,11 @@ export default function PricingPage() {
                   <FeatureRow label="Citation Check (18 dirs)" free={true} starter={true} growth={true} authority={true} tip="We verify your business name, address, and phone across 18 major directories like Google, Yelp, Bing, and Apple Maps. Inconsistent listings confuse Google and cost you rankings." />
                   <FeatureRow label="Listing Sync (50+ dirs)" free={false} starter={false} growth={true} authority={true} tip="Automatically push correct business info to 50+ directories through the Foursquare data network - covering Bing, Uber, Samsung, HERE Maps, and more. No manual updates needed." />
                   <FeatureRow label="Fix This Direct Links" free={true} starter={true} growth={true} authority={true} tip="Every issue we find comes with a one-click link that takes you straight to the fix - no hunting through dashboards or guessing what to do next." />
-                  <FeatureRow label="NAP Monitoring" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="NAP stands for Name, Address, Phone. We watch your listings around the clock and alert you the moment something changes - so your info stays consistent everywhere." />
+                  <FeatureRow label="NAP Monitoring" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="NAP stands for Name, Address, Phone. Monitoring frequency increases by plan, and alert speed depends on the connected source and directory." />
 
                   <SectionHeader label="AI Visibility" />
-                  <FeatureRow label="15 AI Platforms Monitored" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="We check if your business appears in ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere. No competitor monitors more than 2-3 AI platforms." />
-                  <FeatureRow label="Automatic AI Fixes" free={true} starter={true} growth={true} authority={true} tip="We don't just detect problems — we automatically generate and apply fixes including FAQ schema, entity-rich content, structured markup, and GBP posts. Most competitors only show you what's wrong." />
+                  <FeatureRow label="15 AI Platforms Monitored" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="We check whether your business appears in major AI answer surfaces and use that coverage to drive recommendations and execution." />
+                  <FeatureRow label="Automatic AI Fixes" free={true} starter={true} growth={true} authority={true} tip="We turn findings into executable work including FAQ schema, entity-rich content, structured markup, and GBP recommendations. Some changes can be auto-applied; others stay in review until approved." />
                   <FeatureRow label="AI Recommendation Score (A+ to F)" free={true} starter={true} growth={true} authority={true} tip="A weighted scoring system that measures how often AI systems recommend your business vs competitors. Know exactly where you stand in AI-powered search." />
                   <FeatureRow label="Competitor Frequency Tracking" free={false} starter={true} growth={true} authority={true} tip="See how often AI recommends your competitors vs you — e.g., 'AI systems recommend your competitors 3.4x more often than you.' Emotional urgency that drives action." />
 
@@ -574,7 +574,7 @@ export default function PricingPage() {
                   <FeatureRow label="Score History" free="30 days" starter="90 days" growth="1 year" authority="Unlimited" tip="See how your Trust Stack score has changed over time. Longer history means better trend tracking and proof that your efforts are paying off." />
 
                   <SectionHeader label="Support" />
-                  <FeatureRow label="Will AI Assistant" free={true} starter={true} growth={true} authority={true} tip="An AI assistant that answers your local SEO questions, explains your scan results, and suggests next steps - like having a local SEO expert on call 24/7." />
+                  <FeatureRow label="Will AI Assistant" free={true} starter={true} growth={true} authority={true} tip="An AI assistant that explains your scan results, answers product questions, and helps you understand the next best action." />
                   <FeatureRow label="Email Support" free="None" starter="✓" growth="Priority" authority="Dedicated" tip="Priority means faster response times. Dedicated means a named contact who knows your account and business goals." />
                   <FeatureRow label="PDF Reports" free="None" starter="✓" growth="Branded" authority="White-label" tip="Download professional reports to share with clients or stakeholders. Branded includes your logo; White-label lets you remove all Geothority branding and use your own." />
                 </tbody>
@@ -629,7 +629,7 @@ export default function PricingPage() {
             <div>
               <h3 className="text-xl font-bold text-white mb-1">30-Day Money-Back Guarantee</h3>
               <p className="text-gray-400">
-                Not satisfied? Get a full refund within 30 days. No questions asked. We stand behind our product wholeheartedly.
+                Not satisfied? Request a full refund within 30 days. It&apos;s a lower-risk way to try the paid plans without a long commitment.
               </p>
             </div>
           </div>
@@ -673,7 +673,7 @@ export default function PricingPage() {
                 </span>
               </h2>
               <p className="text-xl text-gray-400 mb-10 max-w-xl mx-auto">
-                Start with a free scan. Upgrade when you see the results.
+                Start with a free scan. Upgrade when you want more execution and monitoring.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link

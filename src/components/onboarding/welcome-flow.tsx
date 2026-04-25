@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Building2, ArrowRight, CheckCircle2 } from "lucide-react";
-
-const STORAGE_KEY = "geo-onboarding-done";
+import { markOnboardingComplete } from "@/lib/onboarding";
 
 interface WelcomeFlowProps {
   /** Called when the user completes or dismisses the flow */
@@ -20,7 +19,7 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps = {}) {
   const [city, setCity] = useState("");
 
   const handleDismiss = () => {
-    try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* ignore */ }
+    markOnboardingComplete();
     setOpen(false);
     onComplete?.();
   };
@@ -29,7 +28,7 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps = {}) {
     if (step < 2) {
       setStep((s) => s + 1);
     } else {
-      try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* ignore */ }
+      markOnboardingComplete();
       setOpen(false);
       onComplete?.();
       const params = new URLSearchParams();
@@ -49,8 +48,8 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps = {}) {
           </div>
           <h2 className="text-xl font-bold mb-3 tracking-tight">Welcome to Geothority</h2>
           <p className="text-sm text-[var(--muted-foreground)] leading-relaxed max-w-xs mx-auto">
-            The local SEO intelligence platform trusted by agencies to diagnose,
-            fix, and dominate local search - in minutes.
+            A local visibility platform built to diagnose what matters,
+            explain the next fix clearly, and help you move faster.
           </p>
           <div className="mt-6 grid grid-cols-3 gap-3 text-center">
             {[

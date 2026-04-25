@@ -100,7 +100,7 @@ function SceneScan() {
           animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
           transition={{ repeat: Infinity, duration: 1.2 }}
         />
-        Scanning 68+ authority signals...
+        Scanning 68+ authority signals for an initial picture...
       </motion.div>
 
       {/* Trust Stack scores */}
@@ -340,8 +340,8 @@ function SceneAIVisibility() {
         transition={{ delay: 3.0 }}
       >
         <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/70 mb-1">AI Visibility Score</div>
-        <div className="text-3xl font-bold text-emerald-400">15/15</div>
-        <div className="text-xs text-white/40 mt-1">All platforms recommend your business</div>
+        <div className="text-3xl font-bold text-emerald-400">15 checked</div>
+        <div className="text-xs text-white/40 mt-1">Coverage monitored across major AI answer surfaces</div>
       </motion.div>
     </div>
   );
@@ -491,7 +491,7 @@ function SceneGBP() {
           <span className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/80">Google Business Profile</span>
         </div>
         <div className="text-sm font-medium text-white">Hours, category, and post cadence need attention</div>
-        <div className="text-xs text-white/50 mt-1">We prepare the corrections and publish the update automatically</div>
+        <div className="text-xs text-white/50 mt-1">We prepare the corrections and publish supported updates when the connection is in place</div>
       </motion.div>
 
       <motion.div
@@ -527,7 +527,7 @@ function SceneGBP() {
           <span className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/80">Outcome</span>
         </div>
         <div className="text-sm font-semibold text-white">Your profile stays fresh without manual weekly busywork</div>
-        <div className="text-xs text-white/55 mt-1">That means better local trust signals and more map conversions.</div>
+        <div className="text-xs text-white/55 mt-1">That creates cleaner local trust signals and a clearer follow-up plan.</div>
       </motion.div>
     </div>
   );
@@ -549,7 +549,7 @@ function SceneReviews() {
           <span className="text-[10px] uppercase tracking-[0.18em] text-amber-400/80">Review Momentum</span>
         </div>
         <div className="text-sm font-medium text-white">A 5-star review arrives and the follow-up engine stays active</div>
-        <div className="mt-1 text-xs text-white/50">We help generate more trust signals instead of waiting for reviews to happen randomly.</div>
+        <div className="mt-1 text-xs text-white/50">We help you turn new reviews into follow-up actions and stronger trust signals.</div>
       </motion.div>
 
       <motion.div
@@ -611,7 +611,7 @@ const SCENES: SceneDefinition[] = [
     label: "Fix",
     title: "Turn issues into one-click fixes",
     benefit: "Instead of handing you a report, Geothority does the work and improves the score.",
-    metric: "73 → 81 trust score",
+    metric: "Example: 73 → 81 trust score",
     component: SceneFix,
   },
   {
@@ -619,7 +619,7 @@ const SCENES: SceneDefinition[] = [
     label: "Citations",
     title: "Keep listings consistent everywhere",
     benefit: "Wrong NAP data quietly kills trust. We find drift and push corrections across the ecosystem.",
-    metric: "84% → 97% consistency",
+    metric: "Example: 84% → 97% consistency",
     component: SceneCitations,
   },
   {
@@ -635,7 +635,7 @@ const SCENES: SceneDefinition[] = [
     label: "Monitor",
     title: "Counter competitor moves automatically",
     benefit: "Every alert turns into a suggested response, not just another notification.",
-    metric: "+12% visibility lift",
+    metric: "Response plan ready",
     component: SceneMonitor,
   },
   {
@@ -643,7 +643,7 @@ const SCENES: SceneDefinition[] = [
     label: "AI",
     title: "Win the new AI recommendation layer",
     benefit: "We track whether AI assistants mention you, then generate what improves those answers.",
-    metric: "15/15 AI engines recommending you",
+    metric: "15 AI engines checked",
     component: SceneAIVisibility,
   },
   {
@@ -714,7 +714,7 @@ export function AnimatedHero() {
           <div className="h-2.5 w-2.5 rounded-full bg-amber-300/50" />
           <div className="h-2.5 w-2.5 rounded-full bg-emerald-300/50" />
           <div className="ml-3 h-4.5 flex-1 rounded-full bg-white/[0.04]" />
-          <div className="hidden rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-emerald-300 sm:inline-flex">Autonomous local growth</div>
+          <div className="hidden rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-emerald-300 sm:inline-flex">Illustrative workflow</div>
         </div>
 
         <div className="relative min-h-[174px] border-b border-white/6 bg-[linear-gradient(180deg,rgba(16,185,129,0.08),rgba(16,185,129,0.01))] px-6 py-4 sm:min-h-[160px]">
