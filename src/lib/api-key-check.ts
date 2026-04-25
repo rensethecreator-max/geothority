@@ -50,6 +50,13 @@ const KEY_DEFS: Array<Omit<KeyStatus, "configured">> = [
     impact: "Client-side database access",
     category: "critical",
   },
+  {
+    key: "Supabase Service Role Key",
+    envVar: "SUPABASE_SERVICE_ROLE_KEY",
+    required: true,
+    impact: "Server-side database access, cron jobs, billing webhooks, monitoring automation",
+    category: "critical",
+  },
   // Recommended — features work but are degraded
   {
     key: "Perplexity",

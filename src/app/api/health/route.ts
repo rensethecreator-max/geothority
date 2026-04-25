@@ -19,6 +19,9 @@ export async function GET() {
     const supabase = createServiceClient();
     const { error } = await supabase.from("scans").select("id").limit(1);
     checks.database = error ? `error: ${error.message}` : "connected";
+    if (error) {
+      checks.status = "degraded";
+    }
   } catch (e: any) {
     checks.database = `error: ${e.message}`;
     checks.status = "degraded";

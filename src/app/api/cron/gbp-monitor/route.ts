@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendGBPAlert } from "@/lib/email-alerts";
 
 /**
  * GET /api/cron/gbp-monitor
@@ -39,6 +40,7 @@ export async function GET(req: NextRequest) {
 
     let processed = 0;
     let failed = 0;
+    const alertsByUser = new Map<string, { businessName: string; alerts: Array<{ type: string; title: string; description: string }> }>();
 
     for (const monitor of monitors || []) {
       try {
@@ -83,14 +85,26 @@ export async function GET(req: NextRequest) {
           if (snapshots.length >= 2 && place?.rating) {
             const prev = snapshots[1];
             if (prev.rating && place.rating < prev.rating - 0.2) {
+              const message = `Rating dropped from ${prev.rating} to ${place.rating}`;
               await supabase.from("gbp_alerts").insert({
                 monitor_id: monitor.id,
                 user_id: monitor.user_id,
                 alert_type: "rating_drop",
-                message: `Rating dropped from ${prev.rating} to ${place.rating}`,
+                message,
                 data: { previous: prev.rating, current: place.rating },
                 read: false,
               });
+
+              const existing = alertsByUser.get(monitor.user_id) ?? {
+                businessName: monitor.business_name,
+                alerts: [],
+              };
+              existing.alerts.push({
+                type: "rating_drop",
+                title: "GBP rating dropped",
+                description: `${monitor.business_name}: ${message}`,
+              });
+              alertsByUser.set(monitor.user_id, existing);
             }
           }
         }
@@ -107,11 +121,24 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    for (const [userId, payload] of alertsByUser.entries()) {
+      try {
+        const { data: authData } = await supabase.auth.admin.getUserById(userId);
+        const email = authData?.user?.email;
+        if (email) {
+          await sendGBPAlert(email, payload.businessName || "Your Business", payload.alerts);
+        }
+      } catch (emailErr) {
+        console.error(`[cron/gbp-monitor] Email alert failed for ${userId}:`, emailErr);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       processed,
       failed,
       total: (monitors || []).length,
+      emailAlertsSent: alertsByUser.size,
     });
   } catch (err) {
     console.error("GBP cron error:", err);
