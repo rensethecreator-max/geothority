@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Scan, UserProfile } from "@/lib/types";
 import { DashboardSkeleton } from "@/components/shared/loading-skeleton";
-import { EmptyState } from "@/components/shared/empty-state";
 import { WelcomeFlow } from "@/components/onboarding/welcome-flow";
 import { TrustStackVisualization, ScoreRing } from "@/components/scan/trust-stack";
 import { QuickWinCard } from "@/components/scan/quick-win-card";
@@ -15,6 +15,9 @@ import {
   ArrowRight,
   Clock,
   ExternalLink,
+  ShieldCheck,
+  Radar,
+  Sparkles,
 } from "lucide-react";
 import { InfoTooltip, LayerInfoTooltip } from "@/components/ui/info-tooltip";
 import Link from "next/link";
@@ -34,6 +37,7 @@ import {
   Legend,
 } from "recharts";
 import { format } from "date-fns";
+import { readOnboardingCompletion } from "@/lib/onboarding";
 
 interface ScoreHistoryEntry {
   id: string;
@@ -79,6 +83,7 @@ export default function DashboardPage() {
   // Onboarding completion state - must be declared before any early returns
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
   const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     async function loadData() {
@@ -86,7 +91,11 @@ export default function DashboardPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) return;
+      if (!user) {
+        router.replace("/login?redirect=/dashboard");
+        setLoading(false);
+        return;
+      }
 
       const [profileRes, scansRes, historyRes] = await Promise.all([
         supabase.from("user_profiles").select("*").eq("id", user.id).single(),
@@ -104,7 +113,12 @@ export default function DashboardPage() {
           .limit(30),
       ]);
 
-      if (profileRes.data) setProfile(profileRes.data);
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+        setOnboardingDone(profileRes.data.onboarding_completed === true || readOnboardingCompletion());
+      } else {
+        setOnboardingDone(readOnboardingCompletion());
+      }
       if (scansRes.data) {
         setScans(scansRes.data);
         if (scansRes.data.length > 0) setLatestScan(scansRes.data[0]);
@@ -115,17 +129,10 @@ export default function DashboardPage() {
     }
 
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router, supabase]);
 
-  // Read onboarding completion from localStorage
   useEffect(() => {
-    try {
-      const done = localStorage.getItem("geo-onboarding-done");
-      setOnboardingDone(done === "1");
-    } catch {
-      setOnboardingDone(true); // fail-safe: don't block
-    }
+    setOnboardingDone((current) => current ?? readOnboardingCompletion());
   }, []);
 
   if (loading) return <DashboardSkeleton />;
@@ -204,29 +211,57 @@ export default function DashboardPage() {
 
   const ls = latestScan.layer_scores || { layer1: 0, layer2: 0, layer3: 0, layer4: 0, layer5: 0 };
   const quickWins = latestScan.quick_wins || [];
+  const topLayer = Object.entries(ls).sort((a, b) => b[1] - a[1])[0];
+  const layerLabels: Record<string, string> = {
+    layer1: "GBP authority",
+    layer2: "Website trust",
+    layer3: "Citation consistency",
+    layer4: "Review momentum",
+    layer5: "Content coverage",
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            {latestScan.business_name} · {latestScan.city}, {latestScan.state}
-          </p>
+      <div className="geo-premium-card rounded-3xl p-6 sm:p-7">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-electric-500/20 bg-electric-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-electric-500">
+              <Radar className="h-3.5 w-3.5" />
+              Territory command center
+            </div>
+            <h1 className="text-3xl font-semibold tracking-tight">{latestScan.business_name}</h1>
+            <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
+              {latestScan.city}, {latestScan.state} · Last scan {new Date(latestScan.created_at).toLocaleDateString()}.
+              Your moat is currently anchored by {topLayer ? layerLabels[topLayer[0]] : "trust coverage"}, with {quickWins.length} quick win{quickWins.length === 1 ? "" : "s"} ready to convert into score lift.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Best layer", value: topLayer ? `${layerLabels[topLayer[0]]} · ${topLayer[1]}/100` : "Waiting for layer data", icon: ShieldCheck },
+              { label: "Response posture", value: quickWins.length > 0 ? `${quickWins.length} countermoves queued` : "No urgent fixes detected", icon: Sparkles },
+            ].map((item) => (
+              <div key={item.label} className="geo-premium-muted min-w-[220px] rounded-2xl px-4 py-3">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+                  <item.icon className="h-3.5 w-3.5 text-electric-500" />
+                  {item.label}
+                </div>
+                <p className="mt-2 text-sm font-medium text-[var(--foreground)]">{item.value}</p>
+              </div>
+            ))}
+            <Link
+              href="/scan"
+              className="inline-flex items-center gap-2 self-start rounded-xl bg-electric-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-electric-600"
+            >
+              <Search className="h-4 w-4" />
+              New Scan
+            </Link>
+          </div>
         </div>
-        <Link
-          href="/scan"
-          className="flex items-center gap-2 px-4 py-2 bg-electric-500 hover:bg-electric-600 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          <Search className="w-4 h-4" />
-          New Scan
-        </Link>
       </div>
 
       {/* Score Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[var(--card)] rounded-xl p-6 border border-[var(--border)] flex items-center gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="geo-premium-card rounded-2xl p-6 flex items-center gap-4">
           <ScoreRing score={latestScan.geothority_score || 0} size={80} label="" />
           <div>
             <div className="text-sm text-[var(--muted-foreground)] flex items-center gap-1.5">
@@ -246,7 +281,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--card)] rounded-xl p-6 border border-[var(--border)]">
+        <div className="geo-premium-card rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="w-4 h-4 text-amber-500" />
             <span className="text-sm text-[var(--muted-foreground)] flex items-center gap-1.5">
@@ -263,7 +298,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="bg-[var(--card)] rounded-xl p-6 border border-[var(--border)]">
+        <div className="geo-premium-card rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-score-good" />
             <span className="text-sm text-[var(--muted-foreground)] flex items-center gap-1.5">
@@ -293,8 +328,8 @@ export default function DashboardPage() {
       )}
 
       {/* Trust Stack + Quick Win */}
-      <div className="grid lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3 bg-[var(--card)] rounded-xl p-6 border border-[var(--border)]">
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="geo-premium-card rounded-3xl p-6 lg:col-span-3">
           <TrustStackVisualization layerScores={ls} />
           <Link
             href={`/scan/${latestScan.id}`}
@@ -310,7 +345,7 @@ export default function DashboardPage() {
           {quickWins[0] ? (
             <QuickWinCard win={quickWins[0]} featured scanId={latestScan.id} index={0} />
           ) : (
-            <div className="bg-[var(--card)] rounded-xl p-6 border border-[var(--border)] text-center">
+            <div className="geo-premium-card rounded-3xl p-6 text-center">
               <p className="text-sm text-[var(--muted-foreground)]">
                 No quick wins - your site looks great! 🎉
               </p>
@@ -320,7 +355,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Score History Chart */}
-      <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6">
+      <div className="geo-premium-card rounded-3xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-lg font-semibold flex items-center gap-1.5">
@@ -423,7 +458,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Scan History */}
-      <div className="bg-[var(--card)] rounded-xl border border-[var(--border)]">
+      <div className="geo-premium-card rounded-3xl">
         <div className="p-6 border-b border-[var(--border)]">
           <h3 className="text-lg font-semibold">Recent Scans</h3>
         </div>

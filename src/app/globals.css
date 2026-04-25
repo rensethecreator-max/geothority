@@ -201,12 +201,59 @@
   }
 }
 
+@keyframes geo-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .geo-signal-pulse {
   animation: geo-signal-pulse 3.6s ease-in-out infinite;
 }
 
 .geo-breathe {
   animation: geo-breathe 4.6s ease-in-out infinite;
+}
+
+.geo-premium-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(158, 177, 199, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015)),
+    rgba(16, 25, 38, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 20px 70px rgba(4, 10, 18, 0.28);
+  backdrop-filter: blur(22px);
+}
+
+.geo-premium-card::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 20%, transparent 78%, rgba(92,230,186,0.06));
+  opacity: 0.9;
+}
+
+.geo-premium-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.geo-premium-muted {
+  border: 1px solid rgba(158, 177, 199, 0.14);
+  background: rgba(17, 25, 39, 0.65);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.geo-shimmer {
+  background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%);
+  background-size: 200% 100%;
+  animation: geo-shimmer 2.6s linear infinite;
 }
 
 /* ─── Scroll-reveal animations ──────────────────────────────── */
@@ -577,6 +624,25 @@
 }
 .light-mode .text-gray-400 {
   color: var(--muted-foreground);
+}
+
+.light-mode .geo-premium-card {
+  border-color: rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.84));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 18px 50px rgba(15, 23, 42, 0.08);
+}
+
+.light-mode .geo-premium-card::before {
+  background: linear-gradient(135deg, rgba(255,255,255,0.75), transparent 20%, transparent 78%, rgba(99,102,241,0.05));
+}
+
+.light-mode .geo-premium-muted {
+  border-color: rgba(15, 23, 42, 0.08);
+  background: rgba(255,255,255,0.7);
+}
+
+.light-mode .geo-shimmer {
+  background-image: linear-gradient(90deg, rgba(15,23,42,0.03) 0%, rgba(15,23,42,0.08) 50%, rgba(15,23,42,0.03) 100%);
 }
 
 /* Backdrop blur panels */

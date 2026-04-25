@@ -192,10 +192,12 @@ export default function CompetitorsPage() {
         <h1 className="text-2xl font-bold mb-6">Competitor Watchdog</h1>
         <EmptyState
           icon={Eye}
+          eyebrow="Competitive radar offline"
           title="Run a scan first"
-          description="We need to know your city and business to find competitors. Run a website scan to get started."
+          description="We need your city and business profile before Geothority can map the rivals already taking share in your market."
           actionLabel="Run a Scan"
           actionHref="/scan"
+          meta={["Territory mapping", "Review momentum", "Market score deltas"]}
         />
       </div>
     );
@@ -211,36 +213,60 @@ export default function CompetitorsPage() {
     });
 
   const hasAnyHistory = competitors.some((c) => c.snapshotHistory.length >= 2);
+  const newSignals = allAlerts.filter((a) => a.isNew).length;
+  const criticalSignals = allAlerts.filter((a) => a.severity === "critical").length;
+  const avgCompetitorScore = competitors.length > 0
+    ? Math.round(competitors.reduce((sum, comp) => sum + comp.score, 0) / competitors.length)
+    : 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Competitor Watchdog</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Tracking {competitors.length} live competitors{location ? ` in ${location}` : ""}
-            {businessType ? ` for ${businessType}` : ""}
-            {hasAnyHistory && " · historical comparison active"}
-          </p>
+      <div className="geo-premium-card rounded-3xl p-6 sm:p-7">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center rounded-full border border-electric-500/20 bg-electric-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-electric-500">
+              Competitive countermove engine
+            </div>
+            <h1 className="text-3xl font-semibold tracking-tight">Competitor Watchdog</h1>
+            <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
+              Tracking {competitors.length} live competitors{location ? ` in ${location}` : ""}
+              {businessType ? ` for ${businessType}` : ""}. {newSignals > 0
+                ? `${newSignals} fresh market signal${newSignals === 1 ? " has" : "s have"} landed since the last refresh.`
+                : "No new competitor moves detected since the last refresh."}
+              {hasAnyHistory && " Historical comparison is active."}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Average rival score", value: competitors.length > 0 ? `${avgCompetitorScore}/100` : "Waiting for market data" },
+              { label: "Critical moves", value: `${criticalSignals} requiring attention` },
+              { label: "Fresh signals", value: `${newSignals} change${newSignals === 1 ? "" : "s"} ready to match` },
+            ].map((item) => (
+              <div key={item.label} className="geo-premium-muted min-w-[180px] rounded-2xl px-4 py-3">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{item.label}</div>
+                <p className="mt-2 text-sm font-medium text-[var(--foreground)]">{item.value}</p>
+              </div>
+            ))}
+            <button
+              onClick={() => void load(true)}
+              disabled={refreshing}
+              className="inline-flex items-center gap-2 self-start rounded-xl border border-[var(--border)] bg-[var(--background)]/80 px-4 py-2.5 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-white/5 disabled:opacity-60"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+              Refresh live market
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => void load(true)}
-          disabled={refreshing}
-          className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium hover:bg-white/5 disabled:opacity-60"
-        >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          Refresh live market
-        </button>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-200">
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-200 shadow-[0_12px_40px_rgba(127,29,29,0.12)]">
           {error}
         </div>
       )}
 
       {insights.length > 0 && (
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
+        <div className="geo-premium-card rounded-2xl p-4">
           <h2 className="mb-3 font-semibold">Live market takeaways</h2>
           <ul className="space-y-2 text-sm text-[var(--muted-foreground)]">
             {insights.map((insight, i) => (
@@ -251,7 +277,7 @@ export default function CompetitorsPage() {
       )}
 
       {allAlerts.length > 0 && (
-        <div className="bg-[var(--card)] rounded-xl border border-[var(--border)]">
+        <div className="geo-premium-card rounded-3xl">
           <div className="p-4 border-b border-[var(--border)]">
             <h2 className="font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
@@ -347,7 +373,7 @@ export default function CompetitorsPage() {
         {competitors.map((comp) => (
           <div
             key={comp.id}
-            className="bg-[var(--card)] rounded-xl p-5 border border-[var(--border)]"
+            className="geo-premium-card rounded-3xl p-5"
           >
             <div className="flex items-start justify-between mb-3">
               <div>

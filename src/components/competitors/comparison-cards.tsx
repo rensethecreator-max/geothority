@@ -107,7 +107,7 @@ export function ComparisonCards({ you, competitors }: ComparisonCardsProps) {
           return (
             <div
               key={i}
-              className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-5"
+              className="geo-premium-card rounded-3xl p-5"
             >
               {/* Header */}
               <div className="mb-4">

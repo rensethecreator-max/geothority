@@ -8,6 +8,8 @@ interface EmptyStateProps {
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
+  eyebrow?: string;
+  meta?: string[];
 }
 
 export function EmptyState({
@@ -17,32 +19,51 @@ export function EmptyState({
   actionLabel,
   actionHref,
   onAction,
+  eyebrow = "Mission control waiting",
+  meta = [],
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-[var(--muted)] flex items-center justify-center mb-4">
-        <Icon className="w-8 h-8 text-[var(--muted-foreground)]" />
+    <div className="geo-premium-card rounded-3xl px-6 py-14 text-center sm:px-10">
+      <div className="mx-auto flex max-w-xl flex-col items-center justify-center">
+        <div className="mb-4 inline-flex items-center rounded-full border border-electric-500/20 bg-electric-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-electric-500">
+          {eyebrow}
+        </div>
+        <div className="mb-5 flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-3xl geo-premium-muted">
+          <Icon className="h-8 w-8 text-[var(--foreground)]" />
+        </div>
+        <h3 className="mb-2 text-xl font-semibold tracking-tight">{title}</h3>
+        <p className="mb-6 max-w-md text-sm leading-7 text-[var(--muted-foreground)]">
+          {description}
+        </p>
+        {meta.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
+            {meta.map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-[var(--border)] bg-[var(--background)]/70 px-3 py-1 text-[11px] font-medium text-[var(--muted-foreground)]"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        )}
+        {actionLabel && actionHref && (
+          <Link
+            href={actionHref}
+            className="inline-flex items-center justify-center rounded-xl bg-electric-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-electric-600"
+          >
+            {actionLabel}
+          </Link>
+        )}
+        {actionLabel && onAction && !actionHref && (
+          <button
+            onClick={onAction}
+            className="inline-flex items-center justify-center rounded-xl bg-electric-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-electric-600"
+          >
+            {actionLabel}
+          </button>
+        )}
       </div>
-      <h3 className="text-lg font-semibold mb-1">{title}</h3>
-      <p className="text-sm text-[var(--muted-foreground)] max-w-md mb-6">
-        {description}
-      </p>
-      {actionLabel && actionHref && (
-        <Link
-          href={actionHref}
-          className="px-4 py-2 bg-electric-500 hover:bg-electric-600 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          {actionLabel}
-        </Link>
-      )}
-      {actionLabel && onAction && !actionHref && (
-        <button
-          onClick={onAction}
-          className="px-4 py-2 bg-electric-500 hover:bg-electric-600 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          {actionLabel}
-        </button>
-      )}
     </div>
   );
 }
