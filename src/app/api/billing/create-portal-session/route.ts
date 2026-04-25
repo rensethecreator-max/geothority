@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
 
   const { returnPath = "/settings" } = await req.json().catch(() => ({}));
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3010";
+  const portalReturnUrl = process.env.STRIPE_PORTAL_RETURN_URL ?? `${appUrl}${returnPath}`;
 
   const supabase = createServiceClient();
   const { data: profile } = await supabase
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await stripe.billingPortal.sessions.create({
       customer: profile.stripe_customer_id,
-      return_url: `${appUrl}${returnPath}`,
+      return_url: portalReturnUrl,
     });
 
     return NextResponse.json({ url: session.url });

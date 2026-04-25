@@ -4,20 +4,35 @@ import { createServiceClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 import { PLANS, type PlanKey } from "@/lib/stripe";
 
+/**
+ * Verify Stripe webhook signature, supporting secret rotation.
+ * Tries STRIPE_WEBHOOK_SECRET first, then STRIPE_WEBHOOK_SECRET_PREVIOUS.
+ * This allows zero-downtime rotation: set PREVIOUS to the old secret,
+ * update STRIPE_WEBHOOK_SECRET to the new one, then remove PREVIOUS.
+ */
+function verifyWebhookSignature(body: string, sig: string): Stripe.Event | null {
+  const secrets = [
+    process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_WEBHOOK_SECRET_PREVIOUS,
+  ].filter(Boolean) as string[];
+
+  for (const secret of secrets) {
+    try {
+      return stripe.webhooks.constructEvent(body, sig, secret);
+    } catch {
+      // Try next secret
+    }
+  }
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature")!;
 
-  let event: Stripe.Event;
-
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err);
+  const event = verifyWebhookSignature(body, sig);
+  if (!event) {
+    console.error("Webhook signature verification failed: no matching secret");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 

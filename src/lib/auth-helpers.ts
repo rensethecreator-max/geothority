@@ -43,3 +43,20 @@ export function isAdminUser(email: string): boolean {
     .filter(Boolean);
   return adminEmails.includes(email);
 }
+
+/**
+ * Get the authenticated admin user from the request.
+ * Returns { user } or a 401/403 NextResponse.
+ */
+export async function getAdminUser(
+  req: NextRequest
+): Promise<{ user: AuthedUser } | { error: NextResponse }> {
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth;
+  if (!isAdminUser(auth.user.email)) {
+    return {
+      error: NextResponse.json({ error: "Forbidden: admin access required" }, { status: 403 }),
+    };
+  }
+  return auth;
+}
