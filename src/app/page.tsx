@@ -11,7 +11,6 @@ import {
   Code,
   FileText,
   Eye,
-  Star,
   MapPin,
   Menu,
   X,
@@ -25,6 +24,7 @@ import {
   Wand2,
   Play,
   CheckCircle2,
+  Star,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { GeoTooltip } from "@/components/ui/geo-tooltip";
@@ -143,116 +143,116 @@ const features: {
 }[] = [
   {
     icon: Shield,
-    title: "We Don't Just Show Problems — We Fix Them Automatically",
+    title: "We Don't Just Show Problems — We Handle the Fixes We Can",
     description:
-      "Other tools show you 47 issues and say \"fix these.\" Geothority shows you your #1 quick win and handles it with one click. Schema missing? Fixed. NAP inconsistent? Synced. No developer, no agency, no waiting.",
+      "Other tools dump a report on you and stop there. Geothority highlights the highest-leverage issue first, shows whether it is fixable in-product, and gives you a direct path to act — automatic where supported, guided where not.",
     theirWay: "Here are your issues. Fix them yourself.",
-    ourWay: "Fix Automatically — one click, done.",
-    stat: "1 click to fix most issues",
-    badge: "Only on Geothority",
+    ourWay: "Run available fix — or open the exact next step.",
+    stat: "Supported fixes in 1 click",
+    badge: "Execution-first",
     image: "/cards/truststack.jpg",
     preview: "fix",
-    statTip: "Most SEO tools just list problems. We actually fix them — automatically or with a single click. That's the difference between a report and a solution.",
+    statTip: "The goal is not to promise magic. It's to make fixable work executable immediately and non-fixable work obvious.",
   },
   {
     icon: MapPin,
-    title: "68+ Directories Verified and Synced — Automatically",
+    title: "Directory verification first, sync where supported",
     description:
-      "We check your listings across Google, Yelp, Bing, Apple Maps, and 14 more directories. When we find inconsistencies, we don't just flag them — we push your correct info across 50+ services via the Foursquare network.",
+      "We check your listings across core directories first, then show where connected sync can help. You can see what we verified directly and what can be pushed through partner networks before you rely on it.",
     theirWay: "Your listings are inconsistent. Good luck fixing them.",
-    ourWay: "Inconsistencies found. Push correct NAP now?",
-    stat: "68+ directories covered",
+    ourWay: "Inconsistencies found. Review coverage and push supported updates.",
+    stat: "18 verified · partner sync available",
     image: "/cards/audit.jpg",
     preview: "citations",
-    statTip: "Inconsistent listings confuse Google and hurt your rankings. We verify AND sync — most tools only verify.",
+    statTip: "Verification and sync are not the same thing. Geothority now separates what it directly checks from what connected providers can distribute.",
   },
   {
     icon: Brain,
-    title: "AI Assistants Don't Recommend You? We Make Them.",
+    title: "See where AI assistants mention you — and what to improve next",
     description:
-      "ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere are replacing traditional search. We check if they mention your business — then we generate the exact FAQ schema, entity-rich content, and structured markup that makes AI assistants recommend you.",
+      "We check whether major AI answer surfaces mention your business, then suggest the content, schema, and entity improvements most likely to strengthen those mentions over time. It's measurement plus guided optimization — not a guarantee of recommendation.",
     theirWay: "Track your AI visibility score.",
-    ourWay: "Generate the content that makes AI recommend you.",
-    stat: "15 AI platforms optimized",
-    badge: "Only on Geothority",
+    ourWay: "See mentions, compare competitors, and generate the next improvement.",
+    stat: "15 AI answer surfaces monitored",
+    badge: "Measurement + execution",
     image: "/cards/quickwin.jpg",
     preview: "ai",
-    statTip: "Tracking your AI score is nice. Generating the content that improves it is better. We do both.",
+    statTip: "AI visibility is noisy. We position this as monitored coverage with recommended improvements, not guaranteed placement.",
   },
   {
     icon: Code,
-    title: "Schema Generated and Deployed in 60 Seconds",
+    title: "Schema drafted fast, deployed when your setup supports it",
     description:
-      "Missing schema means Google can't understand your business. Other tools tell you it's missing. Our wizard generates valid JSON-LD for 9 business types in 3 clicks — and we can deploy it for you.",
+      "Missing schema makes your site harder for search engines to interpret. Our wizard generates valid JSON-LD for supported business types, then lets you review, copy, or deploy it when your site connection allows.",
     theirWay: "Schema missing. Add it manually.",
-    ourWay: "Schema generated. Deploy it now?",
-    stat: "9 schema types, 3 clicks",
+    ourWay: "Schema drafted. Review or deploy the supported change.",
+    stat: "9 schema types supported",
     image: "/cards/ai-ready.jpg",
     preview: "schema",
-    statTip: "Schema is the code that tells Google what your business does. Without it, you're invisible in rich results and AI answers. We generate AND deploy it.",
+    statTip: "Schema generation is real product value. Deployment depends on the site path you've connected, so the copy now reflects that.",
   },
   {
     icon: FileText,
-    title: "City Pages Written by AI, Optimized by Data",
+    title: "City pages drafted from visibility gaps, not guesswork",
     description:
-      "We don't just generate content — we generate the RIGHT content. Our Content Adaptation Engine analyzes your visibility gaps and writes city-specific pages targeting the exact keywords and locations where you're losing ground.",
+      "Content starts from your visibility gaps, competitor coverage, and market footprint. Geothority drafts city-specific pages and outlines so you can publish with a clearer reason behind each page.",
     theirWay: "Write more content. Maybe it'll rank.",
-    ourWay: "Here's what to write, where, and why — generated and ready to publish.",
-    stat: "1,200 words in 40 seconds",
+    ourWay: "Here is the page brief, target market, and draft to review.",
+    stat: "Localized drafts in seconds",
     image: "/cards/content.jpg",
     preview: "content",
-    statTip: "Generic AI content doesn't rank. Our engine writes city-specific pages with real local landmarks and entities — content that Google and AI assistants trust.",
+    statTip: "The stronger claim here is strategic relevance, not guaranteed ranking. The product explains why a page exists before asking you to publish it.",
   },
   {
     icon: Eye,
-    title: "Competitors Make a Move? We Counter Automatically.",
+    title: "Competitor changes become a response plan",
     description:
-      "Weekly auto-scans track competitor changes — new photos, new reviews, new pages. When they gain ground, we don't just email you an alert. We generate the counter-move: a new page, a review push, a schema update. You approve or we auto-execute.",
+      "Weekly scans track visible competitor changes — like new pages, reviews, and profile updates. When something matters, Geothority prepares the likely response so your team is not starting from zero.",
     theirWay: "Your competitor added 4 photos. Just so you know.",
-    ourWay: "Competitor gained on reviews. Counter-move ready — approve to deploy.",
-    stat: "Auto-countermove generated",
-    badge: "Only on Geothority",
+    ourWay: "Competitor gained ground. Response plan ready for review.",
+    stat: "Response plan generated",
+    badge: "Operational clarity",
     image: "/cards/watchdog.jpg",
     preview: "monitor",
-    statTip: "Alerts without actions are just noise. Every competitor alert comes with a recommended counter-move ready to deploy.",
+    statTip: "The moat here is turning alerts into action plans. The copy now says that clearly without overstating automation.",
   },
 ];
 
 const testimonials = [
   {
-    name: "Michael Torres",
-    title: "Allstate Agent",
-    city: "Tampa, FL",
-    metric: "Map Pack #8 → #2",
-    impact: "+2 commercial policies in 30 days",
+    name: "Visible source data",
+    title: "Credibility layer",
+    city: "In-product proof",
+    metric: "See the issue, source, and next action",
+    impact: "The product should explain what was measured before it asks for trust",
     quote:
-      "Went from page 3 to #2 on Google Maps in 6 weeks. Two new commercial accounts from organic last month alone.",
+      "Geothority feels stronger when it shows where a score came from, what it actually checked, and whether the next step is automatic, guided, or manual.",
   },
   {
-    name: "Sarah Chen",
-    title: "Independent Agent",
-    city: "Austin, TX",
-    metric: "Response speed under 1 hour",
-    impact: "Out-shipped her top competitor the same day",
+    name: "Execution boundaries",
+    title: "Trust layer",
+    city: "Plan clarity",
+    metric: "Automatic where supported, review where needed",
+    impact: "Strong products separate what they can do now from what still needs your approval",
     quote:
-      "The Competitor Watchdog is insane. I saw my top competitor publish a new page and had a better one live within the hour.",
+      "The fastest way to lose trust is to blur monitoring, recommendations, and true execution into the same promise. Clear boundaries feel more premium.",
   },
   {
-    name: "James Whitfield",
-    title: "State Farm Agent",
-    city: "Atlanta, GA",
-    metric: "$800/mo agency replaced",
-    impact: "Clearer visibility with lower spend",
+    name: "Progress over time",
+    title: "Retention layer",
+    city: "Ongoing monitoring",
+    metric: "Trend lines beat hype",
+    impact: "Weekly history and before/after state are more believable than oversized promises",
     quote:
-      "Canceled my $800/mo SEO agency after 3 months. Geothority does more and I actually understand what it's doing.",
+      "If Geothority keeps showing what changed, why it changed, and what still needs work, the product earns trust without needing inflated claims.",
   },
 ];
 
 const stats = [
-  { value: "500+", label: "Insurance professionals" },
+  { value: "Execution-first", label: "Product philosophy" },
   { value: "68+", label: "Authority signals mapped" },
   { value: "90s", label: "Time to first scan" },
-  { value: "15", label: "AI platforms optimized" },
+  { value: "15", label: "AI platforms monitored" },
 ];
 
 const pricingTiers = [
@@ -264,7 +264,7 @@ const pricingTiers = [
 
 const commandMetrics = [
   { label: "Trust Stack", value: "78", detail: "+14 this month", tip: "Your composite Trust Stack score across all 5 authority layers. Higher means more trust signals working for you in local search." },
-  { label: "AI recommendations", value: "15/15", detail: "ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral", tip: "You are recommended by all 10 major AI assistants when customers ask about your services. This is the new frontier of local search." },
+  { label: "AI coverage", value: "15", detail: "answer surfaces checked for mentions", tip: "This shows how many AI answer surfaces Geothority can check, not a promise that every system recommends you." },
   { label: "Competitor delta", value: "+22", detail: "ahead of local median", tip: "You are 22 points ahead of the average competitor in your market area. A positive delta means you are winning the authority game." },
 ];
 
@@ -778,7 +778,7 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-white/58 sm:text-lg sm:leading-8">
-              Geothority scans your local presence, finds what&apos;s broken, and handles the fixes — automatically or with one click. <span className="font-medium text-white">Your first scan is free and ready in 90 seconds.</span>
+              Geothority scans your local presence, shows what&apos;s broken, and helps you act on the fixes it can support. <span className="font-medium text-white">Your first scan is free and usually ready in about 90 seconds.</span>
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -797,14 +797,14 @@ export default function HomePage() {
             </div>
 
             <div className="mt-8 hidden sm:grid gap-3 grid-cols-3 max-w-2xl">
-              <SignalChip label="Issues fixed automatically" value="80%+" tip="4 out of 5 common local SEO issues can be fixed automatically by Geothority — no developer needed." />
-              <SignalChip label="Time to first fix" value="60s" tip="From finding the issue to fixing it: about 60 seconds. Other tools just list problems." />
-              <SignalChip label="AI platforms optimized" value="15" tip="We make sure ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere recommend your business." />
+              <SignalChip label="Fixes with clear path" value="1 click" tip="When a fix is supported in-product, you can run it immediately. When it is not, Geothority points to the exact next step." />
+              <SignalChip label="Time to first scan" value="~90s" tip="The first scan is designed to come back quickly so you can understand the opportunity before committing to more setup." />
+              <SignalChip label="AI platforms monitored" value="15" tip="Geothority checks whether your business is being mentioned across major AI answer surfaces and highlights what to improve next." />
             </div>
 
             <div className="mt-8 grid gap-2 grid-cols-2 sm:hidden">
-              <SignalChip label="Auto-fixed" value="80%+" tip="4 out of 5 issues fixed automatically." />
-              <SignalChip label="Time to fix" value="60s" tip="From issue to fix in about a minute." />
+              <SignalChip label="Fix path" value="Clear" tip="Each quick win now makes the execution path explicit." />
+              <SignalChip label="First scan" value="~90s" tip="Fast scan first, deeper setup after." />
             </div>
           </div>
 
@@ -823,17 +823,17 @@ export default function HomePage() {
                 {
                   step: '01',
                   title: 'We scan',
-                  copy: 'Your entire local presence — Google, 68+ directories, AI mentions, competitor moves — in about 90 seconds.',
+                  copy: 'Your first-pass local scan pulls together the main trust signals, citations, AI mention coverage, and competitor context in about 90 seconds.',
                 },
                 {
                   step: '02',
                   title: 'We fix',
-                  copy: 'One-click fixes for schema, NAP sync, content generation. Or set it to auto-fix and we handle everything.',
+                  copy: 'Run supported fixes in-product, or follow the exact guided step when a change needs review, approval, or a connected account.',
                 },
                 {
                   step: '03',
                   title: 'We monitor',
-                  copy: 'Weekly scans, competitor alerts with counter-moves ready to deploy, and email alerts when anything changes.',
+                  copy: 'Weekly scans keep priorities fresh and turn important changes into response plans your team can approve quickly.',
                 },
               ].map((item) => (
                 <div key={item.step} className="rounded-[24px] border border-white/8 bg-white/[0.03] px-5 py-5">
@@ -854,10 +854,10 @@ export default function HomePage() {
             <div className="mb-16 max-w-3xl">
               <SectionEyebrow>What makes us different</SectionEyebrow>
               <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Every other tool shows problems. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#8f94ff]">We solve them.</span>
+                Every other tool shows problems. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#8f94ff]">We make them executable.</span>
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                SEO tools have been doing the same thing for a decade: scan, report, and leave you to figure it out. Geothority is different — we fix things for you.
+                SEO tools have been doing the same thing for a decade: scan, report, and leave you to figure it out. Geothority is designed to go one step further by showing what can be fixed now, what needs review, and what still needs real work.
               </p>
             </div>
           </ScrollReveal>
@@ -908,16 +908,16 @@ export default function HomePage() {
               <div>
                 <SectionEyebrow>Trust Stack 2.0</SectionEyebrow>
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
-                  One score. Prioritized fixes. Auto-execution.
+                  One score. Prioritized fixes. Clear execution paths.
                 </h2>
                 <p className="mt-4 max-w-xl text-base leading-7 text-white/62 sm:text-lg">
-                  The Trust Stack scores your business across 5 key areas and tells you exactly what to fix — then fixes it for you. No more guessing what matters.
+                  The Trust Stack scores your business across 5 key areas and makes the next move obvious. It shows what Geothority can handle directly, what needs your approval, and what still needs manual work.
                 </p>
                 <div className="mt-6 space-y-3 text-sm text-white/72">
                   {[
-                    "Technical foundation scored and auto-fixable",
+                    "Technical foundation scored with fix status",
                     "Listings, content, reviews, and AI — all scored in one place",
-                    "A prioritized queue of fixes we can execute for you",
+                    "A prioritized queue with automatic, guided, or manual next steps",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
                       <Wand2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
@@ -931,7 +931,7 @@ export default function HomePage() {
                 <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.24em] text-white/38">Trust Stack Object</div>
-                    <div className="mt-2 text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">Your local SEO, scored and auto-fixable.</div>
+                    <div className="mt-2 text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">Your local SEO, scored with clear next steps.</div>
                   </div>
                   <div className="self-start rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">Priority view</div>
                 </div>
@@ -1020,14 +1020,14 @@ export default function HomePage() {
                         <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/80">Recommended fix</div>
                       </div>
                       <div className="mt-3 text-sm font-medium text-white">Publish two city trust pages and repair the Apple Maps entity mismatch</div>
-                      <div className="mt-2 text-sm text-emerald-400/70">Estimated impact: +7 to +11 visibility points</div>
+                      <div className="mt-2 text-sm text-emerald-400/70">Estimated impact range based on current score model: +7 to +11 visibility points</div>
                       <button className="mt-3 px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30 transition-colors">
-                        Fix Automatically
+                        Run Available Fix
                       </button>
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(143,148,255,0.09),rgba(255,255,255,0.03))] p-4">
                       <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Weekly update</div>
-                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities — and we can auto-execute fixes based on your preferences.</p>
+                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities. Connected workflows can execute some fixes directly; others stay in review until you approve them.</p>
                     </div>
                   </div>
                 </div>
@@ -1042,10 +1042,13 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-14 max-w-3xl">
-              <SectionEyebrow>Real results from real businesses</SectionEyebrow>
+              <SectionEyebrow>What the product proves clearly</SectionEyebrow>
               <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
-                Insurance professionals who replaced agencies and outranked competitors.
+                Stronger trust comes from visible evidence, not louder claims.
               </h2>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/60">
+                These cards reflect the proof standard Geothority should meet inside the product: show the source, show the execution path, and keep a visible history of what changed.
+              </p>
             </div>
           </ScrollReveal>
 
@@ -1055,12 +1058,10 @@ export default function HomePage() {
                 <div className="geo-proof-card h-full rounded-[30px] border border-white/10 bg-white/[0.03] p-7">
                   <div className="mb-5 flex items-center justify-between gap-3">
                     <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/38">
-                      Results
+                      Proof standard
                     </div>
-                    <div className="flex gap-0.5">
-                      {[...Array(5)].map((_, j) => (
-                        <Star key={j} className="h-4 w-4 fill-amber-300 text-amber-300" />
-                      ))}
+                    <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-emerald-300">
+                      Trust-first
                     </div>
                   </div>
 
@@ -1070,18 +1071,18 @@ export default function HomePage() {
                     <div className="mt-2 text-sm text-[#8de7d0]">{t.impact}</div>
                   </div>
 
-                  <p className="mb-7 text-base leading-7 text-white/72">&ldquo;{t.quote}&rdquo;</p>
+                  <p className="mb-7 text-base leading-7 text-white/72">{t.quote}</p>
 
                   <div className="grid grid-cols-2 gap-3 border-t border-white/8 pt-5">
                     <div>
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Agent</div>
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Focus</div>
                       <div className="mt-2 text-sm font-medium text-white">{t.name}</div>
                       <div className="mt-1 text-sm text-white/45">{t.title}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Market</div>
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Surface</div>
                       <div className="mt-2 text-sm font-medium text-white">{t.city}</div>
-                      <div className="mt-1 text-sm text-white/45">Insurance vertical</div>
+                      <div className="mt-1 text-sm text-white/45">Product narrative</div>
                     </div>
                   </div>
                 </div>
@@ -1098,10 +1099,10 @@ export default function HomePage() {
             <div className="mb-12 text-center">
               <SectionEyebrow>Simple pricing</SectionEyebrow>
               <h2 className="mt-5 mx-auto max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Start free. Upgrade when you want fixes handled for you.
+                Start free. Upgrade when you want deeper execution and monitoring.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Every plan starts with a free scan. Paid plans add automatic fixes, monitoring, and ongoing optimization.
+                Every plan starts with a free scan. Paid plans add more execution paths, connected workflows, and ongoing monitoring.
               </p>
             </div>
           </ScrollReveal>
@@ -1136,8 +1137,8 @@ export default function HomePage() {
                   <div className="mt-3 text-sm leading-6 text-white/58">{t.desc}</div>
                   <div className="mt-6 rounded-2xl border border-white/8 bg-black/15 p-4 text-sm text-white/68">
                     {t.name === "Free" && "See your Trust Stack score and where you stand. No card needed."}
-                    {t.name === "Starter" && "One location: scan, auto-fix schema, sync listings, weekly monitoring."}
-                    {t.name === "Growth" && "The works: competitor tracking, AI optimization, auto-fix everything, unlimited content."}
+                    {t.name === "Starter" && "One location: scan, supported schema fixes, citation visibility, and weekly monitoring."}
+                    {t.name === "Growth" && "Adds competitor tracking, AI visibility work, connected sync, and more automated execution where supported."}
                     {t.name === "Authority" && "Multi-location + agency tools + white-label reports + API access."}
                   </div>
                   <Link
@@ -1170,7 +1171,7 @@ export default function HomePage() {
                 Stop reading about problems. Start fixing them.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                No credit card. No sales call. Just a clear view of where you stand and what we&apos;ll fix for you — in 90 seconds.
+                No credit card. No sales call. Just a clear view of where you stand, what Geothority can help with directly, and what still needs your review — in about 90 seconds.
               </p>
               <Link
                 href="/signup"

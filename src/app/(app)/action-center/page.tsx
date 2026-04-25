@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   Activity,
   CheckCircle2,
@@ -14,11 +17,11 @@ import {
   ChevronRight,
   Zap,
   PauseCircle,
+  ArrowRight,
+  RefreshCw,
+  ShieldCheck,
+  Orbit,
 } from "lucide-react";
-import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-
-// ── Types ──────────────────────────────────────────────────────────────────
 
 interface PlanSummary {
   id: string;
@@ -52,8 +55,6 @@ interface SyncSummary {
   created_at: string;
 }
 
-// ── Status helpers ──────────────────────────────────────────────────────────
-
 const STATUS_CFG: Record<
   string,
   { label: string; icon: typeof CheckCircle2; color: string; bg: string }
@@ -79,14 +80,12 @@ const SYNC_STATUS_CFG: Record<string, { label: string; color: string; bg: string
   not_found: { label: "Not Found", color: "text-gray-500", bg: "bg-gray-500/10" },
 };
 
-// ── Components ──────────────────────────────────────────────────────────────
-
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CFG[status] ?? STATUS_CFG.planning;
   const Icon = cfg.icon;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.color}`}>
-      <Icon className={`w-3.5 h-3.5 ${status === "executing" ? "animate-spin" : ""}`} />
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${cfg.bg} ${cfg.color}`}>
+      <Icon className={`h-3.5 w-3.5 ${status === "executing" ? "animate-spin" : ""}`} />
       {cfg.label}
     </span>
   );
@@ -95,7 +94,7 @@ function StatusBadge({ status }: { status: string }) {
 function ModeBadge({ mode }: { mode: string }) {
   const cls = MODE_BADGE[mode] ?? MODE_BADGE.GUIDED;
   return (
-    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold tracking-wide ${cls}`}>
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide ${cls}`}>
       {mode}
     </span>
   );
@@ -108,7 +107,7 @@ function ProgressBar({ value }: { value: number }) {
   if (pct === 0) barColor = "bg-gray-300 dark:bg-gray-600";
 
   return (
-    <div className="w-full h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
       <div className={`h-full rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${pct}%` }} />
     </div>
   );
@@ -128,93 +127,113 @@ function PlanRow({
   const isRunning = plan.status === "executing";
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setExpanded((e) => !e)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+    <div className="geo-premium-card rounded-3xl">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setExpanded((current) => !current)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setExpanded((current) => !current);
+          }
+        }}
+        className="flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-white/[0.02] sm:px-5"
       >
         {expanded ? (
-          <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-[var(--muted-foreground)]" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+          <ChevronRight className="h-4 w-4 shrink-0 text-[var(--muted-foreground)]" />
         )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <span className="truncate text-sm font-semibold text-[var(--foreground)]">
               Plan {plan.id.slice(0, 12)}…
             </span>
             <ModeBadge mode={plan.mode} />
             <StatusBadge status={plan.status} />
           </div>
-          <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-            <span>{plan.completed}/{plan.total} steps</span>
-            {plan.failed > 0 && <span className="text-red-500 font-medium">{plan.failed} failed</span>}
-            {plan.needs_input > 0 && <span className="text-orange-500 font-medium">{plan.needs_input} need input</span>}
-            <span>· {formatDistanceToNow(new Date(plan.updated_at), { addSuffix: true })}</span>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--muted-foreground)]">
+            <span>{plan.completed}/{plan.total} steps complete</span>
+            {plan.failed > 0 && <span className="font-medium text-red-400">{plan.failed} failed</span>}
+            {plan.needs_input > 0 && <span className="font-medium text-orange-400">{plan.needs_input} awaiting approval</span>}
+            <span>· updated {formatDistanceToNow(new Date(plan.updated_at), { addSuffix: true })}</span>
           </div>
         </div>
-        <div className="w-24 shrink-0">
+        <div className="hidden w-28 shrink-0 sm:block">
           <ProgressBar value={plan.progress} />
-          <div className="text-right text-xs text-gray-400 mt-0.5">{plan.progress}%</div>
+          <div className="mt-1 text-right text-xs text-[var(--muted-foreground)]">{plan.progress}%</div>
         </div>
         {isApprovable && (
           <button
             type="button"
             disabled={approving === plan.id}
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(event) => {
+              event.stopPropagation();
               onApprove(plan.id);
             }}
-            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50 transition-colors"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-orange-500 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
           >
-            {approving === plan.id ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Play className="w-3.5 h-3.5" />
-            )}
+            {approving === plan.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
             Approve
           </button>
         )}
-        {isRunning && (
-          <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
-        )}
-      </button>
+        {isRunning && <Loader2 className="h-5 w-5 shrink-0 animate-spin text-blue-500" />}
+      </div>
 
       {expanded && (
-        <div className="px-4 pb-3 pt-1 border-t border-gray-100 dark:border-gray-800">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div>
-              <div className="text-gray-400 mb-0.5">Scan</div>
-              <Link href={`/scan/${plan.scan_id}`} className="text-blue-500 hover:underline truncate block">
+        <div className="border-t border-white/10 px-4 pb-4 pt-1 sm:px-5">
+          <div className="grid gap-3 text-xs sm:grid-cols-2 xl:grid-cols-4">
+            <div className="geo-premium-muted rounded-2xl p-3">
+              <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Scan</div>
+              <Link href={`/scan/${plan.scan_id}`} className="inline-flex items-center gap-1 text-sm text-electric-500 transition-colors hover:text-electric-400">
                 {plan.scan_id.slice(0, 12)}…
+                <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
-            <div>
-              <div className="text-gray-400 mb-0.5">Created</div>
+            <div className="geo-premium-muted rounded-2xl p-3">
+              <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Created</div>
               <div>{formatDistanceToNow(new Date(plan.created_at), { addSuffix: true })}</div>
             </div>
-            <div>
-              <div className="text-gray-400 mb-0.5">Last Updated</div>
+            <div className="geo-premium-muted rounded-2xl p-3">
+              <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Last updated</div>
               <div>{formatDistanceToNow(new Date(plan.updated_at), { addSuffix: true })}</div>
             </div>
-            <div>
-              <div className="text-gray-400 mb-0.5">Mode</div>
+            <div className="geo-premium-muted rounded-2xl p-3">
+              <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Execution mode</div>
               <div>{plan.mode}</div>
             </div>
           </div>
+          <div className="mt-4 sm:hidden">
+            <ProgressBar value={plan.progress} />
+            <div className="mt-1 text-right text-xs text-[var(--muted-foreground)]">{plan.progress}% complete</div>
+          </div>
           {plan.verification && (
-            <div className={`mt-3 rounded-lg px-3 py-2 text-xs ${plan.verification.status === "completed" ? "bg-emerald-500/10 text-emerald-400" : plan.verification.status === "failed" ? "bg-red-500/10 text-red-400" : "bg-amber-500/10 text-amber-300"}`}>
+            <div
+              className={`mt-4 rounded-2xl border px-4 py-3 text-xs ${
+                plan.verification.status === "completed"
+                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                  : plan.verification.status === "failed"
+                    ? "border-red-500/20 bg-red-500/10 text-red-300"
+                    : "border-amber-500/20 bg-amber-500/10 text-amber-200"
+              }`}
+            >
               <div className="flex flex-wrap gap-3">
-                <span>Verification: <span className="font-semibold uppercase">{plan.verification.status}</span></span>
+                <span>
+                  Verification <span className="font-semibold uppercase">{plan.verification.status}</span>
+                </span>
                 {typeof plan.verification.scoreBefore === "number" && typeof plan.verification.scoreAfter === "number" && (
-                  <span>Score {plan.verification.scoreBefore} → {plan.verification.scoreAfter}</span>
+                  <span>
+                    Score {plan.verification.scoreBefore} → {plan.verification.scoreAfter}
+                  </span>
                 )}
-                {typeof plan.verification.passedCount === "number" && <span>{plan.verification.passedCount} passed</span>}
-                {typeof plan.verification.failedCount === "number" && <span>{plan.verification.failedCount} failed</span>}
+                {typeof plan.verification.passedCount === "number" && <span>{plan.verification.passedCount} checks passed</span>}
+                {typeof plan.verification.failedCount === "number" && <span>{plan.verification.failedCount} checks failed</span>}
               </div>
               {plan.verification.completedAt && (
-                <div className="mt-1 opacity-80">{formatDistanceToNow(new Date(plan.verification.completedAt), { addSuffix: true })}</div>
+                <div className="mt-1 opacity-80">
+                  Completed {formatDistanceToNow(new Date(plan.verification.completedAt), { addSuffix: true })}
+                </div>
               )}
             </div>
           )}
@@ -227,28 +246,28 @@ function PlanRow({
 function SyncRow({ sync }: { sync: SyncSummary }) {
   const cfg = SYNC_STATUS_CFG[sync.sync_status] ?? SYNC_STATUS_CFG.pending;
   const Icon = cfg.color.includes("emerald") ? CheckCircle2 : cfg.color.includes("red") ? XCircle : Clock;
-  const location = [sync.city, sync.state].filter(Boolean).join(", ") || "—";
+  const location = [sync.city, sync.state].filter(Boolean).join(", ") || "Awaiting territory";
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700">
-      <Icon className={`w-4 h-4 shrink-0 ${cfg.color}`} />
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-          {sync.business_name}
+    <div className="geo-premium-card rounded-3xl p-4 sm:p-5">
+      <div className="flex items-center gap-3">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${cfg.bg}`}>
+          <Icon className={`h-4 w-4 ${cfg.color}`} />
         </div>
-        <div className="text-xs text-gray-500 dark:text-gray-400">{location}</div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-semibold text-[var(--foreground)]">{sync.business_name}</div>
+          <div className="text-xs text-[var(--muted-foreground)]">{location}</div>
+        </div>
+        <div className="text-right">
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold ${cfg.bg} ${cfg.color}`}>
+            {cfg.label}
+          </span>
+          <div className="mt-1 text-xs text-[var(--muted-foreground)]">{sync.directories_reached} directories reached</div>
+        </div>
       </div>
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${cfg.bg} ${cfg.color}`}>
-        {cfg.label}
-      </span>
-      {sync.directories_reached > 0 && (
-        <span className="text-xs text-gray-400">{sync.directories_reached} dirs</span>
-      )}
     </div>
   );
 }
-
-// ── Page ────────────────────────────────────────────────────────────────────
 
 export default function ActionCenterPage() {
   const [plans, setPlans] = useState<PlanSummary[]>([]);
@@ -261,16 +280,23 @@ export default function ActionCenterPage() {
   const fetchData = useCallback(async () => {
     try {
       const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        setPlans([]);
+        setSyncs([]);
+        return;
+      }
 
-      const res = await fetch("/api/action-center/plans", {
+      const response = await fetch("/api/action-center/plans", {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
-      if (!res.ok) throw new Error("Failed to fetch action center data");
-      const data = await res.json();
+      if (!response.ok) throw new Error("Failed to fetch action center data");
+      const data = await response.json();
       setPlans(data.plans ?? []);
       setSyncs(data.syncs ?? []);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -288,10 +314,12 @@ export default function ActionCenterPage() {
     setApproving(planId);
     try {
       const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
 
-      const res = await fetch("/api/action-center/approve", {
+      const response = await fetch("/api/action-center/approve", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -299,8 +327,8 @@ export default function ActionCenterPage() {
         },
         body: JSON.stringify({ planId }),
       });
-      if (!res.ok) {
-        const body = await res.json();
+      if (!response.ok) {
+        const body = await response.json();
         throw new Error(body.error ?? "Approve failed");
       }
       await fetchData();
@@ -311,12 +339,10 @@ export default function ActionCenterPage() {
     }
   };
 
-  // ── Derived lists ─────────────────────────────────────────────────────────
-
-  const needsAction = plans.filter((p) => p.status === "paused" || p.status === "planning");
-  const running = plans.filter((p) => p.status === "executing");
-  const completed = plans.filter((p) => p.status === "completed");
-  const failed = plans.filter((p) => p.status === "failed");
+  const needsAction = plans.filter((plan) => plan.status === "paused" || plan.status === "planning");
+  const running = plans.filter((plan) => plan.status === "executing");
+  const completed = plans.filter((plan) => plan.status === "completed");
+  const failed = plans.filter((plan) => plan.status === "failed");
 
   const tabs: { key: typeof tab; label: string; count: number }[] = [
     { key: "needs-action", label: "Needs Action", count: needsAction.length },
@@ -327,129 +353,179 @@ export default function ActionCenterPage() {
   ];
 
   const activePlans =
-    tab === "needs-action" ? needsAction :
-    tab === "running" ? running :
-    tab === "completed" ? completed :
-    tab === "failed" ? failed :
-    [];
+    tab === "needs-action"
+      ? needsAction
+      : tab === "running"
+        ? running
+        : tab === "completed"
+          ? completed
+          : tab === "failed"
+            ? failed
+            : [];
 
-  // ── Summary stats ─────────────────────────────────────────────────────────
-
-  const totalPending = needsAction.length;
-  const totalRunning = running.length;
-  const totalCompleted = completed.length;
-  const totalFailed = failed.length;
+  const latestHeartbeat = [...plans].sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at))[0];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-          <Activity className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Action Center</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Review pending approvals, monitor running work, and track outcomes.
-          </p>
+      <div className="geo-premium-card rounded-3xl p-6 sm:p-7">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-400">
+              <Orbit className="h-3.5 w-3.5" />
+              Automation command deck
+            </div>
+            <h1 className="text-3xl font-semibold tracking-tight">Action Center</h1>
+            <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
+              Review automation approvals, watch execution progress, and confirm trust-impact before changes go live.
+              {latestHeartbeat ? ` Latest movement landed ${formatDistanceToNow(new Date(latestHeartbeat.updated_at), { addSuffix: true })}.` : ""}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Awaiting review", value: `${needsAction.length} plans`, icon: AlertTriangle },
+              { label: "Live runs", value: `${running.length} executing`, icon: Loader2 },
+              { label: "Listing coverage", value: `${syncs.length} sync records`, icon: ShieldCheck },
+            ].map((item) => (
+              <div key={item.label} className="geo-premium-muted min-w-[180px] rounded-2xl px-4 py-3">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+                  <item.icon className={`h-3.5 w-3.5 text-electric-500 ${item.label === "Live runs" ? "animate-spin" : ""}`} />
+                  {item.label}
+                </div>
+                <p className="mt-2 text-sm font-medium text-[var(--foreground)]">{item.value}</p>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={fetchData}
+              className="inline-flex items-center gap-2 self-start rounded-xl border border-[var(--border)] bg-[var(--background)]/70 px-4 py-2.5 text-sm font-medium transition-colors hover:border-electric-500/40 hover:text-electric-400"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Pending Approval", value: totalPending, icon: AlertTriangle, color: "text-orange-500", bg: "bg-orange-500/10" },
-          { label: "Running", value: totalRunning, icon: Loader2, color: "text-blue-500", bg: "bg-blue-500/10" },
-          { label: "Completed", value: totalCompleted, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-          { label: "Failed", value: totalFailed, icon: XCircle, color: "text-red-500", bg: "bg-red-500/10" },
+          { label: "Pending approval", value: needsAction.length, icon: AlertTriangle, color: "text-orange-400" },
+          { label: "Running", value: running.length, icon: Loader2, color: "text-blue-400" },
+          { label: "Completed", value: completed.length, icon: CheckCircle2, color: "text-emerald-400" },
+          { label: "Failed", value: failed.length, icon: XCircle, color: "text-red-400" },
         ].map((card) => (
-          <div key={card.label} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <card.icon className={`w-4 h-4 ${card.color} ${card.label === "Running" ? "animate-spin" : ""}`} />
-              <span className="text-xs text-gray-500 dark:text-gray-400">{card.label}</span>
+          <div key={card.label} className="geo-premium-card rounded-2xl p-5">
+            <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+              <card.icon className={`h-4 w-4 ${card.color} ${card.label === "Running" ? "animate-spin" : ""}`} />
+              {card.label}
             </div>
-            <div className={`text-2xl font-bold ${card.color}`}>{card.value}</div>
+            <div className={`text-3xl font-semibold ${card.color}`}>{card.value}</div>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+              {card.label === "Pending approval"
+                ? "Human-in-the-loop checkpoints ready for review."
+                : card.label === "Running"
+                  ? "Active tasks currently moving through your queue."
+                  : card.label === "Completed"
+                    ? "Finished plans with verification-ready outputs."
+                    : "Automations that need another look before redeploy."}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Error banner */}
       {error && (
-        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
-          <XCircle className="w-4 h-4 shrink-0" />
-          {error}
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="ml-auto text-red-400 hover:text-red-600"
-          >
-            ✕
-          </button>
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
+          <div className="flex items-start gap-3">
+            <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <p className="font-medium text-red-100">Action center unavailable</p>
+              <p className="mt-1 text-red-200/90">{error}</p>
+            </div>
+            <button type="button" onClick={() => setError(null)} className="ml-auto text-red-200/70 transition-colors hover:text-red-100">
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-              tab === t.key
-                ? "border-orange-500 text-orange-600 dark:text-orange-400"
-                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            }`}
-          >
-            {t.label}
-            {t.count > 0 && (
-              <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                tab === t.key ? "bg-orange-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-              }`}>
-                {t.count}
+      <div className="geo-premium-card rounded-3xl p-2">
+        <div className="flex gap-1 overflow-x-auto px-1">
+          {tabs.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => setTab(item.key)}
+              className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium whitespace-nowrap transition-all ${
+                tab === item.key
+                  ? "bg-white text-slate-950 shadow-sm"
+                  : "text-[var(--muted-foreground)] hover:bg-white/[0.04] hover:text-[var(--foreground)]"
+              }`}
+            >
+              {item.label}
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  tab === item.key ? "bg-slate-950/10 text-slate-950" : "bg-white/10 text-[var(--foreground)]"
+                }`}
+              >
+                {item.count}
               </span>
-            )}
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
-          <span className="ml-2 text-sm text-gray-400">Loading action center…</span>
+        <div className="geo-premium-card rounded-3xl px-6 py-16 text-center">
+          <Loader2 className="mx-auto h-6 w-6 animate-spin text-electric-500" />
+          <p className="mt-3 text-sm text-[var(--muted-foreground)]">Loading action center telemetry…</p>
         </div>
       ) : tab === "syncs" ? (
         syncs.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 text-sm">No listing syncs yet.</div>
+          <EmptyState
+            icon={ShieldCheck}
+            eyebrow="Listings still quiet"
+            title="No listing syncs yet"
+            description="When directory syncs start running, you’ll see verification status, coverage, and last-mile confidence here."
+            actionLabel="Open citations"
+            actionHref="/citations"
+            meta={["50+ directory network", "Verification-aware sync status"]}
+          />
         ) : (
-          <div className="space-y-2">
-            {syncs.map((s) => (
-              <SyncRow key={s.id} sync={s} />
+          <div className="space-y-3">
+            {syncs.map((sync) => (
+              <SyncRow key={sync.id} sync={sync} />
             ))}
           </div>
         )
       ) : activePlans.length === 0 ? (
-        <div className="text-center py-12 text-gray-400 text-sm">
-          {tab === "needs-action" && (
-            <>
-              <Zap className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-              Nothing needs your attention right now.
-            </>
-          )}
-          {tab === "running" && "No work in progress."}
-          {tab === "completed" && "No completed automations yet."}
-          {tab === "failed" && "No failures recorded."}
-        </div>
+        <EmptyState
+          icon={tab === "running" ? Activity : tab === "completed" ? CheckCircle2 : tab === "failed" ? XCircle : Zap}
+          eyebrow={tab === "needs-action" ? "Queue is clear" : tab === "running" ? "Nothing in flight" : tab === "completed" ? "Awaiting first finish" : "No incidents detected"}
+          title={
+            tab === "needs-action"
+              ? "Nothing needs your attention right now"
+              : tab === "running"
+                ? "No active automations"
+                : tab === "completed"
+                  ? "No completed automations yet"
+                  : "No failures recorded"
+          }
+          description={
+            tab === "needs-action"
+              ? "Approvals, paused plans, and operator checkpoints will surface here the moment they need human review."
+              : tab === "running"
+                ? "Once a plan starts executing, live progress and verification state will appear here automatically."
+                : tab === "completed"
+                  ? "Finished plans will collect here so you can audit score lift and trust verification in one stream."
+                  : "If a workflow stalls or verification fails, this becomes your incident lane."
+          }
+          actionLabel="Launch a new scan"
+          actionHref="/scan"
+          meta={["15-second auto refresh", "Verification-aware status tracking"]}
+        />
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {activePlans.map((plan) => (
-            <PlanRow
-              key={plan.id}
-              plan={plan}
-              onApprove={handleApprove}
-              approving={approving}
-            />
+            <PlanRow key={plan.id} plan={plan} onApprove={handleApprove} approving={approving} />
           ))}
         </div>
       )}

@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  MapPin, Search, BarChart2, Target, CheckCircle2,
+  MapPin,
+  Search,
+  BarChart2,
+  Target,
+  CheckCircle2,
+  Sparkles,
+  ShieldCheck,
+  ArrowRight,
+  Timer,
 } from "lucide-react";
 import OnboardingWizard, { type WizardStep } from "@/components/saas/OnboardingWizard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,15 +19,14 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { createClient } from "@/lib/supabase/client";
 import { trackEvent } from "@/lib/analytics";
-
-const STORAGE_KEY = "geothority_onboarding_completed_steps";
+import { markOnboardingComplete, ONBOARDING_STEPS_STORAGE_KEY } from "@/lib/onboarding";
 
 const ONBOARDING_STEPS: WizardStep[] = [
   {
     id: "welcome",
     title: "Welcome to Geothority",
     description: "Your local SEO command center for insurance agents",
-    icon: <div className="w-10 h-10 rounded-lg bg-electric-500/20 flex items-center justify-center"><span className="text-xl">🗺️</span></div>,
+    icon: <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-electric-500/20"><span className="text-xl">🗺️</span></div>,
     content: (
       <div className="space-y-4">
         <p className="text-muted-foreground">
@@ -27,15 +34,15 @@ const ONBOARDING_STEPS: WizardStep[] = [
         </p>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { icon: "🔍", title: "90-Second Audit", desc: "See exactly why you're invisible in local search" },
+            { icon: "🔍", title: "90-Second Audit", desc: "See exactly why you&apos;re invisible in local search" },
             { icon: "📊", title: "Trust Stack™ Score", desc: "5-layer local authority measurement" },
-            { icon: "👁️", title: "Competitor Watchdog", desc: "Monitor rivals' ranking moves" },
+            { icon: "👁️", title: "Competitor Watchdog", desc: "Monitor rivals&apos; ranking moves" },
             { icon: "✍️", title: "AI Content Engine", desc: "Generate city/service landing pages" },
           ].map((item) => (
-            <div key={item.title} className="flex items-start gap-3 p-3 border border-border rounded-lg">
+            <div key={item.title} className="flex items-start gap-3 rounded-lg border border-border p-3">
               <span className="text-xl">{item.icon}</span>
               <div>
-                <p className="font-medium text-sm">{item.title}</p>
+                <p className="text-sm font-medium">{item.title}</p>
                 <p className="text-xs text-muted-foreground">{item.desc}</p>
               </div>
             </div>
@@ -50,15 +57,15 @@ const ONBOARDING_STEPS: WizardStep[] = [
     id: "business-details",
     title: "Enter Your Business Details",
     description: "Tell us about your insurance agency",
-    icon: <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center"><MapPin className="h-5 w-5 text-emerald-400" /></div>,
+    icon: <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20"><MapPin className="h-5 w-5 text-emerald-400" /></div>,
     content: (
       <div className="space-y-4">
         <p className="text-muted-foreground">
           Head to Settings to enter your business name, city, and website URL. This helps us personalize your audits and competitor analysis.
         </p>
-        <div className="bg-muted/20 border border-border rounded-lg p-4 space-y-2">
+        <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-4">
           <p className="text-sm font-medium">What to fill in:</p>
-          <ul className="text-sm text-muted-foreground space-y-1">
+          <ul className="space-y-1 text-sm text-muted-foreground">
             <li>• Business name (exact match with Google Business Profile)</li>
             <li>• Primary city and state</li>
             <li>• Website URL</li>
@@ -74,7 +81,7 @@ const ONBOARDING_STEPS: WizardStep[] = [
     id: "first-audit",
     title: "Run Your First Audit",
     description: "Discover your local SEO Trust Stack™ score",
-    icon: <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center"><Search className="h-5 w-5 text-blue-400" /></div>,
+    icon: <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20"><Search className="h-5 w-5 text-blue-400" /></div>,
     content: (
       <div className="space-y-4">
         <p className="text-muted-foreground">
@@ -89,8 +96,8 @@ const ONBOARDING_STEPS: WizardStep[] = [
             { layer: "Layer 5", name: "AI Optimization", desc: "Schema markup & entity density" },
           ].map((item) => (
             <div key={item.layer} className="flex items-center gap-3 text-sm">
-              <span className="text-xs font-mono text-muted-foreground w-16 flex-shrink-0">{item.layer}</span>
-              <span className="font-medium w-32 flex-shrink-0">{item.name}</span>
+              <span className="w-16 flex-shrink-0 text-xs font-mono text-muted-foreground">{item.layer}</span>
+              <span className="w-32 flex-shrink-0 font-medium">{item.name}</span>
               <span className="text-muted-foreground">{item.desc}</span>
             </div>
           ))}
@@ -105,14 +112,14 @@ const ONBOARDING_STEPS: WizardStep[] = [
     id: "trust-stack",
     title: "Review Your Trust Stack Score",
     description: "Understand your local authority gaps",
-    icon: <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center"><BarChart2 className="h-5 w-5 text-purple-400" /></div>,
+    icon: <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20"><BarChart2 className="h-5 w-5 text-purple-400" /></div>,
     content: (
       <div className="space-y-4">
         <p className="text-muted-foreground">
           After your first scan, your Trust Stack™ dashboard shows your score for each of the 5 layers - plus prioritized Quick Win cards with copy-paste fixes.
         </p>
-        <div className="bg-muted/20 border border-border rounded-lg p-4">
-          <p className="text-sm font-medium mb-2">Your score breakdown:</p>
+        <div className="rounded-lg border border-border bg-muted/20 p-4">
+          <p className="mb-2 text-sm font-medium">Your score breakdown:</p>
           <div className="space-y-2">
             {[
               { name: "Foundation", score: 80 },
@@ -141,7 +148,7 @@ const ONBOARDING_STEPS: WizardStep[] = [
     id: "improvement-goals",
     title: "Set Improvement Goals",
     description: "Focus on your highest-impact opportunities",
-    icon: <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center"><Target className="h-5 w-5 text-amber-400" /></div>,
+    icon: <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/20"><Target className="h-5 w-5 text-amber-400" /></div>,
     content: (
       <div className="space-y-4">
         <p className="text-muted-foreground">
@@ -155,7 +162,7 @@ const ONBOARDING_STEPS: WizardStep[] = [
             "Add a local FAQ page to your website",
           ].map((win) => (
             <div key={win} className="flex items-start gap-2 text-sm">
-              <CheckCircle2 className="h-4 w-4 text-electric-400 flex-shrink-0 mt-0.5" />
+              <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-electric-400" />
               <span>{win}</span>
             </div>
           ))}
@@ -175,39 +182,38 @@ export default function OnboardingPage() {
   const [completedStepIds, setCompletedStepIds] = useState<string[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(ONBOARDING_STEPS_STORAGE_KEY);
     if (saved) {
       try {
         setCompletedStepIds(JSON.parse(saved));
-      } catch {}
+      } catch {
+        setCompletedStepIds([]);
+      }
     }
   }, []);
 
   const handleStepComplete = (stepId: string) => {
-    const set = new Set<string>(completedStepIds);
-    set.add(stepId);
-    const updated = Array.from(set);
+    const stepSet = new Set<string>(completedStepIds);
+    stepSet.add(stepId);
+    const updated = Array.from(stepSet);
     setCompletedStepIds(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(ONBOARDING_STEPS_STORAGE_KEY, JSON.stringify(updated));
   };
 
   const handleFinish = async () => {
-    const allIds = ONBOARDING_STEPS.map((s) => s.id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(allIds));
+    const allIds = ONBOARDING_STEPS.map((step) => step.id);
+    markOnboardingComplete(allIds);
     trackEvent("onboarding_completed");
 
-    // Persist onboarding completion to the database so the middleware
-    // auto-redirect does not fire again on any device.
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
-        await supabase
-          .from("user_profiles")
-          .update({ onboarding_completed: true })
-          .eq("id", user.id);
+        await supabase.from("user_profiles").update({ onboarding_completed: true }).eq("id", user.id);
       }
     } catch {
-      // Non-fatal: localStorage fallback still prevents repeated redirect
+      // localStorage fallback still prevents repeated redirect
     }
 
     router.push("/dashboard");
@@ -216,65 +222,153 @@ export default function OnboardingPage() {
   const completedCount = completedStepIds.length;
   const progressPct = Math.round((completedCount / ONBOARDING_STEPS.length) * 100);
   const isComplete = completedCount >= ONBOARDING_STEPS.length;
+  const nextStep = ONBOARDING_STEPS.find((step) => !completedStepIds.includes(step.id));
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold">Getting Started</h1>
-        <p className="text-muted-foreground">Complete your Geothority setup to start dominating local search.</p>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="geo-premium-card rounded-3xl p-6 sm:p-7">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-electric-500/20 bg-electric-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-electric-500">
+              <Sparkles className="h-3.5 w-3.5" />
+              Launch sequence
+            </div>
+            <h1 className="text-3xl font-semibold tracking-tight">Getting Started</h1>
+            <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
+              Finish your Geothority setup to unlock a cleaner dashboard, stronger scan context, and a launch-ready first impression.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Setup progress", value: `${progressPct}%`, icon: ShieldCheck },
+              { label: "Completed steps", value: `${completedCount}/${ONBOARDING_STEPS.length}`, icon: CheckCircle2 },
+              { label: "Time to finish", value: isComplete ? "Complete" : "~5 min", icon: Timer },
+            ].map((item) => (
+              <div key={item.label} className="geo-premium-muted min-w-[170px] rounded-2xl px-4 py-3">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+                  <item.icon className="h-3.5 w-3.5 text-electric-500" />
+                  {item.label}
+                </div>
+                <p className="mt-2 text-sm font-medium text-[var(--foreground)]">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Setup Progress</CardTitle>
-            <span className="text-sm font-medium">{progressPct}%</span>
+      <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <div className="geo-premium-card rounded-3xl p-6">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold">Setup Progress</h2>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)]">Work through the core launch steps and we’ll keep your checklist synced locally.</p>
+            </div>
+            <span className="rounded-full border border-electric-500/20 bg-electric-500/10 px-3 py-1 text-sm font-semibold text-electric-400">
+              {progressPct}%
+            </span>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+
           <Progress value={progressPct} className="h-2" />
 
-          <div className="space-y-2">
-            {ONBOARDING_STEPS.map((step) => {
+          <div className="mt-5 space-y-3">
+            {ONBOARDING_STEPS.map((step, index) => {
               const done = completedStepIds.includes(step.id);
+              const current = nextStep?.id === step.id;
               return (
                 <div
                   key={step.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                    done ? "bg-muted/20 border-electric-500/20" : "border-border"
+                  className={`rounded-2xl border p-4 transition-colors ${
+                    done
+                      ? "border-electric-500/20 bg-electric-500/5"
+                      : current
+                        ? "border-white/15 bg-white/[0.03]"
+                        : "border-[var(--border)] bg-[var(--background)]/40"
                   }`}
                 >
-                  <div className="flex-shrink-0">
-                    {done
-                      ? <CheckCircle2 className="h-5 w-5 text-electric-400" />
-                      : <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
-                    }
-                  </div>
-                  <div>
-                    <p className={`text-sm font-medium ${done ? "text-muted-foreground line-through" : ""}`}>{step.title}</p>
-                    <p className="text-xs text-muted-foreground">{step.description}</p>
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex-shrink-0">
+                      {done ? (
+                        <CheckCircle2 className="h-5 w-5 text-electric-400" />
+                      ) : (
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-[var(--muted-foreground)] text-[10px] font-semibold text-[var(--muted-foreground)]">
+                          {index + 1}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className={`text-sm font-medium ${done ? "text-[var(--muted-foreground)] line-through" : "text-[var(--foreground)]"}`}>
+                          {step.title}
+                        </p>
+                        {current && !done && (
+                          <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-electric-400">
+                            Next
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-[var(--muted-foreground)]">{step.description}</p>
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="flex gap-2 pt-2">
+          <div className="mt-5 flex gap-3 pt-2">
             {!isComplete ? (
-              <Button
-                onClick={() => setWizardOpen(true)}
-                className="flex-1 bg-electric-500 hover:bg-electric-400"
-              >
+              <Button onClick={() => setWizardOpen(true)} className="flex-1 bg-electric-500 hover:bg-electric-400">
                 {completedCount > 0 ? "Continue Setup" : "Start Setup"}
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
               <Button onClick={() => router.push("/dashboard")} className="flex-1 bg-electric-500 hover:bg-electric-400">
                 Go to Dashboard
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card className="geo-premium-card rounded-3xl border-0 bg-transparent py-0">
+            <CardHeader className="px-6 pt-6">
+              <CardTitle className="text-base">What unlocks after setup</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 px-6 pb-6">
+              {[
+                "Cleaner dashboard context with your real business details",
+                "Scans benchmarked against your market instead of generic defaults",
+                "Sharper quick wins and reporting copy for stakeholders",
+              ].map((item) => (
+                <div key={item} className="flex items-start gap-2 text-sm text-[var(--muted-foreground)]">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-electric-400" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="geo-premium-card rounded-3xl border-0 bg-transparent py-0">
+            <CardHeader className="px-6 pt-6">
+              <CardTitle className="text-base">Recommended next step</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 px-6 pb-6">
+              <p className="text-sm text-[var(--muted-foreground)]">
+                {nextStep
+                  ? `${nextStep.title} is the highest-leverage move right now.`
+                  : "You’re fully configured — head to the dashboard and start acting on the top quick wins."}
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => (isComplete ? router.push("/dashboard") : setWizardOpen(true))}
+                className="w-full"
+              >
+                {isComplete ? "Open Dashboard" : "Resume Wizard"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       <OnboardingWizard
         open={wizardOpen}
