@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { Eye, EyeOff, ArrowRight, Mail } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { Logo } from "@/components/ui/logo";
@@ -14,15 +14,26 @@ function LoginForm() {
   const redirect = searchParams.get("redirect") || "/dashboard";
   const safeRedirect = redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/dashboard";
   const error = searchParams.get("error");
+  const resetSuccess = searchParams.get("reset") === "success";
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
   const supabase = createClient();
 
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
+
+  useEffect(() => {
+    if (resetSuccess) {
+      setMessage({ type: "success", text: "Password updated. Sign in with your new password." });
+    }
+  }, [resetSuccess]);
   const authCallbackUrl = useMemo(() => {
     if (typeof window === "undefined") return undefined;
     const url = new URL("/api/auth/callback", window.location.origin);
@@ -54,7 +65,7 @@ function LoginForm() {
         router.push(safeRedirect);
       }
     } else {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: authCallbackUrl ? { emailRedirectTo: authCallbackUrl } : undefined,
@@ -63,6 +74,10 @@ function LoginForm() {
         setMessage({ type: "error", text: error.message });
       } else {
         trackEvent("signup_completed", { method: "email" });
+        if (data.session) {
+          router.push(safeRedirect);
+          return;
+        }
         setMessage({ type: "success", text: "Check your email for a confirmation link." });
       }
       setLoading(false);
@@ -171,7 +186,10 @@ function LoginForm() {
         {/* Forgot password link - only shown in sign-in mode */}
         {mode === "signin" && (
           <p className="mt-3 text-center text-sm">
-            <Link href="/forgot-password" className="text-emerald-500 hover:underline">
+            <Link
+              href={safeRedirect !== "/dashboard" ? `/forgot-password?redirect=${encodeURIComponent(safeRedirect)}` : "/forgot-password"}
+              className="text-emerald-500 hover:underline"
+            >
               Forgot your password?
             </Link>
           </p>
@@ -181,7 +199,14 @@ function LoginForm() {
         <p className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
           {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
-            onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMessage(null); }}
+            onClick={() => {
+              const nextMode = mode === "signin" ? "signup" : "signin";
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("mode", nextMode);
+              router.replace(`/login?${params.toString()}`);
+              setMode(nextMode);
+              setMessage(null);
+            }}
             className="text-emerald-500 hover:underline font-medium"
           >
             {mode === "signin" ? "Sign up free" : "Sign in"}

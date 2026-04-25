@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -49,7 +48,7 @@ export function PublicHeader() {
               Sign In
             </Link>
             <Link
-              href="/login"
+              href="/signup"
               className="bg-electric-500 hover:bg-electric-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Get Your Free Scan
@@ -97,7 +96,7 @@ export function PublicHeader() {
               Sign In
             </Link>
             <Link
-              href="/login"
+              href="/signup"
               onClick={() => setMobileOpen(false)}
               className="block bg-electric-500 text-white text-center px-4 py-2 rounded-lg text-sm font-medium"
             >

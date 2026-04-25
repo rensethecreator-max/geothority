@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Activity,
@@ -30,9 +30,8 @@ import {
   TrendingUp,
   Send,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import NotificationCenter from "@/components/saas/NotificationCenter";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
@@ -74,19 +73,54 @@ const adminNavItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (isMounted) {
+        setUserEmail(data.user?.email ?? null);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (isMounted) {
+        setUserEmail(session?.user?.email ?? null);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  const isAdmin = useMemo(() => {
+    const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean);
+
+    return userEmail ? adminEmails.includes(userEmail.toLowerCase()) : false;
+  }, [userEmail]);
+
   const handleSignOut = async () => {
+    setIsSigningOut(true);
     await supabase.auth.signOut();
-    router.push("/");
+    router.replace("/login");
+    router.refresh();
   };
 
   const nav = (
     <nav className="flex flex-col h-full">
-      {/* Logo */}
       <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
           <Image src="/logo.svg" alt="Geothority" width={36} height={36} className="w-9 h-9 rounded-lg object-contain" />
           <span className="text-lg font-semibold text-[var(--foreground)]">
             Geothority
@@ -98,7 +132,6 @@ export function AppSidebar() {
         </div>
       </div>
 
-      {/* Nav Items */}
       <div className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -119,8 +152,7 @@ export function AppSidebar() {
           );
         })}
 
-        {/* Admin section */}
-        {process.env.NEXT_PUBLIC_ADMIN_EMAILS && (
+        {isAdmin && (
           <>
             <div className="pt-4 pb-1">
               <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
@@ -147,14 +179,14 @@ export function AppSidebar() {
         )}
       </div>
 
-      {/* Sign Out */}
       <div className="p-3 border-t border-[var(--border)]">
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--muted-foreground)] hover:text-red-400 hover:bg-red-500/10 transition-colors w-full"
+          disabled={isSigningOut}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--muted-foreground)] hover:text-red-400 hover:bg-red-500/10 transition-colors w-full disabled:opacity-60"
         >
           <LogOut className="w-4 h-4" />
-          Sign Out
+          {isSigningOut ? "Signing Out…" : "Sign Out"}
         </button>
       </div>
     </nav>
@@ -162,12 +194,10 @@ export function AppSidebar() {
 
   return (
     <>
-      {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 bg-[var(--card)] border-r border-[var(--border)] flex-col fixed inset-y-0 left-0 z-40">
         {nav}
       </aside>
 
-      {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-[var(--card)] border-b border-[var(--border)] flex items-center px-4">
         <button
           onClick={() => setMobileOpen(true)}
@@ -184,7 +214,6 @@ export function AppSidebar() {
         <NotificationCenter />
       </div>
 
-      {/* Mobile Overlay */}
       {mobileOpen && (
         <>
           <div

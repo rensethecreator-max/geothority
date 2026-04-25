@@ -57,7 +57,8 @@ export async function updateSession(request: NextRequest) {
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("redirect", pathname);
+    const fullRedirect = `${pathname}${request.nextUrl.search}`;
+    url.searchParams.set("redirect", fullRedirect);
     return NextResponse.redirect(url);
   }
 
@@ -75,10 +76,16 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Redirect logged-in users from /login or /signup to /dashboard
+  // Redirect logged-in users away from /login or /signup.
+  // Preserve a safe relative redirect when one is explicitly requested.
   if ((pathname === "/login" || pathname === "/signup") && user) {
+    const requestedRedirect = request.nextUrl.searchParams.get("redirect");
+    const nextPath = requestedRedirect && requestedRedirect.startsWith("/") && !requestedRedirect.startsWith("//")
+      ? requestedRedirect
+      : "/dashboard";
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = nextPath;
+    url.search = "";
     return NextResponse.redirect(url);
   }
 

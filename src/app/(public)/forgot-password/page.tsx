@@ -3,10 +3,14 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useSearchParams } from "next/navigation";
 import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
 
 function ForgotPasswordForm() {
   const supabase = createClient();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
+  const safeRedirect = redirect && redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : null;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -17,8 +21,13 @@ function ForgotPasswordForm() {
     setLoading(true);
     setError(null);
 
+    const resetUrl = new URL("/reset-password", window.location.origin);
+    if (safeRedirect) {
+      resetUrl.searchParams.set("redirect", safeRedirect);
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: resetUrl.toString(),
     });
 
     setLoading(false);
@@ -56,7 +65,7 @@ function ForgotPasswordForm() {
               .
             </p>
             <Link
-              href="/login"
+              href={safeRedirect ? `/login?redirect=${encodeURIComponent(safeRedirect)}` : "/login"}
               className="inline-flex items-center gap-2 text-sm text-emerald-500 hover:underline"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -128,7 +137,7 @@ function ForgotPasswordForm() {
           {/* Back to login */}
           <div className="mt-6 text-center">
             <Link
-              href="/login"
+              href={safeRedirect ? `/login?redirect=${encodeURIComponent(safeRedirect)}` : "/login"}
               className="inline-flex items-center gap-2 text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               <ArrowLeft className="w-4 h-4" />

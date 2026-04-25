@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Eye, EyeOff, KeyRound, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, KeyRound, CheckCircle2, ArrowLeft } from "lucide-react";
 
 function ResetPasswordForm() {
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
+  const safeRedirect = redirect && redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/dashboard";
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -15,6 +19,40 @@ function ResetPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recoveryReady, setRecoveryReady] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveRecoverySession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!cancelled) {
+        setRecoveryReady(Boolean(data.session));
+      }
+    };
+
+    resolveRecoverySession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!cancelled) {
+        setRecoveryReady(Boolean(session));
+      }
+    });
+
+    const fallbackTimer = window.setTimeout(() => {
+      if (!cancelled) {
+        setRecoveryReady((current) => current ?? false);
+      }
+    }, 1500);
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+      window.clearTimeout(fallbackTimer);
+    };
+  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +77,7 @@ function ResetPasswordForm() {
       setError(error.message);
     } else {
       setDone(true);
-      setTimeout(() => router.push("/dashboard"), 3000);
+      setTimeout(() => router.push(`/login?reset=success&redirect=${encodeURIComponent(safeRedirect)}`), 2000);
     }
   };
 
@@ -55,8 +93,43 @@ function ResetPasswordForm() {
             </div>
             <h1 className="text-2xl font-bold mb-2">Password updated!</h1>
             <p className="text-[var(--muted-foreground)]">
-              Your password has been changed. Redirecting you to the dashboard…
+              Your password has been changed. Redirecting you to sign in…
             </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (recoveryReady === false) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-8 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-amber-500/15 flex items-center justify-center">
+                <KeyRound className="w-8 h-8 text-amber-400" />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Reset link expired</h1>
+            <p className="text-[var(--muted-foreground)] mb-6">
+              Password reset links only work once and can expire quickly. Request a fresh link to keep your account secure.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link
+                href={safeRedirect !== "/dashboard" ? `/forgot-password?redirect=${encodeURIComponent(safeRedirect)}` : "/forgot-password"}
+                className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 text-white rounded-xl font-semibold text-sm transition-colors"
+              >
+                Request a new reset link
+              </Link>
+              <Link
+                href={safeRedirect !== "/dashboard" ? `/login?redirect=${encodeURIComponent(safeRedirect)}` : "/login"}
+                className="inline-flex items-center justify-center gap-2 text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to sign in
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -67,7 +140,6 @@ function ResetPasswordForm() {
     <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-8">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500/20 flex items-center justify-center">
@@ -80,14 +152,18 @@ function ResetPasswordForm() {
             </p>
           </div>
 
-          {/* Error */}
+          {recoveryReady === null && (
+            <div className="mb-4 px-4 py-3 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] text-sm">
+              Verifying your reset link…
+            </div>
+          )}
+
           {error && (
             <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
               {error}
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="password" className="block text-sm font-medium mb-2">
@@ -132,7 +208,7 @@ function ResetPasswordForm() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || recoveryReady !== true}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
             >
               {loading ? (
