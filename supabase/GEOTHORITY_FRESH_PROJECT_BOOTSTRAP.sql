@@ -1552,6 +1552,29 @@ CREATE TABLE IF NOT EXISTS gbp_posts (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Fresh projects can hit this migration after an older gbp_posts definition already exists
+-- from migration.sql/GBP bootstrap. Normalize the table shape so later policies/indexes work.
+ALTER TABLE gbp_posts
+  ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS title TEXT,
+  ADD COLUMN IF NOT EXISTS body TEXT,
+  ADD COLUMN IF NOT EXISTS cta_type TEXT,
+  ADD COLUMN IF NOT EXISTS cta_url TEXT,
+  ADD COLUMN IF NOT EXISTS image_url TEXT,
+  ADD COLUMN IF NOT EXISTS post_type TEXT DEFAULT 'standard',
+  ADD COLUMN IF NOT EXISTS suggestion_reason TEXT,
+  ADD COLUMN IF NOT EXISTS business_context JSONB DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'draft',
+  ADD COLUMN IF NOT EXISTS auto_generated BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS approved_by UUID REFERENCES auth.users(id),
+  ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS scheduled_for TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS views INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS clicks INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
 ALTER TABLE gbp_posts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own GBP posts"
   ON gbp_posts FOR ALL
