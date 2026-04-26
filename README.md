@@ -22,7 +22,10 @@ npm install
 #    Optional but recommended for server-side GBP refresh/publishing:
 #    also set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local
 
-# 4. Start development server
+# 4. Preflight proof-pass readiness (safe, no secrets printed)
+npm run proof:readiness
+
+# 5. Start development server
 npm run dev
 # → http://localhost:3010
 ```
@@ -88,6 +91,12 @@ See `mobile/README.md` for full build instructions.
 6. **CMS Auto-Publish** — WordPress REST API integration
 7. **Will AI Chatbot** — Scoped assistant in bottom-right corner
 8. **Stripe Billing** — Checkout, webhooks, plan management
+
+## Proof-Pass Readiness
+
+- `npm run proof:readiness` — audits env coverage, auth callback expectations, cron/billing prerequisites, and optional live endpoints.
+- `npm run build:proof` — fast compile gate before operator verification.
+- `PROOF_PASS_RUNBOOK.md` — manual operator checklist for local + live proof passes.
 
 ## Environment Variables
 
