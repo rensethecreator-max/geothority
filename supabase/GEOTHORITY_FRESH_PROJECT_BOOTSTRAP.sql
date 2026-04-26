@@ -1,5 +1,6 @@
 -- Geothority fresh-project bootstrap for a dedicated Supabase project
 -- Generated on 2026-04-26 to migrate only Geothority schema
+-- Ordered to satisfy table dependencies for a clean project bootstrap
 create extension if not exists pgcrypto;
 
 
@@ -879,6 +880,31 @@ CREATE POLICY "Users create syncs"
 
 
 -- ==================================================================
+-- BEGIN fix_packages.sql
+-- ==================================================================
+CREATE TABLE IF NOT EXISTS fix_packages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  scan_id UUID NOT NULL,
+  fixes JSONB NOT NULL DEFAULT '[]',
+  total_fixes INTEGER DEFAULT 0,
+  auto_applied_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX ON fix_packages(user_id);
+CREATE INDEX ON fix_packages(scan_id);
+ALTER TABLE fix_packages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users see own fix packages" ON fix_packages FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users create fix packages" ON fix_packages FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- ==================================================================
+-- END fix_packages.sql
+-- ==================================================================
+
+
+-- ==================================================================
 -- BEGIN 20260415_fix_plan_schema.sql
 -- ==================================================================
 -- ============================================================
@@ -931,6 +957,52 @@ CREATE INDEX IF NOT EXISTS idx_competitors_user_active_rank
 
 -- ==================================================================
 -- END 20260417_competitor_identity_hardening.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260417_competitor_snapshots.sql
+-- ==================================================================
+-- ============================================================
+-- Competitor Snapshots Migration — Phase 2 Watchdog
+-- Stores historical metrics per competitor for trend detection
+-- Run in Supabase SQL Editor
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS competitor_snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  competitor_id UUID NOT NULL REFERENCES competitors(id) ON DELETE CASCADE,
+  place_id TEXT,
+  rating DECIMAL(3,2),
+  review_count INTEGER,
+  score INTEGER,
+  rank_position INTEGER,
+  alerts JSONB DEFAULT '[]'::jsonb,
+  snapshot_source TEXT NOT NULL DEFAULT 'live', -- 'live' | 'stored'
+  snapshot_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE competitor_snapshots ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users manage own competitor snapshots"
+  ON competitor_snapshots FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- One snapshot per competitor per day (upsert-friendly)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_competitor_snapshots_unique_date
+  ON competitor_snapshots(competitor_id, snapshot_date);
+
+-- Fast lookups for history & trends
+CREATE INDEX IF NOT EXISTS idx_competitor_snapshots_user_date
+  ON competitor_snapshots(user_id, snapshot_date DESC);
+CREATE INDEX IF NOT EXISTS idx_competitor_snapshots_competitor_date
+  ON competitor_snapshots(competitor_id, snapshot_date DESC);
+
+-- ==================================================================
+-- END 20260417_competitor_snapshots.sql
 -- ==================================================================
 
 
@@ -995,52 +1067,6 @@ CREATE INDEX IF NOT EXISTS idx_competitor_attr_changes_type
 
 -- ==================================================================
 -- END 20260417_competitor_profile_attributes.sql
--- ==================================================================
-
-
--- ==================================================================
--- BEGIN 20260417_competitor_snapshots.sql
--- ==================================================================
--- ============================================================
--- Competitor Snapshots Migration — Phase 2 Watchdog
--- Stores historical metrics per competitor for trend detection
--- Run in Supabase SQL Editor
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS competitor_snapshots (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  competitor_id UUID NOT NULL REFERENCES competitors(id) ON DELETE CASCADE,
-  place_id TEXT,
-  rating DECIMAL(3,2),
-  review_count INTEGER,
-  score INTEGER,
-  rank_position INTEGER,
-  alerts JSONB DEFAULT '[]'::jsonb,
-  snapshot_source TEXT NOT NULL DEFAULT 'live', -- 'live' | 'stored'
-  snapshot_date DATE NOT NULL DEFAULT CURRENT_DATE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE competitor_snapshots ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users manage own competitor snapshots"
-  ON competitor_snapshots FOR ALL
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
--- One snapshot per competitor per day (upsert-friendly)
-CREATE UNIQUE INDEX IF NOT EXISTS idx_competitor_snapshots_unique_date
-  ON competitor_snapshots(competitor_id, snapshot_date);
-
--- Fast lookups for history & trends
-CREATE INDEX IF NOT EXISTS idx_competitor_snapshots_user_date
-  ON competitor_snapshots(user_id, snapshot_date DESC);
-CREATE INDEX IF NOT EXISTS idx_competitor_snapshots_competitor_date
-  ON competitor_snapshots(competitor_id, snapshot_date DESC);
-
--- ==================================================================
--- END 20260417_competitor_snapshots.sql
 -- ==================================================================
 
 
@@ -1157,24 +1183,6 @@ COMMENT ON COLUMN user_profiles.automation_policies IS 'Per-action automation po
 
 
 -- ==================================================================
--- BEGIN 20260419_fix_execution_plan_verification.sql
--- ==================================================================
--- Add verification persistence fields to fix execution plans.
--- Run: supabase db push or paste into SQL editor
-
-ALTER TABLE fix_execution_plans
-ADD COLUMN IF NOT EXISTS layer_scores_before JSONB,
-ADD COLUMN IF NOT EXISTS verification JSONB;
-
-COMMENT ON COLUMN fix_execution_plans.layer_scores_before IS 'Layer score snapshot captured when the execution plan was created.';
-COMMENT ON COLUMN fix_execution_plans.verification IS 'Verification workflow state and results for the execution plan.';
-
--- ==================================================================
--- END 20260419_fix_execution_plan_verification.sql
--- ==================================================================
-
-
--- ==================================================================
 -- BEGIN 20260419_fix_execution_plans.sql
 -- ==================================================================
 -- Persist Geothority fix engine execution plans so AUTO / ASSISTED / GUIDED
@@ -1219,6 +1227,24 @@ CREATE POLICY "Users update own fix execution plans"
 
 -- ==================================================================
 -- END 20260419_fix_execution_plans.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260419_fix_execution_plan_verification.sql
+-- ==================================================================
+-- Add verification persistence fields to fix execution plans.
+-- Run: supabase db push or paste into SQL editor
+
+ALTER TABLE fix_execution_plans
+ADD COLUMN IF NOT EXISTS layer_scores_before JSONB,
+ADD COLUMN IF NOT EXISTS verification JSONB;
+
+COMMENT ON COLUMN fix_execution_plans.layer_scores_before IS 'Layer score snapshot captured when the execution plan was created.';
+COMMENT ON COLUMN fix_execution_plans.verification IS 'Verification workflow state and results for the execution plan.';
+
+-- ==================================================================
+-- END 20260419_fix_execution_plan_verification.sql
 -- ==================================================================
 
 
@@ -1955,29 +1981,3 @@ CREATE POLICY "Users manage own trust signal scores"
 -- ==================================================================
 -- END 20260420_phases_5_through_8.sql
 -- ==================================================================
-
-
--- ==================================================================
--- BEGIN fix_packages.sql
--- ==================================================================
-CREATE TABLE IF NOT EXISTS fix_packages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL,
-  scan_id UUID NOT NULL,
-  fixes JSONB NOT NULL DEFAULT '[]',
-  total_fixes INTEGER DEFAULT 0,
-  auto_applied_count INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX ON fix_packages(user_id);
-CREATE INDEX ON fix_packages(scan_id);
-ALTER TABLE fix_packages ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users see own fix packages" ON fix_packages FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users create fix packages" ON fix_packages FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- ==================================================================
--- END fix_packages.sql
--- ==================================================================
-
