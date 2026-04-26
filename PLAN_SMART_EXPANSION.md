@@ -60,7 +60,7 @@ app/(app)/expansion/page.tsx — Full UI page with dashboard, tabs, target cards
 - **Competitor Data**: Pulls active competitor domains to enrich gap analysis
 - **Census API**: Live geocoding + nearby cities via Census Geocoding API with heuristic fallback
 - **OpenAI**: GPT-4o-mini for AI rationale generation
-- **Vercel Cron**: Weekly re-scoring on Mondays at 3am (`/api/cron/expansion-refresh`)
+- **Scheduler job**: Weekly re-scoring on Mondays at 3am UTC (`/api/cron/expansion-refresh`)
 
 ### Migration SQL
 

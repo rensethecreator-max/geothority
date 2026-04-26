@@ -154,7 +154,7 @@ export async function GET(req: NextRequest) {
     const envProblems = checkEnvVarIntegrity();
     for (const prob of envProblems) {
       const id = await logIssue(supabase, "env_var_integrity", "critical",
-        `${prob.name}: ${prob.issue}. Fix in Vercel environment variables.`);
+        `${prob.name}: ${prob.issue}. Fix in your production environment variables.`);
       if (id) newIssues.push(id);
     }
 

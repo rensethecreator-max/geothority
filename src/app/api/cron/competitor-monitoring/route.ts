@@ -7,6 +7,7 @@ import {
   type ProfileAttributeSnapshot,
 } from "@/lib/competitor-change-detection";
 import { sendCompetitorAlerts } from "@/lib/email-alerts";
+import { getAppUrl } from "@/lib/app-url";
 
 /**
  * GET /api/cron/competitor-monitoring
@@ -16,7 +17,7 @@ import { sendCompetitorAlerts } from "@/lib/email-alerts";
  * snapshots, and generates in-app notifications.
  *
  * Auth: CRON_SECRET via Authorization header.
- * Schedule: Every 24h (or as configured in vercel.json).
+ * Schedule: Every 24h (or whatever schedule your Railway/external cron runner uses).
  */
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -118,7 +119,7 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
+  const appUrl = getAppUrl();
 
   const startedAt = new Date().toISOString();
   console.log(`[cron/competitor-monitoring] Starting at ${startedAt}`);

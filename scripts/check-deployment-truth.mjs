@@ -2,9 +2,27 @@
 import dns from 'node:dns/promises';
 import https from 'node:https';
 
+const normalizeUrl = (value) => {
+  if (!value) return null;
+  const trimmed = String(value).trim();
+  if (!trimmed) return null;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+};
+
+const envHosts = [
+  process.env.NEXT_PUBLIC_APP_URL,
+  process.env.APP_URL,
+  process.env.RAILWAY_PUBLIC_DOMAIN,
+  process.env.RAILWAY_STATIC_URL,
+  process.env.VERCEL_URL,
+]
+  .map(normalizeUrl)
+  .filter(Boolean)
+  .map((value) => new URL(value).host);
+
 const hosts = process.argv.slice(2).length
   ? process.argv.slice(2)
-  : ['geothority.io', 'www.geothority.io', 'geothority.vercel.app'];
+  : Array.from(new Set(['geothority.io', 'www.geothority.io', ...envHosts]));
 
 function request(host, path, method = 'GET') {
   return new Promise((resolve) => {

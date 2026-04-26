@@ -2,14 +2,21 @@
 
 Geothority is built as a Progressive Web App (PWA) that can be distributed on three platforms:
 
-## 1. Web (Vercel)
+## 1. Web (Railway / any Next.js host)
 
-Already the primary distribution. Just deploy to Vercel.
+Already the primary distribution. Railway is the intended production host, but any host that can run `next build` + `next start` works.
 
 ```bash
 cd .. # project root
-vercel deploy --prod
+npm install
+npm run build
+npm run start
 ```
+
+### Railway notes
+- Set `NEXT_PUBLIC_APP_URL` and `APP_URL` to the live domain.
+- Railway injects `PORT`; do not hardcode it.
+- Recreate the app cron schedule with Railway cron jobs or another scheduler.
 
 ## 2. Google Play Store (TWA via Bubblewrap)
 
@@ -129,7 +136,7 @@ npx cap open ios
 ## Testing
 
 ### PWA Testing
-1. Deploy to Vercel (or use `next build && next start`)
+1. Deploy to Railway (or use `next build && next start`)
 2. Open Chrome DevTools → Application → Service Workers
 3. Check "Installable" in the Manifest panel
 4. Test offline mode

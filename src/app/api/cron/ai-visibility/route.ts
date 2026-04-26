@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { sendAIVisibilityChangeAlert } from "@/lib/email-alerts";
+import { getAppUrl } from "@/lib/app-url";
 
 /**
  * Cron endpoint: Recurring AI visibility checks for all users with query sets.
- * Called by Vercel cron or external scheduler.
+ * Called by Railway cron, GitHub Actions, or any external scheduler.
  * POST /api/cron/ai-visibility (with cron_secret)
  */
 
@@ -74,9 +75,7 @@ export async function POST(req: NextRequest) {
       for (const q of topQueries) {
         try {
           // Call the internal AI visibility check endpoint
-          const baseUrl = process.env.VERCEL_URL
-            ? `https://${process.env.VERCEL_URL}`
-            : `http://localhost:${process.env.PORT || 3000}`;
+          const baseUrl = getAppUrl();
 
           const checkRes = await fetch(`${baseUrl}/api/ai-visibility`, {
             method: "POST",

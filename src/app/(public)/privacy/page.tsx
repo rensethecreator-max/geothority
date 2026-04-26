@@ -51,7 +51,7 @@ export default function PrivacyPage() {
                 <li><strong className="text-[var(--foreground)]">Supabase:</strong> Database and authentication</li>
                 <li><strong className="text-[var(--foreground)]">OpenAI:</strong> content generation and analysis</li>
                 <li><strong className="text-[var(--foreground)]">Stripe:</strong> Payment processing</li>
-                <li><strong className="text-[var(--foreground)]">Vercel:</strong> Application hosting</li>
+                <li><strong className="text-[var(--foreground)]">Railway:</strong> Application hosting</li>
                 <li><strong className="text-[var(--foreground)]">Resend:</strong> Transactional email delivery</li>
               </ul>
             </section>

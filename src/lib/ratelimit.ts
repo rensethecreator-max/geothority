@@ -52,7 +52,7 @@ export async function checkRateLimit(
   if (!limiter) {
     // No Redis configured — fail closed in production, allow in development
     if (process.env.VERCEL || process.env.NODE_ENV === "production") {
-      console.error("Rate limiter not configured (missing UPSTASH_REDIS_REST_URL/TOKEN). Blocking request.");
+      console.error("Rate limiter not configured (missing UPSTASH_REDIS_REST_URL/TOKEN). Blocking request in production.");
       return { allowed: false, remaining: 0, reset: 0 };
     }
     return { allowed: true, remaining: 999, reset: 0 };

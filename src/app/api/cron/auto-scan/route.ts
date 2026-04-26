@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
+import { getAppUrl } from "@/lib/app-url";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -155,7 +156,7 @@ export async function GET(request: NextRequest) {
 
   // Use service client so we can query without user auth context
   const supabase = createServiceClient();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
+  const appUrl = getAppUrl();
 
   try {
     // Get all users with scans, grouped by most recent scan

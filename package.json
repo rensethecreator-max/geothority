@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "ops:deployment-truth": "node scripts/check-deployment-truth.mjs",
+    "ops:cron:smoke": "node scripts/cron-smoke.mjs",
     "proof:readiness": "node scripts/proof-readiness.mjs"
   },
   "dependencies": {

@@ -51,7 +51,7 @@ export async function POST(
 
     case "env_var_integrity": {
       actionType = "env_var_guidance";
-      result = "Fix env vars in Vercel settings. Remove invisible characters and redeploy.";
+      result = "Fix the broken environment variables in your hosting platform, remove invisible characters/whitespace, and redeploy.";
       status = "pending";
       break;
     }
@@ -82,7 +82,7 @@ export async function POST(
 
     case "google_api_config": {
       actionType = "config_guidance";
-      result = "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your Vercel environment variables if you want server-side GBP token refresh and direct publishing. Supabase Google auth provider setup is still required separately.";
+      result = "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your production environment variables if you want server-side GBP token refresh and direct publishing. Supabase Google auth provider setup is still required separately.";
       status = "pending";
       break;
     }

@@ -3,8 +3,7 @@ import { processAllPendingJourneys } from "@/lib/email-journey-service";
 import { processAllPendingPushJourneys } from "@/lib/push-notification-service";
 
 // Cron endpoint: process all pending email + push journeys.
-// Call every 15 minutes via Vercel cron or external scheduler.
-// vercel.json: { "crons": [{ "path": "/api/cron/journeys", "schedule": "0,15,30,45 * * * *" }] }
+// Call every 15 minutes via Railway cron, GitHub Actions, or another scheduler.
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
