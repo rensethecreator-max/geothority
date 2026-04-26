@@ -624,10 +624,10 @@ export default function ScanResultPage() {
             </h2>
             <p className="text-[var(--muted-foreground)] max-w-lg">
               {scan.geothority_score! >= 70
-                ? "Your website has a solid local SEO foundation. Focus on the remaining gaps to truly dominate."
+                ? "Your website has a solid local SEO foundation. Focus on the remaining gaps to strengthen consistency and coverage."
                 : scan.geothority_score! >= 40
-                ? "You have some basics in place, but significant gaps are making you invisible to search and AI. Let's fix that."
-                : "Your website is missing critical trust signals. You're likely invisible in local search and AI recommendations. The good news: we know exactly what to fix."}
+                ? "You have some basics in place, but significant gaps are still limiting search and AI visibility. Let's fix the highest-impact ones first."
+                : "Your website is missing critical trust signals. Search engines and AI systems may have a hard time trusting or citing the business consistently, but the report below gives you a concrete place to start."}
             </p>
           </div>
         </div>
@@ -670,9 +670,9 @@ export default function ScanResultPage() {
                 <Star className="w-5 h-5 text-green-400" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold">Your Review Score is Holding You Back</h4>
+                <h4 className="font-bold">Your Review Program Needs More Consistency</h4>
                 <p className="text-sm text-gray-400 mt-1">
-                  Your competitors average more reviews. Starcepta automates review collection with One-Tap Reviews - customers leave a 5-star review in 3 seconds.
+                  Review velocity and response habits influence trust. If you want help systematizing requests after real customer interactions, Starcepta is one option to evaluate.
                 </p>
                 <a
                   href="https://starcepta.com?ref=geothority"
@@ -694,9 +694,9 @@ export default function ScanResultPage() {
               <Zap className="w-5 h-5 text-blue-400" />
             </div>
             <div className="flex-1">
-              <h4 className="font-bold">Want to Fix Everything Automatically?</h4>
+              <h4 className="font-bold">Need Help Executing the Backlog?</h4>
               <p className="text-sm text-gray-400 mt-1">
-                4MinuteSEO builds your backlinks, generates content, and gets you indexed - on autopilot. The engine behind your local SEO growth.
+                4MinuteSEO is positioned as an execution partner for content and authority-building work. Review the fit carefully before you rely on any automated campaign.
               </p>
               <a
                 href="https://4minuteseo.com?ref=geothority"
@@ -717,7 +717,7 @@ export default function ScanResultPage() {
           <div>
             <h3 className="text-xl font-bold flex items-center gap-2">
               <Zap className="w-5 h-5 text-emerald-400" />
-              Fix What Matters
+              Fix What Matters First
             </h3>
             <p className="text-sm text-gray-400 mt-1">
               Generate your missing schema, content, meta tags, AI optimization, and sync listings — with control over how much runs automatically.

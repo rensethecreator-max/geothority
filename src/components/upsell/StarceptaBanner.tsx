@@ -46,7 +46,7 @@ export function StarceptaBanner({
   }
 
   const starDisplay = displayScore.toFixed(1);
-  const countDisplay = reviewCount !== undefined ? `${reviewCount} review${reviewCount !== 1 ? "s" : ""}` : "few reviews";
+  const countDisplay = reviewCount !== undefined ? `${reviewCount} review${reviewCount !== 1 ? "s" : ""}` : "limited review volume";
 
   return (
     <div className="relative border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-950/20 rounded-r-xl p-5 pr-12 shadow-sm">
@@ -71,8 +71,7 @@ export function StarceptaBanner({
 
           {/* Context */}
           <p className="text-sm text-amber-700 dark:text-amber-400 mb-1">
-            Top insurance agents in your area average{" "}
-            <span className="font-bold">4.7 stars.</span>
+            Review momentum affects trust and click-through, especially when competitors are collecting fresh feedback more consistently.
           </p>
 
           {/* Value prop */}
@@ -80,7 +79,7 @@ export function StarceptaBanner({
             <span className="font-bold text-amber-700 dark:text-amber-300">
               Starcepta
             </span>{" "}
-            automates review collection so you never miss a happy client.
+            helps automate review requests so your follow-up process is easier to run consistently.
           </p>
         </div>
 

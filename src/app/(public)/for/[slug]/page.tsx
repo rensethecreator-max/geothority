@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, TrendingUp, AlertCircle, CheckCircle2, Star } from "lucide-react";
+import { ArrowRight, TrendingUp, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
 
 const industries: Record<string, {
@@ -294,7 +294,10 @@ export default function IndustryPage({ params }: { params: { slug: string } }) {
             Built for {data.name}
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold mb-6 leading-tight">{data.h1}</h1>
-          <p className="text-lg text-[var(--muted-foreground)] max-w-2xl mx-auto mb-8">{data.description}</p>
+          <p className="text-lg text-[var(--muted-foreground)] max-w-2xl mx-auto mb-4">{data.description}</p>
+          <p className="text-sm text-[var(--muted-foreground)] max-w-2xl mx-auto mb-8">
+            This page is a planning guide for {data.name.toLowerCase()}. Your actual scan is the source of truth for your site, profile, and citation data.
+          </p>
           <Link
             href="/signup"
             className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-lg font-semibold transition-colors"
@@ -304,7 +307,7 @@ export default function IndustryPage({ params }: { params: { slug: string } }) {
         </div>
 
         {/* Stats */}
-        <div className="grid sm:grid-cols-2 gap-6 mb-20">
+        <div className="grid sm:grid-cols-2 gap-6 mb-6">
           {data.stats.map((stat, i) => (
             <div key={i} className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-8 text-center">
               <div className="text-4xl font-bold text-emerald-400 mb-2">{stat.value}</div>
@@ -312,6 +315,9 @@ export default function IndustryPage({ params }: { params: { slug: string } }) {
             </div>
           ))}
         </div>
+        <p className="mb-20 text-center text-xs text-[var(--muted-foreground)]">
+          Market context only — use these numbers as directional planning inputs, not guarantees or benchmarks for your specific business.
+        </p>
 
         {/* Pain Points */}
         <div className="mb-20">
@@ -345,20 +351,18 @@ export default function IndustryPage({ params }: { params: { slug: string } }) {
           </div>
         </div>
 
-        {/* Testimonial */}
         <div className="mb-20">
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-8 text-center max-w-2xl mx-auto">
-            <div className="flex justify-center gap-1 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 text-emerald-400 fill-emerald-400" />
-              ))}
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-8 max-w-2xl mx-auto">
+            <div className="flex items-center justify-center gap-2 mb-4 text-emerald-300">
+              <ShieldCheck className="w-5 h-5" />
+              <span className="text-sm font-semibold uppercase tracking-[0.18em]">Honest planning note</span>
             </div>
-            <blockquote className="text-lg font-medium mb-4 leading-relaxed">
-              &ldquo;{data.testimonial.quote}&rdquo;
-            </blockquote>
-            <div className="text-sm text-[var(--muted-foreground)]">
-              <span className="font-semibold text-foreground">{data.testimonial.author}</span> - {data.testimonial.role}
-            </div>
+            <p className="text-center text-lg font-medium mb-3 leading-relaxed">
+              Geothority is strongest when it helps you measure what is true now, then prioritize the next fix.
+            </p>
+            <p className="text-center text-sm text-[var(--muted-foreground)] leading-relaxed">
+              We do not treat industry pages as proof of outcomes. Once you run a scan, the product uses your own website, profile, and trust signals to build the action plan.
+            </p>
           </div>
         </div>
 
@@ -392,9 +396,9 @@ export default function IndustryPage({ params }: { params: { slug: string } }) {
         {/* Bottom CTA */}
         <div className="text-center bg-[var(--card)] rounded-2xl border border-[var(--border)] p-10">
           <TrendingUp className="w-10 h-10 text-emerald-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-4">Start Ranking Higher Today</h2>
+          <h2 className="text-2xl font-bold mb-4">See What to Fix First</h2>
           <p className="text-[var(--muted-foreground)] mb-6 max-w-md mx-auto">
-            Get your Trust Stack Score in 90 seconds. See exactly what&apos;s holding you back and what to fix first.
+            Get your Trust Stack Score in 90 seconds and work from your real gaps instead of generic local SEO advice.
           </p>
           <Link
             href="/signup"

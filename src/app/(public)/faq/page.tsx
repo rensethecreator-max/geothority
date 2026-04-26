@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Geothority FAQ - Local SEO Questions Answered",
     description:
-      "Get answers about Geothority's Trust Stack™, AI search optimization, website scanner, and how we help insurance agents dominate local search.",
+      "Get answers about Geothority's Trust Stack™, AI search optimization, website scanner, and how we help insurance agents improve local visibility.",
     url: "https://geothority.io/faq",
     type: "website",
   },
@@ -184,9 +184,9 @@ export default function FAQPage() {
       {/* CTA */}
       <section className="py-16 px-4 bg-[var(--card)]">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-3">Ready to dominate local search?</h2>
+          <h2 className="text-2xl font-bold mb-3">Ready to see where you stand?</h2>
           <p className="text-[var(--muted-foreground)] mb-6">
-            Get your free Trust Stack™ score in 90 seconds - no credit card required.
+            Get your free Trust Stack™ score in 90 seconds and start from the gaps your business actually has.
           </p>
           <Link
             href="/signup"

@@ -8,15 +8,15 @@ import { generateOrganizationSchema, generateWebSiteSchema, generateSoftwareAppS
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Geothority - Dominate Local Search & AI for Insurance Agents",
+  title: "Geothority - Local Search & AI Visibility for Insurance Agents",
   description:
-    "Discover why you're invisible in search and AI. Generate the trust signals, content, and optimizations that make you the default local answer.",
+    "See how your business appears across local search and AI answer surfaces, then work through the highest-leverage fixes with clear guidance.",
   manifest: "/manifest.json",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io"),
   openGraph: {
-    title: "Geothority - Dominate Local Search & AI",
+    title: "Geothority - Local Search & AI Visibility",
     description:
-      "The local SEO platform that shows insurance agents exactly how to become the default answer in Google and AI search. Free website audit in 90 seconds.",
+      "The local SEO platform that helps insurance agents measure local visibility, spot trust gaps, and prioritize the next fixes. Free website audit in 90 seconds.",
     url: process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io",
     siteName: "Geothority",
     type: "website",
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Geothority - Dominate Local Search & AI",
+    title: "Geothority - Local Search & AI Visibility",
     description:
-      "Free 90-second website audit. See your Geothority Score and get copy-paste fixes to dominate local search.",
+      "Free 90-second website audit. See your Geothority Score and get copy-paste fixes to improve local search coverage.",
     images: ["/og-image.png"],
   },
   appleWebApp: {

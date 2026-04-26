@@ -30,11 +30,11 @@ const ONBOARDING_STEPS: WizardStep[] = [
     content: (
       <div className="space-y-4">
         <p className="text-muted-foreground">
-          Geothority gives you complete visibility into your local SEO presence - and a clear roadmap to dominate local search and AI results.
+          Geothority gives you a clear view of your local SEO presence - and a prioritized roadmap for improving search and AI visibility.
         </p>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { icon: "🔍", title: "90-Second Audit", desc: "See exactly why you&apos;re invisible in local search" },
+            { icon: "🔍", title: "90-Second Audit", desc: "See where local trust and visibility are breaking down" },
             { icon: "📊", title: "Trust Stack™ Score", desc: "5-layer local authority measurement" },
             { icon: "👁️", title: "Competitor Watchdog", desc: "Monitor rivals&apos; ranking moves" },
             { icon: "✍️", title: "AI Content Engine", desc: "Generate city/service landing pages" },

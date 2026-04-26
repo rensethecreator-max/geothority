@@ -159,10 +159,10 @@ export default function DashboardPage() {
         {/* Hero CTA */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-electric-500/20 via-emerald-500/10 to-transparent border border-electric-500/20 p-8 mb-6">
           <div className="relative z-10">
-            <h2 className="text-xl font-bold mb-2">Ready to dominate local search?</h2>
+            <h2 className="text-xl font-bold mb-2">Ready to establish your baseline?</h2>
             <p className="text-sm text-[var(--muted-foreground)] mb-5 max-w-lg">
               Run your first scan to get your 5-Layer Trust Stack™ score, discover quick wins,
-              and start outranking your competitors.
+              and see which trust signals need attention first.
             </p>
             <Link
               href="/scan"

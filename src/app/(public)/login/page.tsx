@@ -131,7 +131,7 @@ function LoginForm() {
           </h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             {mode === "signin"
-              ? "Sign in to scan your website and dominate local search"
+              ? "Sign in to review your scans, trust signals, and next fixes"
               : "Start your free website scan - no credit card needed"}
           </p>
         </div>
