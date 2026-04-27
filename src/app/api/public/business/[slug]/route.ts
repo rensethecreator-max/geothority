@@ -120,28 +120,28 @@ async function getTrustData(supabase: any, userId: string) {
 async function getCitationData(supabase: any, userId: string) {
   const { data: states } = await supabase
     .from("citation_sync_states")
-    .select("directory_id, listing_status, consistency_score, last_checked")
+    .select("directory_id, sync_status, consistency_score, last_checked")
     .eq("user_id", userId);
 
   const { data: directories } = await supabase
     .from("citation_directories")
-    .select("id, name, tier, url")
+    .select("id, name, tier, website")
     .eq("active", true);
 
-  const dirMap = new Map((directories ?? []).map((d: { id: string; name: string; tier: string; url: string }) => [d.id, d]));
+  const dirMap = new Map((directories ?? []).map((d: { id: string; name: string; tier: string; website: string }) => [d.id, d]));
 
-  const citations = (states ?? []).map((s: { directory_id: string; listing_status: string; consistency_score: number; last_checked: string }) => {
-    const dir = dirMap.get(s.directory_id) as { name: string; tier: string; url: string } | undefined;
+  const citations = (states ?? []).map((s: { directory_id: string; sync_status: string; consistency_score: number; last_checked: string }) => {
+    const dir = dirMap.get(s.directory_id) as { name: string; tier: string; website: string } | undefined;
     return {
       directory: dir?.name ?? "Unknown",
       tier: dir?.tier ?? "unknown",
-      status: s.listing_status,
+      status: s.sync_status,
       consistency: s.consistency_score,
       lastChecked: s.last_checked,
     };
   });
 
-  const listed = citations.filter((c: { status: string }) => c.status === "listed").length;
+  const listed = citations.filter((c: { status: string }) => c.status === "found" || c.status === "synced").length;
   const total = citations.length;
 
   return NextResponse.json({

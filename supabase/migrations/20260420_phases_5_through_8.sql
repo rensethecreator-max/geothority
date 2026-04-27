@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS nap_push_results (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   batch_id UUID NOT NULL REFERENCES nap_push_batches(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  directory_id UUID REFERENCES citation_directories(id),
+  directory_id TEXT REFERENCES citation_directories(id),
   directory_name TEXT NOT NULL,
   sync_mode TEXT NOT NULL,  -- 'direct' | 'distribution' | 'guided' | 'unknown'
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'pushed', 'failed', 'skipped', 'guided')),

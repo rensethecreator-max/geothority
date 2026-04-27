@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS business_profiles (
   longitude DECIMAL(9,6),
   -- Metadata
   nap_hash TEXT,  -- hash of normalized NAP for drift detection
+  identity_confidence SMALLINT CHECK (identity_confidence >= 0 AND identity_confidence <= 100),
   last_verified TIMESTAMPTZ,
   verification_source TEXT,  -- 'manual' | 'gbp_sync' | 'scan'
   created_at TIMESTAMPTZ DEFAULT NOW(),

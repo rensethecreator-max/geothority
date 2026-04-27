@@ -55,9 +55,9 @@ export async function POST(req: NextRequest) {
       .eq("active", true);
     const { data: listings } = await supabase
       .from("citation_sync_states")
-      .select("listing_status")
+      .select("sync_status")
       .eq("user_id", userId)
-      .eq("listing_status", "listed");
+      .in("sync_status", ["found", "synced"]);
     if (directories && directories.length > 0) {
       citationCoverage = Math.round(((listings?.length ?? 0) / directories.length) * 100);
     }
