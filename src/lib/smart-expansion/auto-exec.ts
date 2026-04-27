@@ -44,7 +44,6 @@ export async function processAutoExecutableActions(
   if (!cfg.enabled) return [];
 
   const results: AutoExecResult[] = [];
-  let concurrent = 0;
 
   for (const target of targets) {
     if (target.status === "completed" || target.status === "deprioritized") continue;
@@ -52,9 +51,8 @@ export async function processAutoExecutableActions(
     for (const action of target.suggested_actions) {
       if (!action.auto_executable) continue;
       if (!cfg.allowedTypes.includes(action.type)) continue;
-      if (concurrent >= cfg.maxConcurrent) break;
+      if (results.length >= cfg.maxConcurrent) return results;
 
-      concurrent++;
       const result = await executeAction(target, action, supabase, cfg.dryRun);
       results.push(result);
     }
@@ -106,20 +104,30 @@ async function executeSchemaUpdate(
   supabase: any,
   baseResult: { actionType: string; targetId: string }
 ): Promise<AutoExecResult> {
-  // Queue schema markup addition as a generated_content task
+  const schemaJson = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    areaServed: {
+      "@type": "City",
+      name: target.name,
+      ...(target.state ? { addressRegion: target.state } : {}),
+    },
+    additionalType: target.type,
+    identifier: target.id,
+  };
+
   const { error } = await supabase.from("generated_content").insert({
     user_id: target.user_id,
-    content_type: "schema_markup",
-    slug: `schema-${target.slug}`,
+    type: "trust_page",
+    city: target.type === "city" ? target.name : null,
+    service: target.type === "service" ? target.name : null,
     title: action.title,
-    body: JSON.stringify({
-      type: "ServiceArea",
-      areaServed: target.name,
-      areaServedState: target.state,
-      targetId: target.id,
-    }),
+    meta_description: `Schema markup draft for ${target.name}`,
+    content_html: `<script type="application/ld+json">${JSON.stringify(schemaJson, null, 2)}</script>`,
+    content_markdown: `Schema markup draft for ${target.name}`,
+    schema_json: schemaJson,
+    quality_score: 90,
     status: "draft",
-    meta: { target_type: target.type, auto_generated: true },
   });
 
   if (error) throw error;
@@ -138,20 +146,18 @@ async function executeCityPageCreation(
   supabase: any,
   baseResult: { actionType: string; targetId: string }
 ): Promise<AutoExecResult> {
+  const draftBody = `# ${action.title}\n\nTarget city: ${target.name}${target.state ? `, ${target.state}` : ""}\n\nWhy this matters: ${target.rationale}`;
+
   const { error } = await supabase.from("generated_content").insert({
     user_id: target.user_id,
-    content_type: "city_page",
-    slug: target.slug,
+    type: "city_page",
+    city: target.name,
     title: action.title,
-    body: JSON.stringify({
-      city: target.name,
-      state: target.state,
-      rationale: target.rationale,
-      targetId: target.id,
-      signals: target.signals.map((s) => ({ type: s.type, value: s.value })),
-    }),
+    meta_description: `City expansion draft for ${target.name}`,
+    content_markdown: draftBody,
+    content_html: `<pre>${draftBody.replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char] || char))}</pre>`,
+    quality_score: Math.max(60, Math.round(target.impact_score)),
     status: "draft",
-    meta: { target_type: "city", impact_score: target.impact_score, auto_generated: true },
   });
 
   if (error) throw error;
@@ -170,19 +176,18 @@ async function executeServicePageCreation(
   supabase: any,
   baseResult: { actionType: string; targetId: string }
 ): Promise<AutoExecResult> {
+  const draftBody = `# ${action.title}\n\nTarget service: ${target.name}\n\nWhy this matters: ${target.rationale}`;
+
   const { error } = await supabase.from("generated_content").insert({
     user_id: target.user_id,
-    content_type: "service_page",
-    slug: target.slug,
+    type: "service_page",
+    service: target.name,
     title: action.title,
-    body: JSON.stringify({
-      service: target.name,
-      rationale: target.rationale,
-      targetId: target.id,
-      signals: target.signals.map((s) => ({ type: s.type, value: s.value })),
-    }),
+    meta_description: `Service expansion draft for ${target.name}`,
+    content_markdown: draftBody,
+    content_html: `<pre>${draftBody.replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char] || char))}</pre>`,
+    quality_score: Math.max(60, Math.round(target.impact_score)),
     status: "draft",
-    meta: { target_type: "service", impact_score: target.impact_score, auto_generated: true },
   });
 
   if (error) throw error;
@@ -201,19 +206,26 @@ async function executeCitationBuild(
   supabase: any,
   baseResult: { actionType: string; targetId: string }
 ): Promise<AutoExecResult> {
-  // Queue citation consistency check and NAP data preparation
-  const { error } = await supabase.from("generated_content").insert({
+  const { data: profile, error: profileError } = await supabase
+    .from("business_profiles")
+    .select("business_name, address, city, state, zip, phone, website")
+    .eq("user_id", target.user_id)
+    .single();
+
+  if (profileError || !profile) {
+    throw new Error("No business profile found for citation sync");
+  }
+
+  const { error } = await supabase.from("aggregator_sync_jobs").insert({
     user_id: target.user_id,
-    content_type: "citation_task",
-    slug: `citation-${target.slug}`,
-    title: action.title,
-    body: JSON.stringify({
-      directory: target.name,
+    provider: "yext",
+    status: "queued",
+    business_data: {
+      ...profile,
+      targetDirectory: target.name,
       targetId: target.id,
-      task: "verify_nap_consistency",
-    }),
-    status: "draft",
-    meta: { target_type: "niche_directory", auto_generated: true },
+      initiatedBy: action.type,
+    },
   });
 
   if (error) throw error;

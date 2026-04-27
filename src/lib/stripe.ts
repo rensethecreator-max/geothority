@@ -23,13 +23,20 @@ export function requireStripe(): Stripe {
 
 export type BillingCycle = "monthly" | "annual";
 
+function envFirst(...keys: Array<string | undefined>) {
+  for (const key of keys) {
+    if (key) return key;
+  }
+  return "";
+}
+
 export const PLANS = {
   starter: {
     name: "Starter",
     price: 97,
     annualPrice: 970,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || process.env.STRIPE_PRICE_STARTER || "",
-    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_ANNUAL_PRICE_ID || "",
+    priceId: envFirst(process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID, process.env.STRIPE_PRICE_STARTER),
+    annualPriceId: envFirst(process.env.NEXT_PUBLIC_STRIPE_STARTER_ANNUAL_PRICE_ID, process.env.STRIPE_PRICE_STARTER_ANNUAL),
     features: [
       "GBP health audit",
       "Local authority score",
@@ -42,8 +49,8 @@ export const PLANS = {
     name: "Growth",
     price: 197,
     annualPrice: 1970,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_GROWTH_PRICE_ID || process.env.STRIPE_PRICE_GROWTH || "",
-    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_GROWTH_ANNUAL_PRICE_ID || "",
+    priceId: envFirst(process.env.NEXT_PUBLIC_STRIPE_GROWTH_PRICE_ID, process.env.STRIPE_PRICE_GROWTH),
+    annualPriceId: envFirst(process.env.NEXT_PUBLIC_STRIPE_GROWTH_ANNUAL_PRICE_ID, process.env.STRIPE_PRICE_GROWTH_ANNUAL),
     popular: true,
     features: [
       "Everything in Starter",
@@ -58,8 +65,8 @@ export const PLANS = {
     name: "Authority",
     price: 297,
     annualPrice: 2970,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_AUTHORITY_PRICE_ID || process.env.STRIPE_PRICE_AUTHORITY || "",
-    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_AUTHORITY_ANNUAL_PRICE_ID || "",
+    priceId: envFirst(process.env.NEXT_PUBLIC_STRIPE_AUTHORITY_PRICE_ID, process.env.STRIPE_PRICE_AUTHORITY),
+    annualPriceId: envFirst(process.env.NEXT_PUBLIC_STRIPE_AUTHORITY_ANNUAL_PRICE_ID, process.env.STRIPE_PRICE_AUTHORITY_ANNUAL),
     features: [
       "Everything in Growth",
       "Full trust stack dashboard",
@@ -73,8 +80,8 @@ export const PLANS = {
     name: "Agency",
     price: 997,
     annualPrice: 9970,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_AGENCY_PRICE_ID || process.env.STRIPE_PRICE_AGENCY || "",
-    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_AGENCY_ANNUAL_PRICE_ID || "",
+    priceId: envFirst(process.env.NEXT_PUBLIC_STRIPE_AGENCY_PRICE_ID, process.env.STRIPE_PRICE_AGENCY),
+    annualPriceId: envFirst(process.env.NEXT_PUBLIC_STRIPE_AGENCY_ANNUAL_PRICE_ID, process.env.STRIPE_PRICE_AGENCY_ANNUAL),
     features: [
       "Everything in Authority",
       "Up to 10 agent seats",

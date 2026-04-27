@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
 
       const { data: profile } = await supabase
         .from("user_profiles")
-        .select("id, email")
+        .select("id")
         .eq("stripe_customer_id", customerId)
         .single();
 

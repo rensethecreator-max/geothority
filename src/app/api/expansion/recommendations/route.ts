@@ -45,16 +45,22 @@ export async function POST(req: NextRequest) {
   // ── Determine existing pages (from content system if available) ──
   const { data: existingContent } = await supabase
     .from("generated_content")
-    .select("slug, content_type")
+    .select("type, city, service, title")
     .eq("user_id", userId)
     .limit(200);
 
+  const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
   const existingCityPages = (existingContent || [])
-    .filter((c: any) => c.content_type === "city_page")
-    .map((c: any) => c.slug);
+    .filter((c: any) => c.type === "city_page")
+    .map((c: any) => c.city || c.title)
+    .filter(Boolean)
+    .map((value: string) => slugify(value));
   const existingServicePages = (existingContent || [])
-    .filter((c: any) => c.content_type === "service_page")
-    .map((c: any) => c.slug);
+    .filter((c: any) => c.type === "service_page")
+    .map((c: any) => c.service || c.title)
+    .filter(Boolean)
+    .map((value: string) => slugify(value));
 
   // ── Get competitor services from stored competitors ─────────
   const { data: competitors } = await supabase

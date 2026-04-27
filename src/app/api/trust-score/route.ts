@@ -99,9 +99,9 @@ export async function POST(req: NextRequest) {
     let schemaPresence = 0;
     const { count: schemaCount } = await supabase
       .from("generated_content")
-      .select("*", { count: "exact", head: true })
+      .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
-      .eq("content_type", "schema");
+      .not("schema_json", "is", null);
     schemaPresence = schemaCount && schemaCount > 0 ? 80 : 0;
 
     // 7. Content Depth — based on content pieces generated

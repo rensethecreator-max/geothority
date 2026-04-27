@@ -146,27 +146,27 @@ async function generateExpansionPage(
   const pageTitle = target.type === "city"
     ? `${detail.service || "Insurance"} in ${target.name}`
     : `${target.name} Services`;
+  const draftBody = `# ${pageTitle}\n\nContent auto-generated for expansion target: ${target.name}. Edit this page to add your specific service details and local information.\n\n## Why Choose Us\n\nWe provide expert ${detail.service || "professional"} services in ${target.name} and surrounding areas.\n\n## Our Services\n\n- Service 1\n- Service 2\n- Service 3\n\n## Contact Us\n\nGet in touch today for a free consultation.`;
 
   const { data: content, error } = await supabase
     .from("generated_content")
     .insert({
       user_id: userId,
-      content_type: pageType,
+      type: pageType,
+      city: target.type === "city" ? target.name : null,
+      service: detail.service || (target.type === "service" ? target.name : null),
       title: pageTitle,
-      slug: pageTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
-      body: `# ${pageTitle}\n\nContent auto-generated for expansion target: ${target.name}. Edit this page to add your specific service details and local information.\n\n## Why Choose Us\n\nWe provide expert ${detail.service || "professional"} services in ${target.name} and surrounding areas.\n\n## Our Services\n\n- Service 1\n- Service 2\n- Service 3\n\n## Contact Us\n\nGet in touch today for a free consultation.`,
+      meta_description: `Expansion draft for ${target.name}`,
+      content_markdown: draftBody,
+      content_html: `<pre>${draftBody.replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char] || char))}</pre>`,
+      quality_score: Math.max(60, Math.round(target.impact_score ?? 60)),
       status: "draft",
-      metadata: {
-        expansion_target_id: target.id,
-        impact_score: target.impact_score,
-        generated_by: "expansion_engine",
-      },
     })
     .select("id")
     .single();
 
   if (error) {
-    return { message: `Page draft created: ${pageTitle}`, contentId: null };
+    throw new Error(error.message);
   }
 
   return { message: `Page draft created: "${pageTitle}" — edit and publish when ready`, contentId: content?.id };
@@ -179,23 +179,28 @@ async function generateServiceContent(
   detail: Record<string, any>
 ): Promise<{ message: string; contentId: string | null }> {
   const serviceTitle = `${target.name} — ${detail.service || "Professional Services"}`;
+  const draftBody = `# ${serviceTitle}\n\nService page auto-generated for expansion into ${target.name}.\n\n## What We Offer\n\nDetailed service description coming soon.\n\n## Service Area\n\nWe serve ${target.name} and the surrounding community.\n\n## Get Started\n\nContact us for a consultation.`;
 
   const { data: content, error } = await supabase
     .from("generated_content")
     .insert({
       user_id: userId,
-      content_type: "service_page",
+      type: "service_page",
+      city: target.type === "city" ? target.name : null,
+      service: detail.service || target.name,
       title: serviceTitle,
-      slug: serviceTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
-      body: `# ${serviceTitle}\n\nService page auto-generated for expansion into ${target.name}.\n\n## What We Offer\n\nDetailed service description coming soon.\n\n## Service Area\n\nWe serve ${target.name} and the surrounding community.\n\n## Get Started\n\nContact us for a consultation.`,
+      meta_description: `Service expansion draft for ${target.name}`,
+      content_markdown: draftBody,
+      content_html: `<pre>${draftBody.replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char] || char))}</pre>`,
+      quality_score: Math.max(60, Math.round(target.impact_score ?? 60)),
       status: "draft",
-      metadata: {
-        expansion_target_id: target.id,
-        type: "service_expansion",
-      },
     })
     .select("id")
     .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   return { message: `Service page draft: "${serviceTitle}"`, contentId: content?.id ?? null };
 }
