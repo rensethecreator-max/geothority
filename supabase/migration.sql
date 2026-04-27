@@ -261,3 +261,10 @@ CREATE POLICY "Service role full access GBP posts" ON gbp_posts FOR ALL USING (a
 CREATE POLICY "Service role full access GBP questions" ON gbp_questions FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
 CREATE POLICY "Service role full access GBP audits" ON gbp_audits FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
 CREATE POLICY "Service role full access GBP weekly metrics" ON gbp_weekly_metrics FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
+
+-- Grants: authenticated users still need base table privileges in addition to RLS policies
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO authenticated;
