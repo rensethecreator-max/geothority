@@ -41,7 +41,6 @@ const REQUIRED_GROUPS = [
     envVars: [
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET',
-      'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
       'NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID',
       'NEXT_PUBLIC_STRIPE_GROWTH_PRICE_ID',
       'NEXT_PUBLIC_STRIPE_AUTHORITY_PRICE_ID',
@@ -51,7 +50,7 @@ const REQUIRED_GROUPS = [
       'NEXT_PUBLIC_STRIPE_AUTHORITY_ANNUAL_PRICE_ID',
       'NEXT_PUBLIC_STRIPE_AGENCY_ANNUAL_PRICE_ID',
     ],
-    reason: 'Proof pass usually includes billing flow sanity.',
+    reason: 'Proof pass usually includes billing flow sanity. This app currently uses server-created Checkout sessions, so a client publishable key is not treated as a hard blocker here.',
   },
   {
     name: 'Email + notifications',
