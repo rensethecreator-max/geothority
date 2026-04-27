@@ -68,15 +68,19 @@ const KEY_DEFS: KeyDef[] = [
   {
     key: "Perplexity",
     envVar: "PERPLEXITY_API_KEY",
+    envVars: ["PERPLEXITY_API_KEY", "OPENROUTER_API_KEY"],
+    isConfigured: () => !!process.env.PERPLEXITY_API_KEY || !!process.env.OPENROUTER_API_KEY,
     required: false,
-    impact: "Real Perplexity AI Overview results (falls back to OpenAI simulation)",
+    impact: "Real Perplexity AI Overview results (falls back to OpenRouter, then OpenAI simulation)",
     category: "recommended",
   },
   {
     key: "Anthropic",
     envVar: "ANTHROPIC_API_KEY",
+    envVars: ["ANTHROPIC_API_KEY", "OPENROUTER_API_KEY"],
+    isConfigured: () => !!process.env.ANTHROPIC_API_KEY || !!process.env.OPENROUTER_API_KEY,
     required: false,
-    impact: "Real Claude AI Overview results (falls back to OpenAI simulation)",
+    impact: "Real Claude AI Overview results (falls back to OpenRouter when direct Anthropic creds are absent)",
     category: "recommended",
   },
   {
