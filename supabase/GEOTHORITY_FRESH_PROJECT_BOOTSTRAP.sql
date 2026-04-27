@@ -892,8 +892,8 @@ CREATE TABLE IF NOT EXISTS fix_packages (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX ON fix_packages(user_id);
-CREATE INDEX ON fix_packages(scan_id);
+CREATE INDEX IF NOT EXISTS idx_fix_packages_user_id ON fix_packages(user_id);
+CREATE INDEX IF NOT EXISTS idx_fix_packages_scan_id ON fix_packages(scan_id);
 ALTER TABLE fix_packages ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users see own fix packages" ON fix_packages FOR SELECT USING (auth.uid() = user_id);
@@ -1765,6 +1765,20 @@ CREATE TABLE IF NOT EXISTS ai_visibility_scorecards (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Normalize shape when an earlier migration created a smaller ai_visibility_scorecards table.
+ALTER TABLE ai_visibility_scorecards
+  ADD COLUMN IF NOT EXISTS overall_visibility TEXT NOT NULL DEFAULT 'none',
+  ADD COLUMN IF NOT EXISTS google_ai_score SMALLINT DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS chatgpt_score SMALLINT DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS perplexity_score SMALLINT DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS claude_score SMALLINT DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS gemini_score SMALLINT DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS total_queries INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS found_queries INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS gap_analysis JSONB DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS top_recommendations JSONB DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS last_computed_at TIMESTAMPTZ DEFAULT NOW();
 
 ALTER TABLE ai_visibility_scorecards ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own AI visibility scorecard"

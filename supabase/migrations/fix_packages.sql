@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS fix_packages (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX ON fix_packages(user_id);
-CREATE INDEX ON fix_packages(scan_id);
+CREATE INDEX IF NOT EXISTS idx_fix_packages_user_id ON fix_packages(user_id);
+CREATE INDEX IF NOT EXISTS idx_fix_packages_scan_id ON fix_packages(scan_id);
 ALTER TABLE fix_packages ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users see own fix packages" ON fix_packages FOR SELECT USING (auth.uid() = user_id);
