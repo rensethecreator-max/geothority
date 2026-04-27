@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
   const { returnPath } = await req.json().catch(() => ({}));
   const safeReturnPath = getSafeReturnPath(returnPath);
-  const appUrl = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
+  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin || "https://geothority.io";
   const portalReturnUrl = process.env.STRIPE_PORTAL_RETURN_URL ?? `${appUrl}${safeReturnPath}`;
 
   const supabase = createServiceClient();

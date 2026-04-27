@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const selectedPlanKey = plan as PlanKey;
     const selectedPlan = PLANS[selectedPlanKey];
     const stripe = requireStripe();
-    const appUrl = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
+    const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin || "https://geothority.io";
 
     if (annual && !selectedPlan.annualPriceId) {
       return NextResponse.json(
