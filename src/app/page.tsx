@@ -726,10 +726,10 @@ export default function HomePage() {
   const [mobileNav, setMobileNav] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0a1020] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(143,148,255,0.16),transparent_24%),radial-gradient(circle_at_85%_12%,rgba(92,230,186,0.12),transparent_20%),radial-gradient(circle_at_50%_100%,rgba(217,177,92,0.08),transparent_28%)]" />
+    <div className="min-h-screen bg-[#111827] text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(143,148,255,0.14),transparent_24%),radial-gradient(circle_at_85%_12%,rgba(92,230,186,0.1),transparent_20%),radial-gradient(circle_at_50%_100%,rgba(217,177,92,0.06),transparent_28%)]" />
       {/* ─── Navigation ─── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/6 bg-[#080a12]/72 backdrop-blur-2xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0f172a]/84 backdrop-blur-2xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Logo href="/" size={32} className="text-white" />
 
@@ -769,7 +769,7 @@ export default function HomePage() {
       {/* ─── Hero with Animated Video ─── */}
       <section className="geo-hero relative overflow-hidden pt-24 pb-16 sm:pt-36 sm:pb-24">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(143,148,255,0.18),_transparent_30%),radial-gradient(circle_at_82%_18%,_rgba(92,230,186,0.14),_transparent_24%),radial-gradient(circle_at_50%_100%,_rgba(231,210,162,0.08),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
-        <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-25" />
+        <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-18" />
 
         <div className="relative mx-auto grid max-w-7xl gap-10 px-4 lg:grid-cols-[0.84fr_1.16fr] lg:items-center lg:gap-12">
           <div>
@@ -781,28 +781,28 @@ export default function HomePage() {
               The <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#dfe2ff] to-[#b9bcff]">elite operating system</span> for local search dominance.
             </h1>
 
-            <p className="mt-5 max-w-2xl text-[1.05rem] leading-8 text-white/88 sm:text-xl sm:leading-9">
+            <p className="mt-5 max-w-2xl text-[1.05rem] leading-8 text-white/96 sm:text-xl sm:leading-9">
               Geothority is built for ambitious insurance agencies that want more than dashboards. It turns visibility gaps, competitor movement, and trust signals into a premium execution workflow your team can actually run.
             </p>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-white/70 sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-7 text-white/84 sm:text-base">
               Scan in about 90 seconds. See the real gaps. Move with more precision than generic SEO software.
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/12 bg-white/[0.08] px-4 py-3">
+              <div className="rounded-2xl border border-white/14 bg-white/[0.12] px-4 py-3">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-white/52">First scan</div>
                 <div className="mt-1 text-lg font-semibold text-white">~90 sec</div>
-                <div className="mt-1 text-sm text-white/74">Fast enough to start immediately.</div>
+                <div className="mt-1 text-sm text-white/84">Fast enough to start immediately.</div>
               </div>
-              <div className="rounded-2xl border border-white/12 bg-white/[0.08] px-4 py-3">
+              <div className="rounded-2xl border border-white/14 bg-white/[0.12] px-4 py-3">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-white/52">Focus</div>
                 <div className="mt-1 text-lg font-semibold text-white">Trust + AI</div>
-                <div className="mt-1 text-sm text-white/74">See what is lifting or suppressing visibility.</div>
+                <div className="mt-1 text-sm text-white/84">See what is lifting or suppressing visibility.</div>
               </div>
-              <div className="rounded-2xl border border-white/12 bg-white/[0.08] px-4 py-3 sm:hidden lg:block">
+              <div className="rounded-2xl border border-white/14 bg-white/[0.12] px-4 py-3 sm:hidden lg:block">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-white/52">Execution</div>
                 <div className="mt-1 text-lg font-semibold text-white">Fix paths</div>
-                <div className="mt-1 text-sm text-white/74">Know what can run now and what needs review.</div>
+                <div className="mt-1 text-sm text-white/84">Know what can run now and what needs review.</div>
               </div>
             </div>
 
@@ -827,7 +827,7 @@ export default function HomePage() {
               <SignalChip label="Coverage" value="Trust + AI + competitor response" tip="Track trust, citations, search presence, AI-surface visibility, and competitor movement in one place." />
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.22em] text-white/44">
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.22em] text-white/62">
               <span>Built for insurance agencies</span>
               <span className="hidden h-1 w-1 rounded-full bg-white/14 sm:inline-flex" />
               <span>Private-equity-grade operating clarity</span>
@@ -839,10 +839,10 @@ export default function HomePage() {
 
           <div className="relative">
             <div className="absolute -inset-5 rounded-[40px] bg-[radial-gradient(circle_at_center,rgba(143,148,255,0.18),transparent_58%)] blur-3xl" />
-            <div className="relative rounded-[30px] border border-white/14 bg-[linear-gradient(180deg,rgba(35,48,79,0.98),rgba(21,31,52,0.96))] p-3 shadow-[0_26px_90px_rgba(4,8,18,0.28)] sm:rounded-[34px]">
+            <div className="relative rounded-[30px] border border-white/16 bg-[linear-gradient(180deg,rgba(42,58,92,0.98),rgba(29,41,66,0.97))] p-3 shadow-[0_22px_70px_rgba(4,8,18,0.18)] sm:rounded-[34px]">
               <HeroVideoLoop />
               <div className="mt-3 grid gap-3 sm:grid-cols-[1.08fr_0.92fr]">
-                <div className="rounded-[22px] border border-white/12 bg-[linear-gradient(180deg,rgba(28,39,66,0.98),rgba(18,27,46,0.96))] p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16)] sm:rounded-[24px]">
+                <div className="rounded-[22px] border border-white/14 bg-[linear-gradient(180deg,rgba(45,62,97,0.98),rgba(29,41,66,0.97))] p-4 shadow-[0_12px_28px_rgba(0,0,0,0.12)] sm:rounded-[24px]">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <div className="text-[10px] uppercase tracking-[0.22em] text-white/52">Executive view</div>
@@ -850,21 +850,21 @@ export default function HomePage() {
                     </div>
                     <div className="self-start rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/12 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[#d3d6ff]">Live</div>
                   </div>
-                  <div className="mt-4 space-y-3 text-sm text-white/86">
-                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/12 bg-white/[0.1] px-4 py-3">
+                  <div className="mt-4 space-y-3 text-sm text-white/92">
+                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/14 bg-white/[0.14] px-4 py-3">
                       <span className="leading-6">AI visibility moved ahead of 2 competitors in Tampa.</span>
                       <span className="whitespace-nowrap text-[#f0deb2]">+12</span>
                     </div>
-                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/12 bg-white/[0.1] px-4 py-3">
+                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/14 bg-white/[0.14] px-4 py-3">
                       <span className="leading-6">New citation mismatch isolated and ready for correction.</span>
                       <span className="whitespace-nowrap text-[#9cebd6]">Fixable</span>
                     </div>
                   </div>
                 </div>
-                <div className="rounded-[22px] border border-[#e7d2a2]/24 bg-[linear-gradient(180deg,rgba(231,210,162,0.22),rgba(255,255,255,0.08))] p-4 shadow-[0_12px_30px_rgba(140,112,50,0.08)] sm:rounded-[24px]">
+                <div className="rounded-[22px] border border-[#e7d2a2]/24 bg-[linear-gradient(180deg,rgba(231,210,162,0.28),rgba(255,255,255,0.12))] p-4 shadow-[0_10px_24px_rgba(140,112,50,0.06)] sm:rounded-[24px]">
                   <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1dfb9]">Operator brief</div>
                   <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">3</div>
-                  <div className="mt-1 text-sm leading-6 text-white/84">high-leverage moves queued for review</div>
+                  <div className="mt-1 text-sm leading-6 text-white/92">high-leverage moves queued for review</div>
                   <div className="mt-4 h-px bg-white/10" />
                   <div className="mt-4 space-y-2 text-sm text-white/86">
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ead39f]" /> Schema deploy ready</div>

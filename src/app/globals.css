@@ -17,19 +17,19 @@
   }
 
   :root {
-    --background: #09101A;
-    --foreground: #E6EEF7;
-    --card: #101926;
+    --background: #111827;
+    --foreground: #F8FAFC;
+    --card: #1B263B;
     --card-foreground: #E6EEF7;
-    --popover: #101926;
+    --popover: #1B263B;
     --popover-foreground: #E6EEF7;
     --primary: #5CE6BA;
     --primary-foreground: #071019;
-    --secondary: #151F2D;
+    --secondary: #1D2A3F;
     --secondary-foreground: #DCE7F2;
-    --muted: #1B2736;
-    --muted-foreground: #8E9AA8;
-    --accent: #182436;
+    --muted: #223047;
+    --muted-foreground: #B6C2D1;
+    --accent: #223047;
     --accent-foreground: #E6EEF7;
     --destructive: #EF4444;
     --border: rgba(158, 177, 199, 0.16);
@@ -122,15 +122,15 @@
 }
 
 .geo-panel {
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.04)),
-    rgba(16, 24, 38, 0.96);
+    linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08)),
+    rgba(33, 46, 70, 0.98);
   backdrop-filter: blur(22px);
 }
 
 .geo-feature-shell {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .geo-proof-card {
@@ -157,9 +157,9 @@
 
 .geo-radar-grid {
   background:
-    radial-gradient(circle at center, rgba(92,230,186,0.08), transparent 52%),
-    radial-gradient(circle at center, rgba(143,148,255,0.08), transparent 72%),
-    rgba(255,255,255,0.02);
+    radial-gradient(circle at center, rgba(92,230,186,0.1), transparent 52%),
+    radial-gradient(circle at center, rgba(143,148,255,0.1), transparent 72%),
+    rgba(255,255,255,0.05);
 }
 
 .geo-stack-core {
