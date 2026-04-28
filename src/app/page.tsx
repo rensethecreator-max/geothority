@@ -876,53 +876,64 @@ export default function HomePage() {
 
       {/* ─── Workflow ─── */}
       <ScrollReveal animation="fade-up">
-        <section className="bg-[#0f1117]/25 py-10 sm:py-14">
+        <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4">
-            <div className="mb-8 max-w-3xl">
-              <SectionEyebrow>One workflow</SectionEyebrow>
-              <h2 className="mt-5 max-w-3xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
-                Scan. Prioritize. Execute. Monitor.
-              </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/60 sm:text-lg sm:leading-8">
-                Geothority is designed to reduce busywork, clarify priorities, and keep visibility work moving. Not every improvement can be automated. The point is to make every next step obvious.
-              </p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {[
-                {
-                  step: '01',
-                  title: 'Scan',
-                  copy: 'Get a structured read on your trust stack, citation consistency, competitive pressure, and AI-surface presence.',
-                },
-                {
-                  step: '02',
-                  title: 'Prioritize',
-                  copy: 'See which issues matter most, which ones are fixable now, and where attention will have the highest return.',
-                },
-                {
-                  step: '03',
-                  title: 'Execute',
-                  copy: 'Run supported fixes in-product, or move forward with guided next steps when review or connected systems are required.',
-                },
-                {
-                  step: '04',
-                  title: 'Monitor',
-                  copy: 'Track what changes over time, what competitors are doing, and where your next gains are most likely to come from.',
-                },
-              ].map((item) => (
-                <div key={item.step} className="rounded-[24px] border border-white/8 bg-white/[0.03] px-5 py-5">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#8ddccb]">{item.step}</div>
-                  <div className="mt-2 text-lg font-semibold text-white">{item.title}</div>
-                  <p className="mt-2 text-sm leading-6 text-white/58">{item.copy}</p>
+            <div className="rounded-[36px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-8 shadow-[0_28px_110px_rgba(4,8,18,0.35)] sm:px-8 sm:py-10">
+              <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-3xl">
+                  <SectionEyebrow>One workflow</SectionEyebrow>
+                  <h2 className="mt-5 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
+                    A luxury operating rhythm for local visibility.
+                  </h2>
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-white/68 sm:text-lg sm:leading-8">
+                    The page needed more than nicer copy. This section now frames Geothority like a premium system: one disciplined flow from discovery to action to protection.
+                  </p>
                 </div>
-              ))}
+                <div className="rounded-[24px] border border-[#e7d2a2]/18 bg-[#e7d2a2]/8 px-5 py-4 text-sm leading-6 text-[#f5e7c4] lg:max-w-sm">
+                  Built for teams that want calm, controlled execution — not another dashboard full of unresolved issues.
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {[
+                  {
+                    step: '01',
+                    title: 'Scan',
+                    copy: 'Get a structured read on your trust stack, citation consistency, competitive pressure, and AI-surface presence.',
+                  },
+                  {
+                    step: '02',
+                    title: 'Prioritize',
+                    copy: 'See which issues matter most, which ones are fixable now, and where attention will have the highest return.',
+                  },
+                  {
+                    step: '03',
+                    title: 'Execute',
+                    copy: 'Run supported fixes in-product, or move forward with guided next steps when review or connected systems are required.',
+                  },
+                  {
+                    step: '04',
+                    title: 'Monitor',
+                    copy: 'Track what changes over time, what competitors are doing, and where your next gains are most likely to come from.',
+                  },
+                ].map((item, index) => (
+                  <div key={item.step} className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0a1020]/85 px-5 py-6">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/28 to-transparent" />
+                    <div className="flex items-center justify-between">
+                      <div className="text-[10px] uppercase tracking-[0.24em] text-[#c7c9ff]">{item.step}</div>
+                      <div className={`h-2.5 w-2.5 rounded-full ${index === 3 ? 'bg-[#ead39f]' : 'bg-[#8f94ff]'} shadow-[0_0_18px_rgba(185,188,255,0.55)]`} />
+                    </div>
+                    <div className="mt-4 text-xl font-semibold tracking-[-0.03em] text-white">{item.title}</div>
+                    <p className="mt-3 text-sm leading-6 text-white/62">{item.copy}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
       </ScrollReveal>
 
       {/* ─── Core delta + flagship features ─── */}
-      <section id="features" className="py-12 sm:py-20">
+      <section id="features" className="py-14 sm:py-24">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
@@ -930,23 +941,23 @@ export default function HomePage() {
               <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Most tools diagnose. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#8f94ff]">Very few help you execute.</span>
               </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/66">
                 For years, local SEO software has been good at one thing: showing you what&apos;s wrong. The hard part still lands on you. Geothority is built to close that gap — by showing what matters, what can be fixed, and what the next move should be.
               </p>
             </div>
           </ScrollReveal>
 
           <ScrollReveal animation="scale-up">
-            <div className="mb-16 grid gap-4 rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="mb-16 grid gap-4 rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-5 shadow-[0_26px_90px_rgba(4,8,18,0.32)] sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
                 <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Old way</div>
-                <div className="mt-3 rounded-[24px] border border-red-400/18 bg-red-400/6 p-5 text-base leading-7 text-white/68">
+                <div className="mt-3 rounded-[24px] border border-white/10 bg-white/[0.03] p-5 text-base leading-7 text-white/62">
                   Surface issues. Export the list. Leave the work to you.
                 </div>
               </div>
               <div>
-                <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-300/85">Geothority</div>
-                <div className="mt-3 rounded-[24px] border border-emerald-400/24 bg-emerald-400/8 p-5 text-base font-medium leading-7 text-white">
+                <div className="text-[10px] uppercase tracking-[0.22em] text-[#d7d9ff]">Geothority</div>
+                <div className="mt-3 rounded-[24px] border border-[#8f94ff]/24 bg-[linear-gradient(180deg,rgba(143,148,255,0.14),rgba(255,255,255,0.03))] p-5 text-base font-medium leading-7 text-white shadow-[0_18px_50px_rgba(76,82,196,0.14)]">
                   Surface the issue. Clarify the priority. Show the next move. Support execution where possible.
                 </div>
                 <p className="mt-4 text-sm leading-6 text-white/52">The difference is not the report. It&apos;s what happens after the report.</p>
@@ -954,20 +965,20 @@ export default function HomePage() {
             </div>
           </ScrollReveal>
 
-          <div className="space-y-10">
+          <div className="space-y-12">
             {features.slice(0, 3).map((feature, index) => {
               const Icon = feature.icon;
               const reverse = index % 2 === 1;
               return (
                 <ScrollReveal key={feature.title} animation={reverse ? "slide-right" : "slide-left"}>
                   <div className={`grid gap-6 lg:grid-cols-[1fr_1fr] ${reverse ? "lg:[&>div:first-child]:order-2" : ""}`}>
-                    <div className="geo-feature-shell rounded-[30px] border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+                    <div className="geo-feature-shell rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-6 shadow-[0_24px_90px_rgba(4,8,18,0.28)] sm:p-8">
                       <div className="mb-5 flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-400">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                           <Icon className="h-5 w-5" />
                         </div>
                         {feature.badge && (
-                          <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
+                          <span className="rounded-full border border-[#e7d2a2]/22 bg-[#e7d2a2]/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f1dfb9]">
                             {feature.badge}
                           </span>
                         )}
@@ -994,7 +1005,7 @@ export default function HomePage() {
 
       {/* ─── Trust Stack flagship ─── */}
       <ScrollReveal animation="scale-up">
-        <section className="mx-auto max-w-7xl px-4 pb-16 sm:pb-24">
+        <section className="mx-auto max-w-7xl px-4 pb-18 sm:pb-24">
           <BrowserFrame>
             <div className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr] xl:items-center">
               <div>
@@ -1002,7 +1013,7 @@ export default function HomePage() {
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
                   One score. Prioritized fixes. Clear execution paths.
                 </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-white/62 sm:text-lg">
+                <p className="mt-4 max-w-xl text-base leading-7 text-white/68 sm:text-lg">
                   The Trust Stack turns scattered visibility work into one operating view. It shows what Geothority can handle directly, what needs approval, and what still requires manual attention.
                 </p>
                 <div className="mt-6 space-y-3 text-sm text-white/72">
@@ -1012,20 +1023,20 @@ export default function HomePage() {
                     "A prioritized queue with automatic, guided, or manual next steps",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
-                      <Wand2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <Wand2 className="w-4 h-4 text-[#ead39f] mt-0.5 flex-shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="geo-feature-shell rounded-[30px] border border-white/10 bg-[#09111c] p-4 sm:p-6">
+              <div className="geo-feature-shell rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,#09111c_0%,#0b1021_100%)] p-4 shadow-[0_28px_100px_rgba(4,8,18,0.36)] sm:p-6">
                 <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.24em] text-white/38">Trust Stack Object</div>
                     <div className="mt-2 text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">Your local SEO, scored with clear next steps.</div>
                   </div>
-                  <div className="self-start rounded-full border border-[#7ce6c7]/20 bg-[#7ce6c7]/10 px-3 py-1 text-xs text-[#9be8d2]">Priority view</div>
+                  <div className="self-start rounded-full border border-[#e7d2a2]/20 bg-[#e7d2a2]/10 px-3 py-1 text-xs text-[#f1dfb9]">Priority view</div>
                 </div>
 
                 <div className="grid gap-4 2xl:grid-cols-[1.02fr_0.98fr]">
@@ -1059,7 +1070,7 @@ export default function HomePage() {
                           <div className="mt-3 text-2xl font-semibold text-white">{value}</div>
                           <div className="mt-3 h-1.5 rounded-full bg-white/8">
                             <div
-                              className="geo-signal-pulse h-1.5 rounded-full bg-gradient-to-r from-[#5ce6ba] via-[#83f1d6] to-[#8f94ff]"
+                              className="geo-signal-pulse h-1.5 rounded-full bg-gradient-to-r from-[#8f94ff] via-[#b9bcff] to-[#ead39f]"
                               style={{ width: `${58 + index * 8}%` }}
                             />
                           </div>
@@ -1106,14 +1117,14 @@ export default function HomePage() {
                         <p className="text-sm leading-6 text-white/60">AI visibility and directory listings are pulling you up. Trust pages are the main thing holding you back.</p>
                       </div>
                     </div>
-                    <div className="rounded-[24px] border border-emerald-400/20 bg-emerald-400/5 p-4">
+                    <div className="rounded-[24px] border border-[#8f94ff]/20 bg-[#8f94ff]/8 p-4">
                       <div className="flex items-center gap-1.5">
-                        <Wand2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/80">Recommended fix</div>
+                        <Wand2 className="w-3.5 h-3.5 text-[#c7c9ff]" />
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-[#c7c9ff]">Recommended fix</div>
                       </div>
                       <div className="mt-3 text-sm font-medium text-white">Publish two city trust pages and repair the Apple Maps entity mismatch</div>
-                      <div className="mt-2 text-sm text-emerald-400/70">Estimated impact range based on current score model: +7 to +11 visibility points</div>
-                      <button className="mt-3 px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/30 transition-colors">
+                      <div className="mt-2 text-sm text-[#c7c9ff]/82">Estimated impact range based on current score model: +7 to +11 visibility points</div>
+                      <button className="mt-3 rounded-lg border border-[#8f94ff]/30 bg-[#8f94ff]/18 px-4 py-2 text-xs font-semibold text-[#d9dbff] transition-colors hover:bg-[#8f94ff]/24">
                         Run Available Fix
                       </button>
                     </div>
@@ -1130,7 +1141,7 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── Supporting execution layers ─── */}
-      <section className="py-4 sm:py-10">
+      <section className="py-8 sm:py-14">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
@@ -1149,21 +1160,21 @@ export default function HomePage() {
               const Icon = feature.icon;
               return (
                 <ScrollReveal key={feature.title} animation="fade-up" delay={index * 100}>
-                  <div className="geo-feature-shell h-full rounded-[30px] border border-white/10 bg-white/[0.02] p-6 sm:p-7">
+                  <div className="geo-feature-shell h-full rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-6 shadow-[0_22px_80px_rgba(4,8,18,0.26)] sm:p-7">
                     <div className="mb-5 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-400">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                         <Icon className="h-5 w-5" />
                       </div>
                       {feature.badge && (
-                        <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
+                        <span className="rounded-full border border-[#e7d2a2]/22 bg-[#e7d2a2]/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f1dfb9]">
                           {feature.badge}
                         </span>
                       )}
                     </div>
                     <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white">{feature.title}</h3>
-                    <p className="mt-4 text-base leading-7 text-white/60">{feature.description}</p>
+                    <p className="mt-4 text-base leading-7 text-white/66">{feature.description}</p>
                     <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
-                    <div className="mt-5 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm text-white/68">{feature.stat}</div>
+                    <div className="mt-5 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm text-white/74">{feature.stat}</div>
                   </div>
                 </ScrollReveal>
               );
@@ -1173,7 +1184,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Trust + validation ─── */}
-      <section className="bg-[#0e141f]/55 py-12 sm:py-20">
+      <section className="bg-[linear-gradient(180deg,rgba(10,14,26,0.86),rgba(6,8,14,0.98))] py-14 sm:py-22">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-14 max-w-3xl">
@@ -1181,7 +1192,7 @@ export default function HomePage() {
               <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
                 Stronger trust comes from visible evidence, not louder claims.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/60">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/66">
                 Geothority is built to make local visibility work more credible: clearer source signals, clearer fix paths, and clearer distinctions between what is automated, what is guided, and what still needs human review.
               </p>
             </div>
@@ -1203,7 +1214,7 @@ export default function HomePage() {
               },
             ].map((item, i) => (
               <ScrollReveal key={item.title} animation="fade-up" delay={i * 120}>
-                <div className="h-full rounded-[30px] border border-white/10 bg-white/[0.03] p-7">
+                <div className="h-full rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-7 shadow-[0_18px_60px_rgba(4,8,18,0.22)]">
                   <div className="inline-flex rounded-full border border-[#8f94ff]/20 bg-[#8f94ff]/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#c7c9ff]">
                     Trust-first
                   </div>
@@ -1215,7 +1226,7 @@ export default function HomePage() {
           </div>
 
           <ScrollReveal animation="fade-up">
-            <div className="mt-12 rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-6 py-8 sm:px-8">
+            <div className="mt-12 rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-6 py-8 shadow-[0_24px_90px_rgba(4,8,18,0.32)] sm:px-8">
               <div className="max-w-3xl">
                 <SectionEyebrow>Built for operators</SectionEyebrow>
                 <h3 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
@@ -1227,10 +1238,10 @@ export default function HomePage() {
               </div>
               <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {testimonials.map((t, i) => (
-                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#8f94ff]/20 bg-[#8f94ff]/8' : 'border-white/8 bg-black/20'}`}>
+                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#e7d2a2]/20 bg-[#e7d2a2]/10' : 'border-white/8 bg-black/20'}`}>
                     <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
                     <div className="mt-3 text-lg font-semibold text-white">{t.name}</div>
-                    <div className={`mt-1 text-sm ${i === 1 ? 'text-[#b4b8ff]' : 'text-[#8de7d0]'}`}>{t.title}</div>
+                    <div className={`mt-1 text-sm ${i === 1 ? 'text-[#f1dfb9]' : 'text-[#b4b8ff]'}`}>{t.title}</div>
                     <p className="mt-4 text-sm leading-6 text-white/62">{t.impact}</p>
                   </div>
                 ))}
@@ -1247,16 +1258,16 @@ export default function HomePage() {
       </section>
 
       {/* ─── Pricing Preview ─── */}
-      <section className="py-12 sm:py-16">
+      <section className="py-14 sm:py-20">
         <div className="mx-auto max-w-6xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 text-center">
-              <SectionEyebrow>Simple pricing</SectionEyebrow>
+              <SectionEyebrow>Premium pricing</SectionEyebrow>
               <h2 className="mt-5 mx-auto max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Start free. Upgrade when you want deeper execution and monitoring.
+                Start with clarity. Upgrade into deeper control.
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Use the free scan to understand where you stand. Move up when you need more visibility coverage, stronger workflows, and ongoing response support.
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/66">
+                The pricing should feel as premium as the product direction: simple entry, sharper progression, and a clear path into higher-touch execution.
               </p>
             </div>
           </ScrollReveal>
@@ -1267,13 +1278,13 @@ export default function HomePage() {
                 <div
                   className={`relative h-full rounded-[28px] border p-6 text-left ${
                     t.highlighted
-                      ? "border-[#8f94ff]/28 bg-[linear-gradient(180deg,rgba(143,148,255,0.12),rgba(255,255,255,0.03))] shadow-[0_20px_70px_rgba(110,116,255,0.12)]"
-                      : "border-white/10 bg-white/[0.03]"
+                      ? "border-[#e7d2a2]/26 bg-[linear-gradient(180deg,rgba(231,210,162,0.14),rgba(255,255,255,0.03))] shadow-[0_24px_80px_rgba(140,112,50,0.12)]"
+                      : "border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))]"
                   }`}
                 >
                   {t.highlighted && (
-                    <div className="absolute -top-3 left-6 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/12 px-3 py-1 text-xs font-semibold text-[#c0c3ff]">
-                      Most Popular
+                    <div className="absolute -top-3 left-6 rounded-full border border-[#e7d2a2]/25 bg-[#e7d2a2]/12 px-3 py-1 text-xs font-semibold text-[#f1dfb9]">
+                      Best leverage
                     </div>
                   )}
                   <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">{t.name}</div>
@@ -1296,7 +1307,7 @@ export default function HomePage() {
                     href={t.price === 0 ? "/signup" : "/pricing"}
                     className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                       t.highlighted
-                        ? "bg-gradient-to-r from-[#8f94ff] to-[#b7bbff] text-[#0b1021]"
+                        ? "bg-gradient-to-r from-[#ead39f] via-[#f1dfb9] to-[#ffffff] text-[#0b1021]"
                         : "border border-white/10 bg-white/[0.03] text-white/86 hover:bg-white/[0.05]"
                     }`}
                   >
@@ -1310,23 +1321,23 @@ export default function HomePage() {
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="relative overflow-hidden py-12 sm:py-20">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(92,230,186,0.14),_transparent_35%),linear-gradient(180deg,rgba(12,19,33,0.25),rgba(10,10,15,0.02))]" />
+      <section className="relative overflow-hidden py-14 sm:py-22">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(143,148,255,0.18),_transparent_35%),radial-gradient(circle_at_50%_100%,_rgba(231,210,162,0.08),_transparent_30%),linear-gradient(180deg,rgba(12,19,33,0.25),rgba(10,10,15,0.02))]" />
         <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-30" />
         <div className="relative mx-auto max-w-5xl px-4">
 
           <ScrollReveal animation="fade-up">
-            <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_24px_100px_rgba(5,10,18,0.45)] sm:px-10 sm:py-14">
+            <div className="rounded-[36px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_30px_120px_rgba(5,10,18,0.48)] sm:px-10 sm:py-16">
               <SectionEyebrow>Get your free scan</SectionEyebrow>
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Stop reading about visibility problems. Start resolving them.
+                Move from scattered visibility work to a system that feels premium.
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Run your first scan, see what matters most, and get a clearer path to stronger local visibility.
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/66">
+                Audit the gaps, see the priorities, and experience the product through the lens it deserves: high-end, controlled, and execution-ready.
               </p>
               <Link
                 href="/signup"
-                className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] px-8 py-4 text-base font-semibold text-[#071019] shadow-[0_18px_50px_rgba(92,230,186,0.2)] transition-all hover:translate-y-[-1px]"
+                className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#8f94ff] via-[#c7c9ff] to-[#ead39f] px-8 py-4 text-base font-semibold text-[#071019] shadow-[0_18px_50px_rgba(143,148,255,0.22)] transition-all hover:translate-y-[-1px]"
               >
                 Get Your Free Scan <ArrowRight className="h-4 w-4" />
               </Link>
@@ -1336,13 +1347,13 @@ export default function HomePage() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-white/5 py-14">
+      <footer className="border-t border-white/5 bg-[#070910] py-14">
         <div className="max-w-6xl mx-auto px-4">
           <div className="mb-10 grid gap-8 md:grid-cols-[1.2fr_0.9fr_0.9fr_1fr]">
             <div>
               <Logo href="/" size={28} className="text-white" />
-              <p className="mt-5 max-w-sm text-sm leading-7 text-gray-500">
-                Geothority helps local businesses turn visibility work into a clearer operating system for growth.
+              <p className="mt-5 max-w-sm text-sm leading-7 text-gray-400">
+                Geothority is the premium local visibility operating system for ambitious insurance agencies and local operators.
               </p>
             </div>
             <div>
