@@ -30,7 +30,6 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { GeoTooltip } from "@/components/ui/geo-tooltip";
 import { LayerInfoTooltip } from "@/components/ui/info-tooltip";
 import { Logo } from "@/components/ui/logo";
-import { AnimatedHero } from "@/components/home/animated-hero";
 
 /* ───────────────── Animated Hero Video Component ───────────────── */
 
@@ -280,12 +279,12 @@ const authoritySectors = [
 function VersusCard({ theirWay, ourWay }: { theirWay: string; ourWay: string }) {
   return (
     <div className="mt-5 grid grid-cols-2 gap-3">
-      <div className="rounded-xl border border-red-400/20 bg-red-400/5 p-3">
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
         <div className="text-[10px] uppercase tracking-[0.18em] text-red-400/70 mb-1.5">Other tools</div>
         <div className="text-sm text-white/55">{theirWay}</div>
       </div>
-      <div className="rounded-xl border border-emerald-400/25 bg-emerald-400/8 p-3">
-        <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-400/80 mb-1.5 flex items-center gap-1">
+      <div className="rounded-xl border border-[#8f94ff]/25 bg-[linear-gradient(180deg,rgba(143,148,255,0.14),rgba(255,255,255,0.03))] p-3 shadow-[0_16px_40px_rgba(76,82,196,0.14)]">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-[#c7c9ff] mb-1.5 flex items-center gap-1">
           <Wand2 className="w-3 h-3" /> Geothority
         </div>
         <div className="text-sm text-white font-medium">{ourWay}</div>
@@ -305,12 +304,12 @@ function BrowserFrame({
 }) {
   return (
     <div
-      className={`geo-panel rounded-[28px] overflow-hidden shadow-[0_30px_120px_rgba(6,12,24,0.55)] ${className}`}
+      className={`geo-panel rounded-[30px] overflow-hidden border border-white/10 bg-[linear-gradient(180deg,rgba(10,14,28,0.98),rgba(8,12,24,0.94))] shadow-[0_32px_120px_rgba(4,8,18,0.62)] ${className}`}
     >
       <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/8 bg-white/[0.02]">
         <div className="w-2.5 h-2.5 rounded-full bg-rose-400/60" />
         <div className="w-2.5 h-2.5 rounded-full bg-amber-300/60" />
-        <div className="w-2.5 h-2.5 rounded-full bg-emerald-300/60" />
+        <div className="w-2.5 h-2.5 rounded-full bg-violet-300/70" />
         <div className="ml-3 flex-1 h-5 rounded-full bg-white/5" />
       </div>
       <div className="p-6 sm:p-7">{children}</div>
@@ -554,8 +553,8 @@ function FeaturePreview({
 
 function SectionEyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8ddccb]">
-      <span className="h-1.5 w-1.5 rounded-full bg-[#7ce6c7] shadow-[0_0_16px_rgba(124,230,199,0.7)]" />
+    <div className="inline-flex items-center gap-2 rounded-full border border-[#8f94ff]/18 bg-[linear-gradient(180deg,rgba(143,148,255,0.14),rgba(255,255,255,0.03))] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#c7c9ff] shadow-[0_10px_30px_rgba(76,82,196,0.12)]">
+      <span className="h-1.5 w-1.5 rounded-full bg-[#b9bcff] shadow-[0_0_16px_rgba(185,188,255,0.8)]" />
       {children}
     </div>
   );
@@ -563,7 +562,7 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
 
 function SignalChip({ label, value, tip }: { label: string; value: string; tip?: string }) {
   return (
-    <div className="group/chip rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 backdrop-blur-sm transition-colors hover:border-white/16 hover:bg-white/[0.05]">
+    <div className="group/chip rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-4 py-3 backdrop-blur-sm transition-colors hover:border-[#8f94ff]/22 hover:bg-white/[0.06]">
       <div className="flex items-center gap-1.5">
         <div className="text-[10px] uppercase tracking-[0.2em] text-white/45">{label}</div>
         {tip && <GeoTooltip tip={tip} side="top" iconClassName="w-3 h-3 opacity-40 group-hover/chip:opacity-80 transition-opacity" />}
@@ -724,9 +723,10 @@ export default function HomePage() {
   const [mobileNav, setMobileNav] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-[#06070d] text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(143,148,255,0.16),transparent_24%),radial-gradient(circle_at_85%_12%,rgba(92,230,186,0.12),transparent_20%),radial-gradient(circle_at_50%_100%,rgba(217,177,92,0.08),transparent_28%)]" />
       {/* ─── Navigation ─── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/6 bg-[#0a0a0f]/78 backdrop-blur-2xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/6 bg-[#080a12]/72 backdrop-blur-2xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Logo href="/" size={32} className="text-white" />
 
@@ -741,7 +741,7 @@ export default function HomePage() {
             <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors">Sign In</Link>
             <Link
               href="/signup"
-              className="inline-flex items-center justify-center rounded-xl border border-[#87eed2]/20 bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] px-4 py-2.5 text-sm font-semibold text-[#071019] shadow-[0_12px_34px_rgba(92,230,186,0.16)] transition-all hover:translate-y-[-1px] hover:shadow-[0_18px_44px_rgba(92,230,186,0.24)]"
+              className="inline-flex items-center justify-center rounded-xl border border-[#8f94ff]/20 bg-gradient-to-r from-[#8f94ff] via-[#b4b8ff] to-[#e7d2a2] px-4 py-2.5 text-sm font-semibold text-[#0b1021] shadow-[0_12px_34px_rgba(143,148,255,0.22)] transition-all hover:translate-y-[-1px] hover:shadow-[0_18px_44px_rgba(143,148,255,0.28)]"
             >
               Get Free Scan
             </Link>
@@ -764,52 +764,54 @@ export default function HomePage() {
       </nav>
 
       {/* ─── Hero with Animated Video ─── */}
-      <section className="geo-hero relative overflow-hidden pt-28 pb-16 sm:pt-40 sm:pb-24">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(92,230,186,0.14),_transparent_34%),radial-gradient(circle_at_85%_20%,_rgba(110,116,255,0.14),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
-        <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-35" />
+      <section className="geo-hero relative overflow-hidden pt-28 pb-20 sm:pt-40 sm:pb-28">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(143,148,255,0.18),_transparent_30%),radial-gradient(circle_at_82%_18%,_rgba(92,230,186,0.14),_transparent_24%),radial-gradient(circle_at_50%_100%,_rgba(231,210,162,0.08),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
+        <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-25" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-14 px-4 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+        <div className="relative mx-auto grid max-w-7xl gap-14 px-4 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div>
-            <SectionEyebrow>Local visibility, operationalized</SectionEyebrow>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#e7d2a2]/20 bg-[#e7d2a2]/8 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f1dfb9]">
+              <Star className="h-3.5 w-3.5" /> Luxury-grade local visibility software
+            </div>
 
-            <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[0.96] tracking-[-0.055em] text-white sm:text-5xl lg:text-[4rem] xl:text-[4.55rem]">
-              Stop collecting SEO issues. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca]">Start fixing what moves visibility.</span>
+            <h1 className="mt-7 max-w-4xl text-4xl font-semibold leading-[0.92] tracking-[-0.065em] text-white sm:text-5xl lg:text-[4.2rem] xl:text-[4.95rem]">
+              The <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#dfe2ff] to-[#b9bcff]">elite operating system</span> for local search dominance.
             </h1>
 
-            <p className="mt-6 max-w-xl text-base leading-7 text-white/60 sm:text-lg sm:leading-8">
-              Geothority scans your local presence, surfaces the issues that matter most, and turns them into clear next steps your team can actually execute.
+            <p className="mt-7 max-w-2xl text-lg leading-8 text-white/68 sm:text-xl sm:leading-9">
+              Geothority is built for ambitious insurance agencies that want more than dashboards. It turns visibility gaps, competitor movement, and trust signals into a premium execution workflow your team can actually run.
             </p>
-            <p className="mt-3 max-w-lg text-sm leading-6 text-white/44 sm:text-base">
-              Your first scan is free and typically ready in about 90 seconds.
+            <p className="mt-4 max-w-xl text-sm leading-7 text-white/44 sm:text-base">
+              Scan in about 90 seconds. See the real gaps. Move with more precision than generic SEO software.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
                 href="/signup"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] px-7 py-4 text-base font-semibold text-[#071019] transition-all hover:translate-y-[-1px] hover:shadow-[0_18px_45px_rgba(92,230,186,0.22)]"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#8f94ff] via-[#b7bbff] to-[#ead39f] px-7 py-4 text-base font-semibold text-[#0b1021] transition-all hover:translate-y-[-1px] hover:shadow-[0_18px_45px_rgba(143,148,255,0.28)]"
               >
                 Get Your Free Scan <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="#story"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.04] px-7 py-4 text-base font-medium text-white/88 transition-all hover:border-white/20 hover:bg-white/[0.06]"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.04] px-7 py-4 text-base font-medium text-white/88 transition-all hover:border-[#8f94ff]/20 hover:bg-white/[0.06]"
               >
                 <Play className="h-4 w-4" /> See the Platform
               </Link>
             </div>
 
             <div className="mt-10 hidden max-w-3xl grid-cols-3 gap-3 sm:grid">
-              <SignalChip label="Clear fix paths" value="Focused" tip="See what is fixable now, what needs review, and what still needs real work." />
-              <SignalChip label="First scan" value="~90s" tip="Fast enough to start now. Structured enough to act on." />
-              <SignalChip label="AI + local coverage" value="Unified" tip="Track trust, citations, search presence, and AI-surface visibility in one place." />
+              <SignalChip label="Positioning" value="Luxury SaaS for local dominance" tip="A more premium promise: not just audits, but an operating layer for trust, competitors, and response." />
+              <SignalChip label="First scan" value="~90 seconds" tip="Fast enough to begin immediately, structured enough to act on." />
+              <SignalChip label="Coverage" value="Trust + AI + competitor response" tip="Track trust, citations, search presence, AI-surface visibility, and competitor movement in one place." />
             </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.22em] text-white/28">
               <span>Built for insurance agencies</span>
               <span className="hidden h-1 w-1 rounded-full bg-white/14 sm:inline-flex" />
-              <span>Execution-first visibility workflow</span>
+              <span>Private-equity-grade operating clarity</span>
               <span className="hidden h-1 w-1 rounded-full bg-white/14 sm:inline-flex" />
-              <span>No credit card to start</span>
+              <span>Execution-first visibility workflow</span>
             </div>
 
             <div className="mt-8 grid grid-cols-2 gap-2 sm:hidden">
@@ -819,7 +821,55 @@ export default function HomePage() {
           </div>
 
           <div className="relative">
-            <AnimatedHero />
+            <div className="absolute -inset-6 rounded-[40px] bg-[radial-gradient(circle_at_center,rgba(143,148,255,0.22),transparent_55%)] blur-3xl" />
+            <div className="relative rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-3 shadow-[0_36px_140px_rgba(4,8,18,0.7)]">
+              <HeroVideoLoop />
+              <div className="mt-3 grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
+                <div className="rounded-[24px] border border-white/10 bg-[#0b1220]/92 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/36">Executive view</div>
+                      <div className="mt-1 text-base font-semibold text-white">What changed this week</div>
+                    </div>
+                    <div className="rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[#c7c9ff]">Live</div>
+                  </div>
+                  <div className="mt-4 space-y-3 text-sm text-white/74">
+                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                      <span>AI visibility moved ahead of 2 competitors in Tampa.</span>
+                      <span className="text-[#ead39f]">+12</span>
+                    </div>
+                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                      <span>New citation mismatch isolated and ready for correction.</span>
+                      <span className="text-[#8de7d0]">Fixable</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-[24px] border border-[#e7d2a2]/16 bg-[linear-gradient(180deg,rgba(231,210,162,0.12),rgba(255,255,255,0.03))] p-4">
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1dfb9]">Operator brief</div>
+                  <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">3</div>
+                  <div className="mt-1 text-sm text-white/70">high-leverage moves queued for review</div>
+                  <div className="mt-4 h-px bg-white/10" />
+                  <div className="mt-4 space-y-2 text-sm text-white/70">
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ead39f]" /> Schema deploy ready</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ead39f]" /> Review campaign drafted</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ead39f]" /> City page brief generated</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="story" className="relative pb-10 sm:pb-14">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid gap-4 rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-6 shadow-[0_28px_100px_rgba(4,8,18,0.42)] md:grid-cols-4 md:px-8">
+            {stats.map((item) => (
+              <div key={item.label} className="border-b border-white/8 pb-4 last:border-b-0 md:border-b-0 md:border-r md:border-white/8 md:pb-0 md:last:border-r-0 md:pr-4">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-white/35">{item.label}</div>
+                <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">{item.value}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
