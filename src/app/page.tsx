@@ -726,22 +726,22 @@ export default function HomePage() {
   const [mobileNav, setMobileNav] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#111827] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(143,148,255,0.14),transparent_24%),radial-gradient(circle_at_85%_12%,rgba(92,230,186,0.1),transparent_20%),radial-gradient(circle_at_50%_100%,rgba(217,177,92,0.06),transparent_28%)]" />
+    <div className="min-h-screen bg-[#f6f7fb] text-slate-900">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(143,148,255,0.1),transparent_24%),radial-gradient(circle_at_85%_12%,rgba(92,230,186,0.08),transparent_20%),radial-gradient(circle_at_50%_100%,rgba(217,177,92,0.04),transparent_28%)]" />
       {/* ─── Navigation ─── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0f172a]/84 backdrop-blur-2xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200/80 bg-[rgba(255,255,255,0.9)] backdrop-blur-2xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Logo href="/" size={32} className="text-white" />
+          <Logo href="/" size={32} className="text-slate-900" />
 
           <div className="hidden md:flex items-center gap-7">
-            <Link href="#features" className="text-sm text-gray-400 hover:text-white transition-colors">Features</Link>
-            <Link href="/pricing" className="text-sm text-gray-400 hover:text-white transition-colors">Pricing</Link>
-            <Link href="/compare/geothority-vs-brightlocal" className="text-sm text-gray-400 hover:text-white transition-colors">Compare</Link>
-            <Link href="/faq" className="text-sm text-gray-400 hover:text-white transition-colors">FAQ</Link>
+            <Link href="#features" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">Features</Link>
+            <Link href="/pricing" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">Pricing</Link>
+            <Link href="/compare/geothority-vs-brightlocal" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">Compare</Link>
+            <Link href="/faq" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">FAQ</Link>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors">Sign In</Link>
+            <Link href="/login" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">Sign In</Link>
             <Link
               href="/signup"
               className="inline-flex items-center justify-center rounded-xl border border-[#8f94ff]/20 bg-gradient-to-r from-[#8f94ff] via-[#b4b8ff] to-[#e7d2a2] px-4 py-2.5 text-sm font-semibold text-[#0b1021] shadow-[0_12px_34px_rgba(143,148,255,0.22)] transition-all hover:translate-y-[-1px] hover:shadow-[0_18px_44px_rgba(143,148,255,0.28)]"
@@ -750,59 +750,59 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <button className="md:hidden p-2" onClick={() => setMobileNav(!mobileNav)}>
+          <button className="p-2 text-slate-900 md:hidden" onClick={() => setMobileNav(!mobileNav)}>
             {mobileNav ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
         {mobileNav && (
-          <div className="md:hidden border-t border-white/5 bg-[#0a0a0f] px-4 py-4 space-y-1">
-            <Link href="#features" className="block text-base py-3 text-gray-400" onClick={() => setMobileNav(false)}>Features</Link>
-            <Link href="/pricing" className="block text-base py-3 text-gray-400">Pricing</Link>
-            <Link href="/faq" className="block text-base py-3 text-gray-400">FAQ</Link>
-            <Link href="/login" className="block text-base py-3 text-gray-400">Sign In</Link>
+          <div className="space-y-1 border-t border-slate-200 bg-white px-4 py-4 md:hidden">
+            <Link href="#features" className="block py-3 text-base text-slate-700" onClick={() => setMobileNav(false)}>Features</Link>
+            <Link href="/pricing" className="block py-3 text-base text-slate-700">Pricing</Link>
+            <Link href="/faq" className="block py-3 text-base text-slate-700">FAQ</Link>
+            <Link href="/login" className="block py-3 text-base text-slate-700">Sign In</Link>
             <Link href="/signup" className="block text-base text-center font-medium bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg py-3 mt-2">Get Free Scan</Link>
           </div>
         )}
       </nav>
 
       {/* ─── Hero with Animated Video ─── */}
-      <section className="geo-hero relative overflow-hidden pt-24 pb-16 sm:pt-36 sm:pb-24">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(143,148,255,0.18),_transparent_30%),radial-gradient(circle_at_82%_18%,_rgba(92,230,186,0.14),_transparent_24%),radial-gradient(circle_at_50%_100%,_rgba(231,210,162,0.08),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
+      <section className="geo-hero relative overflow-hidden border-b border-slate-200 pt-24 pb-16 sm:pt-36 sm:pb-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(143,148,255,0.12),_transparent_30%),radial-gradient(circle_at_82%_18%,_rgba(92,230,186,0.1),_transparent_24%),radial-gradient(circle_at_50%_100%,_rgba(231,210,162,0.08),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(246,247,251,0.92))]" />
         <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-18" />
 
         <div className="relative mx-auto grid max-w-7xl gap-10 px-4 lg:grid-cols-[0.84fr_1.16fr] lg:items-center lg:gap-12">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#e7d2a2]/24 bg-[#e7d2a2]/12 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f4e3be]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#d8c38f] bg-[#fff7e7] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#8a6a20]">
               <Star className="h-3.5 w-3.5" /> Luxury-grade local visibility software
             </div>
 
-            <h1 className="mt-6 max-w-4xl text-[2.75rem] font-semibold leading-[0.95] tracking-[-0.065em] text-white sm:text-5xl lg:mt-7 lg:text-[4.15rem] xl:text-[4.8rem]">
-              The <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#dfe2ff] to-[#b9bcff]">elite operating system</span> for local search dominance.
+            <h1 className="mt-6 max-w-4xl text-[2.75rem] font-semibold leading-[0.95] tracking-[-0.065em] text-slate-950 sm:text-5xl lg:mt-7 lg:text-[4.15rem] xl:text-[4.8rem]">
+              The <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-[#4f46e5] to-[#0f766e]">elite operating system</span> for local search dominance.
             </h1>
 
-            <p className="mt-5 max-w-2xl text-[1.05rem] leading-8 text-white/96 sm:text-xl sm:leading-9">
+            <p className="mt-5 max-w-2xl text-[1.05rem] leading-8 text-slate-700 sm:text-xl sm:leading-9">
               Geothority is built for ambitious insurance agencies that want more than dashboards. It turns visibility gaps, competitor movement, and trust signals into a premium execution workflow your team can actually run.
             </p>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-white/84 sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
               Scan in about 90 seconds. See the real gaps. Move with more precision than generic SEO software.
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/14 bg-white/[0.12] px-4 py-3">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-white/52">First scan</div>
-                <div className="mt-1 text-lg font-semibold text-white">~90 sec</div>
-                <div className="mt-1 text-sm text-white/84">Fast enough to start immediately.</div>
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">First scan</div>
+                <div className="mt-1 text-lg font-semibold text-slate-900">~90 sec</div>
+                <div className="mt-1 text-sm text-slate-600">Fast enough to start immediately.</div>
               </div>
-              <div className="rounded-2xl border border-white/14 bg-white/[0.12] px-4 py-3">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-white/52">Focus</div>
-                <div className="mt-1 text-lg font-semibold text-white">Trust + AI</div>
-                <div className="mt-1 text-sm text-white/84">See what is lifting or suppressing visibility.</div>
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Focus</div>
+                <div className="mt-1 text-lg font-semibold text-slate-900">Trust + AI</div>
+                <div className="mt-1 text-sm text-slate-600">See what is lifting or suppressing visibility.</div>
               </div>
-              <div className="rounded-2xl border border-white/14 bg-white/[0.12] px-4 py-3 sm:hidden lg:block">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-white/52">Execution</div>
-                <div className="mt-1 text-lg font-semibold text-white">Fix paths</div>
-                <div className="mt-1 text-sm text-white/84">Know what can run now and what needs review.</div>
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:hidden lg:block">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Execution</div>
+                <div className="mt-1 text-lg font-semibold text-slate-900">Fix paths</div>
+                <div className="mt-1 text-sm text-slate-600">Know what can run now and what needs review.</div>
               </div>
             </div>
 
@@ -815,7 +815,7 @@ export default function HomePage() {
               </Link>
               <Link
                 href="#story"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.04] px-7 py-4 text-base font-medium text-white/88 transition-all hover:border-[#8f94ff]/20 hover:bg-white/[0.06]"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-7 py-4 text-base font-medium text-slate-800 transition-all hover:border-[#8f94ff]/30 hover:bg-slate-50"
               >
                 <Play className="h-4 w-4" /> See the Platform
               </Link>
@@ -827,7 +827,7 @@ export default function HomePage() {
               <SignalChip label="Coverage" value="Trust + AI + competitor response" tip="Track trust, citations, search presence, AI-surface visibility, and competitor movement in one place." />
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.22em] text-white/62">
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.22em] text-slate-500">
               <span>Built for insurance agencies</span>
               <span className="hidden h-1 w-1 rounded-full bg-white/14 sm:inline-flex" />
               <span>Private-equity-grade operating clarity</span>
@@ -880,11 +880,11 @@ export default function HomePage() {
 
       <section id="story" className="relative pb-10 sm:pb-14">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-4 rounded-[32px] border border-white/14 bg-[linear-gradient(180deg,rgba(28,39,66,0.98),rgba(18,27,46,0.96))] px-6 py-6 shadow-[0_22px_70px_rgba(4,8,18,0.16)] md:grid-cols-4 md:px-8">
+          <div className="grid gap-4 rounded-[32px] border border-slate-200 bg-white px-6 py-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:grid-cols-4 md:px-8">
             {stats.map((item) => (
-              <div key={item.label} className="border-b border-white/8 pb-4 last:border-b-0 md:border-b-0 md:border-r md:border-white/8 md:pb-0 md:last:border-r-0 md:pr-4">
-                <div className="text-[11px] uppercase tracking-[0.24em] text-white/64">{item.label}</div>
-                <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">{item.value}</div>
+              <div key={item.label} className="border-b border-slate-200 pb-4 last:border-b-0 md:border-b-0 md:border-r md:border-slate-200 md:pb-0 md:last:border-r-0 md:pr-4">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500">{item.label}</div>
+                <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950">{item.value}</div>
               </div>
             ))}
           </div>
@@ -899,14 +899,14 @@ export default function HomePage() {
               <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-3xl">
                   <SectionEyebrow>One workflow</SectionEyebrow>
-                  <h2 className="mt-5 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
+                  <h2 className="mt-5 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-5xl">
                     A luxury operating rhythm for local visibility.
                   </h2>
-                  <p className="mt-4 max-w-2xl text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
                     Geothority should feel easy to scan, not heavy to decode. This workflow gives the page a cleaner operating logic: discovery, prioritization, execution, and ongoing protection.
                   </p>
                 </div>
-            <div className="rounded-[24px] border border-[#e7d2a2]/24 bg-[#e7d2a2]/10 px-5 py-4 text-sm leading-6 text-[#fff4d8] lg:max-w-sm">
+            <div className="rounded-[24px] border border-[#e7d2a2]/40 bg-[#fff7e7] px-5 py-4 text-sm leading-6 text-[#7c5d18] lg:max-w-sm">
                   Built for teams that want calm, controlled execution — not another dashboard full of unresolved issues.
                 </div>
               </div>
@@ -933,14 +933,14 @@ export default function HomePage() {
                     copy: 'Track what changes over time, what competitors are doing, and where your next gains are most likely to come from.',
                   },
                 ].map((item, index) => (
-                  <div key={item.step} className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.06] px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-sm">
+                  <div key={item.step} className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white px-5 py-6 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/28 to-transparent" />
                     <div className="flex items-center justify-between">
-                      <div className="text-[10px] uppercase tracking-[0.24em] text-[#c7c9ff]">{item.step}</div>
+                      <div className="text-[10px] uppercase tracking-[0.24em] text-indigo-500">{item.step}</div>
                       <div className={`h-2.5 w-2.5 rounded-full ${index === 3 ? 'bg-[#ead39f]' : 'bg-[#8f94ff]'} shadow-[0_0_18px_rgba(185,188,255,0.55)]`} />
                     </div>
-                    <div className="mt-4 text-xl font-semibold tracking-[-0.03em] text-white">{item.title}</div>
-                    <p className="mt-3 text-sm leading-6 text-white/86">{item.copy}</p>
+                    <div className="mt-4 text-xl font-semibold tracking-[-0.03em] text-slate-950">{item.title}</div>
+                    <p className="mt-3 text-sm leading-6 text-slate-600">{item.copy}</p>
                   </div>
                 ))}
               </div>
@@ -950,34 +950,34 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── Core delta + flagship features ─── */}
-      <section id="features" className="bg-[linear-gradient(180deg,rgba(9,15,28,0),rgba(18,27,46,0.42)_10%,rgba(9,15,28,0)_100%)] py-14 sm:py-24">
+      <section id="features" className="py-14 sm:py-24">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
               <SectionEyebrow>Why Geothority</SectionEyebrow>
-              <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Most tools diagnose. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#8f94ff]">Very few help you execute.</span>
+              <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-5xl">
+                Most tools diagnose. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0f766e] to-[#4f46e5]">Very few help you execute.</span>
               </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/86">
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-700">
                 For years, local SEO software has been good at one thing: showing you what&apos;s wrong. The hard part still lands on you. Geothority is built to close that gap — by showing what matters, what can be fixed, and what the next move should be.
               </p>
             </div>
           </ScrollReveal>
 
           <ScrollReveal animation="scale-up">
-            <div className="mb-16 grid gap-4 rounded-[34px] border border-white/14 bg-[linear-gradient(180deg,rgba(31,43,71,0.98),rgba(20,29,49,0.96))] p-5 shadow-[0_20px_60px_rgba(4,8,18,0.12)] sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="mb-16 grid gap-4 rounded-[34px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
-                <div className="text-[10px] uppercase tracking-[0.22em] text-white/50">Old way</div>
-                <div className="mt-3 rounded-[24px] border border-white/12 bg-white/[0.09] p-5 text-base leading-7 text-white/82">
+                <div className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Old way</div>
+                <div className="mt-3 rounded-[24px] border border-slate-200 bg-slate-50 p-5 text-base leading-7 text-slate-700">
                   Surface issues. Export the list. Leave the work to you.
                 </div>
               </div>
               <div>
-                <div className="text-[10px] uppercase tracking-[0.22em] text-[#d7d9ff]">Geothority</div>
-                <div className="mt-3 rounded-[24px] border border-[#8f94ff]/28 bg-[linear-gradient(180deg,rgba(143,148,255,0.22),rgba(255,255,255,0.08))] p-5 text-base font-medium leading-7 text-white shadow-[0_18px_50px_rgba(76,82,196,0.1)]">
+                <div className="text-[10px] uppercase tracking-[0.22em] text-indigo-600">Geothority</div>
+                <div className="mt-3 rounded-[24px] border border-indigo-200 bg-indigo-50 p-5 text-base font-medium leading-7 text-slate-900 shadow-[0_18px_50px_rgba(76,82,196,0.08)]">
                   Surface the issue. Clarify the priority. Show the next move. Support execution where possible.
                 </div>
-                <p className="mt-4 text-sm leading-6 text-white/68">The difference is not the report. It&apos;s what happens after the report.</p>
+                <p className="mt-4 text-sm leading-6 text-slate-600">The difference is not the report. It&apos;s what happens after the report.</p>
               </div>
             </div>
           </ScrollReveal>
@@ -989,7 +989,7 @@ export default function HomePage() {
               return (
                 <ScrollReveal key={feature.title} animation={reverse ? "slide-right" : "slide-left"}>
                   <div className={`grid gap-6 lg:grid-cols-[1fr_1fr] ${reverse ? "lg:[&>div:first-child]:order-2" : ""}`}>
-                    <div className="geo-feature-shell rounded-[32px] border border-white/12 bg-white/[0.055] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-sm sm:p-8">
+                    <div className="geo-feature-shell rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)] sm:p-8">
                       <div className="mb-5 flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                           <Icon className="h-5 w-5" />
@@ -1000,10 +1000,10 @@ export default function HomePage() {
                           </span>
                         )}
                       </div>
-                      <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+                      <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-slate-950 sm:text-3xl">
                         {feature.title}
                       </h3>
-                      <p className="mt-4 max-w-xl text-base leading-7 text-white/86">
+                      <p className="mt-4 max-w-xl text-base leading-7 text-slate-700">
                         {feature.description}
                       </p>
                       <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
@@ -1163,10 +1163,10 @@ export default function HomePage() {
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
               <SectionEyebrow>Deeper execution layers</SectionEyebrow>
-              <h2 className="mt-5 max-w-4xl text-[1.95rem] font-semibold tracking-[-0.04em] text-white sm:text-5xl">
+              <h2 className="mt-5 max-w-4xl text-[1.95rem] font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl">
                 From schema to content to competitor response, the work stays connected.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/86 sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
                 Geothority doesn&apos;t stop at a visibility score. It gives you a clearer path across the supporting systems that shape local discovery over time.
               </p>
             </div>
@@ -1177,7 +1177,7 @@ export default function HomePage() {
               const Icon = feature.icon;
               return (
                 <ScrollReveal key={feature.title} animation="fade-up" delay={index * 100}>
-                  <div className="geo-feature-shell h-full rounded-[26px] border border-white/12 bg-white/[0.05] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-sm sm:rounded-[32px] sm:p-7">
+                  <div className="geo-feature-shell h-full rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] sm:rounded-[32px] sm:p-7">
                     <div className="mb-4 flex items-center gap-3 sm:mb-5">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                         <Icon className="h-5 w-5" />
@@ -1188,10 +1188,10 @@ export default function HomePage() {
                         </span>
                       )}
                     </div>
-                    <h3 className="text-[1.55rem] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-2xl">{feature.title}</h3>
-                    <p className="mt-3 text-[15px] leading-7 text-white/90 sm:mt-4 sm:text-base">{feature.description}</p>
+                    <h3 className="text-[1.55rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950 sm:text-2xl">{feature.title}</h3>
+                    <p className="mt-3 text-[15px] leading-7 text-slate-700 sm:mt-4 sm:text-base">{feature.description}</p>
                     <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
-                    <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-3 text-sm text-white/92 sm:mt-5">{feature.stat}</div>
+                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 sm:mt-5">{feature.stat}</div>
                   </div>
                 </ScrollReveal>
               );
@@ -1201,15 +1201,15 @@ export default function HomePage() {
       </section>
 
       {/* ─── Trust + validation ─── */}
-      <section className="bg-[linear-gradient(180deg,rgba(18,27,46,0.42),rgba(10,16,31,0.16))] py-12 sm:py-22">
+      <section className="bg-[linear-gradient(180deg,#f8fafc,#eef2ff)] py-12 sm:py-22">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-10 max-w-3xl sm:mb-14">
               <SectionEyebrow>Trusted signals</SectionEyebrow>
-              <h2 className="mt-5 text-[1.95rem] font-semibold tracking-[-0.03em] text-white sm:text-5xl">
+              <h2 className="mt-5 text-[1.95rem] font-semibold tracking-[-0.03em] text-slate-950 sm:text-5xl">
                 Stronger trust comes from visible evidence, not louder claims.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/88">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700">
                 Geothority is built to make local visibility work more credible: clearer source signals, clearer fix paths, and clearer distinctions between what is automated, what is guided, and what still needs human review.
               </p>
             </div>
@@ -1231,12 +1231,12 @@ export default function HomePage() {
               },
             ].map((item, i) => (
               <ScrollReveal key={item.title} animation="fade-up" delay={i * 120}>
-                <div className="h-full rounded-[24px] border border-white/12 bg-white/[0.05] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-sm sm:rounded-[30px] sm:p-7">
+                <div className="h-full rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] sm:rounded-[30px] sm:p-7">
                   <div className="inline-flex rounded-full border border-[#8f94ff]/20 bg-[#8f94ff]/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#c7c9ff]">
                     Trust-first
                   </div>
-                  <h3 className="mt-4 text-[1.45rem] font-semibold tracking-[-0.03em] text-white sm:mt-5 sm:text-2xl">{item.title}</h3>
-                  <p className="mt-3 text-[15px] leading-7 text-white/88 sm:mt-4 sm:text-base">{item.copy}</p>
+                  <h3 className="mt-4 text-[1.45rem] font-semibold tracking-[-0.03em] text-slate-950 sm:mt-5 sm:text-2xl">{item.title}</h3>
+                  <p className="mt-3 text-[15px] leading-7 text-slate-700 sm:mt-4 sm:text-base">{item.copy}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -1246,20 +1246,20 @@ export default function HomePage() {
             <div className="mt-10 border-t border-white/10 px-0 py-6 sm:mt-12 sm:py-8">
               <div className="max-w-3xl">
                 <SectionEyebrow>Built for operators</SectionEyebrow>
-                <h3 className="mt-5 text-[1.9rem] font-semibold tracking-[-0.03em] text-white sm:text-4xl">
+                <h3 className="mt-5 text-[1.9rem] font-semibold tracking-[-0.03em] text-slate-950 sm:text-4xl">
                   Built for businesses that want visibility work to be operational, not theoretical.
                 </h3>
-                <p className="mt-4 max-w-2xl text-base leading-7 text-white/88">
+                <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700">
                   For teams that are tired of audits with no follow-through, Geothority brings structure, prioritization, and clearer execution to local visibility work.
                 </p>
               </div>
               <div className="mt-6 grid gap-3 sm:mt-7 sm:grid-cols-2 xl:grid-cols-4">
                 {testimonials.map((t, i) => (
-                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#e7d2a2]/20 bg-[#e7d2a2]/10' : 'border-white/12 bg-white/[0.045]'}`}>
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
-                    <div className="mt-3 text-lg font-semibold text-white">{t.name}</div>
+                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#e7d2a2]/30 bg-[#fff7e7]' : 'border-slate-200 bg-white'}`}>
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-slate-500">{t.city}</div>
+                    <div className="mt-3 text-lg font-semibold text-slate-950">{t.name}</div>
                     <div className={`mt-1 text-sm ${i === 1 ? 'text-[#f1dfb9]' : 'text-[#b4b8ff]'}`}>{t.title}</div>
-                    <p className="mt-3 text-sm leading-6 text-white/86 sm:mt-4">{t.impact}</p>
+                    <p className="mt-3 text-sm leading-6 text-slate-700 sm:mt-4">{t.impact}</p>
                   </div>
                 ))}
               </div>
@@ -1280,10 +1280,10 @@ export default function HomePage() {
           <ScrollReveal animation="fade-up">
             <div className="mb-10 text-center sm:mb-12">
               <SectionEyebrow>Premium pricing</SectionEyebrow>
-              <h2 className="mx-auto mt-5 max-w-4xl text-[1.95rem] font-semibold tracking-[-0.05em] text-white sm:text-5xl">
+              <h2 className="mx-auto mt-5 max-w-4xl text-[1.95rem] font-semibold tracking-[-0.05em] text-slate-950 sm:text-5xl">
                 Start with clarity. Upgrade into deeper control.
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/88">
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-700">
                 Start with a clear read on your visibility, then step into deeper execution only when you need it. The pricing should feel simple to understand and easy to trust.
               </p>
             </div>
@@ -1295,8 +1295,8 @@ export default function HomePage() {
                 <div
                   className={`relative h-full rounded-[24px] border p-5 text-left sm:rounded-[28px] sm:p-6 ${
                     t.highlighted
-                      ? "border-[#e7d2a2]/26 bg-[linear-gradient(180deg,rgba(231,210,162,0.14),rgba(255,255,255,0.03))] shadow-[0_24px_80px_rgba(140,112,50,0.12)]"
-                      : "border-white/12 bg-white/[0.05]"
+                      ? "border-[#e7d2a2]/40 bg-[#fff7e7] shadow-[0_20px_60px_rgba(140,112,50,0.08)]"
+                      : "border-slate-200 bg-white"
                   }`}
                 >
                   {t.highlighted && (
@@ -1304,20 +1304,20 @@ export default function HomePage() {
                       Best leverage
                     </div>
                   )}
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">{t.name}</div>
-                  <div className="mt-4 text-4xl font-semibold text-white">
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-slate-500">{t.name}</div>
+                  <div className="mt-4 text-4xl font-semibold text-slate-950">
                     {t.price === 0 ? (
                       "Free"
                     ) : (
                       <>
-                        <span className="text-xl text-white/38">$</span>
+                        <span className="text-xl text-slate-400">$</span>
                         {t.price}
-                        <span className="text-sm font-normal text-white/35"> /mo</span>
+                        <span className="text-sm font-normal text-slate-500"> /mo</span>
                       </>
                     )}
                   </div>
-                  <div className="mt-3 text-sm leading-6 text-white/84">{t.desc}</div>
-                  <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.08] p-4 text-sm text-white/92 sm:mt-6">
+                  <div className="mt-3 text-sm leading-6 text-slate-700">{t.desc}</div>
+                  <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 sm:mt-6">
                     {t.tip}
                   </div>
                   <Link
@@ -1325,7 +1325,7 @@ export default function HomePage() {
                     className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-all sm:mt-6 ${
                       t.highlighted
                         ? "bg-gradient-to-r from-[#ead39f] via-[#f1dfb9] to-[#ffffff] text-[#0b1021]"
-                        : "border border-white/10 bg-white/[0.03] text-white/86 hover:bg-white/[0.05]"
+                        : "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
                     }`}
                   >
                     {t.price === 0 ? "Start Free" : `Choose ${t.name}`}
@@ -1344,12 +1344,12 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-5xl px-4">
 
           <ScrollReveal animation="fade-up">
-            <div className="rounded-[28px] border border-white/14 bg-[linear-gradient(180deg,rgba(37,50,80,0.98),rgba(23,33,55,0.96))] px-5 py-8 text-center shadow-[0_18px_60px_rgba(5,10,18,0.14)] sm:rounded-[36px] sm:px-10 sm:py-16">
+            <div className="rounded-[28px] border border-slate-200 bg-white px-5 py-8 text-center shadow-[0_18px_60px_rgba(15,23,42,0.06)] sm:rounded-[36px] sm:px-10 sm:py-16">
               <SectionEyebrow>Get your free scan</SectionEyebrow>
-              <h2 className="mx-auto mt-5 max-w-3xl text-[1.95rem] font-semibold tracking-[-0.05em] text-white sm:mt-6 sm:text-5xl">
+              <h2 className="mx-auto mt-5 max-w-3xl text-[1.95rem] font-semibold tracking-[-0.05em] text-slate-950 sm:mt-6 sm:text-5xl">
                 Move from scattered visibility work to a system that feels premium.
               </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-white/92 sm:mt-5 sm:text-lg sm:leading-8">
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:mt-5 sm:text-lg sm:leading-8">
                 Audit the gaps, see the priorities, and experience the product through the lens it deserves: high-end, controlled, and execution-ready.
               </p>
               <Link
