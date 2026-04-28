@@ -59,7 +59,7 @@ function HeroVideoLoop() {
   }, [currentClip]);
 
   return (
-    <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-[#09111c] border border-white/10 shadow-[0_30px_120px_rgba(6,12,24,0.55)]">
+    <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/14 bg-[linear-gradient(180deg,#101a33_0%,#0b1326_100%)] shadow-[0_30px_120px_rgba(6,12,24,0.45)]">
       {/* Fallback gradient while video loads */}
       {!videoLoaded && (
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-[#09111c] to-blue-500/10 flex items-center justify-center">
@@ -84,7 +84,10 @@ function HeroVideoLoop() {
         <source src={clips[currentClip]} type="video/mp4" />
       </video>
       {/* Overlay gradient for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#09111c] via-transparent to-transparent opacity-60" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#09111c]/70 via-transparent to-transparent opacity-35" />
+      <div className="absolute left-4 top-4 rounded-full border border-white/12 bg-[#111a31]/88 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/88 backdrop-blur-sm">
+        Live product demo
+      </div>
       {/* Bottom overlay with score animation */}
       <div className="absolute bottom-0 left-0 right-0 p-6">
         <div className="flex items-end justify-between">
@@ -279,7 +282,7 @@ const authoritySectors = [
 function VersusCard({ theirWay, ourWay }: { theirWay: string; ourWay: string }) {
   return (
     <div className="mt-5 grid grid-cols-2 gap-3">
-      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+      <div className="rounded-xl border border-white/12 bg-white/[0.05] p-3">
         <div className="text-[10px] uppercase tracking-[0.18em] text-red-400/70 mb-1.5">Other tools</div>
         <div className="text-sm text-white/55">{theirWay}</div>
       </div>
@@ -304,7 +307,7 @@ function BrowserFrame({
 }) {
   return (
     <div
-      className={`geo-panel rounded-[30px] overflow-hidden border border-white/10 bg-[linear-gradient(180deg,rgba(10,14,28,0.98),rgba(8,12,24,0.94))] shadow-[0_32px_120px_rgba(4,8,18,0.62)] ${className}`}
+      className={`geo-panel rounded-[30px] overflow-hidden border border-white/12 bg-[linear-gradient(180deg,rgba(16,22,40,0.98),rgba(10,16,31,0.94))] shadow-[0_32px_120px_rgba(4,8,18,0.5)] ${className}`}
     >
       <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/8 bg-white/[0.02]">
         <div className="w-2.5 h-2.5 rounded-full bg-rose-400/60" />
@@ -358,7 +361,7 @@ function FeaturePreview({
         />
       </div>
       <div className="text-lg font-semibold leading-tight text-white sm:text-[1.15rem]">{stat}</div>
-      {statTip && <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/68">{statTip}</p>}
+      {statTip && <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/78">{statTip}</p>}
       <div className="mt-3 h-1.5 rounded-full bg-white/8">
         <motion.div
           className={`h-1.5 rounded-full bg-gradient-to-r ${meta.accent}`}
@@ -371,7 +374,7 @@ function FeaturePreview({
     </motion.div>
   );
 
-  const shell = "relative flex h-full min-h-[340px] flex-col overflow-hidden rounded-[24px] border border-white/8 bg-[#09111a]";
+  const shell = "relative flex h-full min-h-[340px] flex-col overflow-hidden rounded-[24px] border border-white/12 bg-[linear-gradient(180deg,#121b31_0%,#0d1527_100%)]";
 
   if (preview === "fix") {
     return (
@@ -825,7 +828,7 @@ export default function HomePage() {
             <div className="relative rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-3 shadow-[0_36px_140px_rgba(4,8,18,0.7)]">
               <HeroVideoLoop />
               <div className="mt-3 grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-[24px] border border-white/10 bg-[#0b1220]/92 p-4">
+                <div className="rounded-[24px] border border-white/12 bg-[linear-gradient(180deg,rgba(20,29,49,0.96),rgba(14,22,38,0.94))] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.22)]">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-[10px] uppercase tracking-[0.22em] text-white/36">Executive view</div>
@@ -834,17 +837,17 @@ export default function HomePage() {
                     <div className="rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[#c7c9ff]">Live</div>
                   </div>
                   <div className="mt-4 space-y-3 text-sm text-white/74">
-                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.07] px-4 py-3">
                       <span>AI visibility moved ahead of 2 competitors in Tampa.</span>
                       <span className="text-[#ead39f]">+12</span>
                     </div>
-                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.07] px-4 py-3">
                       <span>New citation mismatch isolated and ready for correction.</span>
                       <span className="text-[#8de7d0]">Fixable</span>
                     </div>
                   </div>
                 </div>
-                <div className="rounded-[24px] border border-[#e7d2a2]/16 bg-[linear-gradient(180deg,rgba(231,210,162,0.12),rgba(255,255,255,0.03))] p-4">
+                <div className="rounded-[24px] border border-[#e7d2a2]/20 bg-[linear-gradient(180deg,rgba(231,210,162,0.18),rgba(255,255,255,0.05))] p-4 shadow-[0_16px_40px_rgba(140,112,50,0.12)]">
                   <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1dfb9]">Operator brief</div>
                   <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">3</div>
                   <div className="mt-1 text-sm text-white/70">high-leverage moves queued for review</div>
@@ -889,7 +892,7 @@ export default function HomePage() {
                     The page needed more than nicer copy. This section now frames Geothority like a premium system: one disciplined flow from discovery to action to protection.
                   </p>
                 </div>
-                <div className="rounded-[24px] border border-[#e7d2a2]/18 bg-[#e7d2a2]/8 px-5 py-4 text-sm leading-6 text-[#f5e7c4] lg:max-w-sm">
+            <div className="rounded-[24px] border border-[#e7d2a2]/22 bg-[linear-gradient(180deg,rgba(231,210,162,0.16),rgba(255,255,255,0.04))] px-5 py-4 text-sm leading-6 text-[#fff2d3] lg:max-w-sm">
                   Built for teams that want calm, controlled execution — not another dashboard full of unresolved issues.
                 </div>
               </div>
@@ -923,7 +926,7 @@ export default function HomePage() {
                       <div className={`h-2.5 w-2.5 rounded-full ${index === 3 ? 'bg-[#ead39f]' : 'bg-[#8f94ff]'} shadow-[0_0_18px_rgba(185,188,255,0.55)]`} />
                     </div>
                     <div className="mt-4 text-xl font-semibold tracking-[-0.03em] text-white">{item.title}</div>
-                    <p className="mt-3 text-sm leading-6 text-white/62">{item.copy}</p>
+                    <p className="mt-3 text-sm leading-6 text-white/76">{item.copy}</p>
                   </div>
                 ))}
               </div>
@@ -941,7 +944,7 @@ export default function HomePage() {
               <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Most tools diagnose. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#8f94ff]">Very few help you execute.</span>
               </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/66">
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/76">
                 For years, local SEO software has been good at one thing: showing you what&apos;s wrong. The hard part still lands on you. Geothority is built to close that gap — by showing what matters, what can be fixed, and what the next move should be.
               </p>
             </div>
@@ -951,7 +954,7 @@ export default function HomePage() {
             <div className="mb-16 grid gap-4 rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-5 shadow-[0_26px_90px_rgba(4,8,18,0.32)] sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
                 <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Old way</div>
-                <div className="mt-3 rounded-[24px] border border-white/10 bg-white/[0.03] p-5 text-base leading-7 text-white/62">
+                <div className="mt-3 rounded-[24px] border border-white/12 bg-white/[0.06] p-5 text-base leading-7 text-white/76">
                   Surface issues. Export the list. Leave the work to you.
                 </div>
               </div>
@@ -986,7 +989,7 @@ export default function HomePage() {
                       <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
                         {feature.title}
                       </h3>
-                      <p className="mt-4 max-w-xl text-base leading-7 text-white/60">
+                      <p className="mt-4 max-w-xl text-base leading-7 text-white/76">
                         {feature.description}
                       </p>
                       <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
@@ -1013,7 +1016,7 @@ export default function HomePage() {
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
                   One score. Prioritized fixes. Clear execution paths.
                 </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-white/68 sm:text-lg">
+                <p className="mt-4 max-w-xl text-base leading-7 text-white/78 sm:text-lg">
                   The Trust Stack turns scattered visibility work into one operating view. It shows what Geothority can handle directly, what needs approval, and what still requires manual attention.
                 </p>
                 <div className="mt-6 space-y-3 text-sm text-white/72">
@@ -1062,7 +1065,7 @@ export default function HomePage() {
                         ["Reviews", "79", 4],
                         ["AI", "88", 5],
                       ].map(([label, value, layer], index) => (
-                        <div key={label} className="rounded-2xl border border-white/8 bg-black/20 p-3 text-center">
+                        <div key={label} className="rounded-2xl border border-white/10 bg-[#162036] p-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                           <div className="flex min-h-[30px] items-start justify-center gap-1">
                             <div className="text-[10px] uppercase tracking-[0.16em] text-white/35">{label}</div>
                             <LayerInfoTooltip layerNum={layer as number} side="top" />
@@ -1078,7 +1081,7 @@ export default function HomePage() {
                       ))}
                     </div>
 
-                    <div className="mt-5 rounded-[22px] border border-white/8 bg-black/20 p-4">
+                    <div className="mt-5 rounded-[22px] border border-white/10 bg-[#131c30] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                       <div className="flex items-center gap-1.5">
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Top priorities</div>
                         <GeoTooltip tip="Your ranked action queue. We handle these in order for the fastest visibility gains." side="right" iconClassName="w-3 h-3" />
@@ -1090,7 +1093,7 @@ export default function HomePage() {
                           { text: "Expanding Tampa landing coverage", fixable: false },
                         ].map((item) => (
                           <div key={item.text} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <span className={`rounded-2xl px-3 py-2 text-xs leading-5 ${item.fixable ? "border border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : "border border-white/10 bg-white/[0.03] text-white/62"}`}>
+                            <span className={`rounded-2xl px-3 py-2 text-xs leading-5 ${item.fixable ? "border border-emerald-400/25 bg-emerald-400/14 text-emerald-200" : "border border-white/12 bg-white/[0.06] text-white/76"}`}>
                               {item.text}
                             </span>
                             {item.fixable && (
@@ -1105,7 +1108,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                    <div className="rounded-[24px] border border-white/12 bg-white/[0.06] p-4">
                       <div className="flex items-center gap-1.5">
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">What&apos;s working, what&apos;s not</div>
                         <GeoTooltip tip="Shows which authority layers are actively improving your rankings and which are holding you back." side="right" iconClassName="w-3 h-3" />
@@ -1114,7 +1117,7 @@ export default function HomePage() {
                         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#0b1726]">
                           <span className="text-lg font-semibold text-white">High</span>
                         </div>
-                        <p className="text-sm leading-6 text-white/60">AI visibility and directory listings are pulling you up. Trust pages are the main thing holding you back.</p>
+                        <p className="text-sm leading-6 text-white/78">AI visibility and directory listings are pulling you up. Trust pages are the main thing holding you back.</p>
                       </div>
                     </div>
                     <div className="rounded-[24px] border border-[#8f94ff]/20 bg-[#8f94ff]/8 p-4">
@@ -1130,7 +1133,7 @@ export default function HomePage() {
                     </div>
                     <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(143,148,255,0.09),rgba(255,255,255,0.03))] p-4">
                       <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Weekly update</div>
-                      <p className="mt-3 text-sm leading-6 text-white/65">Your Trust Stack updates every week with fresh data and new priorities. Connected workflows can execute some fixes directly; others stay in review until you approve them.</p>
+                      <p className="mt-3 text-sm leading-6 text-white/78">Your Trust Stack updates every week with fresh data and new priorities. Connected workflows can execute some fixes directly; others stay in review until you approve them.</p>
                     </div>
                   </div>
                 </div>
@@ -1149,7 +1152,7 @@ export default function HomePage() {
               <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
                 From schema to content to competitor response, the work stays connected.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/60 sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/76 sm:text-lg sm:leading-8">
                 Geothority doesn&apos;t stop at a visibility score. It gives you a clearer path across the supporting systems that shape local discovery over time.
               </p>
             </div>
@@ -1172,9 +1175,9 @@ export default function HomePage() {
                       )}
                     </div>
                     <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white">{feature.title}</h3>
-                    <p className="mt-4 text-base leading-7 text-white/66">{feature.description}</p>
+                    <p className="mt-4 text-base leading-7 text-white/78">{feature.description}</p>
                     <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
-                    <div className="mt-5 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm text-white/74">{feature.stat}</div>
+                    <div className="mt-5 rounded-2xl border border-white/10 bg-[#162036] px-4 py-3 text-sm text-white/84">{feature.stat}</div>
                   </div>
                 </ScrollReveal>
               );
@@ -1192,7 +1195,7 @@ export default function HomePage() {
               <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
                 Stronger trust comes from visible evidence, not louder claims.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/66">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/78">
                 Geothority is built to make local visibility work more credible: clearer source signals, clearer fix paths, and clearer distinctions between what is automated, what is guided, and what still needs human review.
               </p>
             </div>
@@ -1219,7 +1222,7 @@ export default function HomePage() {
                     Trust-first
                   </div>
                   <h3 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-white">{item.title}</h3>
-                  <p className="mt-4 text-base leading-7 text-white/68">{item.copy}</p>
+                  <p className="mt-4 text-base leading-7 text-white/80">{item.copy}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -1232,17 +1235,17 @@ export default function HomePage() {
                 <h3 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
                   Built for businesses that want visibility work to be operational, not theoretical.
                 </h3>
-                <p className="mt-4 max-w-2xl text-base leading-7 text-white/60">
+                <p className="mt-4 max-w-2xl text-base leading-7 text-white/76">
                   For teams that are tired of audits with no follow-through, Geothority brings structure, prioritization, and clearer execution to local visibility work.
                 </p>
               </div>
               <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {testimonials.map((t, i) => (
-                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#e7d2a2]/20 bg-[#e7d2a2]/10' : 'border-white/8 bg-black/20'}`}>
+                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#e7d2a2]/20 bg-[#e7d2a2]/12' : 'border-white/10 bg-[#141d31]'}`}>
                     <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
                     <div className="mt-3 text-lg font-semibold text-white">{t.name}</div>
                     <div className={`mt-1 text-sm ${i === 1 ? 'text-[#f1dfb9]' : 'text-[#b4b8ff]'}`}>{t.title}</div>
-                    <p className="mt-4 text-sm leading-6 text-white/62">{t.impact}</p>
+                    <p className="mt-4 text-sm leading-6 text-white/78">{t.impact}</p>
                   </div>
                 ))}
               </div>
@@ -1266,7 +1269,7 @@ export default function HomePage() {
               <h2 className="mt-5 mx-auto max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Start with clarity. Upgrade into deeper control.
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/66">
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/78">
                 The pricing should feel as premium as the product direction: simple entry, sharper progression, and a clear path into higher-touch execution.
               </p>
             </div>
@@ -1300,7 +1303,7 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="mt-3 text-sm leading-6 text-white/58">{t.desc}</div>
-                  <div className="mt-6 rounded-2xl border border-white/8 bg-black/15 p-4 text-sm text-white/68">
+                  <div className="mt-6 rounded-2xl border border-white/10 bg-[#141d31] p-4 text-sm text-white/82">
                     {t.tip}
                   </div>
                   <Link
@@ -1332,7 +1335,7 @@ export default function HomePage() {
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Move from scattered visibility work to a system that feels premium.
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/66">
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/80">
                 Audit the gaps, see the priorities, and experience the product through the lens it deserves: high-end, controlled, and execution-ready.
               </p>
               <Link
