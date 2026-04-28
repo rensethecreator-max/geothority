@@ -282,15 +282,15 @@ const authoritySectors = [
 function VersusCard({ theirWay, ourWay }: { theirWay: string; ourWay: string }) {
   return (
     <div className="mt-5 grid grid-cols-2 gap-3">
-      <div className="rounded-xl border border-white/12 bg-white/[0.05] p-3">
+      <div className="rounded-xl border border-white/12 bg-white/[0.08] p-3">
         <div className="text-[10px] uppercase tracking-[0.18em] text-red-400/70 mb-1.5">Other tools</div>
-        <div className="text-sm text-white/55">{theirWay}</div>
+        <div className="text-sm leading-6 text-white/72">{theirWay}</div>
       </div>
-      <div className="rounded-xl border border-[#8f94ff]/25 bg-[linear-gradient(180deg,rgba(143,148,255,0.14),rgba(255,255,255,0.03))] p-3 shadow-[0_16px_40px_rgba(76,82,196,0.14)]">
+      <div className="rounded-xl border border-[#8f94ff]/28 bg-[linear-gradient(180deg,rgba(143,148,255,0.22),rgba(255,255,255,0.06))] p-3 shadow-[0_16px_40px_rgba(76,82,196,0.12)]">
         <div className="text-[10px] uppercase tracking-[0.18em] text-[#c7c9ff] mb-1.5 flex items-center gap-1">
           <Wand2 className="w-3 h-3" /> Geothority
         </div>
-        <div className="text-sm text-white font-medium">{ourWay}</div>
+        <div className="text-sm leading-6 text-white font-medium">{ourWay}</div>
       </div>
     </div>
   );
@@ -307,13 +307,13 @@ function BrowserFrame({
 }) {
   return (
     <div
-      className={`geo-panel rounded-[30px] overflow-hidden border border-white/12 bg-[linear-gradient(180deg,rgba(16,22,40,0.98),rgba(10,16,31,0.94))] shadow-[0_32px_120px_rgba(4,8,18,0.5)] ${className}`}
+      className={`geo-panel rounded-[30px] overflow-hidden border border-white/14 bg-[linear-gradient(180deg,rgba(24,34,57,0.98),rgba(16,24,40,0.96))] shadow-[0_24px_80px_rgba(4,8,18,0.22)] ${className}`}
     >
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/8 bg-white/[0.02]">
+      <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/[0.06] px-4 py-3">
         <div className="w-2.5 h-2.5 rounded-full bg-rose-400/60" />
         <div className="w-2.5 h-2.5 rounded-full bg-amber-300/60" />
         <div className="w-2.5 h-2.5 rounded-full bg-violet-300/70" />
-        <div className="ml-3 flex-1 h-5 rounded-full bg-white/5" />
+        <div className="ml-3 h-5 flex-1 rounded-full bg-white/10" />
       </div>
       <div className="p-6 sm:p-7">{children}</div>
     </div>
@@ -344,7 +344,7 @@ function FeaturePreview({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.35 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
-      className="relative z-10 border-t border-white/8 bg-[rgba(7,12,24,0.96)] px-5 py-4 sm:px-6"
+      className="relative z-10 border-t border-white/10 bg-[rgba(18,27,46,0.96)] px-5 py-4 sm:px-6"
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
@@ -361,7 +361,7 @@ function FeaturePreview({
         />
       </div>
       <div className="text-lg font-semibold leading-tight text-white sm:text-[1.15rem]">{stat}</div>
-      {statTip && <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/78">{statTip}</p>}
+      {statTip && <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/86">{statTip}</p>}
       <div className="mt-3 h-1.5 rounded-full bg-white/8">
         <motion.div
           className={`h-1.5 rounded-full bg-gradient-to-r ${meta.accent}`}
@@ -374,7 +374,7 @@ function FeaturePreview({
     </motion.div>
   );
 
-  const shell = "relative flex h-full min-h-[340px] flex-col overflow-hidden rounded-[24px] border border-white/12 bg-[linear-gradient(180deg,#121b31_0%,#0d1527_100%)]";
+  const shell = "relative flex h-full min-h-[340px] flex-col overflow-hidden rounded-[24px] border border-white/14 bg-[linear-gradient(180deg,#1a2742_0%,#121c31_100%)]";
 
   if (preview === "fix") {
     return (
@@ -866,10 +866,10 @@ export default function HomePage() {
 
       <section id="story" className="relative pb-10 sm:pb-14">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-4 rounded-[32px] border border-white/12 bg-[linear-gradient(180deg,rgba(22,31,53,0.96),rgba(16,23,40,0.92))] px-6 py-6 shadow-[0_28px_100px_rgba(4,8,18,0.32)] md:grid-cols-4 md:px-8">
+          <div className="grid gap-4 rounded-[32px] border border-white/14 bg-[linear-gradient(180deg,rgba(28,39,66,0.98),rgba(18,27,46,0.96))] px-6 py-6 shadow-[0_22px_70px_rgba(4,8,18,0.16)] md:grid-cols-4 md:px-8">
             {stats.map((item) => (
               <div key={item.label} className="border-b border-white/8 pb-4 last:border-b-0 md:border-b-0 md:border-r md:border-white/8 md:pb-0 md:last:border-r-0 md:pr-4">
-                <div className="text-[11px] uppercase tracking-[0.24em] text-white/55">{item.label}</div>
+                <div className="text-[11px] uppercase tracking-[0.24em] text-white/64">{item.label}</div>
                 <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">{item.value}</div>
               </div>
             ))}
@@ -881,18 +881,18 @@ export default function HomePage() {
       <ScrollReveal animation="fade-up">
         <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4">
-            <div className="rounded-[36px] border border-white/12 bg-[linear-gradient(180deg,rgba(20,29,49,0.96),rgba(15,22,38,0.9))] px-6 py-8 shadow-[0_28px_110px_rgba(4,8,18,0.28)] sm:px-8 sm:py-10">
+            <div className="rounded-[36px] border border-white/14 bg-[linear-gradient(180deg,rgba(30,42,70,0.98),rgba(18,28,48,0.96))] px-6 py-8 shadow-[0_22px_70px_rgba(4,8,18,0.14)] sm:px-8 sm:py-10">
               <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-3xl">
                   <SectionEyebrow>One workflow</SectionEyebrow>
                   <h2 className="mt-5 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                     A luxury operating rhythm for local visibility.
                   </h2>
-                  <p className="mt-4 max-w-2xl text-base leading-7 text-white/82 sm:text-lg sm:leading-8">
-                    The page needed more than nicer copy. This section now frames Geothority like a premium system: one disciplined flow from discovery to action to protection.
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
+                    Geothority should feel easy to scan, not heavy to decode. This workflow gives the page a cleaner operating logic: discovery, prioritization, execution, and ongoing protection.
                   </p>
                 </div>
-            <div className="rounded-[24px] border border-[#e7d2a2]/22 bg-[linear-gradient(180deg,rgba(231,210,162,0.16),rgba(255,255,255,0.04))] px-5 py-4 text-sm leading-6 text-[#fff2d3] lg:max-w-sm">
+            <div className="rounded-[24px] border border-[#e7d2a2]/28 bg-[linear-gradient(180deg,rgba(231,210,162,0.22),rgba(255,255,255,0.08))] px-5 py-4 text-sm leading-6 text-[#fff4d8] lg:max-w-sm">
                   Built for teams that want calm, controlled execution — not another dashboard full of unresolved issues.
                 </div>
               </div>
@@ -919,14 +919,14 @@ export default function HomePage() {
                     copy: 'Track what changes over time, what competitors are doing, and where your next gains are most likely to come from.',
                   },
                 ].map((item, index) => (
-                  <div key={item.step} className="relative overflow-hidden rounded-[28px] border border-white/12 bg-[#17233b] px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  <div key={item.step} className="relative overflow-hidden rounded-[28px] border border-white/14 bg-[linear-gradient(180deg,rgba(38,51,82,0.98),rgba(24,35,59,0.96))] px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/28 to-transparent" />
                     <div className="flex items-center justify-between">
                       <div className="text-[10px] uppercase tracking-[0.24em] text-[#c7c9ff]">{item.step}</div>
                       <div className={`h-2.5 w-2.5 rounded-full ${index === 3 ? 'bg-[#ead39f]' : 'bg-[#8f94ff]'} shadow-[0_0_18px_rgba(185,188,255,0.55)]`} />
                     </div>
                     <div className="mt-4 text-xl font-semibold tracking-[-0.03em] text-white">{item.title}</div>
-                    <p className="mt-3 text-sm leading-6 text-white/76">{item.copy}</p>
+                    <p className="mt-3 text-sm leading-6 text-white/86">{item.copy}</p>
                   </div>
                 ))}
               </div>
@@ -936,7 +936,7 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── Core delta + flagship features ─── */}
-      <section id="features" className="py-14 sm:py-24">
+      <section id="features" className="bg-[linear-gradient(180deg,rgba(9,15,28,0),rgba(18,27,46,0.42)_10%,rgba(9,15,28,0)_100%)] py-14 sm:py-24">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
@@ -944,26 +944,26 @@ export default function HomePage() {
               <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Most tools diagnose. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#8f94ff]">Very few help you execute.</span>
               </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/76">
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/86">
                 For years, local SEO software has been good at one thing: showing you what&apos;s wrong. The hard part still lands on you. Geothority is built to close that gap — by showing what matters, what can be fixed, and what the next move should be.
               </p>
             </div>
           </ScrollReveal>
 
           <ScrollReveal animation="scale-up">
-            <div className="mb-16 grid gap-4 rounded-[34px] border border-white/12 bg-[linear-gradient(180deg,rgba(22,31,53,0.96),rgba(16,23,40,0.92))] p-5 shadow-[0_26px_90px_rgba(4,8,18,0.24)] sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="mb-16 grid gap-4 rounded-[34px] border border-white/14 bg-[linear-gradient(180deg,rgba(31,43,71,0.98),rgba(20,29,49,0.96))] p-5 shadow-[0_20px_60px_rgba(4,8,18,0.12)] sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
-                <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Old way</div>
-                <div className="mt-3 rounded-[24px] border border-white/12 bg-white/[0.06] p-5 text-base leading-7 text-white/76">
+                <div className="text-[10px] uppercase tracking-[0.22em] text-white/50">Old way</div>
+                <div className="mt-3 rounded-[24px] border border-white/12 bg-white/[0.09] p-5 text-base leading-7 text-white/82">
                   Surface issues. Export the list. Leave the work to you.
                 </div>
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-[0.22em] text-[#d7d9ff]">Geothority</div>
-                <div className="mt-3 rounded-[24px] border border-[#8f94ff]/24 bg-[linear-gradient(180deg,rgba(143,148,255,0.14),rgba(255,255,255,0.03))] p-5 text-base font-medium leading-7 text-white shadow-[0_18px_50px_rgba(76,82,196,0.14)]">
+                <div className="mt-3 rounded-[24px] border border-[#8f94ff]/28 bg-[linear-gradient(180deg,rgba(143,148,255,0.22),rgba(255,255,255,0.08))] p-5 text-base font-medium leading-7 text-white shadow-[0_18px_50px_rgba(76,82,196,0.1)]">
                   Surface the issue. Clarify the priority. Show the next move. Support execution where possible.
                 </div>
-                <p className="mt-4 text-sm leading-6 text-white/52">The difference is not the report. It&apos;s what happens after the report.</p>
+                <p className="mt-4 text-sm leading-6 text-white/68">The difference is not the report. It&apos;s what happens after the report.</p>
               </div>
             </div>
           </ScrollReveal>
@@ -975,7 +975,7 @@ export default function HomePage() {
               return (
                 <ScrollReveal key={feature.title} animation={reverse ? "slide-right" : "slide-left"}>
                   <div className={`grid gap-6 lg:grid-cols-[1fr_1fr] ${reverse ? "lg:[&>div:first-child]:order-2" : ""}`}>
-                    <div className="geo-feature-shell rounded-[32px] border border-white/12 bg-[linear-gradient(180deg,rgba(24,34,57,0.98),rgba(17,24,41,0.94))] p-6 shadow-[0_24px_90px_rgba(4,8,18,0.2)] sm:p-8">
+                    <div className="geo-feature-shell rounded-[32px] border border-white/14 bg-[linear-gradient(180deg,rgba(33,46,75,0.98),rgba(21,31,52,0.96))] p-6 shadow-[0_18px_60px_rgba(4,8,18,0.12)] sm:p-8">
                       <div className="mb-5 flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                           <Icon className="h-5 w-5" />
@@ -989,7 +989,7 @@ export default function HomePage() {
                       <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
                         {feature.title}
                       </h3>
-                      <p className="mt-4 max-w-xl text-base leading-7 text-white/76">
+                      <p className="mt-4 max-w-xl text-base leading-7 text-white/86">
                         {feature.description}
                       </p>
                       <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
@@ -1016,10 +1016,10 @@ export default function HomePage() {
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
                   One score. Prioritized fixes. Clear execution paths.
                 </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-white/78 sm:text-lg">
+                <p className="mt-4 max-w-xl text-base leading-7 text-white/88 sm:text-lg">
                   The Trust Stack turns scattered visibility work into one operating view. It shows what Geothority can handle directly, what needs approval, and what still requires manual attention.
                 </p>
-                <div className="mt-6 space-y-3 text-sm text-white/72">
+                <div className="mt-6 space-y-3 text-sm text-white/84">
                   {[
                     "Technical foundation scored with fix status",
                     "Listings, content, reviews, and AI — all scored in one place",
@@ -1033,7 +1033,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="geo-feature-shell rounded-[32px] border border-white/12 bg-[linear-gradient(180deg,#13203a_0%,#0f182d_100%)] p-4 shadow-[0_28px_100px_rgba(4,8,18,0.24)] sm:p-6">
+              <div className="geo-feature-shell rounded-[32px] border border-white/14 bg-[linear-gradient(180deg,#213154_0%,#17233b_100%)] p-4 shadow-[0_18px_60px_rgba(4,8,18,0.14)] sm:p-6">
                 <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.24em] text-white/38">Trust Stack Object</div>
@@ -1081,7 +1081,7 @@ export default function HomePage() {
                       ))}
                     </div>
 
-                    <div className="mt-5 rounded-[22px] border border-white/10 bg-[#131c30] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                    <div className="mt-5 rounded-[22px] border border-white/12 bg-[#1a2742] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
                       <div className="flex items-center gap-1.5">
                         <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">Top priorities</div>
                         <GeoTooltip tip="Your ranked action queue. We handle these in order for the fastest visibility gains." side="right" iconClassName="w-3 h-3" />
@@ -1144,7 +1144,7 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── Supporting execution layers ─── */}
-      <section className="py-10 sm:py-16">
+      <section className="bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.04),rgba(255,255,255,0.02))] py-10 sm:py-16">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
@@ -1152,7 +1152,7 @@ export default function HomePage() {
               <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
                 From schema to content to competitor response, the work stays connected.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/76 sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/86 sm:text-lg sm:leading-8">
                 Geothority doesn&apos;t stop at a visibility score. It gives you a clearer path across the supporting systems that shape local discovery over time.
               </p>
             </div>
@@ -1163,7 +1163,7 @@ export default function HomePage() {
               const Icon = feature.icon;
               return (
                 <ScrollReveal key={feature.title} animation="fade-up" delay={index * 100}>
-                  <div className="geo-feature-shell h-full rounded-[32px] border border-white/12 bg-[linear-gradient(180deg,rgba(23,33,55,0.98),rgba(16,24,40,0.94))] p-6 shadow-[0_22px_80px_rgba(4,8,18,0.18)] sm:p-7">
+                  <div className="geo-feature-shell h-full rounded-[32px] border border-white/14 bg-[linear-gradient(180deg,rgba(34,47,76,0.98),rgba(22,32,53,0.96))] p-6 shadow-[0_18px_50px_rgba(4,8,18,0.12)] sm:p-7">
                     <div className="mb-5 flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                         <Icon className="h-5 w-5" />
@@ -1175,9 +1175,9 @@ export default function HomePage() {
                       )}
                     </div>
                     <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white">{feature.title}</h3>
-                    <p className="mt-4 text-base leading-7 text-white/78">{feature.description}</p>
+                    <p className="mt-4 text-base leading-7 text-white/88">{feature.description}</p>
                     <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
-                    <div className="mt-5 rounded-2xl border border-white/10 bg-[#162036] px-4 py-3 text-sm text-white/84">{feature.stat}</div>
+                    <div className="mt-5 rounded-2xl border border-white/12 bg-[#1c2a46] px-4 py-3 text-sm text-white/90">{feature.stat}</div>
                   </div>
                 </ScrollReveal>
               );
@@ -1187,7 +1187,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Trust + validation ─── */}
-      <section className="bg-[linear-gradient(180deg,rgba(16,23,40,0.96),rgba(10,15,27,0.98))] py-14 sm:py-22">
+      <section className="bg-[linear-gradient(180deg,rgba(24,35,58,0.98),rgba(15,23,39,0.98))] py-14 sm:py-22">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-14 max-w-3xl">
@@ -1195,7 +1195,7 @@ export default function HomePage() {
               <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
                 Stronger trust comes from visible evidence, not louder claims.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/78">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/88">
                 Geothority is built to make local visibility work more credible: clearer source signals, clearer fix paths, and clearer distinctions between what is automated, what is guided, and what still needs human review.
               </p>
             </div>
@@ -1217,7 +1217,7 @@ export default function HomePage() {
               },
             ].map((item, i) => (
               <ScrollReveal key={item.title} animation="fade-up" delay={i * 120}>
-                <div className="h-full rounded-[30px] border border-white/12 bg-[linear-gradient(180deg,rgba(24,34,57,0.98),rgba(17,24,41,0.94))] p-7 shadow-[0_18px_60px_rgba(4,8,18,0.16)]">
+                <div className="h-full rounded-[30px] border border-white/14 bg-[linear-gradient(180deg,rgba(37,50,80,0.98),rgba(23,33,55,0.96))] p-7 shadow-[0_16px_40px_rgba(4,8,18,0.1)]">
                   <div className="inline-flex rounded-full border border-[#8f94ff]/20 bg-[#8f94ff]/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#c7c9ff]">
                     Trust-first
                   </div>
@@ -1229,19 +1229,19 @@ export default function HomePage() {
           </div>
 
           <ScrollReveal animation="fade-up">
-            <div className="mt-12 rounded-[34px] border border-white/12 bg-[linear-gradient(180deg,rgba(22,31,53,0.98),rgba(16,23,40,0.94))] px-6 py-8 shadow-[0_24px_90px_rgba(4,8,18,0.2)] sm:px-8">
+            <div className="mt-12 rounded-[34px] border border-white/14 bg-[linear-gradient(180deg,rgba(31,43,71,0.98),rgba(21,31,52,0.96))] px-6 py-8 shadow-[0_18px_50px_rgba(4,8,18,0.1)] sm:px-8">
               <div className="max-w-3xl">
                 <SectionEyebrow>Built for operators</SectionEyebrow>
                 <h3 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
                   Built for businesses that want visibility work to be operational, not theoretical.
                 </h3>
-                <p className="mt-4 max-w-2xl text-base leading-7 text-white/76">
+                <p className="mt-4 max-w-2xl text-base leading-7 text-white/88">
                   For teams that are tired of audits with no follow-through, Geothority brings structure, prioritization, and clearer execution to local visibility work.
                 </p>
               </div>
               <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {testimonials.map((t, i) => (
-                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#e7d2a2]/20 bg-[#e7d2a2]/12' : 'border-white/10 bg-[#141d31]'}`}>
+                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#e7d2a2]/20 bg-[#e7d2a2]/12' : 'border-white/12 bg-[#1c2a46]'}`}>
                     <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
                     <div className="mt-3 text-lg font-semibold text-white">{t.name}</div>
                     <div className={`mt-1 text-sm ${i === 1 ? 'text-[#f1dfb9]' : 'text-[#b4b8ff]'}`}>{t.title}</div>
@@ -1261,7 +1261,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Pricing Preview ─── */}
-      <section className="py-14 sm:py-20">
+      <section className="bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0),rgba(255,255,255,0.03))] py-14 sm:py-20">
         <div className="mx-auto max-w-6xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 text-center">
@@ -1269,8 +1269,8 @@ export default function HomePage() {
               <h2 className="mt-5 mx-auto max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Start with clarity. Upgrade into deeper control.
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/78">
-                The pricing should feel as premium as the product direction: simple entry, sharper progression, and a clear path into higher-touch execution.
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/88">
+                Start with a clear read on your visibility, then step into deeper execution only when you need it. The pricing should feel simple to understand and easy to trust.
               </p>
             </div>
           </ScrollReveal>
@@ -1282,7 +1282,7 @@ export default function HomePage() {
                   className={`relative h-full rounded-[28px] border p-6 text-left ${
                     t.highlighted
                       ? "border-[#e7d2a2]/26 bg-[linear-gradient(180deg,rgba(231,210,162,0.14),rgba(255,255,255,0.03))] shadow-[0_24px_80px_rgba(140,112,50,0.12)]"
-                      : "border-white/12 bg-[linear-gradient(180deg,rgba(23,33,55,0.98),rgba(16,24,40,0.94))]"
+                      : "border-white/14 bg-[linear-gradient(180deg,rgba(34,47,76,0.98),rgba(22,32,53,0.96))]"
                   }`}
                 >
                   {t.highlighted && (
@@ -1302,8 +1302,8 @@ export default function HomePage() {
                       </>
                     )}
                   </div>
-                  <div className="mt-3 text-sm leading-6 text-white/58">{t.desc}</div>
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-[#141d31] p-4 text-sm text-white/82">
+                  <div className="mt-3 text-sm leading-6 text-white/76">{t.desc}</div>
+                  <div className="mt-6 rounded-2xl border border-white/12 bg-[#1c2a46] p-4 text-sm text-white/90">
                     {t.tip}
                   </div>
                   <Link
@@ -1330,12 +1330,12 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-5xl px-4">
 
           <ScrollReveal animation="fade-up">
-            <div className="rounded-[36px] border border-white/12 bg-[linear-gradient(180deg,rgba(24,34,57,0.98),rgba(17,24,41,0.94))] px-6 py-10 text-center shadow-[0_30px_120px_rgba(5,10,18,0.24)] sm:px-10 sm:py-16">
+            <div className="rounded-[36px] border border-white/14 bg-[linear-gradient(180deg,rgba(37,50,80,0.98),rgba(23,33,55,0.96))] px-6 py-10 text-center shadow-[0_18px_60px_rgba(5,10,18,0.14)] sm:px-10 sm:py-16">
               <SectionEyebrow>Get your free scan</SectionEyebrow>
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Move from scattered visibility work to a system that feels premium.
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/80">
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/90">
                 Audit the gaps, see the priorities, and experience the product through the lens it deserves: high-end, controlled, and execution-ready.
               </p>
               <Link
