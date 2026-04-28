@@ -767,26 +767,44 @@ export default function HomePage() {
       </nav>
 
       {/* ─── Hero with Animated Video ─── */}
-      <section className="geo-hero relative overflow-hidden pt-28 pb-20 sm:pt-40 sm:pb-28">
+      <section className="geo-hero relative overflow-hidden pt-24 pb-16 sm:pt-36 sm:pb-24">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(143,148,255,0.18),_transparent_30%),radial-gradient(circle_at_82%_18%,_rgba(92,230,186,0.14),_transparent_24%),radial-gradient(circle_at_50%_100%,_rgba(231,210,162,0.08),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
         <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-25" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-14 px-4 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 lg:grid-cols-[0.84fr_1.16fr] lg:items-center lg:gap-12">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#e7d2a2]/20 bg-[#e7d2a2]/8 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f1dfb9]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#e7d2a2]/24 bg-[#e7d2a2]/12 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f4e3be]">
               <Star className="h-3.5 w-3.5" /> Luxury-grade local visibility software
             </div>
 
-            <h1 className="mt-7 max-w-4xl text-4xl font-semibold leading-[0.92] tracking-[-0.065em] text-white sm:text-5xl lg:text-[4.2rem] xl:text-[4.95rem]">
+            <h1 className="mt-6 max-w-4xl text-[2.75rem] font-semibold leading-[0.95] tracking-[-0.065em] text-white sm:text-5xl lg:mt-7 lg:text-[4.15rem] xl:text-[4.8rem]">
               The <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#dfe2ff] to-[#b9bcff]">elite operating system</span> for local search dominance.
             </h1>
 
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-white/68 sm:text-xl sm:leading-9">
+            <p className="mt-5 max-w-2xl text-[1.05rem] leading-8 text-white/88 sm:text-xl sm:leading-9">
               Geothority is built for ambitious insurance agencies that want more than dashboards. It turns visibility gaps, competitor movement, and trust signals into a premium execution workflow your team can actually run.
             </p>
-            <p className="mt-4 max-w-xl text-sm leading-7 text-white/44 sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-7 text-white/70 sm:text-base">
               Scan in about 90 seconds. See the real gaps. Move with more precision than generic SEO software.
             </p>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/12 bg-white/[0.08] px-4 py-3">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-white/52">First scan</div>
+                <div className="mt-1 text-lg font-semibold text-white">~90 sec</div>
+                <div className="mt-1 text-sm text-white/74">Fast enough to start immediately.</div>
+              </div>
+              <div className="rounded-2xl border border-white/12 bg-white/[0.08] px-4 py-3">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-white/52">Focus</div>
+                <div className="mt-1 text-lg font-semibold text-white">Trust + AI</div>
+                <div className="mt-1 text-sm text-white/74">See what is lifting or suppressing visibility.</div>
+              </div>
+              <div className="rounded-2xl border border-white/12 bg-white/[0.08] px-4 py-3 sm:hidden lg:block">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-white/52">Execution</div>
+                <div className="mt-1 text-lg font-semibold text-white">Fix paths</div>
+                <div className="mt-1 text-sm text-white/74">Know what can run now and what needs review.</div>
+              </div>
+            </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
@@ -803,13 +821,13 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="mt-10 hidden max-w-3xl grid-cols-3 gap-3 sm:grid">
+            <div className="mt-8 hidden max-w-3xl grid-cols-3 gap-3 lg:grid">
               <SignalChip label="Positioning" value="Luxury SaaS for local dominance" tip="A more premium promise: not just audits, but an operating layer for trust, competitors, and response." />
               <SignalChip label="First scan" value="~90 seconds" tip="Fast enough to begin immediately, structured enough to act on." />
               <SignalChip label="Coverage" value="Trust + AI + competitor response" tip="Track trust, citations, search presence, AI-surface visibility, and competitor movement in one place." />
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.22em] text-white/28">
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.22em] text-white/44">
               <span>Built for insurance agencies</span>
               <span className="hidden h-1 w-1 rounded-full bg-white/14 sm:inline-flex" />
               <span>Private-equity-grade operating clarity</span>
@@ -817,42 +835,38 @@ export default function HomePage() {
               <span>Execution-first visibility workflow</span>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-2 sm:hidden">
-              <SignalChip label="Fix paths" value="Clear" tip="See what is fixable now, what needs review, and what still needs real work." />
-              <SignalChip label="First scan" value="~90s" tip="Fast enough to start now. Structured enough to act on." />
-            </div>
           </div>
 
           <div className="relative">
-            <div className="absolute -inset-6 rounded-[40px] bg-[radial-gradient(circle_at_center,rgba(143,148,255,0.22),transparent_55%)] blur-3xl" />
-            <div className="relative rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-3 shadow-[0_36px_140px_rgba(4,8,18,0.7)]">
+            <div className="absolute -inset-5 rounded-[40px] bg-[radial-gradient(circle_at_center,rgba(143,148,255,0.18),transparent_58%)] blur-3xl" />
+            <div className="relative rounded-[30px] border border-white/14 bg-[linear-gradient(180deg,rgba(35,48,79,0.98),rgba(21,31,52,0.96))] p-3 shadow-[0_26px_90px_rgba(4,8,18,0.28)] sm:rounded-[34px]">
               <HeroVideoLoop />
-              <div className="mt-3 grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-[24px] border border-white/12 bg-[linear-gradient(180deg,rgba(20,29,49,0.96),rgba(14,22,38,0.94))] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.22)]">
-                  <div className="flex items-center justify-between">
+              <div className="mt-3 grid gap-3 sm:grid-cols-[1.08fr_0.92fr]">
+                <div className="rounded-[22px] border border-white/12 bg-[linear-gradient(180deg,rgba(28,39,66,0.98),rgba(18,27,46,0.96))] p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16)] sm:rounded-[24px]">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/36">Executive view</div>
-                      <div className="mt-1 text-base font-semibold text-white">What changed this week</div>
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/52">Executive view</div>
+                      <div className="mt-1 text-base font-semibold text-white sm:text-[1.05rem]">What changed this week</div>
                     </div>
-                    <div className="rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/10 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[#c7c9ff]">Live</div>
+                    <div className="self-start rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/12 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[#d3d6ff]">Live</div>
                   </div>
-                  <div className="mt-4 space-y-3 text-sm text-white/74">
-                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.07] px-4 py-3">
-                      <span>AI visibility moved ahead of 2 competitors in Tampa.</span>
-                      <span className="text-[#ead39f]">+12</span>
+                  <div className="mt-4 space-y-3 text-sm text-white/86">
+                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/12 bg-white/[0.1] px-4 py-3">
+                      <span className="leading-6">AI visibility moved ahead of 2 competitors in Tampa.</span>
+                      <span className="whitespace-nowrap text-[#f0deb2]">+12</span>
                     </div>
-                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.07] px-4 py-3">
-                      <span>New citation mismatch isolated and ready for correction.</span>
-                      <span className="text-[#8de7d0]">Fixable</span>
+                    <div className="flex items-start justify-between gap-4 rounded-2xl border border-white/12 bg-white/[0.1] px-4 py-3">
+                      <span className="leading-6">New citation mismatch isolated and ready for correction.</span>
+                      <span className="whitespace-nowrap text-[#9cebd6]">Fixable</span>
                     </div>
                   </div>
                 </div>
-                <div className="rounded-[24px] border border-[#e7d2a2]/20 bg-[linear-gradient(180deg,rgba(231,210,162,0.18),rgba(255,255,255,0.05))] p-4 shadow-[0_16px_40px_rgba(140,112,50,0.12)]">
+                <div className="rounded-[22px] border border-[#e7d2a2]/24 bg-[linear-gradient(180deg,rgba(231,210,162,0.22),rgba(255,255,255,0.08))] p-4 shadow-[0_12px_30px_rgba(140,112,50,0.08)] sm:rounded-[24px]">
                   <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1dfb9]">Operator brief</div>
                   <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">3</div>
-                  <div className="mt-1 text-sm text-white/70">high-leverage moves queued for review</div>
+                  <div className="mt-1 text-sm leading-6 text-white/84">high-leverage moves queued for review</div>
                   <div className="mt-4 h-px bg-white/10" />
-                  <div className="mt-4 space-y-2 text-sm text-white/70">
+                  <div className="mt-4 space-y-2 text-sm text-white/86">
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ead39f]" /> Schema deploy ready</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ead39f]" /> Review campaign drafted</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ead39f]" /> City page brief generated</div>
