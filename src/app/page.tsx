@@ -895,7 +895,7 @@ export default function HomePage() {
       <ScrollReveal animation="fade-up">
         <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4">
-            <div className="rounded-[36px] border border-white/14 bg-[linear-gradient(180deg,rgba(30,42,70,0.98),rgba(18,28,48,0.96))] px-6 py-8 shadow-[0_22px_70px_rgba(4,8,18,0.14)] sm:px-8 sm:py-10">
+            <div className="px-1 py-2 sm:px-2">
               <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-3xl">
                   <SectionEyebrow>One workflow</SectionEyebrow>
@@ -906,7 +906,7 @@ export default function HomePage() {
                     Geothority should feel easy to scan, not heavy to decode. This workflow gives the page a cleaner operating logic: discovery, prioritization, execution, and ongoing protection.
                   </p>
                 </div>
-            <div className="rounded-[24px] border border-[#e7d2a2]/28 bg-[linear-gradient(180deg,rgba(231,210,162,0.22),rgba(255,255,255,0.08))] px-5 py-4 text-sm leading-6 text-[#fff4d8] lg:max-w-sm">
+            <div className="rounded-[24px] border border-[#e7d2a2]/24 bg-[#e7d2a2]/10 px-5 py-4 text-sm leading-6 text-[#fff4d8] lg:max-w-sm">
                   Built for teams that want calm, controlled execution — not another dashboard full of unresolved issues.
                 </div>
               </div>
@@ -933,7 +933,7 @@ export default function HomePage() {
                     copy: 'Track what changes over time, what competitors are doing, and where your next gains are most likely to come from.',
                   },
                 ].map((item, index) => (
-                  <div key={item.step} className="relative overflow-hidden rounded-[28px] border border-white/14 bg-[linear-gradient(180deg,rgba(38,51,82,0.98),rgba(24,35,59,0.96))] px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                  <div key={item.step} className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.06] px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-sm">
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/28 to-transparent" />
                     <div className="flex items-center justify-between">
                       <div className="text-[10px] uppercase tracking-[0.24em] text-[#c7c9ff]">{item.step}</div>
@@ -989,7 +989,7 @@ export default function HomePage() {
               return (
                 <ScrollReveal key={feature.title} animation={reverse ? "slide-right" : "slide-left"}>
                   <div className={`grid gap-6 lg:grid-cols-[1fr_1fr] ${reverse ? "lg:[&>div:first-child]:order-2" : ""}`}>
-                    <div className="geo-feature-shell rounded-[32px] border border-white/14 bg-[linear-gradient(180deg,rgba(33,46,75,0.98),rgba(21,31,52,0.96))] p-6 shadow-[0_18px_60px_rgba(4,8,18,0.12)] sm:p-8">
+                    <div className="geo-feature-shell rounded-[32px] border border-white/12 bg-white/[0.055] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-sm sm:p-8">
                       <div className="mb-5 flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                           <Icon className="h-5 w-5" />
@@ -1158,7 +1158,7 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── Supporting execution layers ─── */}
-      <section className="bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.04),rgba(255,255,255,0.02))] py-10 sm:py-16">
+      <section className="py-10 sm:py-16">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
@@ -1177,7 +1177,7 @@ export default function HomePage() {
               const Icon = feature.icon;
               return (
                 <ScrollReveal key={feature.title} animation="fade-up" delay={index * 100}>
-                  <div className="geo-feature-shell h-full rounded-[26px] border border-white/14 bg-[linear-gradient(180deg,rgba(34,47,76,0.98),rgba(22,32,53,0.96))] p-5 shadow-[0_18px_50px_rgba(4,8,18,0.12)] sm:rounded-[32px] sm:p-7">
+                  <div className="geo-feature-shell h-full rounded-[26px] border border-white/12 bg-white/[0.05] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-sm sm:rounded-[32px] sm:p-7">
                     <div className="mb-4 flex items-center gap-3 sm:mb-5">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                         <Icon className="h-5 w-5" />
@@ -1191,7 +1191,7 @@ export default function HomePage() {
                     <h3 className="text-[1.55rem] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-2xl">{feature.title}</h3>
                     <p className="mt-3 text-[15px] leading-7 text-white/90 sm:mt-4 sm:text-base">{feature.description}</p>
                     <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
-                    <div className="mt-4 rounded-2xl border border-white/12 bg-[#1c2a46] px-4 py-3 text-sm text-white/92 sm:mt-5">{feature.stat}</div>
+                    <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-3 text-sm text-white/92 sm:mt-5">{feature.stat}</div>
                   </div>
                 </ScrollReveal>
               );
@@ -1201,7 +1201,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Trust + validation ─── */}
-      <section className="bg-[linear-gradient(180deg,rgba(24,35,58,0.98),rgba(15,23,39,0.98))] py-12 sm:py-22">
+      <section className="bg-[linear-gradient(180deg,rgba(18,27,46,0.42),rgba(10,16,31,0.16))] py-12 sm:py-22">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-10 max-w-3xl sm:mb-14">
@@ -1231,7 +1231,7 @@ export default function HomePage() {
               },
             ].map((item, i) => (
               <ScrollReveal key={item.title} animation="fade-up" delay={i * 120}>
-                <div className="h-full rounded-[24px] border border-white/14 bg-[linear-gradient(180deg,rgba(37,50,80,0.98),rgba(23,33,55,0.96))] p-5 shadow-[0_16px_40px_rgba(4,8,18,0.1)] sm:rounded-[30px] sm:p-7">
+                <div className="h-full rounded-[24px] border border-white/12 bg-white/[0.05] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-sm sm:rounded-[30px] sm:p-7">
                   <div className="inline-flex rounded-full border border-[#8f94ff]/20 bg-[#8f94ff]/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#c7c9ff]">
                     Trust-first
                   </div>
@@ -1243,7 +1243,7 @@ export default function HomePage() {
           </div>
 
           <ScrollReveal animation="fade-up">
-            <div className="mt-10 rounded-[28px] border border-white/14 bg-[linear-gradient(180deg,rgba(31,43,71,0.98),rgba(21,31,52,0.96))] px-5 py-6 shadow-[0_18px_50px_rgba(4,8,18,0.1)] sm:mt-12 sm:rounded-[34px] sm:px-8 sm:py-8">
+            <div className="mt-10 border-t border-white/10 px-0 py-6 sm:mt-12 sm:py-8">
               <div className="max-w-3xl">
                 <SectionEyebrow>Built for operators</SectionEyebrow>
                 <h3 className="mt-5 text-[1.9rem] font-semibold tracking-[-0.03em] text-white sm:text-4xl">
@@ -1255,7 +1255,7 @@ export default function HomePage() {
               </div>
               <div className="mt-6 grid gap-3 sm:mt-7 sm:grid-cols-2 xl:grid-cols-4">
                 {testimonials.map((t, i) => (
-                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#e7d2a2]/20 bg-[#e7d2a2]/12' : 'border-white/12 bg-[#1c2a46]'}`}>
+                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#e7d2a2]/20 bg-[#e7d2a2]/10' : 'border-white/12 bg-white/[0.045]'}`}>
                     <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
                     <div className="mt-3 text-lg font-semibold text-white">{t.name}</div>
                     <div className={`mt-1 text-sm ${i === 1 ? 'text-[#f1dfb9]' : 'text-[#b4b8ff]'}`}>{t.title}</div>
@@ -1275,7 +1275,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Pricing Preview ─── */}
-      <section className="bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0),rgba(255,255,255,0.03))] py-12 sm:py-20">
+      <section className="py-12 sm:py-20">
         <div className="mx-auto max-w-6xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-10 text-center sm:mb-12">
@@ -1296,7 +1296,7 @@ export default function HomePage() {
                   className={`relative h-full rounded-[24px] border p-5 text-left sm:rounded-[28px] sm:p-6 ${
                     t.highlighted
                       ? "border-[#e7d2a2]/26 bg-[linear-gradient(180deg,rgba(231,210,162,0.14),rgba(255,255,255,0.03))] shadow-[0_24px_80px_rgba(140,112,50,0.12)]"
-                      : "border-white/14 bg-[linear-gradient(180deg,rgba(34,47,76,0.98),rgba(22,32,53,0.96))]"
+                      : "border-white/12 bg-white/[0.05]"
                   }`}
                 >
                   {t.highlighted && (
@@ -1317,7 +1317,7 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="mt-3 text-sm leading-6 text-white/84">{t.desc}</div>
-                  <div className="mt-5 rounded-2xl border border-white/12 bg-[#1c2a46] p-4 text-sm text-white/92 sm:mt-6">
+                  <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.08] p-4 text-sm text-white/92 sm:mt-6">
                     {t.tip}
                   </div>
                   <Link
