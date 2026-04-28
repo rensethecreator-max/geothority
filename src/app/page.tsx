@@ -726,7 +726,7 @@ export default function HomePage() {
   const [mobileNav, setMobileNav] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#06070d] text-white">
+    <div className="min-h-screen bg-[#0a1020] text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(143,148,255,0.16),transparent_24%),radial-gradient(circle_at_85%_12%,rgba(92,230,186,0.12),transparent_20%),radial-gradient(circle_at_50%_100%,rgba(217,177,92,0.08),transparent_28%)]" />
       {/* ─── Navigation ─── */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/6 bg-[#080a12]/72 backdrop-blur-2xl">
@@ -866,10 +866,10 @@ export default function HomePage() {
 
       <section id="story" className="relative pb-10 sm:pb-14">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-4 rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-6 shadow-[0_28px_100px_rgba(4,8,18,0.42)] md:grid-cols-4 md:px-8">
+          <div className="grid gap-4 rounded-[32px] border border-white/12 bg-[linear-gradient(180deg,rgba(22,31,53,0.96),rgba(16,23,40,0.92))] px-6 py-6 shadow-[0_28px_100px_rgba(4,8,18,0.32)] md:grid-cols-4 md:px-8">
             {stats.map((item) => (
               <div key={item.label} className="border-b border-white/8 pb-4 last:border-b-0 md:border-b-0 md:border-r md:border-white/8 md:pb-0 md:last:border-r-0 md:pr-4">
-                <div className="text-[11px] uppercase tracking-[0.24em] text-white/35">{item.label}</div>
+                <div className="text-[11px] uppercase tracking-[0.24em] text-white/55">{item.label}</div>
                 <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">{item.value}</div>
               </div>
             ))}
@@ -881,14 +881,14 @@ export default function HomePage() {
       <ScrollReveal animation="fade-up">
         <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4">
-            <div className="rounded-[36px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-8 shadow-[0_28px_110px_rgba(4,8,18,0.35)] sm:px-8 sm:py-10">
+            <div className="rounded-[36px] border border-white/12 bg-[linear-gradient(180deg,rgba(20,29,49,0.96),rgba(15,22,38,0.9))] px-6 py-8 shadow-[0_28px_110px_rgba(4,8,18,0.28)] sm:px-8 sm:py-10">
               <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-3xl">
                   <SectionEyebrow>One workflow</SectionEyebrow>
                   <h2 className="mt-5 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                     A luxury operating rhythm for local visibility.
                   </h2>
-                  <p className="mt-4 max-w-2xl text-base leading-7 text-white/68 sm:text-lg sm:leading-8">
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-white/82 sm:text-lg sm:leading-8">
                     The page needed more than nicer copy. This section now frames Geothority like a premium system: one disciplined flow from discovery to action to protection.
                   </p>
                 </div>
@@ -919,7 +919,7 @@ export default function HomePage() {
                     copy: 'Track what changes over time, what competitors are doing, and where your next gains are most likely to come from.',
                   },
                 ].map((item, index) => (
-                  <div key={item.step} className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0a1020]/85 px-5 py-6">
+                  <div key={item.step} className="relative overflow-hidden rounded-[28px] border border-white/12 bg-[#17233b] px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/28 to-transparent" />
                     <div className="flex items-center justify-between">
                       <div className="text-[10px] uppercase tracking-[0.24em] text-[#c7c9ff]">{item.step}</div>
@@ -951,7 +951,7 @@ export default function HomePage() {
           </ScrollReveal>
 
           <ScrollReveal animation="scale-up">
-            <div className="mb-16 grid gap-4 rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-5 shadow-[0_26px_90px_rgba(4,8,18,0.32)] sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="mb-16 grid gap-4 rounded-[34px] border border-white/12 bg-[linear-gradient(180deg,rgba(22,31,53,0.96),rgba(16,23,40,0.92))] p-5 shadow-[0_26px_90px_rgba(4,8,18,0.24)] sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
                 <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Old way</div>
                 <div className="mt-3 rounded-[24px] border border-white/12 bg-white/[0.06] p-5 text-base leading-7 text-white/76">
@@ -975,7 +975,7 @@ export default function HomePage() {
               return (
                 <ScrollReveal key={feature.title} animation={reverse ? "slide-right" : "slide-left"}>
                   <div className={`grid gap-6 lg:grid-cols-[1fr_1fr] ${reverse ? "lg:[&>div:first-child]:order-2" : ""}`}>
-                    <div className="geo-feature-shell rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-6 shadow-[0_24px_90px_rgba(4,8,18,0.28)] sm:p-8">
+                    <div className="geo-feature-shell rounded-[32px] border border-white/12 bg-[linear-gradient(180deg,rgba(24,34,57,0.98),rgba(17,24,41,0.94))] p-6 shadow-[0_24px_90px_rgba(4,8,18,0.2)] sm:p-8">
                       <div className="mb-5 flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                           <Icon className="h-5 w-5" />
@@ -1033,7 +1033,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="geo-feature-shell rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,#09111c_0%,#0b1021_100%)] p-4 shadow-[0_28px_100px_rgba(4,8,18,0.36)] sm:p-6">
+              <div className="geo-feature-shell rounded-[32px] border border-white/12 bg-[linear-gradient(180deg,#13203a_0%,#0f182d_100%)] p-4 shadow-[0_28px_100px_rgba(4,8,18,0.24)] sm:p-6">
                 <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.24em] text-white/38">Trust Stack Object</div>
@@ -1043,7 +1043,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="grid gap-4 2xl:grid-cols-[1.02fr_0.98fr]">
-                  <div className="geo-stack-core rounded-[26px] border border-white/10 bg-white/[0.03] p-5">
+                  <div className="geo-stack-core rounded-[26px] border border-white/12 bg-[linear-gradient(180deg,rgba(26,36,60,0.96),rgba(19,28,48,0.94))] p-5">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-1.5">
@@ -1144,7 +1144,7 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── Supporting execution layers ─── */}
-      <section className="py-8 sm:py-14">
+      <section className="py-10 sm:py-16">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
@@ -1163,7 +1163,7 @@ export default function HomePage() {
               const Icon = feature.icon;
               return (
                 <ScrollReveal key={feature.title} animation="fade-up" delay={index * 100}>
-                  <div className="geo-feature-shell h-full rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-6 shadow-[0_22px_80px_rgba(4,8,18,0.26)] sm:p-7">
+                  <div className="geo-feature-shell h-full rounded-[32px] border border-white/12 bg-[linear-gradient(180deg,rgba(23,33,55,0.98),rgba(16,24,40,0.94))] p-6 shadow-[0_22px_80px_rgba(4,8,18,0.18)] sm:p-7">
                     <div className="mb-5 flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#8f94ff]/18 bg-[#8f94ff]/10 text-[#c7c9ff]">
                         <Icon className="h-5 w-5" />
@@ -1187,7 +1187,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Trust + validation ─── */}
-      <section className="bg-[linear-gradient(180deg,rgba(10,14,26,0.86),rgba(6,8,14,0.98))] py-14 sm:py-22">
+      <section className="bg-[linear-gradient(180deg,rgba(16,23,40,0.96),rgba(10,15,27,0.98))] py-14 sm:py-22">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-14 max-w-3xl">
@@ -1217,7 +1217,7 @@ export default function HomePage() {
               },
             ].map((item, i) => (
               <ScrollReveal key={item.title} animation="fade-up" delay={i * 120}>
-                <div className="h-full rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-7 shadow-[0_18px_60px_rgba(4,8,18,0.22)]">
+                <div className="h-full rounded-[30px] border border-white/12 bg-[linear-gradient(180deg,rgba(24,34,57,0.98),rgba(17,24,41,0.94))] p-7 shadow-[0_18px_60px_rgba(4,8,18,0.16)]">
                   <div className="inline-flex rounded-full border border-[#8f94ff]/20 bg-[#8f94ff]/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#c7c9ff]">
                     Trust-first
                   </div>
@@ -1229,7 +1229,7 @@ export default function HomePage() {
           </div>
 
           <ScrollReveal animation="fade-up">
-            <div className="mt-12 rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-6 py-8 shadow-[0_24px_90px_rgba(4,8,18,0.32)] sm:px-8">
+            <div className="mt-12 rounded-[34px] border border-white/12 bg-[linear-gradient(180deg,rgba(22,31,53,0.98),rgba(16,23,40,0.94))] px-6 py-8 shadow-[0_24px_90px_rgba(4,8,18,0.2)] sm:px-8">
               <div className="max-w-3xl">
                 <SectionEyebrow>Built for operators</SectionEyebrow>
                 <h3 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
@@ -1282,7 +1282,7 @@ export default function HomePage() {
                   className={`relative h-full rounded-[28px] border p-6 text-left ${
                     t.highlighted
                       ? "border-[#e7d2a2]/26 bg-[linear-gradient(180deg,rgba(231,210,162,0.14),rgba(255,255,255,0.03))] shadow-[0_24px_80px_rgba(140,112,50,0.12)]"
-                      : "border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))]"
+                      : "border-white/12 bg-[linear-gradient(180deg,rgba(23,33,55,0.98),rgba(16,24,40,0.94))]"
                   }`}
                 >
                   {t.highlighted && (
@@ -1330,7 +1330,7 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-5xl px-4">
 
           <ScrollReveal animation="fade-up">
-            <div className="rounded-[36px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_30px_120px_rgba(5,10,18,0.48)] sm:px-10 sm:py-16">
+            <div className="rounded-[36px] border border-white/12 bg-[linear-gradient(180deg,rgba(24,34,57,0.98),rgba(17,24,41,0.94))] px-6 py-10 text-center shadow-[0_30px_120px_rgba(5,10,18,0.24)] sm:px-10 sm:py-16">
               <SectionEyebrow>Get your free scan</SectionEyebrow>
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
                 Move from scattered visibility work to a system that feels premium.
