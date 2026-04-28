@@ -277,10 +277,17 @@
   }
 }
 
-@media (max-width: 640px) {
-  .scroll-reveal.fade-up { transform: translateY(20px); }
-  .scroll-reveal.slide-left { transform: translateX(-20px); }
-  .scroll-reveal.slide-right { transform: translateX(20px); }
+@media (max-width: 768px) {
+  .scroll-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .scroll-reveal.fade-up { transform: none !important; }
+  .scroll-reveal.slide-left { transform: none !important; }
+  .scroll-reveal.slide-right { transform: none !important; }
+  .scroll-reveal.scale-up { transform: none !important; }
 }
 
 /* ─── Light Mode Overrides ─────────────────────────── */
