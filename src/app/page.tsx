@@ -734,7 +734,6 @@ export default function HomePage() {
             <Link href="#features" className="text-sm text-gray-400 hover:text-white transition-colors">Features</Link>
             <Link href="/pricing" className="text-sm text-gray-400 hover:text-white transition-colors">Pricing</Link>
             <Link href="/compare/geothority-vs-brightlocal" className="text-sm text-gray-400 hover:text-white transition-colors">Compare</Link>
-            <Link href="/for/insurance-agents" className="text-sm text-gray-400 hover:text-white transition-colors">Industries</Link>
             <Link href="/faq" className="text-sm text-gray-400 hover:text-white transition-colors">FAQ</Link>
           </div>
 
@@ -805,6 +804,14 @@ export default function HomePage() {
               <SignalChip label="AI + local coverage" value="Unified" tip="Track trust, citations, search presence, and AI-surface visibility in one place." />
             </div>
 
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.22em] text-white/28">
+              <span>Built for insurance agencies</span>
+              <span className="hidden h-1 w-1 rounded-full bg-white/14 sm:inline-flex" />
+              <span>Execution-first visibility workflow</span>
+              <span className="hidden h-1 w-1 rounded-full bg-white/14 sm:inline-flex" />
+              <span>No credit card to start</span>
+            </div>
+
             <div className="mt-8 grid grid-cols-2 gap-2 sm:hidden">
               <SignalChip label="Fix paths" value="Clear" tip="See what is fixable now, what needs review, and what still needs real work." />
               <SignalChip label="First scan" value="~90s" tip="Fast enough to start now. Structured enough to act on." />
@@ -819,7 +826,7 @@ export default function HomePage() {
 
       {/* ─── Workflow ─── */}
       <ScrollReveal animation="fade-up">
-        <section className="bg-[#0f1117]/25 py-12 sm:py-16">
+        <section className="bg-[#0f1117]/25 py-10 sm:py-14">
           <div className="mx-auto max-w-6xl px-4">
             <div className="mb-8 max-w-3xl">
               <SectionEyebrow>One workflow</SectionEyebrow>
@@ -865,7 +872,7 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── Core delta + flagship features ─── */}
-      <section id="features" className="py-16 sm:py-24">
+      <section id="features" className="py-12 sm:py-20">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
@@ -1073,7 +1080,7 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── Supporting execution layers ─── */}
-      <section className="py-8 sm:py-16">
+      <section className="py-4 sm:py-10">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 max-w-3xl">
@@ -1116,7 +1123,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Trust + validation ─── */}
-      <section className="bg-[#0e141f]/55 py-16 sm:py-24">
+      <section className="bg-[#0e141f]/55 py-12 sm:py-20">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-14 max-w-3xl">
@@ -1147,7 +1154,7 @@ export default function HomePage() {
             ].map((item, i) => (
               <ScrollReveal key={item.title} animation="fade-up" delay={i * 120}>
                 <div className="h-full rounded-[30px] border border-white/10 bg-white/[0.03] p-7">
-                  <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-emerald-300 inline-flex">
+                  <div className="inline-flex rounded-full border border-[#8f94ff]/20 bg-[#8f94ff]/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#c7c9ff]">
                     Trust-first
                   </div>
                   <h3 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-white">{item.title}</h3>
@@ -1158,7 +1165,7 @@ export default function HomePage() {
           </div>
 
           <ScrollReveal animation="fade-up">
-            <div className="mt-14 rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-6 py-8 sm:px-8">
+            <div className="mt-12 rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-6 py-8 sm:px-8">
               <div className="max-w-3xl">
                 <SectionEyebrow>Built for operators</SectionEyebrow>
                 <h3 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
@@ -1168,15 +1175,21 @@ export default function HomePage() {
                   For teams that are tired of audits with no follow-through, Geothority brings structure, prioritization, and clearer execution to local visibility work.
                 </p>
               </div>
-              <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {testimonials.map((t) => (
-                  <div key={t.name} className="rounded-[24px] border border-white/8 bg-black/20 p-5">
+              <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {testimonials.map((t, i) => (
+                  <div key={t.name} className={`rounded-[24px] border p-5 ${i === 1 ? 'border-[#8f94ff]/20 bg-[#8f94ff]/8' : 'border-white/8 bg-black/20'}`}>
                     <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
                     <div className="mt-3 text-lg font-semibold text-white">{t.name}</div>
-                    <div className="mt-1 text-sm text-[#8de7d0]">{t.title}</div>
+                    <div className={`mt-1 text-sm ${i === 1 ? 'text-[#b4b8ff]' : 'text-[#8de7d0]'}`}>{t.title}</div>
                     <p className="mt-4 text-sm leading-6 text-white/62">{t.impact}</p>
                   </div>
                 ))}
+              </div>
+              <div className="mt-8 flex flex-wrap gap-2 text-xs text-white/46">
+                <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">Insurance agencies</span>
+                <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">Single-location operators</span>
+                <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">Growth-focused local teams</span>
+                <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">Multi-location businesses</span>
               </div>
             </div>
           </ScrollReveal>
@@ -1184,7 +1197,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Pricing Preview ─── */}
-      <section className="py-16 sm:py-24">
+      <section className="py-12 sm:py-16">
         <div className="mx-auto max-w-6xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-12 text-center">
@@ -1204,12 +1217,12 @@ export default function HomePage() {
                 <div
                   className={`relative h-full rounded-[28px] border p-6 text-left ${
                     t.highlighted
-                      ? "border-[#7ce6c7]/35 bg-[linear-gradient(180deg,rgba(124,230,199,0.1),rgba(255,255,255,0.03))] shadow-[0_20px_70px_rgba(92,230,186,0.14)]"
+                      ? "border-[#8f94ff]/28 bg-[linear-gradient(180deg,rgba(143,148,255,0.12),rgba(255,255,255,0.03))] shadow-[0_20px_70px_rgba(110,116,255,0.12)]"
                       : "border-white/10 bg-white/[0.03]"
                   }`}
                 >
                   {t.highlighted && (
-                    <div className="absolute -top-3 left-6 rounded-full border border-[#7ce6c7]/25 bg-[#7ce6c7]/12 px-3 py-1 text-xs font-semibold text-[#9be8d2]">
+                    <div className="absolute -top-3 left-6 rounded-full border border-[#8f94ff]/25 bg-[#8f94ff]/12 px-3 py-1 text-xs font-semibold text-[#c0c3ff]">
                       Most Popular
                     </div>
                   )}
@@ -1233,7 +1246,7 @@ export default function HomePage() {
                     href={t.price === 0 ? "/signup" : "/pricing"}
                     className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                       t.highlighted
-                        ? "bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] text-[#071019]"
+                        ? "bg-gradient-to-r from-[#8f94ff] to-[#b7bbff] text-[#0b1021]"
                         : "border border-white/10 bg-white/[0.03] text-white/86 hover:bg-white/[0.05]"
                     }`}
                   >
@@ -1247,7 +1260,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="relative overflow-hidden py-16 sm:py-24">
+      <section className="relative overflow-hidden py-12 sm:py-20">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(92,230,186,0.14),_transparent_35%),linear-gradient(180deg,rgba(12,19,33,0.25),rgba(10,10,15,0.02))]" />
         <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-30" />
         <div className="relative mx-auto max-w-5xl px-4">
@@ -1273,55 +1286,38 @@ export default function HomePage() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-white/5 py-16">
+      <footer className="border-t border-white/5 py-14">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-8 mb-12">
+          <div className="mb-10 grid gap-8 md:grid-cols-[1.2fr_0.9fr_0.9fr_1fr]">
             <div>
-              <h4 className="font-semibold text-sm mb-4">Product</h4>
+              <Logo href="/" size={28} className="text-white" />
+              <p className="mt-5 max-w-sm text-sm leading-7 text-gray-500">
+                Geothority helps local businesses turn visibility work into a clearer operating system for growth.
+              </p>
+            </div>
+            <div>
+              <h4 className="mb-4 text-sm font-semibold">Product</h4>
               <div className="space-y-2.5">
                 <Link href="/pricing" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Pricing</Link>
-                <Link href="/bundle" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Local Dominance Bundle</Link>
                 <Link href="/for/insurance-agents" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Insurance Agents</Link>
-                <Link href="/bundle" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Local Dominance Bundle</Link>
+                <Link href="/compare/geothority-vs-brightlocal" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Compare</Link>
                 <Link href="/faq" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">FAQ</Link>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-sm mb-4">Compare</h4>
+              <h4 className="mb-4 text-sm font-semibold">Popular comparisons</h4>
               <div className="space-y-2.5">
                 <Link href="/compare/geothority-vs-brightlocal" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">vs BrightLocal</Link>
                 <Link href="/compare/geothority-vs-moz-local" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">vs Moz Local</Link>
                 <Link href="/compare/geothority-vs-semrush" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">vs Semrush</Link>
-                <Link href="/compare/geothority-vs-whitespark" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">vs Whitespark</Link>
-                <Link href="/compare/geothority-vs-yext" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">vs Yext</Link>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-sm mb-4">Industries</h4>
+              <h4 className="mb-4 text-sm font-semibold">Company</h4>
               <div className="space-y-2.5">
-                <Link href="/for/insurance-agents" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Insurance Agents</Link>
-                <Link href="/for/real-estate-agents" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Real Estate</Link>
-                <Link href="/for/dentists" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Dentists</Link>
-                <Link href="/for/lawyers" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Lawyers</Link>
-                <Link href="/for/restaurants" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Restaurants</Link>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-4">Locations</h4>
-              <div className="space-y-2.5">
-                <Link href="/locations/chicago" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Chicago</Link>
-                <Link href="/locations/austin" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Austin</Link>
-                <Link href="/locations/tampa" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Tampa</Link>
-                <Link href="/locations/atlanta" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Atlanta</Link>
-                <Link href="/locations/dallas" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Dallas</Link>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-4">Company</h4>
-              <div className="space-y-2.5">
-                <Link href="/faq" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">FAQ</Link>
                 <Link href="/privacy" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Privacy Policy</Link>
                 <Link href="/terms" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Terms of Service</Link>
+                <Link href="/login" className="block text-sm text-gray-500 hover:text-gray-300 transition-colors">Sign In</Link>
               </div>
             </div>
           </div>
