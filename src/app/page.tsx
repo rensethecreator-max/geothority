@@ -220,31 +220,31 @@ const features: {
 
 const testimonials = [
   {
-    name: "Visible source data",
-    title: "Credibility layer",
-    city: "In-product proof",
-    metric: "See the issue, source, and next action",
-    impact: "The product should explain what was measured before it asks for trust",
+    name: "Insurance agencies",
+    title: "Single-location operators",
+    city: "Built for operators",
+    metric: "Clearer execution without more tool sprawl",
+    impact: "For owner-led teams that need visibility work to move, not pile up",
     quote:
-      "Geothority feels stronger when it shows where a score came from, what it actually checked, and whether the next step is automatic, guided, or manual.",
+      "Geothority is built for businesses that need a clearer path from issue discovery to action — without adding more noise to the stack.",
   },
   {
-    name: "Execution boundaries",
-    title: "Trust layer",
-    city: "Plan clarity",
-    metric: "Automatic where supported, review where needed",
-    impact: "Strong products separate what they can do now from what still needs your approval",
+    name: "Local service businesses",
+    title: "Growth-minded teams",
+    city: "Operational visibility",
+    metric: "Structure, prioritization, and follow-through",
+    impact: "For teams that want a calmer, more accountable visibility workflow",
     quote:
-      "The fastest way to lose trust is to blur monitoring, recommendations, and true execution into the same promise. Clear boundaries feel more premium.",
+      "The product works best when visibility stops feeling like a scattered marketing project and starts feeling like an operating system.",
   },
   {
-    name: "Progress over time",
-    title: "Retention layer",
-    city: "Ongoing monitoring",
-    metric: "Trend lines beat hype",
-    impact: "Weekly history and before/after state are more believable than oversized promises",
+    name: "Multi-location operators",
+    title: "Advanced control",
+    city: "Scalable oversight",
+    metric: "Profiles, citations, trust, and response planning",
+    impact: "For teams that need stronger consistency across locations and markets",
     quote:
-      "If Geothority keeps showing what changed, why it changed, and what still needs work, the product earns trust without needing inflated claims.",
+      "As complexity grows, the value shifts from having more reports to having a clearer system for what to do next.",
   },
 ];
 
@@ -256,10 +256,10 @@ const stats = [
 ];
 
 const pricingTiers = [
-  { name: "Free", price: 0, desc: "See your authority gaps", tip: "Get your free Trust Stack scan and see where you stand. No credit card needed — just clarity." },
-  { name: "Starter", price: 97, desc: "Best for individual agents", tip: "One business location fully managed: scans, fixes, schema, content, and weekly monitoring." },
-  { name: "Growth", price: 197, desc: "Most popular", highlighted: true, tip: "Everything in Starter plus competitor tracking, AI optimization, priority support, and unlimited content generation." },
-  { name: "Authority", price: 297, desc: "Multi-location control", tip: "Manage 2+ locations from one dashboard. Agency-grade tools with volume pricing for businesses with multiple locations." },
+  { name: "Free", price: 0, desc: "See where you stand", tip: "Get your first visibility read, understand the trust stack, and see where the biggest gaps are." },
+  { name: "Starter", price: 97, desc: "Clearer execution for one location", tip: "For owner-operators and single-location businesses that want a clearer execution path." },
+  { name: "Growth", price: 197, desc: "Deeper execution and monitoring", highlighted: true, tip: "For teams that need recurring monitoring, stronger workflows, and more operational visibility." },
+  { name: "Authority", price: 297, desc: "Broader control across locations", tip: "For multi-location or more advanced operators who want broader control, response planning, and deeper visibility management." },
 ];
 
 const commandMetrics = [
@@ -726,11 +726,11 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       {/* ─── Navigation ─── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/6 bg-[#0a0a0f]/78 backdrop-blur-2xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Logo href="/" size={32} className="text-white" />
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-7">
             <Link href="#features" className="text-sm text-gray-400 hover:text-white transition-colors">Features</Link>
             <Link href="/pricing" className="text-sm text-gray-400 hover:text-white transition-colors">Pricing</Link>
             <Link href="/compare/geothority-vs-brightlocal" className="text-sm text-gray-400 hover:text-white transition-colors">Compare</Link>
@@ -742,7 +742,7 @@ export default function HomePage() {
             <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors">Sign In</Link>
             <Link
               href="/signup"
-              className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 rounded-lg transition-all"
+              className="inline-flex items-center justify-center rounded-xl border border-[#87eed2]/20 bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] px-4 py-2.5 text-sm font-semibold text-[#071019] shadow-[0_12px_34px_rgba(92,230,186,0.16)] transition-all hover:translate-y-[-1px] hover:shadow-[0_18px_44px_rgba(92,230,186,0.24)]"
             >
               Get Free Scan
             </Link>
@@ -767,21 +767,24 @@ export default function HomePage() {
       {/* ─── Hero with Animated Video ─── */}
       <section className="geo-hero relative overflow-hidden pt-28 pb-16 sm:pt-40 sm:pb-24">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(92,230,186,0.14),_transparent_34%),radial-gradient(circle_at_85%_20%,_rgba(110,116,255,0.14),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
-        <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-40" />
+        <div className="pointer-events-none absolute inset-0 geo-territory-grid opacity-35" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-14 px-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <div className="relative mx-auto grid max-w-7xl gap-14 px-4 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <div>
-            <SectionEyebrow>Local SEO, automated</SectionEyebrow>
+            <SectionEyebrow>Local visibility, operationalized</SectionEyebrow>
 
-            <h1 className="mt-6 max-w-2xl text-4xl font-semibold leading-[0.98] tracking-[-0.05em] text-white sm:text-5xl lg:text-[4rem] xl:text-[4.6rem]">
-              Other tools show you problems. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca]">We fix them.</span>
+            <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[0.96] tracking-[-0.055em] text-white sm:text-5xl lg:text-[4rem] xl:text-[4.55rem]">
+              Stop collecting SEO issues. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca]">Start fixing what moves visibility.</span>
             </h1>
 
-            <p className="mt-5 max-w-xl text-base leading-7 text-white/58 sm:text-lg sm:leading-8">
-              Geothority scans your local presence, shows what&apos;s broken, and helps you act on the fixes it can support. <span className="font-medium text-white">Your first scan is free and usually ready in about 90 seconds.</span>
+            <p className="mt-6 max-w-xl text-base leading-7 text-white/60 sm:text-lg sm:leading-8">
+              Geothority scans your local presence, surfaces the issues that matter most, and turns them into clear next steps your team can actually execute.
+            </p>
+            <p className="mt-3 max-w-lg text-sm leading-6 text-white/44 sm:text-base">
+              Your first scan is free and typically ready in about 90 seconds.
             </p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
                 href="/signup"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#5ce6ba] to-[#77d9ca] px-7 py-4 text-base font-semibold text-[#071019] transition-all hover:translate-y-[-1px] hover:shadow-[0_18px_45px_rgba(92,230,186,0.22)]"
@@ -790,21 +793,21 @@ export default function HomePage() {
               </Link>
               <Link
                 href="#story"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.03] px-7 py-4 text-base font-medium text-white/85 transition-all hover:border-white/20 hover:bg-white/[0.05]"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.04] px-7 py-4 text-base font-medium text-white/88 transition-all hover:border-white/20 hover:bg-white/[0.06]"
               >
-                <Play className="h-4 w-4" /> See how it works
+                <Play className="h-4 w-4" /> See the Platform
               </Link>
             </div>
 
-            <div className="mt-8 hidden sm:grid gap-3 grid-cols-3 max-w-2xl">
-              <SignalChip label="Fixes with clear path" value="1 click" tip="When a fix is supported in-product, you can run it immediately. When it is not, Geothority points to the exact next step." />
-              <SignalChip label="Time to first scan" value="~90s" tip="The first scan is designed to come back quickly so you can understand the opportunity before committing to more setup." />
-              <SignalChip label="AI platforms monitored" value="15" tip="Geothority checks whether your business is being mentioned across major AI answer surfaces and highlights what to improve next." />
+            <div className="mt-10 hidden max-w-3xl grid-cols-3 gap-3 sm:grid">
+              <SignalChip label="Clear fix paths" value="Focused" tip="See what is fixable now, what needs review, and what still needs real work." />
+              <SignalChip label="First scan" value="~90s" tip="Fast enough to start now. Structured enough to act on." />
+              <SignalChip label="AI + local coverage" value="Unified" tip="Track trust, citations, search presence, and AI-surface visibility in one place." />
             </div>
 
-            <div className="mt-8 grid gap-2 grid-cols-2 sm:hidden">
-              <SignalChip label="Fix path" value="Clear" tip="Each quick win now makes the execution path explicit." />
-              <SignalChip label="First scan" value="~90s" tip="Fast scan first, deeper setup after." />
+            <div className="mt-8 grid grid-cols-2 gap-2 sm:hidden">
+              <SignalChip label="Fix paths" value="Clear" tip="See what is fixable now, what needs review, and what still needs real work." />
+              <SignalChip label="First scan" value="~90s" tip="Fast enough to start now. Structured enough to act on." />
             </div>
           </div>
 
@@ -814,30 +817,44 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Quick flow: 3 steps ─── */}
+      {/* ─── Workflow ─── */}
       <ScrollReveal animation="fade-up">
-        <section className="py-10 sm:py-14 bg-[#0f1117]/25">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="grid gap-3 md:grid-cols-3">
+        <section className="bg-[#0f1117]/25 py-12 sm:py-16">
+          <div className="mx-auto max-w-6xl px-4">
+            <div className="mb-8 max-w-3xl">
+              <SectionEyebrow>One workflow</SectionEyebrow>
+              <h2 className="mt-5 max-w-3xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
+                Scan. Prioritize. Execute. Monitor.
+              </h2>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/60 sm:text-lg sm:leading-8">
+                Geothority is designed to reduce busywork, clarify priorities, and keep visibility work moving. Not every improvement can be automated. The point is to make every next step obvious.
+              </p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {[
                 {
                   step: '01',
-                  title: 'We scan',
-                  copy: 'Your first-pass local scan pulls together the main trust signals, citations, AI mention coverage, and competitor context in about 90 seconds.',
+                  title: 'Scan',
+                  copy: 'Get a structured read on your trust stack, citation consistency, competitive pressure, and AI-surface presence.',
                 },
                 {
                   step: '02',
-                  title: 'We fix',
-                  copy: 'Run supported fixes in-product, or follow the exact guided step when a change needs review, approval, or a connected account.',
+                  title: 'Prioritize',
+                  copy: 'See which issues matter most, which ones are fixable now, and where attention will have the highest return.',
                 },
                 {
                   step: '03',
-                  title: 'We monitor',
-                  copy: 'Weekly scans keep priorities fresh and turn important changes into response plans your team can approve quickly.',
+                  title: 'Execute',
+                  copy: 'Run supported fixes in-product, or move forward with guided next steps when review or connected systems are required.',
+                },
+                {
+                  step: '04',
+                  title: 'Monitor',
+                  copy: 'Track what changes over time, what competitors are doing, and where your next gains are most likely to come from.',
                 },
               ].map((item) => (
                 <div key={item.step} className="rounded-[24px] border border-white/8 bg-white/[0.03] px-5 py-5">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#8ddccb]">Step {item.step}</div>
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#8ddccb]">{item.step}</div>
                   <div className="mt-2 text-lg font-semibold text-white">{item.title}</div>
                   <p className="mt-2 text-sm leading-6 text-white/58">{item.copy}</p>
                 </div>
@@ -847,30 +864,48 @@ export default function HomePage() {
         </section>
       </ScrollReveal>
 
-      {/* ─── Features: Problem → Auto-Fix ─── */}
+      {/* ─── Core delta + flagship features ─── */}
       <section id="features" className="py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
-            <div className="mb-16 max-w-3xl">
-              <SectionEyebrow>What makes us different</SectionEyebrow>
+            <div className="mb-12 max-w-3xl">
+              <SectionEyebrow>Why Geothority</SectionEyebrow>
               <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Every other tool shows problems. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#8f94ff]">We make them executable.</span>
+                Most tools diagnose. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5ce6ba] to-[#8f94ff]">Very few help you execute.</span>
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                SEO tools have been doing the same thing for a decade: scan, report, and leave you to figure it out. Geothority is designed to go one step further by showing what can be fixed now, what needs review, and what still needs real work.
+                For years, local SEO software has been good at one thing: showing you what&apos;s wrong. The hard part still lands on you. Geothority is built to close that gap — by showing what matters, what can be fixed, and what the next move should be.
               </p>
             </div>
           </ScrollReveal>
 
+          <ScrollReveal animation="scale-up">
+            <div className="mb-16 grid gap-4 rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 sm:p-7 lg:grid-cols-[0.9fr_1.1fr]">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.22em] text-white/38">Old way</div>
+                <div className="mt-3 rounded-[24px] border border-red-400/18 bg-red-400/6 p-5 text-base leading-7 text-white/68">
+                  Surface issues. Export the list. Leave the work to you.
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-300/85">Geothority</div>
+                <div className="mt-3 rounded-[24px] border border-emerald-400/24 bg-emerald-400/8 p-5 text-base font-medium leading-7 text-white">
+                  Surface the issue. Clarify the priority. Show the next move. Support execution where possible.
+                </div>
+                <p className="mt-4 text-sm leading-6 text-white/52">The difference is not the report. It&apos;s what happens after the report.</p>
+              </div>
+            </div>
+          </ScrollReveal>
+
           <div className="space-y-10">
-            {features.map((feature, index) => {
+            {features.slice(0, 3).map((feature, index) => {
               const Icon = feature.icon;
               const reverse = index % 2 === 1;
               return (
                 <ScrollReveal key={feature.title} animation={reverse ? "slide-right" : "slide-left"}>
                   <div className={`grid gap-6 lg:grid-cols-[1fr_1fr] ${reverse ? "lg:[&>div:first-child]:order-2" : ""}`}>
                     <div className="geo-feature-shell rounded-[30px] border border-white/10 bg-white/[0.02] p-6 sm:p-8">
-                      <div className="flex items-center gap-3 mb-5">
+                      <div className="mb-5 flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-400">
                           <Icon className="h-5 w-5" />
                         </div>
@@ -883,7 +918,7 @@ export default function HomePage() {
                       <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
                         {feature.title}
                       </h3>
-                      <p className="mt-4 text-base leading-7 text-white/60">
+                      <p className="mt-4 max-w-xl text-base leading-7 text-white/60">
                         {feature.description}
                       </p>
                       <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
@@ -906,12 +941,12 @@ export default function HomePage() {
           <BrowserFrame>
             <div className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr] xl:items-center">
               <div>
-                <SectionEyebrow>Trust Stack 2.0</SectionEyebrow>
+                <SectionEyebrow>Visibility command center</SectionEyebrow>
                 <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
                   One score. Prioritized fixes. Clear execution paths.
                 </h2>
                 <p className="mt-4 max-w-xl text-base leading-7 text-white/62 sm:text-lg">
-                  The Trust Stack scores your business across 5 key areas and makes the next move obvious. It shows what Geothority can handle directly, what needs your approval, and what still needs manual work.
+                  The Trust Stack turns scattered visibility work into one operating view. It shows what Geothority can handle directly, what needs approval, and what still requires manual attention.
                 </p>
                 <div className="mt-6 space-y-3 text-sm text-white/72">
                   {[
@@ -1037,58 +1072,114 @@ export default function HomePage() {
         </section>
       </ScrollReveal>
 
-      {/* ─── Proof ─── */}
+      {/* ─── Supporting execution layers ─── */}
+      <section className="py-8 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <ScrollReveal animation="fade-up">
+            <div className="mb-12 max-w-3xl">
+              <SectionEyebrow>Deeper execution layers</SectionEyebrow>
+              <h2 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
+                From schema to content to competitor response, the work stays connected.
+              </h2>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/60 sm:text-lg sm:leading-8">
+                Geothority doesn&apos;t stop at a visibility score. It gives you a clearer path across the supporting systems that shape local discovery over time.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            {features.slice(3).map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <ScrollReveal key={feature.title} animation="fade-up" delay={index * 100}>
+                  <div className="geo-feature-shell h-full rounded-[30px] border border-white/10 bg-white/[0.02] p-6 sm:p-7">
+                    <div className="mb-5 flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-400">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      {feature.badge && (
+                        <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
+                          {feature.badge}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white">{feature.title}</h3>
+                    <p className="mt-4 text-base leading-7 text-white/60">{feature.description}</p>
+                    <VersusCard theirWay={feature.theirWay} ourWay={feature.ourWay} />
+                    <div className="mt-5 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm text-white/68">{feature.stat}</div>
+                  </div>
+                </ScrollReveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Trust + validation ─── */}
       <section className="bg-[#0e141f]/55 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4">
           <ScrollReveal animation="fade-up">
             <div className="mb-14 max-w-3xl">
-              <SectionEyebrow>What the product proves clearly</SectionEyebrow>
+              <SectionEyebrow>Trusted signals</SectionEyebrow>
               <h2 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
                 Stronger trust comes from visible evidence, not louder claims.
               </h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-white/60">
-                These cards reflect the proof standard Geothority should meet inside the product: show the source, show the execution path, and keep a visible history of what changed.
+                Geothority is built to make local visibility work more credible: clearer source signals, clearer fix paths, and clearer distinctions between what is automated, what is guided, and what still needs human review.
               </p>
             </div>
           </ScrollReveal>
 
           <div className="grid gap-5 lg:grid-cols-3">
-            {testimonials.map((t, i) => (
-              <ScrollReveal key={i} animation="fade-up" delay={i * 120}>
-                <div className="geo-proof-card h-full rounded-[30px] border border-white/10 bg-white/[0.03] p-7">
-                  <div className="mb-5 flex items-center justify-between gap-3">
-                    <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/38">
-                      Proof standard
-                    </div>
-                    <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-emerald-300">
-                      Trust-first
-                    </div>
+            {[
+              {
+                title: 'Measured signals',
+                copy: 'See what was checked, where it came from, and why it matters before the product asks for trust.',
+              },
+              {
+                title: 'Clear execution boundaries',
+                copy: 'Know what can be done now, what needs approval, and what still requires manual work.',
+              },
+              {
+                title: 'Progress over time',
+                copy: 'Track how visibility changes instead of relying on one-off scans and vague scores.',
+              },
+            ].map((item, i) => (
+              <ScrollReveal key={item.title} animation="fade-up" delay={i * 120}>
+                <div className="h-full rounded-[30px] border border-white/10 bg-white/[0.03] p-7">
+                  <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-emerald-300 inline-flex">
+                    Trust-first
                   </div>
-
-                  <div className="mb-5 rounded-[24px] border border-white/8 bg-black/20 p-4">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
-                    <div className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">{t.metric}</div>
-                    <div className="mt-2 text-sm text-[#8de7d0]">{t.impact}</div>
-                  </div>
-
-                  <p className="mb-7 text-base leading-7 text-white/72">{t.quote}</p>
-
-                  <div className="grid grid-cols-2 gap-3 border-t border-white/8 pt-5">
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Focus</div>
-                      <div className="mt-2 text-sm font-medium text-white">{t.name}</div>
-                      <div className="mt-1 text-sm text-white/45">{t.title}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">Surface</div>
-                      <div className="mt-2 text-sm font-medium text-white">{t.city}</div>
-                      <div className="mt-1 text-sm text-white/45">Product narrative</div>
-                    </div>
-                  </div>
+                  <h3 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-white">{item.title}</h3>
+                  <p className="mt-4 text-base leading-7 text-white/68">{item.copy}</p>
                 </div>
               </ScrollReveal>
             ))}
           </div>
+
+          <ScrollReveal animation="fade-up">
+            <div className="mt-14 rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-6 py-8 sm:px-8">
+              <div className="max-w-3xl">
+                <SectionEyebrow>Built for operators</SectionEyebrow>
+                <h3 className="mt-5 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
+                  Built for businesses that want visibility work to be operational, not theoretical.
+                </h3>
+                <p className="mt-4 max-w-2xl text-base leading-7 text-white/60">
+                  For teams that are tired of audits with no follow-through, Geothority brings structure, prioritization, and clearer execution to local visibility work.
+                </p>
+              </div>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {testimonials.map((t) => (
+                  <div key={t.name} className="rounded-[24px] border border-white/8 bg-black/20 p-5">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/35">{t.city}</div>
+                    <div className="mt-3 text-lg font-semibold text-white">{t.name}</div>
+                    <div className="mt-1 text-sm text-[#8de7d0]">{t.title}</div>
+                    <p className="mt-4 text-sm leading-6 text-white/62">{t.impact}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -1102,7 +1193,7 @@ export default function HomePage() {
                 Start free. Upgrade when you want deeper execution and monitoring.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                Every plan starts with a free scan. Paid plans add more execution paths, connected workflows, and ongoing monitoring.
+                Use the free scan to understand where you stand. Move up when you need more visibility coverage, stronger workflows, and ongoing response support.
               </p>
             </div>
           </ScrollReveal>
@@ -1136,10 +1227,7 @@ export default function HomePage() {
                   </div>
                   <div className="mt-3 text-sm leading-6 text-white/58">{t.desc}</div>
                   <div className="mt-6 rounded-2xl border border-white/8 bg-black/15 p-4 text-sm text-white/68">
-                    {t.name === "Free" && "See your Trust Stack score and where you stand. No card needed."}
-                    {t.name === "Starter" && "One location: scan, supported schema fixes, citation visibility, and weekly monitoring."}
-                    {t.name === "Growth" && "Adds competitor tracking, AI visibility work, connected sync, and more automated execution where supported."}
-                    {t.name === "Authority" && "Multi-location + agency tools + white-label reports + API access."}
+                    {t.tip}
                   </div>
                   <Link
                     href={t.price === 0 ? "/signup" : "/pricing"}
@@ -1149,7 +1237,7 @@ export default function HomePage() {
                         : "border border-white/10 bg-white/[0.03] text-white/86 hover:bg-white/[0.05]"
                     }`}
                   >
-                    {t.price === 0 ? "Start Free" : "Start 14-Day Trial"}
+                    {t.price === 0 ? "Start Free" : `Choose ${t.name}`}
                   </Link>
                 </div>
               </ScrollReveal>
@@ -1168,10 +1256,10 @@ export default function HomePage() {
             <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-10 text-center shadow-[0_24px_100px_rgba(5,10,18,0.45)] sm:px-10 sm:py-14">
               <SectionEyebrow>Get your free scan</SectionEyebrow>
               <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Stop reading about problems. Start fixing them.
+                Stop reading about visibility problems. Start resolving them.
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/60">
-                No credit card. No sales call. Just a clear view of where you stand, what Geothority can help with directly, and what still needs your review — in about 90 seconds.
+                Run your first scan, see what matters most, and get a clearer path to stronger local visibility.
               </p>
               <Link
                 href="/signup"
@@ -1279,7 +1367,7 @@ export default function HomePage() {
               </span>
             </div>
             <p className="text-xs text-gray-600">
-              Dominate local search &amp; AI — for insurance agents and local businesses.
+              Geothority helps local businesses turn visibility work into a clearer operating system for growth.
             </p>
           </div>
         </div>
