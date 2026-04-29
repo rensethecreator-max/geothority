@@ -32,8 +32,15 @@ type WalkthroughTab = "scan" | "trust" | "ai" | "competitors" | "fixes";
 const trustMetrics = [
   { value: "90s", label: "first scan", detail: "Fast enough to start immediately" },
   { value: "68+", label: "authority signals", detail: "Mapped across your visibility stack" },
-  { value: "AI", label: "surface monitoring", detail: "Track where your business appears" },
-  { value: "Plans", label: "competitor response", detail: "Turn movement into action" },
+  { value: "15", label: "AI surfaces", detail: "Track where your business appears" },
+  { value: "Weekly", label: "competitor monitoring", detail: "Turn movement into a response plan" },
+];
+
+const socialProof = [
+  { label: "Built for", value: "Insurance agencies" },
+  { label: "Ideal for", value: "Local service operators" },
+  { label: "Signature lens", value: "Trust + AI visibility" },
+  { label: "Workflow", value: "Execution-first" },
 ];
 
 const workflowSteps = [
@@ -157,6 +164,7 @@ const tabs: Record<WalkthroughTab, {
 const pricing = [
   {
     name: "Starter",
+    price: "$97",
     intro: "For single-location teams getting the fundamentals under control.",
     bullets: ["Visibility scan", "Trust Stack scoring", "Core issue detection", "Baseline monitoring"],
     cta: "Start Free",
@@ -164,6 +172,7 @@ const pricing = [
   },
   {
     name: "Growth",
+    price: "$197",
     intro: "For teams that need stronger monitoring and clearer operational follow-through.",
     bullets: ["Everything in Starter", "Deeper visibility tracking", "AI visibility monitoring", "Competitor monitoring"],
     cta: "Choose Growth",
@@ -171,6 +180,7 @@ const pricing = [
   },
   {
     name: "Authority",
+    price: "$297",
     intro: "For serious operators who want the fullest Geothority workflow.",
     bullets: ["Everything in Growth", "Advanced tracking", "Stronger execution support", "Premium operating clarity"],
     cta: "Choose Authority",
@@ -208,7 +218,7 @@ function HeroVisual() {
             <div className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-200">Live</div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-[0.72fr_1fr]">
+          <div className="mt-7 grid gap-4 sm:grid-cols-[0.78fr_1fr]">
             <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-5">
               <div className="relative mx-auto flex h-44 w-44 items-center justify-center rounded-full bg-[conic-gradient(from_220deg,#60a5fa_0deg,#34d399_210deg,rgba(255,255,255,0.1)_210deg)] p-3">
                 <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-slate-950">
@@ -232,7 +242,7 @@ function HeroVisual() {
               {[
                 ["AI visibility", "Ahead of 2 local competitors", "+12", "emerald"],
                 ["Listings", "Citation mismatch isolated", "Fixable", "cyan"],
-                ["Content", "City page gap detected", "Draft", "amber"],
+                ["Trust pages", "Priority gap detected this week", "Priority", "amber"],
               ].map(([label, text, badge, color], index) => (
                 <motion.div
                   key={label}
@@ -250,11 +260,12 @@ function HeroVisual() {
                   </div>
                 </motion.div>
               ))}
-
               <div className="rounded-2xl border border-amber-200/15 bg-[linear-gradient(135deg,rgba(251,191,36,0.16),rgba(255,255,255,0.06))] p-4">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100/70">Operator brief</div>
-                <div className="mt-2 flex items-end justify-between gap-4">
-                  <div className="text-sm leading-6 text-white/84">3 high-leverage moves queued for review</div>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100/70">Operator brief</div>
+                    <div className="mt-2 text-sm leading-6 text-white/84">3 high-leverage moves queued for review</div>
+                  </div>
                   <Sparkles className="h-5 w-5 text-amber-200" />
                 </div>
               </div>
@@ -378,8 +389,8 @@ export default function HomePage() {
       </nav>
 
       <main className="relative">
-        <section className="overflow-hidden px-4 pb-16 pt-28 sm:px-6 sm:pb-24 sm:pt-36">
-          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.88fr_1.12fr]">
+        <section className="overflow-hidden px-4 pb-14 pt-28 sm:px-6 sm:pb-20 sm:pt-36">
+          <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.88fr_1.12fr]">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65 }}>
               <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-700 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" /> Local Search + AI Visibility Platform
@@ -387,24 +398,26 @@ export default function HomePage() {
               <h1 className="mt-7 max-w-5xl text-[3rem] font-semibold leading-[0.95] tracking-[-0.07em] text-slate-950 sm:text-6xl lg:text-[5.15rem]">
                 Become the business search engines trust — and customers find first.
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-640 sm:text-xl sm:leading-9">
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl sm:leading-9">
                 Geothority shows what is weakening your visibility across Google, Maps, directories, reviews, and AI search — then helps you prioritize the next move with clarity.
               </p>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
+                Built for teams that want a calmer, sharper operating system for local visibility — not another pile of SEO reporting.
+              </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-7 py-4 text-base font-semibold text-white shadow-xl shadow-slate-950/14 transition hover:-translate-y-0.5 hover:bg-slate-800">
                   Get Free Scan <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="#platform" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 py-4 text-base font-semibold text-slate-850 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">
+                <Link href="#platform" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 py-4 text-base font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">
                   See the Platform <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
 
-              <div className="mt-7 flex flex-wrap gap-3 text-sm font-medium text-slate-650">
+              <div className="mt-6 flex flex-wrap gap-3 text-sm font-medium text-slate-700">
                 {[
                   "90-second first scan",
                   "Trust + AI visibility monitoring",
-                  "Competitor response planning",
                 ].map((item) => (
                   <div key={item} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 shadow-sm">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {item}
@@ -427,6 +440,25 @@ export default function HomePage() {
                 <div className="mt-2 text-sm leading-6 text-slate-600">{metric.detail}</div>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="px-4 py-10 sm:px-6 sm:py-12">
+          <div className="mx-auto max-w-7xl rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,rgba(248,250,252,0.95))] p-6 shadow-sm sm:p-7">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-xl">
+                <div className="text-xs font-bold uppercase tracking-[0.22em] text-indigo-600">Proof of fit</div>
+                <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950">Built for local operators who need clarity, not more dashboard noise.</h3>
+              </div>
+              <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {socialProof.map((item) => (
+                  <div key={item.label} className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{item.label}</div>
+                    <div className="mt-2 text-sm font-semibold text-slate-900">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -473,11 +505,41 @@ export default function HomePage() {
                     <h3 className="mt-7 text-xl font-semibold tracking-[-0.035em] text-slate-950">{feature.title}</h3>
                     <p className="mt-3 text-sm leading-6 text-slate-600">{feature.text}</p>
                     <div className="mt-7 h-16 overflow-hidden rounded-2xl bg-slate-50 p-3">
-                      <div className="flex h-full items-end gap-1.5">
-                        {[24, 38, 30, 52, 46, 62, 58].map((height, index) => (
-                          <div key={index} style={{ height }} className={`flex-1 rounded-t bg-gradient-to-t ${feature.accent} opacity-70 transition group-hover:opacity-100`} />
-                        ))}
-                      </div>
+                      {feature.title === "Trust Stack Scoring" && (
+                        <div className="flex h-full items-center gap-2">
+                          {[74, 68, 82, 57].map((score, index) => (
+                            <div key={index} className="flex-1">
+                              <div className="mb-1 h-2 rounded-full bg-slate-200">
+                                <div style={{ width: `${score}%` }} className={`h-full rounded-full bg-gradient-to-r ${feature.accent}`} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {feature.title === "AI Visibility Monitoring" && (
+                        <div className="flex h-full items-center justify-between px-1">
+                          {["ChatGPT", "Gemini", "Perplexity"].map((label, index) => (
+                            <div key={label} className="flex flex-col items-center gap-2">
+                              <div className={`h-3 w-3 rounded-full bg-gradient-to-r ${feature.accent} ${index === 1 ? "scale-125" : "opacity-70"}`} />
+                              <div className="text-[10px] font-medium text-slate-500">{label}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {feature.title === "Competitor Monitoring" && (
+                        <div className="flex h-full items-end gap-1.5">
+                          {[18, 24, 20, 42, 36, 58, 52].map((height, index) => (
+                            <div key={index} style={{ height }} className={`flex-1 rounded-t bg-gradient-to-t ${feature.accent} ${index > 4 ? "opacity-100" : "opacity-60"}`} />
+                          ))}
+                        </div>
+                      )}
+                      {! ["Trust Stack Scoring", "AI Visibility Monitoring", "Competitor Monitoring"].includes(feature.title) && (
+                        <div className="flex h-full items-end gap-1.5">
+                          {[24, 38, 30, 52, 46, 62, 58].map((height, index) => (
+                            <div key={index} style={{ height }} className={`flex-1 rounded-t bg-gradient-to-t ${feature.accent} opacity-70 transition group-hover:opacity-100`} />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -541,6 +603,16 @@ export default function HomePage() {
                     </div>
                   ))}
                 </div>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/8 p-4">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-200/70">Fix available</div>
+                    <div className="mt-2 text-sm text-white/84">Deploy trust-page schema and recover one of the lowest authority gaps first.</div>
+                  </div>
+                  <div className="rounded-2xl border border-cyan-300/15 bg-cyan-300/8 p-4">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-cyan-200/70">Competitive pressure</div>
+                    <div className="mt-2 text-sm text-white/84">2 nearby competitors increased review velocity this week. Response plan ready.</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -568,6 +640,7 @@ export default function HomePage() {
               </div>
             </div>
             <p className="mt-8 text-center text-lg font-medium text-slate-700">Less reporting for its own sake. More clarity on what to do next.</p>
+            <p className="mt-3 text-center text-sm text-slate-500">That means fewer scattered dashboards, fewer vague priorities, and a more actionable visibility workflow for the team actually doing the work.</p>
           </div>
         </section>
 
@@ -595,9 +668,9 @@ export default function HomePage() {
                 <div className="text-xs font-bold uppercase tracking-[0.24em] text-indigo-600">{active.eyebrow}</div>
                 <h3 className="mt-4 text-3xl font-semibold tracking-[-0.045em] text-slate-950 sm:text-4xl">{active.headline}</h3>
                 <p className="mt-5 text-lg leading-8 text-slate-600">{active.body}</p>
-                <div className="mt-7 grid gap-3">
+                <div className="mt-7 grid gap-2.5">
                   {active.bullets.map((bullet) => (
-                    <div key={bullet} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700">
+                    <div key={bullet} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
                       <CheckCircle2 className="h-5 w-5 text-emerald-500" /> <span className="capitalize">{bullet}</span>
                     </div>
                   ))}
@@ -648,6 +721,10 @@ export default function HomePage() {
                 <div key={plan.name} className={`rounded-[32px] border p-7 ${plan.featured ? "border-slate-950 bg-slate-950 text-white shadow-2xl shadow-slate-950/18" : "border-slate-200 bg-white text-slate-950 shadow-sm"}`}>
                   {plan.featured && <div className="mb-4 inline-flex rounded-full bg-emerald-300/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Recommended</div>}
                   <h3 className="text-2xl font-semibold tracking-[-0.04em]">{plan.name}</h3>
+                  <div className="mt-4 flex items-end gap-2">
+                    <div className="text-4xl font-semibold tracking-[-0.06em]">{plan.price}</div>
+                    <div className={`pb-1 text-sm ${plan.featured ? "text-white/56" : "text-slate-500"}`}>/month</div>
+                  </div>
                   <p className={`mt-3 text-sm leading-6 ${plan.featured ? "text-white/66" : "text-slate-600"}`}>{plan.intro}</p>
                   <div className="mt-7 space-y-3">
                     {plan.bullets.map((bullet) => (
@@ -662,6 +739,7 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+            <p className="mt-6 text-center text-sm text-slate-500">Need the full breakdown, annual pricing, or agency options? See the complete pricing page.</p>
           </div>
         </section>
 
