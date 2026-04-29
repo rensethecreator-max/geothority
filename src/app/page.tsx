@@ -245,6 +245,11 @@ function HeroVisual() {
           <div className="mt-7 grid gap-4 sm:grid-cols-[0.78fr_1fr]">
             <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-5">
               <div className="relative mx-auto flex h-44 w-44 items-center justify-center rounded-full bg-[conic-gradient(from_220deg,#60a5fa_0deg,#34d399_210deg,rgba(255,255,255,0.1)_210deg)] p-3">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                  className="absolute inset-2 rounded-full border border-emerald-300/12 border-t-emerald-300/40"
+                />
                 <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-slate-950">
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
@@ -254,7 +259,14 @@ function HeroVisual() {
                   >
                     78
                   </motion.div>
-                  <div className="mt-1 text-xs uppercase tracking-[0.22em] text-white/40">out of 100</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.22em] text-white/52">out of 100</div>
+                  <motion.div
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ repeat: Infinity, duration: 2.4 }}
+                    className="mt-2 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-emerald-300/80"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" /> scanning live
+                  </motion.div>
                 </div>
               </div>
               <div className="mt-5 rounded-2xl border border-emerald-300/15 bg-emerald-300/10 px-4 py-3 text-sm text-emerald-100">
@@ -280,7 +292,13 @@ function HeroVisual() {
                       <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/68">{label}</div>
                       <div className="mt-1 text-sm leading-6 text-white/96">{text}</div>
                     </div>
-                    <div className={`rounded-full px-2.5 py-1 text-xs font-semibold ${color === "emerald" ? "bg-emerald-300/12 text-emerald-200" : color === "cyan" ? "bg-cyan-300/12 text-cyan-200" : "bg-amber-300/12 text-amber-100"}`}>{badge}</div>
+                    <motion.div
+                      animate={{ scale: [1, 1.04, 1] }}
+                      transition={{ repeat: Infinity, duration: 2.3, delay: index * 0.25 }}
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${color === "emerald" ? "bg-emerald-300/12 text-emerald-200" : color === "cyan" ? "bg-cyan-300/12 text-cyan-200" : "bg-amber-300/12 text-amber-100"}`}
+                    >
+                      {badge}
+                    </motion.div>
                   </div>
                 </motion.div>
               ))}
@@ -387,7 +405,9 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
       <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-950 p-4 text-white">
         <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-white/70">
           <span>Execution preview</span>
-          <span>{index === 0 ? "Live" : index === 1 ? "Awaiting approval" : "Guided"}</span>
+          <motion.span animate={{ opacity: [0.55, 1, 0.55] }} transition={{ repeat: Infinity, duration: 2.2 }}>
+            {index === 0 ? "Live" : index === 1 ? "Awaiting approval" : "Guided"}
+          </motion.span>
         </div>
 
         {index === 0 && (
@@ -397,11 +417,15 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
               ["Weekly monitor", "Running"],
               ["Citation check", "Synced"],
             ].map(([label, status], row) => (
-              <motion.div key={label} initial={{ opacity: 0.45 }} animate={{ opacity: 1 }} transition={{ delay: row * 0.18, duration: 0.45 }} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
+              <motion.div key={label} initial={{ opacity: 0.45 }} animate={{ opacity: [0.75, 1, 0.75] }} transition={{ delay: row * 0.18, duration: 2.4, repeat: Infinity, repeatDelay: 0.6 }} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
                 <span className="text-sm text-white/96">{label}</span>
                 <span className="rounded-full bg-emerald-300/12 px-2 py-1 text-[11px] font-semibold text-emerald-200">{status}</span>
               </motion.div>
             ))}
+            <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-emerald-200/80">
+              <motion.span animate={{ x: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.6 }} className="h-1.5 w-6 rounded-full bg-emerald-300" />
+              pushing fixes now
+            </div>
           </div>
         )}
 
@@ -417,6 +441,10 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
                 <motion.span animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 2.2, delay: row * 0.2 }} className="rounded-full bg-cyan-300/12 px-2 py-1 text-[11px] font-semibold text-cyan-200">{status}</motion.span>
               </div>
             ))}
+            <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-cyan-200/80">
+              <motion.span animate={{ opacity: [0.25, 1, 0.25] }} transition={{ repeat: Infinity, duration: 1.4 }} className="h-2 w-2 rounded-full bg-cyan-300" />
+              waiting on operator approval
+            </div>
           </div>
         )}
 
@@ -437,6 +465,10 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
                 </div>
               </div>
             ))}
+            <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-amber-200/80">
+              <motion.span animate={{ x: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.8 }} className="h-1.5 w-6 rounded-full bg-amber-300" />
+              packaged next step ready
+            </div>
           </div>
         )}
       </div>
@@ -757,7 +789,13 @@ export default function HomePage() {
                     <div key={label as string}>
                       <div className="mb-2 flex items-center justify-between text-sm">
                         <span className="text-white/92">{label}</span>
-                        <span className="text-white/78">{status}</span>
+                        <motion.span
+                          animate={status === "Fix" || status === "Draft" ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
+                          transition={{ repeat: Infinity, duration: 1.9 }}
+                          className="text-white/78"
+                        >
+                          {status}
+                        </motion.span>
                       </div>
                       <div className="h-3 rounded-full bg-white/10">
                         <motion.div
@@ -775,10 +813,17 @@ export default function HomePage() {
                   <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/8 p-4">
                     <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-200/90">Fix available</div>
                     <div className="mt-2 text-sm text-white/92">Deploy trust-page schema and recover one of the lowest authority gaps first.</div>
+                    <div className="mt-3 h-1.5 rounded-full bg-white/10">
+                      <motion.div animate={{ width: ["24%", "61%", "24%"] }} transition={{ repeat: Infinity, duration: 3.4 }} className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-teal-300" />
+                    </div>
                   </div>
                   <div className="rounded-2xl border border-cyan-300/15 bg-cyan-300/8 p-4">
                     <div className="text-[10px] uppercase tracking-[0.22em] text-cyan-200/90">Competitive pressure</div>
                     <div className="mt-2 text-sm text-white/92">2 nearby competitors increased review velocity this week. Response plan ready.</div>
+                    <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-cyan-200/80">
+                      <motion.span animate={{ opacity: [0.25, 1, 0.25] }} transition={{ repeat: Infinity, duration: 1.6 }} className="h-2 w-2 rounded-full bg-cyan-300" />
+                      response package prepared
+                    </div>
                   </div>
                 </div>
               </div>
