@@ -80,6 +80,7 @@ export function WillChatbot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const shouldHide = HIDDEN_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  const isMarketingHome = pathname === "/";
 
   useEffect(() => {
     setIsMounted(true);
@@ -95,7 +96,7 @@ export function WillChatbot() {
     const hasOpened = typeof window !== "undefined" && localStorage.getItem(WILL_OPENED_KEY);
     const hasInteracted = typeof window !== "undefined" && localStorage.getItem(WILL_INTERACTED_KEY);
 
-    if (!hasOpened) {
+    if (!hasOpened && !isMarketingHome) {
       const timer = setTimeout(() => {
         setIsOpen(true);
         try { localStorage.setItem(WILL_OPENED_KEY, "1"); } catch { /* ignore */ }
@@ -105,10 +106,10 @@ export function WillChatbot() {
 
     // Show nudge bubble if they haven't interacted
     if (!hasInteracted && !nudgeDismissed) {
-      const timer = setTimeout(() => setShowNudge(true), 8000);
+      const timer = setTimeout(() => setShowNudge(true), isMarketingHome ? 14000 : 8000);
       return () => clearTimeout(timer);
     }
-  }, [nudgeDismissed]);
+  }, [nudgeDismissed, isMarketingHome]);
 
   // Auto-focus input when opened
   useEffect(() => {
@@ -194,7 +195,7 @@ export function WillChatbot() {
       {/* Nudge bubble */}
       {showNudge && !isOpen && !nudgeDismissed && (
         <div
-          className="fixed bottom-24 right-6 z-50 max-w-[260px] rounded-2xl border border-white/10 bg-[#0f1117] px-4 py-3 shadow-xl animate-fade-in cursor-pointer"
+          className={`fixed z-50 max-w-[240px] rounded-2xl border border-white/10 bg-[#0f1117] px-4 py-3 shadow-xl animate-fade-in cursor-pointer ${isMarketingHome ? "bottom-28 right-4 sm:right-6" : "bottom-24 right-6"}`}
           onClick={() => { setIsOpen(true); setShowNudge(false); }}
         >
           <button
@@ -212,7 +213,7 @@ export function WillChatbot() {
       {/* Chat toggle button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all hover:scale-105 ${
+        className={`fixed z-50 flex items-center justify-center shadow-lg transition-all hover:scale-105 ${isMarketingHome ? "bottom-4 right-4 h-12 w-12 rounded-xl sm:bottom-6 sm:right-6 sm:h-14 sm:w-14 sm:rounded-2xl" : "bottom-6 right-6 h-14 w-14 rounded-2xl"} ${
           isOpen
             ? "bg-white/10 border border-white/20"
             : "bg-gradient-to-br from-emerald-500 to-teal-500 shadow-[0_8px_30px_rgba(92,230,186,0.3)]"
@@ -227,7 +228,7 @@ export function WillChatbot() {
 
       {/* Chat panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[380px] max-h-[600px] rounded-2xl border border-white/10 bg-[#0a0e17] shadow-[0_24px_80px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden animate-fade-in">
+        <div className={`fixed z-50 flex max-h-[600px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0a0e17] shadow-[0_24px_80px_rgba(0,0,0,0.6)] animate-fade-in ${isMarketingHome ? "bottom-20 right-3 w-[calc(100vw-24px)] max-w-[360px] sm:bottom-24 sm:right-6 sm:w-[380px]" : "bottom-24 right-6 w-[380px]"}`}>
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-white/8 bg-gradient-to-r from-emerald-500/10 to-teal-500/5">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
@@ -315,7 +316,7 @@ export function WillChatbot() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 placeholder="Ask Will anything about local SEO..."
-                className="flex-1 bg-white/[0.04] border border-white/8 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-400/30 focus:ring-1 focus:ring-emerald-400/20 transition-colors"
+                className="flex-1 bg-white/[0.05] border border-white/15 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/38 focus:outline-none focus:border-emerald-400/35 focus:ring-1 focus:ring-emerald-400/20 transition-colors"
               />
               <button
                 onClick={handleSend}

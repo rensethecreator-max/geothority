@@ -43,6 +43,8 @@ const socialProof = [
   { label: "Workflow", value: "Execution-first" },
 ];
 
+const logoProof = ["Independent agencies", "Local operators", "Multi-location teams", "Visibility-led growth"];
+
 const workflowSteps = [
   {
     title: "Scan",
@@ -395,18 +397,18 @@ export default function HomePage() {
               <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-700 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" /> Local Search + AI Visibility Platform
               </div>
-              <h1 className="mt-7 max-w-5xl text-[3rem] font-semibold leading-[0.95] tracking-[-0.07em] text-slate-950 sm:text-6xl lg:text-[5.15rem]">
+              <h1 className="mt-7 max-w-5xl text-[2.55rem] font-semibold leading-[0.96] tracking-[-0.07em] text-slate-950 sm:text-5xl lg:text-[5.15rem]">
                 Become the business search engines trust — and customers find first.
               </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl sm:leading-9">
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
                 Geothority shows what is weakening your visibility across Google, Maps, directories, reviews, and AI search — then helps you prioritize the next move with clarity.
               </p>
-              <p className="mt-3 max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
+              <p className="mt-3 max-w-lg text-sm leading-6 text-slate-500 sm:text-base sm:leading-7">
                 Built for teams that want a calmer, sharper operating system for local visibility — not another pile of SEO reporting.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-7 py-4 text-base font-semibold text-white shadow-xl shadow-slate-950/14 transition hover:-translate-y-0.5 hover:bg-slate-800">
+                <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-7 py-[1.1rem] text-base font-semibold text-white shadow-xl shadow-slate-950/14 transition hover:-translate-y-0.5 hover:bg-slate-800">
                   Get Free Scan <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link href="#platform" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 py-4 text-base font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">
@@ -458,6 +460,20 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-4 pb-4 sm:px-6 sm:pb-8">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-[24px] border border-slate-200/80 bg-white/70 px-5 py-4 text-sm text-slate-500 shadow-sm backdrop-blur sm:text-[15px]">
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Trusted fit</div>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              {logoProof.map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span>{item}</span>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -553,12 +569,12 @@ export default function HomePage() {
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">Signature framework</div>
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">The Trust Stack gives your team one operating view for local visibility.</h2>
-              <p className="mt-6 text-lg leading-8 text-white/68">
+              <p className="mt-6 text-lg leading-8 text-white/80">
                 Instead of scattered reports and disconnected tasks, Geothority shows what is helping, what is holding you back, and where to focus next — in one clearer system.
               </p>
               <div className="mt-8 grid gap-3">
                 {["Prioritize what matters most", "Separate signal from noise", "Spot fixable issues faster"].map((item) => (
-                  <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-white/88">
+                  <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/12 bg-white/[0.07] px-4 py-3 text-white/92">
                     <CheckCircle2 className="h-5 w-5 text-emerald-300" /> {item}
                   </div>
                 ))}
@@ -573,7 +589,7 @@ export default function HomePage() {
               <div className="rounded-[26px] border border-white/10 bg-[#081020] p-5">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] uppercase tracking-[0.24em] text-white/42">Trust Stack Object</div>
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-white/60">Trust Stack Object</div>
                     <div className="mt-1 text-lg font-semibold">Weekly authority map</div>
                   </div>
                   <div className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs text-emerald-200">+14 available</div>
@@ -588,8 +604,8 @@ export default function HomePage() {
                   ].map(([label, score, status]) => (
                     <div key={label as string}>
                       <div className="mb-2 flex items-center justify-between text-sm">
-                        <span className="text-white/74">{label}</span>
-                        <span className="text-white/48">{status}</span>
+                        <span className="text-white/88">{label}</span>
+                        <span className="text-white/68">{status}</span>
                       </div>
                       <div className="h-3 rounded-full bg-white/10">
                         <motion.div
@@ -605,12 +621,12 @@ export default function HomePage() {
                 </div>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/8 p-4">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-200/70">Fix available</div>
-                    <div className="mt-2 text-sm text-white/84">Deploy trust-page schema and recover one of the lowest authority gaps first.</div>
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-200/90">Fix available</div>
+                    <div className="mt-2 text-sm text-white/92">Deploy trust-page schema and recover one of the lowest authority gaps first.</div>
                   </div>
                   <div className="rounded-2xl border border-cyan-300/15 bg-cyan-300/8 p-4">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-cyan-200/70">Competitive pressure</div>
-                    <div className="mt-2 text-sm text-white/84">2 nearby competitors increased review velocity this week. Response plan ready.</div>
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-cyan-200/90">Competitive pressure</div>
+                    <div className="mt-2 text-sm text-white/92">2 nearby competitors increased review velocity this week. Response plan ready.</div>
                   </div>
                 </div>
               </div>
