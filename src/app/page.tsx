@@ -214,9 +214,9 @@ const pricing = [
 function SectionIntro({ eyebrow, title, text, center = false }: { eyebrow: string; title: string; text?: string; center?: boolean }) {
   return (
     <div className={center ? "mx-auto max-w-3xl text-center" : "max-w-3xl"}>
-      <div className="text-xs font-bold uppercase tracking-[0.24em] text-indigo-600">{eyebrow}</div>
+      <div className="text-[13px] font-bold uppercase tracking-[0.22em] text-indigo-700">{eyebrow}</div>
       <h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em] text-slate-950 sm:text-5xl">{title}</h2>
-      {text && <p className="mt-5 text-lg leading-8 text-slate-600">{text}</p>}
+      {text && <p className="mt-5 text-lg leading-8 text-slate-700">{text}</p>}
     </div>
   );
 }
@@ -235,9 +235,9 @@ function HeroVisual() {
         <div className="relative overflow-hidden rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#eef4ff)] p-5 text-slate-950">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">Executive visibility view</div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-700">Executive visibility view</div>
               <div className="mt-2 text-xl font-semibold tracking-[-0.03em]">Trust Stack Score</div>
-              <div className="mt-1 text-sm text-slate-600">Find what is suppressing visibility, then move the right fix forward.</div>
+              <div className="mt-1 text-sm text-slate-800">Find what is suppressing visibility, then move the right fix forward.</div>
             </div>
             <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Live</div>
           </div>
@@ -259,7 +259,7 @@ function HeroVisual() {
                   >
                     78
                   </motion.div>
-                  <div className="mt-1 text-xs uppercase tracking-[0.22em] text-slate-500">out of 100</div>
+                  <div className="mt-1 text-[13px] font-medium uppercase tracking-[0.18em] text-slate-900">out of 100</div>
                   <motion.div
                     animate={{ opacity: [0.4, 1, 0.4] }}
                     transition={{ repeat: Infinity, duration: 2.4 }}
@@ -269,7 +269,7 @@ function HeroVisual() {
                   </motion.div>
                 </div>
               </div>
-              <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              <div className="mt-5 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-[15px] font-semibold text-emerald-950 shadow-sm">
                 +14 points available from safe fixes and queued actions
               </div>
             </div>
@@ -289,7 +289,7 @@ function HeroVisual() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</div>
+                      <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-slate-800">{label}</div>
                       <div className="mt-1 text-sm leading-6 text-slate-800">{text}</div>
                     </div>
                     <motion.div
@@ -302,20 +302,20 @@ function HeroVisual() {
                   </div>
                 </motion.div>
               ))}
-              <div className="rounded-2xl border border-amber-200 bg-[linear-gradient(135deg,rgba(254,243,199,0.95),rgba(255,255,255,1))] p-4 shadow-sm">
+              <div className="rounded-2xl border border-amber-300 bg-[linear-gradient(135deg,rgba(254,243,199,0.98),rgba(255,255,255,1))] p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-700">Operator brief</div>
+                    <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-amber-900">Operator brief</div>
                     <div className="mt-2 text-sm leading-6 text-slate-800">3 high-leverage moves queued for review</div>
                   </div>
-                  <Sparkles className="h-5 w-5 text-amber-500" />
+                  <Sparkles className="h-5 w-5 text-amber-600" />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-slate-500">
+            <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-slate-600">
               <span>Fix momentum</span>
               <span>Last 30 days</span>
             </div>
@@ -326,7 +326,7 @@ function HeroVisual() {
                   initial={{ height: 8 }}
                   animate={{ height }}
                   transition={{ delay: 0.2 + index * 0.03, duration: 0.65 }}
-                  className="flex-1 rounded-t-md bg-gradient-to-t from-indigo-500 to-emerald-300"
+                  className="flex-1 rounded-t-md bg-gradient-to-t from-indigo-600 to-emerald-400 shadow-[0_0_0_1px_rgba(255,255,255,0.28)]"
                 />
               ))}
             </div>
@@ -347,33 +347,33 @@ function MiniProductPanel({ active }: { active: WalkthroughTab }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-slate-950 p-5 text-white shadow-2xl shadow-slate-900/18"
+      className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#eef4ff)] p-5 text-slate-950 shadow-xl shadow-slate-200/80"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.3),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(20,184,166,0.22),transparent_28%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.14),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(20,184,166,0.12),transparent_28%)]" />
       <div className="relative">
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs text-white/80">
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 shadow-sm">
             <Icon className="h-4 w-4" /> {tab.eyebrow}
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-2xl font-semibold tracking-[-0.06em]">{tab.metric}</div>
+          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-2xl font-semibold tracking-[-0.06em] shadow-sm">{tab.metric}</div>
         </div>
 
         <div className="mt-8 grid gap-3">
           {tab.bullets.map((bullet, index) => (
-            <div key={bullet} className="rounded-2xl border border-white/10 bg-white/[0.075] p-4">
+            <div key={bullet} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-sm font-semibold">{index + 1}</span>
-                  <span className="text-sm font-medium capitalize text-white/95">{bullet}</span>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-sm font-semibold text-slate-700">{index + 1}</span>
+                  <span className="text-sm font-medium capitalize text-slate-800">{bullet}</span>
                 </div>
-                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
               </div>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.07] p-4">
-          <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-white/62">
+        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-slate-600">
             <span>Fix progress</span>
             <span>This week</span>
           </div>
@@ -400,10 +400,10 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
       <div className={`inline-flex rounded-full bg-gradient-to-r ${mode.accent} px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-950`}>
         {mode.title}
       </div>
-      <p className="mt-4 text-sm leading-6 text-slate-600">{mode.subtitle}</p>
+      <p className="mt-4 text-sm leading-6 text-slate-700">{mode.subtitle}</p>
 
       <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-slate-900">
-        <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-slate-500">
+        <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-slate-600">
           <span>Execution preview</span>
           <motion.span animate={{ opacity: [0.55, 1, 0.55] }} transition={{ repeat: Infinity, duration: 2.2 }}>
             {index === 0 ? "Live" : index === 1 ? "Awaiting approval" : "Guided"}
@@ -458,7 +458,7 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
               <div key={label as string} className="rounded-2xl border border-slate-200 bg-white px-3 py-3">
                 <div className="mb-2 flex items-center justify-between text-sm text-slate-800">
                   <span>{label as string}</span>
-                  <span className="text-slate-500">Next step ready</span>
+                  <span className="text-slate-600">Next step ready</span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-200">
                   <motion.div initial={{ width: 0 }} whileInView={{ width: `${progress}%` }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="h-full rounded-full bg-gradient-to-r from-amber-300 to-orange-300" />
@@ -534,39 +534,39 @@ export default function HomePage() {
         <section className="overflow-hidden px-4 pb-14 pt-28 sm:px-6 sm:pb-20 sm:pt-36">
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.88fr_1.12fr]">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65 }}>
-              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-700 shadow-sm">
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300 bg-indigo-50 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-800 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" /> Visibility diagnosis + fix engine
               </div>
               <h1 className="mt-7 max-w-5xl text-[2.55rem] font-semibold leading-[0.96] tracking-[-0.07em] text-slate-950 sm:text-5xl lg:text-[5.15rem]">
                 Find out why you&apos;re not visible — and fix what&apos;s holding you back.
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-800 sm:text-lg sm:leading-8">
                 Geothority scans your business across Google, Maps, directories, reviews, competitors, and AI search — then fixes what it can automatically, queues the right actions for approval, and guides the rest to completion.
               </p>
-              <p className="mt-3 max-w-lg text-sm leading-6 text-slate-500 sm:text-base sm:leading-7">
+              <p className="mt-3 max-w-lg text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                 Built for teams that want resolution, not just reporting.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-7 py-[1.1rem] text-base font-semibold text-white shadow-xl shadow-slate-950/14 transition hover:-translate-y-0.5 hover:bg-slate-800">
+                <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-indigo-950 px-7 py-[1.1rem] text-base font-semibold text-white shadow-xl shadow-indigo-950/18 transition hover:-translate-y-0.5 hover:bg-indigo-900">
                   Get Free Scan <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="#platform" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 py-4 text-base font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">
+                <Link href="#platform" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-7 py-4 text-base font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:text-indigo-700">
                   See the Platform <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-3 text-sm font-medium text-slate-700">
+              <div className="mt-6 flex flex-wrap gap-3 text-sm font-medium text-slate-900">
                 {[
                   "Automatic fixes where supported",
                   "One-click approvals for high-impact actions",
                 ].map((item) => (
-                  <div key={item} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 shadow-sm">
+                  <div key={item} className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3.5 py-2 text-slate-950 shadow-sm">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {item}
                   </div>
                 ))}
               </div>
-              <p className="mt-5 text-sm font-medium text-slate-500">Built for insurance agencies and serious local operators who need a clearer path from problem to completed fix.</p>
+              <p className="mt-5 text-[15px] font-medium leading-6 text-slate-800">Built for insurance agencies and serious local operators who need a clearer path from problem to completed fix.</p>
             </motion.div>
 
             <HeroVisual />
@@ -578,8 +578,8 @@ export default function HomePage() {
             {trustMetrics.map((metric) => (
               <div key={metric.label} className="rounded-3xl bg-slate-50 px-5 py-5">
                 <div className="text-3xl font-semibold tracking-[-0.06em] text-slate-950">{metric.value}</div>
-                <div className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">{metric.label}</div>
-                <div className="mt-2 text-sm leading-6 text-slate-600">{metric.detail}</div>
+                <div className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-600">{metric.label}</div>
+                <div className="mt-2 text-sm leading-6 text-slate-700">{metric.detail}</div>
               </div>
             ))}
           </div>
@@ -595,7 +595,7 @@ export default function HomePage() {
               <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {socialProof.map((item) => (
                   <div key={item.label} className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{item.label}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">{item.label}</div>
                     <div className="mt-2 text-sm font-semibold text-slate-900">{item.value}</div>
                   </div>
                 ))}
@@ -605,8 +605,8 @@ export default function HomePage() {
         </section>
 
         <section className="px-4 pb-4 sm:px-6 sm:pb-8">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-[24px] border border-slate-200/80 bg-white/70 px-5 py-4 text-sm text-slate-500 shadow-sm backdrop-blur sm:text-[15px]">
-            <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Trusted fit</div>
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-[24px] border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-700 shadow-sm sm:text-[15px]">
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-600">Trusted fit</div>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               {logoProof.map((item) => (
                 <div key={item} className="flex items-center gap-2">
@@ -632,10 +632,10 @@ export default function HomePage() {
                 return (
                   <div key={step.title} className="relative rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-950/7">
                     {index < workflowSteps.length - 1 && <div className="absolute left-[calc(100%-8px)] top-11 hidden h-px w-8 bg-gradient-to-r from-indigo-200 to-transparent md:block" />}
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-white"><Icon className="h-5 w-5" /></div>
-                    <div className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-indigo-600">Step {index + 1}</div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700"><Icon className="h-5 w-5" /></div>
+                    <div className="mt-6 text-[13px] font-bold uppercase tracking-[0.18em] text-indigo-700">Step {index + 1}</div>
                     <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">{step.title}</h3>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">{step.text}</p>
+                    <p className="mt-3 text-[15px] leading-6 text-slate-700">{step.text}</p>
                   </div>
                 );
               })}
@@ -654,12 +654,12 @@ export default function HomePage() {
               {capabilities.map((feature) => {
                 const Icon = feature.icon;
                 return (
-                  <div key={feature.title} className="group overflow-hidden rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-950/8">
+                  <div key={feature.title} className="group overflow-hidden rounded-[30px] border border-slate-300 bg-white p-6 shadow-md shadow-slate-200/70 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-950/8">
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.accent} text-white shadow-lg shadow-slate-950/12`}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <h3 className="mt-7 text-xl font-semibold tracking-[-0.035em] text-slate-950">{feature.title}</h3>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">{feature.text}</p>
+                    <p className="mt-3 text-[15px] leading-6 text-slate-700">{feature.text}</p>
                     <div className="mt-7 h-16 overflow-hidden rounded-2xl bg-slate-50 p-3">
                       {feature.title === "Trust Stack Scoring" && (
                         <div className="flex h-full items-center gap-2">
@@ -677,7 +677,7 @@ export default function HomePage() {
                           {["ChatGPT", "Gemini", "Perplexity"].map((label, index) => (
                             <div key={label} className="flex flex-col items-center gap-2">
                               <div className={`h-3 w-3 rounded-full bg-gradient-to-r ${feature.accent} ${index === 1 ? "scale-125" : "opacity-70"}`} />
-                              <div className="text-[10px] font-medium text-slate-500">{label}</div>
+                              <div className="text-[10px] font-medium text-slate-600">{label}</div>
                             </div>
                           ))}
                         </div>
@@ -704,7 +704,7 @@ export default function HomePage() {
                       {feature.title === "Local Content Drafting" && (
                         <div className="space-y-2">
                           {["Tampa homeowners insurance", "Coverage options", "Why local trust matters"].map((line, index) => (
-                            <div key={line} className="rounded-xl bg-white px-3 py-2 text-[10px] text-slate-500">
+                            <div key={line} className="rounded-xl bg-white px-3 py-2 text-[10px] text-slate-600">
                               <div className={`h-1.5 rounded-full ${index === 0 ? "w-4/5 bg-rose-400" : index === 1 ? "w-3/5 bg-pink-400" : "w-2/3 bg-slate-300"}`} />
                             </div>
                           ))}
@@ -751,9 +751,9 @@ export default function HomePage() {
         <section className="overflow-hidden bg-slate-950 px-4 py-20 text-white sm:px-6 sm:py-28">
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">Signature framework</div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">The Trust Stack shows why you&apos;re not visible — and what to fix first.</h2>
-              <p className="mt-6 text-lg leading-8 text-white/80">
+              <div className="text-[13px] font-bold uppercase tracking-[0.2em] text-cyan-200">Signature framework</div>
+              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">The Trust Stack shows why you&apos;re not visible — and what to fix first.</h2>
+              <p className="mt-6 text-lg leading-8 text-white/88">
                 Instead of scattered reports and disconnected tasks, Geothority shows what is helping, what is holding you back, what can be fixed now, and where the team should focus next.
               </p>
               <div className="mt-8 grid gap-3">
@@ -766,14 +766,14 @@ export default function HomePage() {
               <Link href="#platform" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-50">
                 Explore the Platform <ArrowRight className="h-4 w-4" />
               </Link>
-              <p className="mt-5 text-sm text-white/62">Built to make visibility work feel more like a system and less like guesswork.</p>
+              <p className="mt-5 text-sm text-white/82">Built to make visibility work feel more like a system and less like guesswork.</p>
             </div>
 
             <div className="rounded-[34px] border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-200/80">
-              <div className="rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#eff6ff)] p-5 text-slate-950">
+              <div className="rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#eff6ff)] p-5 text-slate-950 shadow-lg shadow-slate-200/80">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Trust Stack Object</div>
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-600">Trust Stack Object</div>
                     <div className="mt-1 text-lg font-semibold">Weekly authority map</div>
                   </div>
                   <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs text-emerald-700">+14 available</div>
@@ -792,7 +792,7 @@ export default function HomePage() {
                         <motion.span
                           animate={status === "Fix" || status === "Draft" ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
                           transition={{ repeat: Infinity, duration: 1.9 }}
-                          className="text-slate-500"
+                          className="text-slate-600"
                         >
                           {status}
                         </motion.span>
@@ -839,25 +839,25 @@ export default function HomePage() {
                 <div className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-rose-600">Typical SEO tools</div>
                 <div className="mt-7 space-y-4">
                   {["find issues but stop at reporting", "generic recommendations without execution", "scattered dashboards across too many surfaces", "manual follow-up after the insight"].map((item) => (
-                    <div key={item} className="flex items-center gap-3 text-slate-600"><span className="h-2 w-2 rounded-full bg-rose-400" /> {item}</div>
+                    <div key={item} className="flex items-center gap-3 text-slate-800"><span className="h-2 w-2 rounded-full bg-rose-500" /> {item}</div>
                   ))}
                 </div>
               </div>
-              <div className="rounded-[32px] border border-emerald-100 bg-slate-950 p-7 text-white shadow-2xl shadow-slate-950/16">
-                <div className="inline-flex rounded-full bg-emerald-300/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Geothority</div>
+              <div className="rounded-[32px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff,#ecfdf5)] p-7 text-slate-950 shadow-sm">
+                <div className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Geothority</div>
                 <div className="mt-7 grid gap-3">
                   {[
                     ["Automatic", "Run safe fixes where supported"],
                     ["Approval", "Queue content, campaigns, and response plans"],
                     ["Guided", "Package the next step when full automation is not native"],
                   ].map(([label, text], index) => (
-                    <motion.div key={label} initial={{ opacity: 0.6 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.12, duration: 0.4 }} className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
+                    <motion.div key={label} initial={{ opacity: 0.6 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.12, duration: 0.4 }} className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 shadow-sm">
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-200/80">{label}</div>
-                          <div className="mt-1 text-sm text-white/86">{text}</div>
+                          <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-700">{label}</div>
+                          <div className="mt-1 text-sm text-slate-800">{text}</div>
                         </div>
-                        <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                       </div>
                     </motion.div>
                   ))}
@@ -865,7 +865,7 @@ export default function HomePage() {
               </div>
             </div>
             <p className="mt-8 text-center text-lg font-medium text-slate-700">Less reporting for its own sake. More clarity on what to do next.</p>
-            <p className="mt-3 text-center text-sm text-slate-500">That means fewer scattered dashboards, fewer vague priorities, and a more actionable visibility workflow for the team actually doing the work.</p>
+            <p className="mt-3 text-center text-sm text-slate-700">That means fewer scattered dashboards, fewer vague priorities, and a more actionable visibility workflow for the team actually doing the work.</p>
           </div>
         </section>
 
