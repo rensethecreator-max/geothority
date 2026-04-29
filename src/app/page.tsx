@@ -235,8 +235,9 @@ function HeroVisual() {
         <div className="relative overflow-hidden rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,#111b35,#070b16)] p-5 text-white">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45">Executive visibility view</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/70">Executive visibility view</div>
               <div className="mt-2 text-xl font-semibold tracking-[-0.03em]">Trust Stack Score</div>
+              <div className="mt-1 text-sm text-white/72">Find what is suppressing visibility, then move the right fix forward.</div>
             </div>
             <div className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-200">Live</div>
           </div>
@@ -257,15 +258,15 @@ function HeroVisual() {
                 </div>
               </div>
               <div className="mt-5 rounded-2xl border border-emerald-300/15 bg-emerald-300/10 px-4 py-3 text-sm text-emerald-100">
-                +14 points available from fixable items
+                +14 points available from safe fixes and queued actions
               </div>
             </div>
 
             <div className="space-y-3">
               {[
-                ["AI visibility", "Ahead of 2 local competitors", "+12", "emerald"],
-                ["Listings", "Citation mismatch isolated", "Fixable", "cyan"],
-                ["Trust pages", "Priority gap detected this week", "Priority", "amber"],
+                ["AI visibility", "Ahead of 2 local competitors after new entity coverage", "+12", "emerald"],
+                ["Listings", "3 directories ready to sync. 1 mismatch still needs review.", "3 synced", "cyan"],
+                ["Trust pages", "Priority gap detected this week. Draft and schema package ready.", "Ready", "amber"],
               ].map(([label, text, badge, color], index) => (
                 <motion.div
                   key={label}
@@ -276,8 +277,8 @@ function HeroVisual() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/38">{label}</div>
-                      <div className="mt-1 text-sm leading-6 text-white/88">{text}</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/68">{label}</div>
+                      <div className="mt-1 text-sm leading-6 text-white/96">{text}</div>
                     </div>
                     <div className={`rounded-full px-2.5 py-1 text-xs font-semibold ${color === "emerald" ? "bg-emerald-300/12 text-emerald-200" : color === "cyan" ? "bg-cyan-300/12 text-cyan-200" : "bg-amber-300/12 text-amber-100"}`}>{badge}</div>
                   </div>
@@ -286,8 +287,8 @@ function HeroVisual() {
               <div className="rounded-2xl border border-amber-200/15 bg-[linear-gradient(135deg,rgba(251,191,36,0.16),rgba(255,255,255,0.06))] p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100/70">Operator brief</div>
-                    <div className="mt-2 text-sm leading-6 text-white/84">3 high-leverage moves queued for review</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100/90">Operator brief</div>
+                    <div className="mt-2 text-sm leading-6 text-white/95">3 high-leverage moves queued for review</div>
                   </div>
                   <Sparkles className="h-5 w-5 text-amber-200" />
                 </div>
@@ -295,8 +296,12 @@ function HeroVisual() {
             </div>
           </div>
 
-          <div className="mt-5 h-16 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3">
-            <div className="flex h-full items-end gap-2">
+          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3">
+            <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-white/62">
+              <span>Fix momentum</span>
+              <span>Last 30 days</span>
+            </div>
+            <div className="flex h-12 items-end gap-2">
               {[34, 46, 38, 58, 52, 68, 61, 78, 72, 84, 79, 91].map((height, index) => (
                 <motion.div
                   key={index}
@@ -329,7 +334,7 @@ function MiniProductPanel({ active }: { active: WalkthroughTab }) {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.3),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(20,184,166,0.22),transparent_28%)]" />
       <div className="relative">
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs text-white/70">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs text-white/80">
             <Icon className="h-4 w-4" /> {tab.eyebrow}
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-2xl font-semibold tracking-[-0.06em]">{tab.metric}</div>
@@ -341,7 +346,7 @@ function MiniProductPanel({ active }: { active: WalkthroughTab }) {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-sm font-semibold">{index + 1}</span>
-                  <span className="text-sm font-medium capitalize text-white/90">{bullet}</span>
+                  <span className="text-sm font-medium capitalize text-white/95">{bullet}</span>
                 </div>
                 <CheckCircle2 className="h-4 w-4 text-emerald-300" />
               </div>
@@ -350,8 +355,8 @@ function MiniProductPanel({ active }: { active: WalkthroughTab }) {
         </div>
 
         <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.07] p-4">
-          <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-white/42">
-            <span>Momentum</span>
+          <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-white/62">
+            <span>Fix progress</span>
             <span>This week</span>
           </div>
           <div className="flex h-24 items-end gap-2">
@@ -380,7 +385,7 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
       <p className="mt-4 text-sm leading-6 text-slate-600">{mode.subtitle}</p>
 
       <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-950 p-4 text-white">
-        <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-white/46">
+        <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-white/70">
           <span>Execution preview</span>
           <span>{index === 0 ? "Live" : index === 1 ? "Awaiting approval" : "Guided"}</span>
         </div>
@@ -393,7 +398,7 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
               ["Citation check", "Synced"],
             ].map(([label, status], row) => (
               <motion.div key={label} initial={{ opacity: 0.45 }} animate={{ opacity: 1 }} transition={{ delay: row * 0.18, duration: 0.45 }} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
-                <span className="text-sm text-white/84">{label}</span>
+                <span className="text-sm text-white/96">{label}</span>
                 <span className="rounded-full bg-emerald-300/12 px-2 py-1 text-[11px] font-semibold text-emerald-200">{status}</span>
               </motion.div>
             ))}
@@ -408,7 +413,7 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
               ["Competitor response", "Review"],
             ].map(([label, status], row) => (
               <div key={label} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
-                <span className="text-sm text-white/84">{label}</span>
+                <span className="text-sm text-white/96">{label}</span>
                 <motion.span animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 2.2, delay: row * 0.2 }} className="rounded-full bg-cyan-300/12 px-2 py-1 text-[11px] font-semibold text-cyan-200">{status}</motion.span>
               </div>
             ))}
@@ -423,9 +428,9 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
               ["GBP photo freshness", 46],
             ].map(([label, progress]) => (
               <div key={label as string} className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3">
-                <div className="mb-2 flex items-center justify-between text-sm text-white/84">
+                <div className="mb-2 flex items-center justify-between text-sm text-white/96">
                   <span>{label as string}</span>
-                  <span className="text-white/56">Next step ready</span>
+                  <span className="text-white/72">Next step ready</span>
                 </div>
                 <div className="h-2 rounded-full bg-white/10">
                   <motion.div initial={{ width: 0 }} whileInView={{ width: `${progress}%` }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="h-full rounded-full bg-gradient-to-r from-amber-300 to-orange-300" />
@@ -729,14 +734,14 @@ export default function HomePage() {
               <Link href="#platform" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-50">
                 Explore the Platform <ArrowRight className="h-4 w-4" />
               </Link>
-              <p className="mt-5 text-sm text-white/42">Built to make visibility work feel more like a system and less like guesswork.</p>
+              <p className="mt-5 text-sm text-white/62">Built to make visibility work feel more like a system and less like guesswork.</p>
             </div>
 
             <div className="rounded-[34px] border border-white/10 bg-white/[0.055] p-4 shadow-2xl shadow-black/30">
               <div className="rounded-[26px] border border-white/10 bg-[#081020] p-5">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] uppercase tracking-[0.24em] text-white/60">Trust Stack Object</div>
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-white/78">Trust Stack Object</div>
                     <div className="mt-1 text-lg font-semibold">Weekly authority map</div>
                   </div>
                   <div className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs text-emerald-200">+14 available</div>
@@ -751,8 +756,8 @@ export default function HomePage() {
                   ].map(([label, score, status]) => (
                     <div key={label as string}>
                       <div className="mb-2 flex items-center justify-between text-sm">
-                        <span className="text-white/88">{label}</span>
-                        <span className="text-white/68">{status}</span>
+                        <span className="text-white/92">{label}</span>
+                        <span className="text-white/78">{status}</span>
                       </div>
                       <div className="h-3 rounded-full bg-white/10">
                         <motion.div
@@ -923,7 +928,7 @@ export default function HomePage() {
             <div className="mx-auto max-w-3xl">
               <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10"><TrendingUp className="h-6 w-6 text-emerald-300" /></div>
               <h2 className="text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">See what is suppressing your visibility.</h2>
-              <p className="mt-5 text-lg leading-8 text-white/68">Run your first scan in about 90 seconds and get a clearer action path across local search and AI visibility.</p>
+              <p className="mt-5 text-lg leading-8 text-white/82">Run your first scan in about 90 seconds and get a clearer action path across local search and AI visibility.</p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-emerald-50">Get Free Scan <ArrowRight className="h-4 w-4" /></Link>
                 <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-white/15 px-7 py-4 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10">See Pricing</Link>
