@@ -45,26 +45,47 @@ const socialProof = [
 
 const logoProof = ["Independent agencies", "Local operators", "Multi-location teams", "Visibility-led growth"];
 
+const executionModes = [
+  {
+    title: "Automatic fixes",
+    subtitle: "Handled directly where safe and supported",
+    bullets: ["Schema deployment", "Monitoring updates", "Selected fix-engine actions"],
+    accent: "from-emerald-400 to-teal-300",
+  },
+  {
+    title: "One-click approval",
+    subtitle: "Prepared for fast operator review",
+    bullets: ["Content drafts", "Review pushes", "Priority response plans"],
+    accent: "from-cyan-400 to-indigo-300",
+  },
+  {
+    title: "Guided execution",
+    subtitle: "Clear next step when full automation is not native",
+    bullets: ["Deployment instructions", "Fix packages", "Action-ready priorities"],
+    accent: "from-amber-300 to-orange-300",
+  },
+];
+
 const workflowSteps = [
   {
     title: "Scan",
     icon: Search,
-    text: "Scan your business across local search, listings, reviews, and AI answer surfaces.",
+    text: "Scan your business across Google, Maps, listings, reviews, competitors, and AI answer surfaces.",
   },
   {
-    title: "Prioritize",
+    title: "Diagnose",
     icon: Compass,
-    text: "See the issues most likely to affect visibility first — without digging through noise.",
+    text: "See what is suppressing visibility first — without digging through generic SEO noise.",
   },
   {
-    title: "Act",
+    title: "Fix",
     icon: Zap,
-    text: "Generate, review, or deploy supported improvements with a clearer next step.",
+    text: "Run safe fixes automatically, approve the right actions, or follow a guided next step.",
   },
   {
     title: "Monitor",
     icon: Radar,
-    text: "Track competitor changes and visibility momentum over time.",
+    text: "Track what changed, what improved, and where competitors are gaining ground over time.",
   },
 ];
 
@@ -344,6 +365,88 @@ function MiniProductPanel({ active }: { active: WalkthroughTab }) {
   );
 }
 
+function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number]; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{ delay: index * 0.08, duration: 0.45 }}
+      className="overflow-hidden rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm"
+    >
+      <div className={`inline-flex rounded-full bg-gradient-to-r ${mode.accent} px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-950`}>
+        {mode.title}
+      </div>
+      <p className="mt-4 text-sm leading-6 text-slate-600">{mode.subtitle}</p>
+
+      <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-950 p-4 text-white">
+        <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-white/46">
+          <span>Execution preview</span>
+          <span>{index === 0 ? "Live" : index === 1 ? "Awaiting approval" : "Guided"}</span>
+        </div>
+
+        {index === 0 && (
+          <div className="space-y-3">
+            {[
+              ["Schema package", "Deployed"],
+              ["Weekly monitor", "Running"],
+              ["Citation check", "Synced"],
+            ].map(([label, status], row) => (
+              <motion.div key={label} initial={{ opacity: 0.45 }} animate={{ opacity: 1 }} transition={{ delay: row * 0.18, duration: 0.45 }} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
+                <span className="text-sm text-white/84">{label}</span>
+                <span className="rounded-full bg-emerald-300/12 px-2 py-1 text-[11px] font-semibold text-emerald-200">{status}</span>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {index === 1 && (
+          <div className="space-y-3">
+            {[
+              ["Review campaign", "Approve"],
+              ["City page draft", "Approve"],
+              ["Competitor response", "Review"],
+            ].map(([label, status], row) => (
+              <div key={label} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
+                <span className="text-sm text-white/84">{label}</span>
+                <motion.span animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 2.2, delay: row * 0.2 }} className="rounded-full bg-cyan-300/12 px-2 py-1 text-[11px] font-semibold text-cyan-200">{status}</motion.span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {index === 2 && (
+          <div className="space-y-3">
+            {[
+              ["Trust page gap", 84],
+              ["Directory mismatch", 62],
+              ["GBP photo freshness", 46],
+            ].map(([label, progress]) => (
+              <div key={label as string} className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3">
+                <div className="mb-2 flex items-center justify-between text-sm text-white/84">
+                  <span>{label as string}</span>
+                  <span className="text-white/56">Next step ready</span>
+                </div>
+                <div className="h-2 rounded-full bg-white/10">
+                  <motion.div initial={{ width: 0 }} whileInView={{ width: `${progress}%` }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="h-full rounded-full bg-gradient-to-r from-amber-300 to-orange-300" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 space-y-2">
+        {mode.bullets.map((bullet) => (
+          <div key={bullet} className="flex items-center gap-2 text-sm text-slate-700">
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {bullet}
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function HomePage() {
   const [mobileNav, setMobileNav] = useState(false);
   const [activeTab, setActiveTab] = useState<WalkthroughTab>("scan");
@@ -395,16 +498,16 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.88fr_1.12fr]">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65 }}>
               <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-700 shadow-sm">
-                <Sparkles className="h-3.5 w-3.5" /> Local Search + AI Visibility Platform
+                <Sparkles className="h-3.5 w-3.5" /> Visibility diagnosis + fix engine
               </div>
               <h1 className="mt-7 max-w-5xl text-[2.55rem] font-semibold leading-[0.96] tracking-[-0.07em] text-slate-950 sm:text-5xl lg:text-[5.15rem]">
-                Become the business search engines trust — and customers find first.
+                Find out why you&apos;re not visible — and fix what&apos;s holding you back.
               </h1>
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                Geothority shows what is weakening your visibility across Google, Maps, directories, reviews, and AI search — then helps you prioritize the next move with clarity.
+                Geothority scans your business across Google, Maps, directories, reviews, competitors, and AI search — then fixes what it can automatically, queues the right actions for approval, and guides the rest to completion.
               </p>
               <p className="mt-3 max-w-lg text-sm leading-6 text-slate-500 sm:text-base sm:leading-7">
-                Built for teams that want a calmer, sharper operating system for local visibility — not another pile of SEO reporting.
+                Built for teams that want resolution, not just reporting.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -418,15 +521,15 @@ export default function HomePage() {
 
               <div className="mt-6 flex flex-wrap gap-3 text-sm font-medium text-slate-700">
                 {[
-                  "90-second first scan",
-                  "Trust + AI visibility monitoring",
+                  "Automatic fixes where supported",
+                  "One-click approvals for high-impact actions",
                 ].map((item) => (
                   <div key={item} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 shadow-sm">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {item}
                   </div>
                 ))}
               </div>
-              <p className="mt-5 text-sm font-medium text-slate-500">Built for insurance agencies and serious local operators.</p>
+              <p className="mt-5 text-sm font-medium text-slate-500">Built for insurance agencies and serious local operators who need a clearer path from problem to completed fix.</p>
             </motion.div>
 
             <HeroVisual />
@@ -483,8 +586,8 @@ export default function HomePage() {
             <SectionIntro
               center
               eyebrow="How it works"
-              title="A clearer system for improving visibility."
-              text="Geothority helps your team move from scattered SEO effort to a more disciplined operating rhythm."
+              title="Find what&apos;s suppressing visibility. Fix what can be fixed."
+              text="Geothority helps your team move from scattered SEO effort to a more disciplined diagnose-and-fix workflow."
             />
             <div className="mt-12 grid gap-4 md:grid-cols-4">
               {workflowSteps.map((step, index) => {
@@ -507,8 +610,8 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl">
             <SectionIntro
               eyebrow="Core capabilities"
-              title="Visibility intelligence, prioritization, and guided execution — in one platform."
-              text="Geothority helps serious operators see what matters and respond with more precision."
+              title="Diagnosis, prioritization, and fix execution — in one platform."
+              text="Geothority helps serious operators see what matters, resolve what they can fast, and move the rest forward with more precision."
             />
             <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {capabilities.map((feature) => {
@@ -542,6 +645,34 @@ export default function HomePage() {
                           ))}
                         </div>
                       )}
+                      {feature.title === "Citation & Listing Review" && (
+                        <div className="space-y-2">
+                          {[true, false, true].map((matched, index) => (
+                            <div key={index} className="flex items-center gap-2 rounded-xl bg-white px-2 py-1.5">
+                              <span className={`h-2.5 w-2.5 rounded-full ${matched ? "bg-emerald-400" : "bg-rose-400"}`} />
+                              <div className="h-1.5 flex-1 rounded-full bg-slate-200">
+                                <div className={`h-full rounded-full ${matched ? "bg-emerald-400 w-full" : "bg-rose-400 w-2/3"}`} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {feature.title === "Schema Generation" && (
+                        <div className="space-y-2 rounded-2xl bg-slate-950 px-3 py-2 text-[10px] text-emerald-300">
+                          <div>{'{'}"@type": "LocalBusiness"{'}'}</div>
+                          <div>{'{'}"areaServed": "Tampa"{'}'}</div>
+                          <div>{'{'}"sameAs": [ ... ]{'}'}</div>
+                        </div>
+                      )}
+                      {feature.title === "Local Content Drafting" && (
+                        <div className="space-y-2">
+                          {["Tampa homeowners insurance", "Coverage options", "Why local trust matters"].map((line, index) => (
+                            <div key={line} className="rounded-xl bg-white px-3 py-2 text-[10px] text-slate-500">
+                              <div className={`h-1.5 rounded-full ${index === 0 ? "w-4/5 bg-rose-400" : index === 1 ? "w-3/5 bg-pink-400" : "w-2/3 bg-slate-300"}`} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       {feature.title === "Competitor Monitoring" && (
                         <div className="flex h-full items-end gap-1.5">
                           {[18, 24, 20, 42, 36, 58, 52].map((height, index) => (
@@ -549,7 +680,7 @@ export default function HomePage() {
                           ))}
                         </div>
                       )}
-                      {! ["Trust Stack Scoring", "AI Visibility Monitoring", "Competitor Monitoring"].includes(feature.title) && (
+                      {! ["Trust Stack Scoring", "AI Visibility Monitoring", "Citation & Listing Review", "Schema Generation", "Local Content Drafting", "Competitor Monitoring"].includes(feature.title) && (
                         <div className="flex h-full items-end gap-1.5">
                           {[24, 38, 30, 52, 46, 62, 58].map((height, index) => (
                             <div key={index} style={{ height }} className={`flex-1 rounded-t bg-gradient-to-t ${feature.accent} opacity-70 transition group-hover:opacity-100`} />
@@ -564,13 +695,29 @@ export default function HomePage() {
           </div>
         </section>
 
+        <section className="px-4 py-20 sm:px-6 sm:py-24">
+          <div className="mx-auto max-w-7xl">
+            <SectionIntro
+              center
+              eyebrow="How Geothority helps you fix visibility"
+              title="Not everything should be treated the same way."
+              text="Geothority separates what can be fixed automatically, what should be queued for approval, and what still needs a guided operator step."
+            />
+            <div className="mt-12 grid gap-5 lg:grid-cols-3">
+              {executionModes.map((mode, index) => (
+                <ExecutionModeCard key={mode.title} mode={mode} index={index} />
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="overflow-hidden bg-slate-950 px-4 py-20 text-white sm:px-6 sm:py-28">
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">Signature framework</div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">The Trust Stack gives your team one operating view for local visibility.</h2>
+              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">The Trust Stack shows why you&apos;re not visible — and what to fix first.</h2>
               <p className="mt-6 text-lg leading-8 text-white/80">
-                Instead of scattered reports and disconnected tasks, Geothority shows what is helping, what is holding you back, and where to focus next — in one clearer system.
+                Instead of scattered reports and disconnected tasks, Geothority shows what is helping, what is holding you back, what can be fixed now, and where the team should focus next.
               </p>
               <div className="mt-8 grid gap-3">
                 {["Prioritize what matters most", "Separate signal from noise", "Spot fixable issues faster"].map((item) => (
@@ -636,21 +783,33 @@ export default function HomePage() {
 
         <section className="px-4 py-20 sm:px-6 sm:py-28">
           <div className="mx-auto max-w-7xl">
-            <SectionIntro center eyebrow="Why teams switch" title="Most SEO tools report on the problem. Geothority helps you move on it." />
+            <SectionIntro center eyebrow="Why teams switch" title="Most SEO tools stop at diagnosis. Geothority helps complete the work." />
             <div className="mt-12 grid gap-5 lg:grid-cols-2">
               <div className="rounded-[32px] border border-rose-100 bg-white p-7 shadow-sm">
                 <div className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-rose-600">Typical SEO tools</div>
                 <div className="mt-7 space-y-4">
-                  {["dashboards without a clear next step", "generic recommendations", "scattered reporting across too many surfaces", "manual follow-up after the insight"].map((item) => (
+                  {["find issues but stop at reporting", "generic recommendations without execution", "scattered dashboards across too many surfaces", "manual follow-up after the insight"].map((item) => (
                     <div key={item} className="flex items-center gap-3 text-slate-600"><span className="h-2 w-2 rounded-full bg-rose-400" /> {item}</div>
                   ))}
                 </div>
               </div>
               <div className="rounded-[32px] border border-emerald-100 bg-slate-950 p-7 text-white shadow-2xl shadow-slate-950/16">
                 <div className="inline-flex rounded-full bg-emerald-300/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Geothority</div>
-                <div className="mt-7 space-y-4">
-                  {["prioritized visibility action path", "trust + AI visibility in one view", "competitor response planning", "execution-first workflow"].map((item) => (
-                    <div key={item} className="flex items-center gap-3 text-white/82"><CheckCircle2 className="h-5 w-5 text-emerald-300" /> {item}</div>
+                <div className="mt-7 grid gap-3">
+                  {[
+                    ["Automatic", "Run safe fixes where supported"],
+                    ["Approval", "Queue content, campaigns, and response plans"],
+                    ["Guided", "Package the next step when full automation is not native"],
+                  ].map(([label, text], index) => (
+                    <motion.div key={label} initial={{ opacity: 0.6 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.12, duration: 0.4 }} className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-200/80">{label}</div>
+                          <div className="mt-1 text-sm text-white/86">{text}</div>
+                        </div>
+                        <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
@@ -666,7 +825,7 @@ export default function HomePage() {
               center
               eyebrow="Platform walkthrough"
               title="See how Geothority works inside the platform."
-              text="From first scan to ongoing monitoring, every view is designed to make visibility easier to understand and easier to improve."
+              text="From first scan to completed fix path, every view is designed to make visibility easier to understand and easier to resolve."
             />
             <div className="mt-10 flex flex-wrap justify-center gap-2">
               {(Object.keys(tabs) as WalkthroughTab[]).map((key) => (
