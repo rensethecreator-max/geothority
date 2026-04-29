@@ -229,28 +229,28 @@ function HeroVisual() {
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.75, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-[34px] border border-white/70 bg-slate-950 p-3 shadow-[0_30px_90px_rgba(15,23,42,0.28)]"
+        className="relative overflow-hidden rounded-[34px] border border-slate-200 bg-white p-3 shadow-[0_30px_90px_rgba(15,23,42,0.12)]"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(129,140,248,0.36),transparent_34%),radial-gradient(circle_at_80%_18%,rgba(45,212,191,0.24),transparent_24%)]" />
-        <div className="relative overflow-hidden rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,#111b35,#070b16)] p-5 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(129,140,248,0.16),transparent_34%),radial-gradient(circle_at_80%_18%,rgba(45,212,191,0.14),transparent_24%)]" />
+        <div className="relative overflow-hidden rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#eef4ff)] p-5 text-slate-950">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/70">Executive visibility view</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">Executive visibility view</div>
               <div className="mt-2 text-xl font-semibold tracking-[-0.03em]">Trust Stack Score</div>
-              <div className="mt-1 text-sm text-white/72">Find what is suppressing visibility, then move the right fix forward.</div>
+              <div className="mt-1 text-sm text-slate-600">Find what is suppressing visibility, then move the right fix forward.</div>
             </div>
-            <div className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-200">Live</div>
+            <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Live</div>
           </div>
 
           <div className="mt-7 grid gap-4 sm:grid-cols-[0.78fr_1fr]">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-5">
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="relative mx-auto flex h-44 w-44 items-center justify-center rounded-full bg-[conic-gradient(from_220deg,#60a5fa_0deg,#34d399_210deg,rgba(255,255,255,0.1)_210deg)] p-3">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
                   className="absolute inset-2 rounded-full border border-emerald-300/12 border-t-emerald-300/40"
                 />
-                <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-slate-950">
+                <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-slate-50 text-slate-950">
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -259,17 +259,17 @@ function HeroVisual() {
                   >
                     78
                   </motion.div>
-                  <div className="mt-1 text-xs uppercase tracking-[0.22em] text-white/52">out of 100</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.22em] text-slate-500">out of 100</div>
                   <motion.div
                     animate={{ opacity: [0.4, 1, 0.4] }}
                     transition={{ repeat: Infinity, duration: 2.4 }}
-                    className="mt-2 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-emerald-300/80"
+                    className="mt-2 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-emerald-700"
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" /> scanning live
                   </motion.div>
                 </div>
               </div>
-              <div className="mt-5 rounded-2xl border border-emerald-300/15 bg-emerald-300/10 px-4 py-3 text-sm text-emerald-100">
+              <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                 +14 points available from safe fixes and queued actions
               </div>
             </div>
@@ -285,37 +285,37 @@ function HeroVisual() {
                   initial={{ opacity: 0, x: 18 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.18 + index * 0.12, duration: 0.5 }}
-                  className="rounded-2xl border border-white/10 bg-white/[0.075] p-4"
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/68">{label}</div>
-                      <div className="mt-1 text-sm leading-6 text-white/96">{text}</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</div>
+                      <div className="mt-1 text-sm leading-6 text-slate-800">{text}</div>
                     </div>
                     <motion.div
                       animate={{ scale: [1, 1.04, 1] }}
                       transition={{ repeat: Infinity, duration: 2.3, delay: index * 0.25 }}
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${color === "emerald" ? "bg-emerald-300/12 text-emerald-200" : color === "cyan" ? "bg-cyan-300/12 text-cyan-200" : "bg-amber-300/12 text-amber-100"}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${color === "emerald" ? "bg-emerald-50 text-emerald-700" : color === "cyan" ? "bg-cyan-50 text-cyan-700" : "bg-amber-50 text-amber-700"}`}
                     >
                       {badge}
                     </motion.div>
                   </div>
                 </motion.div>
               ))}
-              <div className="rounded-2xl border border-amber-200/15 bg-[linear-gradient(135deg,rgba(251,191,36,0.16),rgba(255,255,255,0.06))] p-4">
+              <div className="rounded-2xl border border-amber-200 bg-[linear-gradient(135deg,rgba(254,243,199,0.95),rgba(255,255,255,1))] p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100/90">Operator brief</div>
-                    <div className="mt-2 text-sm leading-6 text-white/95">3 high-leverage moves queued for review</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-700">Operator brief</div>
+                    <div className="mt-2 text-sm leading-6 text-slate-800">3 high-leverage moves queued for review</div>
                   </div>
-                  <Sparkles className="h-5 w-5 text-amber-200" />
+                  <Sparkles className="h-5 w-5 text-amber-500" />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3">
-            <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-white/62">
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-slate-500">
               <span>Fix momentum</span>
               <span>Last 30 days</span>
             </div>
@@ -402,8 +402,8 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
       </div>
       <p className="mt-4 text-sm leading-6 text-slate-600">{mode.subtitle}</p>
 
-      <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-950 p-4 text-white">
-        <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-white/70">
+      <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-slate-900">
+        <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-slate-500">
           <span>Execution preview</span>
           <motion.span animate={{ opacity: [0.55, 1, 0.55] }} transition={{ repeat: Infinity, duration: 2.2 }}>
             {index === 0 ? "Live" : index === 1 ? "Awaiting approval" : "Guided"}
@@ -417,12 +417,12 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
               ["Weekly monitor", "Running"],
               ["Citation check", "Synced"],
             ].map(([label, status], row) => (
-              <motion.div key={label} initial={{ opacity: 0.45 }} animate={{ opacity: [0.75, 1, 0.75] }} transition={{ delay: row * 0.18, duration: 2.4, repeat: Infinity, repeatDelay: 0.6 }} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
-                <span className="text-sm text-white/96">{label}</span>
-                <span className="rounded-full bg-emerald-300/12 px-2 py-1 text-[11px] font-semibold text-emerald-200">{status}</span>
+              <motion.div key={label} initial={{ opacity: 0.45 }} animate={{ opacity: [0.75, 1, 0.75] }} transition={{ delay: row * 0.18, duration: 2.4, repeat: Infinity, repeatDelay: 0.6 }} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+                <span className="text-sm text-slate-800">{label}</span>
+                <span className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700">{status}</span>
               </motion.div>
             ))}
-            <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-emerald-200/80">
+            <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-emerald-700">
               <motion.span animate={{ x: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.6 }} className="h-1.5 w-6 rounded-full bg-emerald-300" />
               pushing fixes now
             </div>
@@ -436,12 +436,12 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
               ["City page draft", "Approve"],
               ["Competitor response", "Review"],
             ].map(([label, status], row) => (
-              <div key={label} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
-                <span className="text-sm text-white/96">{label}</span>
-                <motion.span animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 2.2, delay: row * 0.2 }} className="rounded-full bg-cyan-300/12 px-2 py-1 text-[11px] font-semibold text-cyan-200">{status}</motion.span>
+              <div key={label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+                <span className="text-sm text-slate-800">{label}</span>
+                <motion.span animate={{ scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 2.2, delay: row * 0.2 }} className="rounded-full bg-cyan-50 px-2 py-1 text-[11px] font-semibold text-cyan-700">{status}</motion.span>
               </div>
             ))}
-            <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-cyan-200/80">
+            <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-cyan-700">
               <motion.span animate={{ opacity: [0.25, 1, 0.25] }} transition={{ repeat: Infinity, duration: 1.4 }} className="h-2 w-2 rounded-full bg-cyan-300" />
               waiting on operator approval
             </div>
@@ -455,17 +455,17 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
               ["Directory mismatch", 62],
               ["GBP photo freshness", 46],
             ].map(([label, progress]) => (
-              <div key={label as string} className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3">
-                <div className="mb-2 flex items-center justify-between text-sm text-white/96">
+              <div key={label as string} className="rounded-2xl border border-slate-200 bg-white px-3 py-3">
+                <div className="mb-2 flex items-center justify-between text-sm text-slate-800">
                   <span>{label as string}</span>
-                  <span className="text-white/72">Next step ready</span>
+                  <span className="text-slate-500">Next step ready</span>
                 </div>
-                <div className="h-2 rounded-full bg-white/10">
+                <div className="h-2 rounded-full bg-slate-200">
                   <motion.div initial={{ width: 0 }} whileInView={{ width: `${progress}%` }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="h-full rounded-full bg-gradient-to-r from-amber-300 to-orange-300" />
                 </div>
               </div>
             ))}
-            <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-amber-200/80">
+            <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-amber-700">
               <motion.span animate={{ x: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.8 }} className="h-1.5 w-6 rounded-full bg-amber-300" />
               packaged next step ready
             </div>
@@ -769,14 +769,14 @@ export default function HomePage() {
               <p className="mt-5 text-sm text-white/62">Built to make visibility work feel more like a system and less like guesswork.</p>
             </div>
 
-            <div className="rounded-[34px] border border-white/10 bg-white/[0.055] p-4 shadow-2xl shadow-black/30">
-              <div className="rounded-[26px] border border-white/10 bg-[#081020] p-5">
+            <div className="rounded-[34px] border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-200/80">
+              <div className="rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#eff6ff)] p-5 text-slate-950">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] uppercase tracking-[0.24em] text-white/78">Trust Stack Object</div>
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Trust Stack Object</div>
                     <div className="mt-1 text-lg font-semibold">Weekly authority map</div>
                   </div>
-                  <div className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs text-emerald-200">+14 available</div>
+                  <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs text-emerald-700">+14 available</div>
                 </div>
                 <div className="space-y-4">
                   {[
@@ -788,16 +788,16 @@ export default function HomePage() {
                   ].map(([label, score, status]) => (
                     <div key={label as string}>
                       <div className="mb-2 flex items-center justify-between text-sm">
-                        <span className="text-white/92">{label}</span>
+                        <span className="text-slate-800">{label}</span>
                         <motion.span
                           animate={status === "Fix" || status === "Draft" ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
                           transition={{ repeat: Infinity, duration: 1.9 }}
-                          className="text-white/78"
+                          className="text-slate-500"
                         >
                           {status}
                         </motion.span>
                       </div>
-                      <div className="h-3 rounded-full bg-white/10">
+                      <div className="h-3 rounded-full bg-slate-200">
                         <motion.div
                           initial={{ width: 0 }}
                           whileInView={{ width: `${score}%` }}
@@ -810,17 +810,17 @@ export default function HomePage() {
                   ))}
                 </div>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/8 p-4">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-200/90">Fix available</div>
-                    <div className="mt-2 text-sm text-white/92">Deploy trust-page schema and recover one of the lowest authority gaps first.</div>
-                    <div className="mt-3 h-1.5 rounded-full bg-white/10">
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-700">Fix available</div>
+                    <div className="mt-2 text-sm text-slate-800">Deploy trust-page schema and recover one of the lowest authority gaps first.</div>
+                    <div className="mt-3 h-1.5 rounded-full bg-emerald-100">
                       <motion.div animate={{ width: ["24%", "61%", "24%"] }} transition={{ repeat: Infinity, duration: 3.4 }} className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-teal-300" />
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-cyan-300/15 bg-cyan-300/8 p-4">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-cyan-200/90">Competitive pressure</div>
-                    <div className="mt-2 text-sm text-white/92">2 nearby competitors increased review velocity this week. Response plan ready.</div>
-                    <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-cyan-200/80">
+                  <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-cyan-700">Competitive pressure</div>
+                    <div className="mt-2 text-sm text-slate-800">2 nearby competitors increased review velocity this week. Response plan ready.</div>
+                    <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-cyan-700">
                       <motion.span animate={{ opacity: [0.25, 1, 0.25] }} transition={{ repeat: Infinity, duration: 1.6 }} className="h-2 w-2 rounded-full bg-cyan-300" />
                       response package prepared
                     </div>
