@@ -16,6 +16,7 @@ import {
 } from "@/lib/reputation/defaults";
 import { formatTriggerSource } from "@/lib/reputation/format";
 import { ProofShowcase } from "@/components/reputation/proof-showcase";
+import type { ReputationAnalyticsSummary } from "@/lib/reputation/types";
 
 interface ApiState {
   setupRequired: boolean;
@@ -27,7 +28,20 @@ interface FeedbackItem {
   topic: string | null;
   feedback_text: string;
   follow_up_status: string;
+  assigned_owner_name: string | null;
+  follow_up_due_date: string | null;
+  resolution_notes: string | null;
+  recovery_outcome: string | null;
+  resolved_at: string | null;
   created_at: string;
+}
+
+interface FeedbackDraft {
+  assignedOwnerName: string;
+  followUpDueDate: string;
+  followUpStatus: string;
+  recoveryOutcome: string;
+  resolutionNotes: string;
 }
 
 interface RecentRequest {
@@ -81,6 +95,41 @@ const TRIGGER_SOURCE_OPTIONS = [
   { value: "api", label: "API event" },
 ];
 
+const FEEDBACK_STATUS_OPTIONS = [
+  { value: "new", label: "New" },
+  { value: "reviewing", label: "Reviewing" },
+  { value: "outreach_queued", label: "Outreach queued" },
+  { value: "waiting_on_customer", label: "Waiting on customer" },
+  { value: "resolved", label: "Resolved" },
+];
+
+const FEEDBACK_OUTCOME_OPTIONS = [
+  { value: "pending", label: "Pending" },
+  { value: "saved_customer", label: "Saved customer" },
+  { value: "refund", label: "Refund" },
+  { value: "redo_job", label: "Redo / callback" },
+  { value: "coaching", label: "Team coaching" },
+  { value: "no_response", label: "No response" },
+  { value: "not_recoverable", label: "Not recoverable" },
+];
+
+const ACTIVE_FEEDBACK_STATUSES = new Set(["new", "reviewing", "outreach_queued", "waiting_on_customer"]);
+
+function buildFeedbackDraft(item: FeedbackItem): FeedbackDraft {
+  return {
+    assignedOwnerName: item.assigned_owner_name ?? "",
+    followUpDueDate: item.follow_up_due_date ?? "",
+    followUpStatus: item.follow_up_status,
+    recoveryOutcome: item.recovery_outcome ?? "pending",
+    resolutionNotes: item.resolution_notes ?? "",
+  };
+}
+
+function formatWorkflowLabel(value: string | null | undefined) {
+  if (!value) return "—";
+  return value.replace(/_/g, " ");
+}
+
 export function ReputationEngine() {
   const [settings, setSettings] = useState<ReputationSettings>(DEFAULT_REPUTATION_SETTINGS);
   const [templates, setTemplates] = useState<ReputationTemplate[]>(DEFAULT_REPUTATION_TEMPLATES);
@@ -92,11 +141,14 @@ export function ReputationEngine() {
   const [creatingEventRequest, setCreatingEventRequest] = useState(false);
   const [refreshingActivity, setRefreshingActivity] = useState(false);
   const [proofMutationId, setProofMutationId] = useState<string | null>(null);
+  const [savingFeedbackId, setSavingFeedbackId] = useState<string | null>(null);
   const [apiState, setApiState] = useState<ApiState>({ setupRequired: false });
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
+  const [feedbackDrafts, setFeedbackDrafts] = useState<Record<string, FeedbackDraft>>({});
   const [recentRequests, setRecentRequests] = useState<RecentRequest[]>([]);
   const [proofAssets, setProofAssets] = useState<ProofAsset[]>([]);
   const [metrics, setMetrics] = useState<ReputationMetrics>(EMPTY_METRICS);
+  const [analytics, setAnalytics] = useState<ReputationAnalyticsSummary | null>(null);
   const [suggestedBusinessName, setSuggestedBusinessName] = useState("Your Business");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -132,12 +184,16 @@ export function ReputationEngine() {
     if (!requestsRes.ok) throw new Error(requestsJson.error || "Failed to load reputation activity");
 
     setFeedbackItems(feedbackJson.items ?? []);
+    setFeedbackDrafts(
+      Object.fromEntries(((feedbackJson.items ?? []) as FeedbackItem[]).map((item) => [item.id, buildFeedbackDraft(item)])),
+    );
     setRecentRequests(requestsJson.recentRequests ?? []);
     setProofAssets(requestsJson.proofAssets ?? []);
     setMetrics({
       ...EMPTY_METRICS,
       ...(requestsJson.metrics ?? {}),
     });
+    setAnalytics(requestsJson.analytics ?? null);
     setSuggestedBusinessName(requestsJson.suggestedBusinessName ?? "Your Business");
     setManualForm((current) => ({
       ...current,
@@ -337,25 +393,42 @@ export function ReputationEngine() {
     }
   }
 
-  async function updateFeedbackStatus(id: string, followUpStatus: string) {
+  async function saveFeedbackRecovery(item: FeedbackItem) {
+    const draft = feedbackDrafts[item.id] ?? buildFeedbackDraft(item);
+
+    setSavingFeedbackId(item.id);
     setMessage(null);
     setError(null);
     try {
       const res = await fetch("/api/reputation/feedback", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, followUpStatus }),
+        body: JSON.stringify({
+          id: item.id,
+          followUpStatus: draft.followUpStatus,
+          assignedOwnerName: draft.assignedOwnerName,
+          followUpDueDate: draft.followUpDueDate || null,
+          recoveryOutcome: draft.recoveryOutcome,
+          resolutionNotes: draft.resolutionNotes,
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to update feedback item");
-      setFeedbackItems((current) => current.map((item) => (item.id === id ? { ...item, follow_up_status: followUpStatus } : item)));
-      setMetrics((current) => ({
-        ...current,
-        unresolvedFeedback: Math.max(0, current.unresolvedFeedback + (followUpStatus === "resolved" ? -1 : 0)),
-      }));
-      setMessage("Feedback status updated.");
+      const updatedItem = (json.item ?? item) as FeedbackItem;
+      setFeedbackItems((current) => {
+        const nextItems = current.map((entry) => (entry.id === item.id ? updatedItem : entry));
+        setMetrics((currentMetrics) => ({
+          ...currentMetrics,
+          unresolvedFeedback: nextItems.filter((entry) => ACTIVE_FEEDBACK_STATUSES.has(entry.follow_up_status)).length,
+        }));
+        return nextItems;
+      });
+      setFeedbackDrafts((current) => ({ ...current, [item.id]: buildFeedbackDraft(updatedItem) }));
+      setMessage("Feedback recovery plan saved.");
     } catch (err: any) {
       setError(err.message || "Failed to update feedback item");
+    } finally {
+      setSavingFeedbackId(null);
     }
   }
 
@@ -471,6 +544,62 @@ export function ReputationEngine() {
               </CardContent>
             </Card>
           </div>
+
+          {analytics && (
+            <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+              <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+                <CardHeader className="border-b border-white/10 py-5">
+                  <CardTitle>Pipeline analytics</CardTitle>
+                  <CardDescription>Reply, sentiment, proof, and trigger-source momentum from the reputation request stream.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 py-5">
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <Metric label="Requests sent" value={`${analytics.requestsSent}`} detail={`${analytics.repliedCount} replied`} icon={Send} />
+                    <Metric label="Reply rate" value={formatPercent(analytics.replyRate)} detail="Replies ÷ sent" icon={MessageSquare} />
+                    <Metric label="Positive rate" value={formatPercent(analytics.positiveRate)} detail={`${analytics.positiveCount} public-ready wins`} icon={Star} />
+                    <Metric label="Proof generation" value={formatPercent(analytics.proofGenerationRate)} detail={`${analytics.proofGeneratedCount} snippets created`} icon={Sparkles} />
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                    <div className="flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                      <span>Trigger-source performance</span>
+                      <span>Compile-safe from reputation tables</span>
+                    </div>
+                    {analytics.sourcePerformance.length === 0 ? (
+                      <div className="mt-3 text-sm text-[var(--muted-foreground)]">No sent requests yet, so there’s no source-performance data to summarize.</div>
+                    ) : (
+                      <div className="mt-3 space-y-3">
+                        {analytics.sourcePerformance.slice(0, 4).map((source) => (
+                          <div key={source.triggerSource} className="grid grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(0,0.7fr))] gap-3 rounded-2xl border border-white/10 bg-background/30 px-4 py-3 text-sm">
+                            <div>
+                              <div className="font-medium text-[var(--foreground)]">{formatTriggerSource(source.triggerSource)}</div>
+                              <div className="text-xs text-[var(--muted-foreground)]">{source.requestsSent} sent · {source.repliedCount} replied</div>
+                            </div>
+                            <MiniStat label="Reply" value={formatPercent(source.replyRate)} />
+                            <MiniStat label="Positive" value={formatPercent(source.positiveRate)} />
+                            <MiniStat label="Proof" value={`${source.proofCount}`} />
+                            <MiniStat label="Recovery" value={`${source.feedbackCount}`} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+                <CardHeader className="border-b border-white/10 py-5">
+                  <CardTitle>Recovery ops snapshot</CardTitle>
+                  <CardDescription>Private-feedback counts show how much recovery work is active versus closed.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4 py-5 sm:grid-cols-2">
+                  <Metric label="Open recoveries" value={`${analytics.recovery.unresolved}`} detail="Feedback items not marked resolved" icon={AlertTriangle} />
+                  <Metric label="Resolved" value={`${analytics.recovery.resolved}`} detail="Recovered or closed-loop threads" icon={CheckCircle2} />
+                  <Metric label="Reviewing" value={`${analytics.recovery.reviewing}`} detail="Actively being worked by ops" icon={RefreshCw} />
+                  <Metric label="High severity" value={`${analytics.recovery.highSeverity}`} detail="1–2 star feedback items" icon={AlertTriangle} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="campaigns" className="space-y-4">
@@ -703,21 +832,90 @@ export function ReputationEngine() {
               ) : (
                 feedbackItems.map((item) => (
                   <div key={item.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                    {(() => {
+                      const draft = feedbackDrafts[item.id] ?? buildFeedbackDraft(item);
+                      const hasChanges =
+                        draft.assignedOwnerName !== (item.assigned_owner_name ?? "") ||
+                        draft.followUpDueDate !== (item.follow_up_due_date ?? "") ||
+                        draft.followUpStatus !== item.follow_up_status ||
+                        draft.recoveryOutcome !== (item.recovery_outcome ?? "pending") ||
+                        draft.resolutionNotes !== (item.resolution_notes ?? "");
+
+                      return (
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
+                      <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
                           <span>{item.topic || "Private feedback"}</span>
                           <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{item.severity || "medium"}</span>
-                          <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{item.follow_up_status}</span>
+                          <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{formatWorkflowLabel(item.follow_up_status)}</span>
+                          <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{formatWorkflowLabel(item.recovery_outcome || "pending")}</span>
                         </div>
                         <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">{item.feedback_text}</p>
-                        <p className="mt-2 text-xs text-[var(--muted-foreground)]">{new Date(item.created_at).toLocaleString()}</p>
+                        <div className="mt-3 grid gap-2 text-xs text-[var(--muted-foreground)] sm:grid-cols-2 xl:grid-cols-4">
+                          <div className="rounded-xl border border-white/10 bg-background/30 px-3 py-2">Owner: <span className="text-[var(--foreground)]">{item.assigned_owner_name || "Unassigned"}</span></div>
+                          <div className="rounded-xl border border-white/10 bg-background/30 px-3 py-2">Due: <span className="text-[var(--foreground)]">{item.follow_up_due_date || "Not set"}</span></div>
+                          <div className="rounded-xl border border-white/10 bg-background/30 px-3 py-2">Created: <span className="text-[var(--foreground)]">{new Date(item.created_at).toLocaleDateString()}</span></div>
+                          <div className="rounded-xl border border-white/10 bg-background/30 px-3 py-2">Resolved: <span className="text-[var(--foreground)]">{item.resolved_at ? new Date(item.resolved_at).toLocaleDateString() : "Open"}</span></div>
+                        </div>
+                        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                          <Field label="Owner">
+                            <Input
+                              value={draft.assignedOwnerName}
+                              onChange={(event) => setFeedbackDrafts((current) => ({ ...current, [item.id]: { ...draft, assignedOwnerName: event.target.value } }))}
+                              placeholder="Taylor"
+                            />
+                          </Field>
+                          <Field label="Follow-up due date">
+                            <Input
+                              type="date"
+                              value={draft.followUpDueDate}
+                              onChange={(event) => setFeedbackDrafts((current) => ({ ...current, [item.id]: { ...draft, followUpDueDate: event.target.value } }))}
+                            />
+                          </Field>
+                          <Field label="Status">
+                            <select
+                              value={draft.followUpStatus}
+                              onChange={(event) => setFeedbackDrafts((current) => ({ ...current, [item.id]: { ...draft, followUpStatus: event.target.value } }))}
+                              className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                            >
+                              {FEEDBACK_STATUS_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          </Field>
+                          <Field label="Recovery outcome">
+                            <select
+                              value={draft.recoveryOutcome}
+                              onChange={(event) => setFeedbackDrafts((current) => ({ ...current, [item.id]: { ...draft, recoveryOutcome: event.target.value } }))}
+                              className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                            >
+                              {FEEDBACK_OUTCOME_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          </Field>
+                        </div>
+                        <div className="mt-4">
+                          <Field label="Resolution notes" hint="Capture the follow-up plan, fix promised, or save-the-account outcome.">
+                            <Textarea
+                              value={draft.resolutionNotes}
+                              onChange={(event) => setFeedbackDrafts((current) => ({ ...current, [item.id]: { ...draft, resolutionNotes: event.target.value } }))}
+                              className="min-h-24"
+                              placeholder="Called same day, scheduled a redo visit for Tuesday, and offered a service credit."
+                            />
+                          </Field>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => updateFeedbackStatus(item.id, "reviewing")}>Reviewing</Button>
-                        <Button size="sm" onClick={() => updateFeedbackStatus(item.id, "resolved")}>Resolve</Button>
+                      <div className="flex flex-col gap-2 sm:min-w-[170px]">
+                        <Button variant="outline" size="sm" onClick={() => setFeedbackDrafts((current) => ({ ...current, [item.id]: { ...draft, followUpStatus: "waiting_on_customer" } }))}>Waiting on customer</Button>
+                        <Button size="sm" disabled={!hasChanges || savingFeedbackId === item.id} onClick={() => saveFeedbackRecovery(item)}>
+                          {savingFeedbackId === item.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                          Save recovery plan
+                        </Button>
                       </div>
                     </div>
+                      );
+                    })()}
                   </div>
                 ))
               )}
@@ -879,6 +1077,19 @@ function Metric({ label, value, detail, icon: Icon }: { label: string; value: st
       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]"><Icon className="h-3.5 w-3.5 text-electric-500" /> {label}</div>
       <div className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{value}</div>
       <div className="mt-1 text-sm text-[var(--muted-foreground)]">{detail}</div>
+    </div>
+  );
+}
+
+function formatPercent(value: number) {
+  return `${value}%`;
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-1 text-right">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">{label}</div>
+      <div className="font-medium text-[var(--foreground)]">{value}</div>
     </div>
   );
 }

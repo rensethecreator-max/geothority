@@ -62,6 +62,9 @@ interface ReputationFeedbackSummary {
   topic: string | null;
   feedback_text: string;
   follow_up_status: string;
+  assigned_owner_name: string | null;
+  follow_up_due_date: string | null;
+  recovery_outcome: string | null;
   created_at: string;
 }
 
@@ -110,6 +113,11 @@ const SYNC_STATUS_CFG: Record<string, { label: string; color: string; bg: string
   error: { label: "Error", color: "text-red-500", bg: "bg-red-500/10" },
   not_found: { label: "Not Found", color: "text-gray-500", bg: "bg-gray-500/10" },
 };
+
+function formatWorkflowLabel(value: string | null | undefined) {
+  if (!value) return "—";
+  return value.replace(/_/g, " ");
+}
 
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CFG[status] ?? STATUS_CFG.planning;
@@ -522,9 +530,14 @@ export default function ActionCenterPage() {
                   <div key={item.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
                     <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
                       <span>{item.topic || item.business_id}</span>
-                      <span className="rounded-full border border-white/10 px-2 py-1">{item.follow_up_status}</span>
+                      <span className="rounded-full border border-white/10 px-2 py-1">{formatWorkflowLabel(item.follow_up_status)}</span>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-[var(--foreground)] line-clamp-2">{item.feedback_text}</p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[var(--muted-foreground)]">
+                      <span className="rounded-full border border-white/10 px-2 py-1">Owner: {item.assigned_owner_name || "Unassigned"}</span>
+                      <span className="rounded-full border border-white/10 px-2 py-1">Due: {item.follow_up_due_date || "Not set"}</span>
+                      <span className="rounded-full border border-white/10 px-2 py-1">Outcome: {formatWorkflowLabel(item.recovery_outcome || "pending")}</span>
+                    </div>
                   </div>
                 ))}
                 {reputation.requests.filter((item) => item.status === "sent" && !item.replied_at).slice(0, 2).map((item) => (

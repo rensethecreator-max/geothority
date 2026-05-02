@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
         .limit(20),
       supabase
         .from("reputation_feedback_items")
-        .select("id, business_id, severity, topic, feedback_text, follow_up_status, created_at")
+        .select("id, business_id, severity, topic, feedback_text, follow_up_status, assigned_owner_name, follow_up_due_date, recovery_outcome, created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(8),
@@ -56,12 +56,13 @@ export async function GET(request: NextRequest) {
     ]);
 
     const feedback = feedbackError ? [] : feedbackItems ?? [];
+    const activeFollowUpStatuses = new Set(["reviewing", "outreach_queued", "waiting_on_customer"]);
     const requests = requestsError ? [] : recentRequests ?? [];
     const reputation = {
       counts: {
         unresolvedFeedback: feedback.filter((item: any) => item.follow_up_status !== "resolved").length,
         newComplaints: feedback.filter((item: any) => item.follow_up_status === "new").length,
-        pendingFollowUps: feedback.filter((item: any) => item.follow_up_status === "reviewing").length,
+        pendingFollowUps: feedback.filter((item: any) => activeFollowUpStatuses.has(item.follow_up_status)).length,
         awaitingReplies: requests.filter((item: any) => item.status === "sent" && !item.replied_at).length,
       },
       feedback,

@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
         topic: `Low rating (${score}/5)`,
         feedback_text: feedbackText || `Customer replied with a ${score}/5 score and no written feedback.`,
         follow_up_status: "new",
+        recovery_outcome: "pending",
       });
     } else if (feedbackText) {
       await supabase.from("reputation_proof_assets").insert({
