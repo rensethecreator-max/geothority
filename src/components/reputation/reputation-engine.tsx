@@ -19,6 +19,15 @@ interface ApiState {
   setupRequired: boolean;
 }
 
+interface FeedbackItem {
+  id: string;
+  severity: string | null;
+  topic: string | null;
+  feedback_text: string;
+  follow_up_status: string;
+  created_at: string;
+}
+
 export function ReputationEngine() {
   const [settings, setSettings] = useState<ReputationSettings>(DEFAULT_REPUTATION_SETTINGS);
   const [templates, setTemplates] = useState<ReputationTemplate[]>(DEFAULT_REPUTATION_TEMPLATES);
@@ -26,6 +35,7 @@ export function ReputationEngine() {
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingTemplates, setSavingTemplates] = useState(false);
   const [apiState, setApiState] = useState<ApiState>({ setupRequired: false });
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,22 +44,26 @@ export function ReputationEngine() {
 
     async function load() {
       try {
-        const [settingsRes, templatesRes] = await Promise.all([
+        const [settingsRes, templatesRes, feedbackRes] = await Promise.all([
           fetch("/api/reputation/settings", { cache: "no-store" }),
           fetch("/api/reputation/templates", { cache: "no-store" }),
+          fetch("/api/reputation/feedback", { cache: "no-store" }),
         ]);
 
         const settingsJson = await settingsRes.json();
         const templatesJson = await templatesRes.json();
+        const feedbackJson = await feedbackRes.json();
 
         if (!mounted) return;
 
         if (!settingsRes.ok) throw new Error(settingsJson.error || "Failed to load reputation settings");
         if (!templatesRes.ok) throw new Error(templatesJson.error || "Failed to load reputation templates");
+        if (!feedbackRes.ok) throw new Error(feedbackJson.error || "Failed to load feedback items");
 
         setSettings(settingsJson.settings ?? DEFAULT_REPUTATION_SETTINGS);
         setTemplates(templatesJson.templates ?? DEFAULT_REPUTATION_TEMPLATES);
-        setApiState({ setupRequired: Boolean(settingsJson.setupRequired || templatesJson.setupRequired) });
+        setFeedbackItems(feedbackJson.items ?? []);
+        setApiState({ setupRequired: Boolean(settingsJson.setupRequired || templatesJson.setupRequired || feedbackJson.setupRequired) });
       } catch (err: any) {
         if (!mounted) return;
         setError(err.message || "Failed to load reputation engine");
@@ -109,6 +123,24 @@ export function ReputationEngine() {
       setError(err.message || "Failed to save templates");
     } finally {
       setSavingTemplates(false);
+    }
+  }
+
+  async function updateFeedbackStatus(id: string, followUpStatus: string) {
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/reputation/feedback", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, followUpStatus }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to update feedback item");
+      setFeedbackItems((current) => current.map((item) => (item.id === id ? { ...item, follow_up_status: followUpStatus } : item)));
+      setMessage("Feedback status updated.");
+    } catch (err: any) {
+      setError(err.message || "Failed to update feedback item");
     }
   }
 
@@ -264,12 +296,39 @@ export function ReputationEngine() {
         </TabsContent>
 
         <TabsContent value="feedback" className="space-y-4">
-          <PlaceholderCard
-            icon={MessageSquare}
-            title="Private Feedback Inbox"
-            description="Low-score replies and complaints will land here next. This keeps unhappy experiences actionable before they become public trust damage."
-            bullets={["Status lanes for new / reviewing / resolved", "Topic + severity tagging", "Action Center hooks for operator follow-up"]}
-          />
+          <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+            <CardHeader className="border-b border-white/10 py-5">
+              <CardTitle className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-electric-500" /> Private Feedback Inbox</CardTitle>
+              <CardDescription>Low-score replies stay actionable here before they become public trust damage.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 py-5">
+              {feedbackItems.length === 0 ? (
+                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
+                  No private feedback items yet. Once low-score requests come in, they’ll appear here for follow-up.
+                </div>
+              ) : (
+                feedbackItems.map((item) => (
+                  <div key={item.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                          <span>{item.topic || "Private feedback"}</span>
+                          <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{item.severity || "medium"}</span>
+                          <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{item.follow_up_status}</span>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">{item.feedback_text}</p>
+                        <p className="mt-2 text-xs text-[var(--muted-foreground)]">{new Date(item.created_at).toLocaleString()}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => updateFeedbackStatus(item.id, "reviewing")}>Reviewing</Button>
+                        <Button size="sm" onClick={() => updateFeedbackStatus(item.id, "resolved")}>Resolve</Button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="proof" className="space-y-4">

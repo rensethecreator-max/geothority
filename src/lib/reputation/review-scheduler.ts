@@ -32,6 +32,7 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
   let { data: existingContact } = await supabase
     .from("reputation_contacts")
     .select("id, opt_out")
+    .eq("user_id", userId)
     .eq("business_id", businessId)
     .eq("phone", phone)
     .maybeSingle();
@@ -40,6 +41,7 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
     const { data: createdContact, error: contactError } = await supabase
       .from("reputation_contacts")
       .insert({
+        user_id: userId,
         business_id: businessId,
         phone,
         name: customerName,
@@ -76,6 +78,7 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
   const { data: request, error: requestError } = await supabase
     .from("reputation_requests")
     .insert({
+      user_id: userId,
       business_id: businessId,
       contact_id: existingContact.id,
       trigger_source: paymentSource,

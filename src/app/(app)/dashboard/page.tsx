@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { InfoTooltip, LayerInfoTooltip } from "@/components/ui/info-tooltip";
 import Link from "next/link";
-import { StarceptaBanner } from "@/components/upsell/StarceptaBanner";
+import { ReviewHealthCard } from "@/components/reputation/review-health-card";
 import { HealthPulse } from "@/components/dashboard/health-pulse";
 import { SetupChecklist } from "@/components/dashboard/setup-checklist";
 import {
@@ -75,7 +75,6 @@ export default function DashboardPage() {
   const [_profile, setProfile] = useState<UserProfile | null>(null);
   const [scans, setScans] = useState<Scan[]>([]);
   const [latestScan, setLatestScan] = useState<Scan | null>(null);
-  const [bannerDismissed, setBannerDismissed] = useState(false);
   const [scoreHistory, setScoreHistory] = useState<ScoreHistoryEntry[]>([]);
   const [activeLines, setActiveLines] = useState<Record<string, boolean>>({
     overall: true, layer1: false, layer2: false, layer3: false, layer4: false, layer5: false,
@@ -319,13 +318,7 @@ export default function DashboardPage() {
       {/* API Key Setup Checklist */}
       <SetupChecklist />
 
-      {/* Starcepta Review Cross-Sell Banner */}
-      {!bannerDismissed && (
-        <StarceptaBanner
-          reviewHealthScore={ls.layer4}
-          onDismiss={() => setBannerDismissed(true)}
-        />
-      )}
+      <ReviewHealthCard reviewHealthScore={ls.layer4} />
 
       {/* Trust Stack + Quick Win */}
       <div className="grid gap-6 lg:grid-cols-5">

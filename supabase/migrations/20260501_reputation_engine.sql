@@ -14,6 +14,7 @@ create table if not exists public.reputation_settings (
 
 create table if not exists public.reputation_contacts (
   id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
   business_id text not null,
   phone text not null,
   name text,
@@ -28,6 +29,7 @@ create unique index if not exists reputation_contacts_business_phone_idx
 
 create table if not exists public.reputation_requests (
   id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
   business_id text not null,
   contact_id uuid not null references public.reputation_contacts(id) on delete cascade,
   trigger_source text not null default 'manual',
@@ -73,6 +75,7 @@ create index if not exists reputation_templates_user_idx
 
 create table if not exists public.reputation_feedback_items (
   id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
   request_id uuid references public.reputation_requests(id) on delete set null,
   business_id text not null,
   severity text default 'medium',
@@ -85,6 +88,7 @@ create table if not exists public.reputation_feedback_items (
 
 create table if not exists public.reputation_proof_assets (
   id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
   business_id text not null,
   request_id uuid references public.reputation_requests(id) on delete set null,
   snippet text not null,

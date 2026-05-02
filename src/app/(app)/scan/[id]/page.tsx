@@ -7,7 +7,7 @@ import type { Scan } from "@/lib/types";
 import { ScanSkeleton } from "@/components/shared/loading-skeleton";
 import { TrustStackVisualization, ScoreRing } from "@/components/scan/trust-stack";
 import { QuickWinCard } from "@/components/scan/quick-win-card";
-import { StarceptaBanner } from "@/components/upsell/StarceptaBanner";
+import { ReviewHealthCard } from "@/components/reputation/review-health-card";
 import { PDFReportButton } from "@/components/scan/pdf-report";
 import { useAchievements } from "@/hooks/use-achievements";
 import {
@@ -220,7 +220,6 @@ export default function ScanResultPage() {
   const params = useParams();
   const [loading, setLoading] = useState(true);
   const [scan, setScan] = useState<Scan | null>(null);
-  const [bannerDismissed, setBannerDismissed] = useState(false);
   const [fixing, setFixing] = useState(false);
   const [fixPackage, setFixPackage] = useState<FixPackage | null>(null);
   const [fixError, setFixError] = useState<string | null>(null);
@@ -633,13 +632,7 @@ export default function ScanResultPage() {
         </div>
       </div>
 
-      {/* Starcepta Review Cross-Sell Banner */}
-      {!bannerDismissed && (
-        <StarceptaBanner
-          reviewHealthScore={ls.layer4}
-          onDismiss={() => setBannerDismissed(true)}
-        />
-      )}
+      <ReviewHealthCard reviewHealthScore={ls.layer4} />
 
       {/* Trust Stack */}
       <div className="bg-[var(--card)] rounded-xl p-6 border border-[var(--border)]">
