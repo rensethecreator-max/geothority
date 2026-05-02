@@ -5,11 +5,8 @@ import {
   Shield,
   Loader2,
   RefreshCw,
-  CheckCircle2,
-  XCircle,
-  TrendingUp,
-  Award,
 } from "lucide-react";
+import { ReviewHealthCard } from "@/components/reputation/review-health-card";
 
 interface TrustScore {
   id: string;
@@ -150,6 +147,11 @@ export default function TrustScorePage() {
               <span className="text-lg font-bold">{score.overall_trust_score}</span>
             </div>
           </div>
+
+          <ReviewHealthCard
+            reviewHealthScore={score.review_velocity}
+            reviewScore={Number(score.review_rating.toFixed(1))}
+          />
 
           {/* Tier thresholds */}
           <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-5">
