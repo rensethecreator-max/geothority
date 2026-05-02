@@ -42,7 +42,7 @@ export async function GET() {
 
     if (requestsResult.error) {
       if (isMissingTableError(requestsResult.error)) {
-        return NextResponse.json({ recentRequests: [], proofAssets: [], metrics: null, suggestedBusinessName: businessName, setupRequired: true });
+        return NextResponse.json({ recentRequests: [], proofAssets: [], metrics: null, analytics: null, suggestedBusinessName: businessName, setupRequired: true });
       }
       return NextResponse.json({ error: requestsResult.error.message }, { status: 500 });
     }
@@ -55,13 +55,14 @@ export async function GET() {
       proofAssets: proofSummary.proofAssets,
       suggestedBusinessName: businessName,
       metrics: {
-        total: requests.length,
+        total: proofSummary.totalRequests,
         awaitingReply: proofSummary.awaitingReply,
         publicReady: proofSummary.publicReady,
         unresolvedFeedback,
         approvedProofCount: proofSummary.approvedProofCount,
         pendingProofCount: proofSummary.pendingProofCount,
       },
+      analytics: proofSummary.analytics,
       setupRequired: false,
     });
   } catch (err: any) {

@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
-import type { ReputationProofSummary } from "@/lib/reputation/types";
+import type { ReputationAnalyticsSummary, ReputationProofSummary, ReputationSourcePerformance } from "@/lib/reputation/types";
 
 export function isMissingTableError(error: any) {
   return error?.code === "42P01" || /relation .* does not exist/i.test(error?.message || "");
@@ -199,6 +199,93 @@ export async function sendReputationRequestNow(requestId: string) {
   return { success: true, simulated: true, alreadySent: false };
 }
 
+function buildRate(numerator: number, denominator: number) {
+  if (!denominator) return 0;
+  return Math.round((numerator / denominator) * 100);
+}
+
+function emptyAnalytics(): ReputationAnalyticsSummary {
+  return {
+    requestsSent: 0,
+    repliedCount: 0,
+    positiveCount: 0,
+    proofGeneratedCount: 0,
+    replyRate: 0,
+    positiveRate: 0,
+    proofGenerationRate: 0,
+    recovery: {
+      totalFeedback: 0,
+      unresolved: 0,
+      reviewing: 0,
+      resolved: 0,
+      highSeverity: 0,
+    },
+    sourcePerformance: [],
+  };
+}
+
+function buildAnalyticsSummary(requests: any[], proofAssetRows: any[], feedbackItems: any[]): ReputationAnalyticsSummary {
+  const requestsSent = requests.filter((item) => Boolean(item.sent_at)).length;
+  const repliedCount = requests.filter((item) => Boolean(item.replied_at)).length;
+  const positiveCount = requests.filter((item) => item.status === "public_review_ready").length;
+  const proofRequestIds = new Set(proofAssetRows.map((item) => item.request_id).filter(Boolean));
+  const proofGeneratedCount = proofRequestIds.size;
+
+  const sourcePerformanceMap = new Map<string, ReputationSourcePerformance>();
+  for (const request of requests) {
+    const key = request.trigger_source || "manual";
+    const current = sourcePerformanceMap.get(key) ?? {
+      triggerSource: key,
+      requestsSent: 0,
+      repliedCount: 0,
+      positiveCount: 0,
+      proofCount: 0,
+      feedbackCount: 0,
+      replyRate: 0,
+      positiveRate: 0,
+    };
+
+    if (request.sent_at) current.requestsSent += 1;
+    if (request.replied_at) current.repliedCount += 1;
+    if (request.status === "public_review_ready") current.positiveCount += 1;
+    if (request.status === "feedback_received") current.feedbackCount += 1;
+    if (proofRequestIds.has(request.id)) current.proofCount += 1;
+
+    sourcePerformanceMap.set(key, current);
+  }
+
+  const sourcePerformance = Array.from(sourcePerformanceMap.values())
+    .map((item) => ({
+      ...item,
+      replyRate: buildRate(item.repliedCount, item.requestsSent),
+      positiveRate: buildRate(item.positiveCount, item.repliedCount),
+    }))
+    .sort((a, b) => b.requestsSent - a.requestsSent || b.repliedCount - a.repliedCount);
+
+  const resolved = feedbackItems.filter((item) => item.follow_up_status === "resolved").length;
+  const reviewing = feedbackItems.filter((item) => item.follow_up_status === "reviewing").length;
+  const unresolved = feedbackItems.filter((item) => item.follow_up_status !== "resolved").length;
+  const highSeverity = feedbackItems.filter((item) => item.severity === "high").length;
+
+  return {
+    requestsSent,
+    repliedCount,
+    positiveCount,
+    proofGeneratedCount,
+    replyRate: buildRate(repliedCount, requestsSent),
+    positiveRate: buildRate(positiveCount, repliedCount),
+    proofGenerationRate: buildRate(proofGeneratedCount, positiveCount),
+    recovery: {
+      totalFeedback: feedbackItems.length,
+      unresolved,
+      reviewing,
+      resolved,
+      highSeverity,
+    },
+    sourcePerformance,
+  };
+}
+
 export async function getReputationProofSummary(
   supabase: any,
   userId: string,
@@ -218,13 +305,12 @@ export async function getReputationProofSummary(
     proofAssetsQuery.eq("approved", true);
   }
 
-  const [requestsResult, proofResult, approvedCountResult, pendingCountResult] = await Promise.all([
+  const [requestsResult, proofResult, approvedCountResult, pendingCountResult, proofAssetRowsResult, feedbackItemsResult] = await Promise.all([
     supabase
       .from("reputation_requests")
-      .select("id, status, score, replied_at")
+      .select("id, trigger_source, status, score, sent_at, replied_at")
       .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(50),
+      .order("created_at", { ascending: false }),
     proofAssetsQuery,
     supabase
       .from("reputation_proof_assets")
@@ -238,6 +324,14 @@ export async function getReputationProofSummary(
           .select("id", { count: "exact", head: true })
           .eq("user_id", userId)
           .eq("approved", false),
+    supabase
+      .from("reputation_proof_assets")
+      .select("request_id")
+      .eq("user_id", userId),
+    supabase
+      .from("reputation_feedback_items")
+      .select("follow_up_status, severity")
+      .eq("user_id", userId),
   ]);
 
   if (requestsResult.error) {
@@ -250,6 +344,7 @@ export async function getReputationProofSummary(
         approvedProofCount: 0,
         pendingProofCount: 0,
         proofAssets: [],
+        analytics: emptyAnalytics(),
       };
     }
     throw new Error(requestsResult.error.message || "Failed to load reputation proof summary");
@@ -267,6 +362,14 @@ export async function getReputationProofSummary(
     throw new Error(pendingCountResult.error.message || "Failed to load pending proof count");
   }
 
+  if (proofAssetRowsResult.error && !isMissingTableError(proofAssetRowsResult.error)) {
+    throw new Error(proofAssetRowsResult.error.message || "Failed to load proof asset analytics");
+  }
+
+  if (feedbackItemsResult.error && !isMissingTableError(feedbackItemsResult.error)) {
+    throw new Error(feedbackItemsResult.error.message || "Failed to load feedback analytics");
+  }
+
   const requests = requestsResult.data ?? [];
   const scoredRequests = requests.filter((item: any) => typeof item.score === "number");
   const totalScore = scoredRequests.reduce((sum: number, item: any) => sum + Number(item.score || 0), 0);
@@ -279,5 +382,6 @@ export async function getReputationProofSummary(
     approvedProofCount: approvedCountResult.count ?? 0,
     pendingProofCount: approvedOnly ? 0 : pendingCountResult?.count ?? 0,
     proofAssets: proofResult.data ?? [],
+    analytics: buildAnalyticsSummary(requests, proofAssetRowsResult.data ?? [], feedbackItemsResult.data ?? []),
   };
 }

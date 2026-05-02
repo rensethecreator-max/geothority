@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { ReviewHealthCard } from "@/components/reputation/review-health-card";
 import { ProofShowcase } from "@/components/reputation/proof-showcase";
-import type { ReputationProofSummary } from "@/lib/reputation/types";
+import type { ReputationAnalyticsSummary, ReputationProofSummary } from "@/lib/reputation/types";
 
 interface TrustScore {
   id: string;
@@ -162,13 +162,16 @@ export default function TrustScorePage() {
           />
 
           {proofSummary && (
-            <ProofShowcase
-              summary={proofSummary}
-              title="Proof assets ready to reinforce your Trust Score"
-              description="Every positive reply can become a reusable proof snippet. Keep the trust story tight by routing happy customers into public-ready wins."
-              ctaHref="/reputation"
-              ctaLabel="Open Reputation Engine"
-            />
+            <>
+              <ProofShowcase
+                summary={proofSummary}
+                title="Proof assets ready to reinforce your Trust Score"
+                description="Every positive reply can become a reusable proof snippet. Keep the trust story tight by routing happy customers into public-ready wins."
+                ctaHref="/reputation"
+                ctaLabel="Open Reputation Engine"
+              />
+              <ReputationMomentumCard analytics={proofSummary.analytics} />
+            </>
           )}
 
           {/* Tier thresholds */}
@@ -188,6 +191,36 @@ export default function TrustScorePage() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function ReputationMomentumCard({ analytics }: { analytics: ReputationAnalyticsSummary }) {
+  return (
+    <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">Reputation momentum</h2>
+          <p className="text-sm text-[var(--muted-foreground)] mt-1">A compact ops readout from the same request and feedback pipeline.</p>
+        </div>
+        <div className="text-xs text-[var(--muted-foreground)]">Top source: {analytics.sourcePerformance[0] ? analytics.sourcePerformance[0].triggerSource.replace(/_/g, " ") : "—"}</div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-4">
+        <MomentumStat label="Reply rate" value={`${analytics.replyRate}%`} detail={`${analytics.repliedCount}/${analytics.requestsSent} replied`} />
+        <MomentumStat label="Positive rate" value={`${analytics.positiveRate}%`} detail={`${analytics.positiveCount} public-ready`} />
+        <MomentumStat label="Proof gen" value={`${analytics.proofGenerationRate}%`} detail={`${analytics.proofGeneratedCount} snippets`} />
+        <MomentumStat label="Open recovery" value={`${analytics.recovery.unresolved}`} detail={`${analytics.recovery.resolved} resolved`} />
+      </div>
+    </div>
+  );
+}
+
+function MomentumStat({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return (
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--background)]/60 p-4">
+      <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--muted-foreground)] font-semibold">{label}</div>
+      <div className="mt-2 text-2xl font-bold">{value}</div>
+      <div className="mt-1 text-xs text-[var(--muted-foreground)]">{detail}</div>
     </div>
   );
 }
