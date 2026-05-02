@@ -29,6 +29,7 @@ import {
   Target,
   TrendingUp,
   Send,
+  MessageSquareMore,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -50,6 +51,7 @@ const navItems = [
   { href: "/citations", label: "Citation Control", icon: MapPin },
   { href: "/nap-push", label: "NAP Push", icon: Send },
   { href: "/trust-score", label: "Trust Score", icon: Shield },
+  { href: "/reputation", label: "Reputation Engine", icon: MessageSquareMore },
   { href: "/schema-generator", label: "Schema Generator", icon: Code },
   { href: "/settings/embed", label: "Install on Your Site", icon: Globe },
   { href: "/expansion", label: "Smart Expansion", icon: TrendingUp },
