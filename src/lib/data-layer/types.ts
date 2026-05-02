@@ -18,6 +18,13 @@ export interface PublicBusinessProfile {
   layerScores: Record<string, number> | null;
   quickWins: PublicQuickWin[] | null;
   competitorGaps: PublicCompetitorGap[] | null;
+  proofSummary?: {
+    totalRequests: number;
+    publicReady: number;
+    awaitingReply: number;
+    averageScore: number | null;
+    proofAssets: Array<{ id: string; snippet: string; approved: boolean; created_at: string }>;
+  } | null;
   schemaMarkup: SchemaMarkupOutput;
   lastScanned: string;
   publishedAt: string;

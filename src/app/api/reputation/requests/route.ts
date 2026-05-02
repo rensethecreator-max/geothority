@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
-import { getPreferredBusinessName, isMissingTableError, sendReputationRequestNow, upsertReputationContact } from "@/lib/reputation/request-service";
+import { createAndSendReputationRequest, getPreferredBusinessName, getReputationProofSummary, isMissingTableError } from "@/lib/reputation/request-service";
 
 async function getSessionUser() {
   const supabase = await createServerSupabase();
@@ -22,7 +22,7 @@ export async function GET() {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }
 
-    const [requestsResult, feedbackResult, proofResult, businessName] = await Promise.all([
+    const [requestsResult, feedbackResult, proofSummary, businessName] = await Promise.all([
       supabase
         .from("reputation_requests")
         .select(
@@ -36,12 +36,7 @@ export async function GET() {
         .select("id, follow_up_status", { count: "exact", head: false })
         .eq("user_id", user.id)
         .neq("follow_up_status", "resolved"),
-      supabase
-        .from("reputation_proof_assets")
-        .select("id, snippet, approved, created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(4),
+      getReputationProofSummary(supabase, user.id),
       getPreferredBusinessName(supabase, user.id),
     ]);
 
@@ -54,18 +49,15 @@ export async function GET() {
 
     const requests = requestsResult.data ?? [];
     const unresolvedFeedback = feedbackResult.count ?? 0;
-    const proofAssets = proofResult.data ?? [];
-    const awaitingReply = requests.filter((item: any) => item.status === "sent" && !item.replied_at).length;
-    const publicReady = requests.filter((item: any) => item.status === "public_review_ready").length;
 
     return NextResponse.json({
       recentRequests: requests,
-      proofAssets,
+      proofAssets: proofSummary.proofAssets,
       suggestedBusinessName: businessName,
       metrics: {
         total: requests.length,
-        awaitingReply,
-        publicReady,
+        awaitingReply: proofSummary.awaitingReply,
+        publicReady: proofSummary.publicReady,
         unresolvedFeedback,
       },
       setupRequired: false,
@@ -97,42 +89,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "businessName, customerName, and phone are required" }, { status: 400 });
     }
 
-    const contact = await upsertReputationContact({
+    const result = await createAndSendReputationRequest({
       supabase,
       userId: user.id,
-      businessId: businessName,
+      businessName,
       customerName,
       phone,
-      source: triggerSource,
+      triggerSource,
     });
 
-    if (contact.opt_out) {
-      return NextResponse.json({ error: "This contact has opted out of reputation requests" }, { status: 409 });
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
     }
 
-    const { data: createdRequest, error: requestError } = await supabase
-      .from("reputation_requests")
-      .insert({
-        user_id: user.id,
-        business_id: businessName,
-        contact_id: contact.id,
-        trigger_source: triggerSource,
-        status: "pending",
-        review_token: crypto.randomUUID().replace(/-/g, ""),
-      })
-      .select("id")
-      .single();
-
-    if (requestError || !createdRequest) {
-      if (isMissingTableError(requestError)) {
-        return NextResponse.json({ error: "Reputation tables are not installed yet. Run the migration first." }, { status: 412 });
-      }
-      return NextResponse.json({ error: requestError?.message || "Failed to create request" }, { status: 500 });
-    }
-
-    await sendReputationRequestNow(createdRequest.id);
-
-    return NextResponse.json({ success: true, requestId: createdRequest.id });
+    return NextResponse.json({ success: true, requestId: result.requestId });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

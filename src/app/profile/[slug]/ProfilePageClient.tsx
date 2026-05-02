@@ -1,7 +1,8 @@
 "use client";
 
 import type { PublicBusinessProfile } from "@/lib/data-layer/types";
-import { LAYER_NAMES, LAYER_DESCRIPTIONS } from "@/lib/types";
+import { LAYER_NAMES } from "@/lib/types";
+import { ProofShowcase } from "@/components/reputation/proof-showcase";
 
 export default function ProfilePageClient({ profile }: { profile: PublicBusinessProfile }) {
   const score = profile.geothorityScore ?? 0;
@@ -69,6 +70,16 @@ export default function ProfilePageClient({ profile }: { profile: PublicBusiness
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {profile.proofSummary && (
+          <div className="mb-8">
+            <ProofShowcase
+              summary={profile.proofSummary}
+              title="Customer proof captured inside Geothority"
+              description="This profile can now point to real reply momentum and approved snippets, not just a score in isolation."
+            />
           </div>
         )}
 

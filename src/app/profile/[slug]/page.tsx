@@ -9,6 +9,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { slugify, isEligibleForPublicProfile } from "@/lib/data-layer/profile-service";
 import { generateSchemaMarkup } from "@/lib/data-layer/schema-generator";
 import type { PublicBusinessProfile, SchemaMarkupOutput } from "@/lib/data-layer/types";
+import { getReputationProofSummary } from "@/lib/reputation/request-service";
 import ProfilePageClient from "./ProfilePageClient";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
@@ -126,6 +127,7 @@ async function fetchProfile(slug: string): Promise<PublicBusinessProfile | null>
   if (!user || !isEligibleForPublicProfile(user.plan)) return null;
 
   const businessName = scan.business_name || user.business_name || "Unknown Business";
+  const proofSummary = await getReputationProofSummary(supabase, scan.user_id).catch(() => null);
 
   const profile: PublicBusinessProfile = {
     slug,
@@ -142,6 +144,7 @@ async function fetchProfile(slug: string): Promise<PublicBusinessProfile | null>
     layerScores: scan.layer_scores,
     quickWins: (scan.quick_wins ?? []).map((w: any) => ({ title: w.title, impact: w.impact, layer: w.layer })),
     competitorGaps: (scan.competitor_gaps ?? []).map((g: any) => ({ domain: g.domain, businessName: g.businessName, advantage: g.advantage })),
+    proofSummary,
     schemaMarkup: {} as SchemaMarkupOutput,
     lastScanned: scan.created_at,
     publishedAt: scan.created_at,

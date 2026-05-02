@@ -7,6 +7,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { ReviewHealthCard } from "@/components/reputation/review-health-card";
+import { ProofShowcase } from "@/components/reputation/proof-showcase";
+import type { ReputationProofSummary } from "@/lib/reputation/types";
 
 interface TrustScore {
   id: string;
@@ -50,13 +52,19 @@ export default function TrustScorePage() {
   const [loading, setLoading] = useState(true);
   const [computing, setComputing] = useState(false);
   const [score, setScore] = useState<TrustScore | null>(null);
+  const [proofSummary, setProofSummary] = useState<ReputationProofSummary | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/trust-score", { cache: "no-store" });
-      const data = await res.json();
+      const [scoreRes, proofRes] = await Promise.all([
+        fetch("/api/trust-score", { cache: "no-store" }),
+        fetch("/api/reputation/proof-summary", { cache: "no-store" }),
+      ]);
+      const data = await scoreRes.json();
+      const proofData = await proofRes.json().catch(() => ({}));
       setScore(data.score);
+      setProofSummary(proofData.summary ?? null);
     } catch { /* handled */ } finally {
       setLoading(false);
     }
@@ -152,6 +160,16 @@ export default function TrustScorePage() {
             reviewHealthScore={score.review_velocity}
             reviewScore={Number(score.review_rating.toFixed(1))}
           />
+
+          {proofSummary && (
+            <ProofShowcase
+              summary={proofSummary}
+              title="Proof assets ready to reinforce your Trust Score"
+              description="Every positive reply can become a reusable proof snippet. Keep the trust story tight by routing happy customers into public-ready wins."
+              ctaHref="/reputation"
+              ctaLabel="Open Reputation Engine"
+            />
+          )}
 
           {/* Tier thresholds */}
           <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-5">

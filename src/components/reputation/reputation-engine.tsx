@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, MessageSquare, Send, ShieldCheck, Sparkles, Star, TrendingUp } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, MessageSquare, Send, ShieldCheck, Sparkles, Star, TrendingUp, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
   type ReputationSettings,
   type ReputationTemplate,
 } from "@/lib/reputation/defaults";
+import { formatTriggerSource, ProofShowcase } from "@/components/reputation/proof-showcase";
 
 interface ApiState {
   setupRequired: boolean;
@@ -65,6 +66,14 @@ const EMPTY_METRICS: ReputationMetrics = {
   unresolvedFeedback: 0,
 };
 
+const TRIGGER_SOURCE_OPTIONS = [
+  { value: "manual", label: "Manual send" },
+  { value: "appointment_completed", label: "Appointment completed" },
+  { value: "job_completed", label: "Job completed" },
+  { value: "delivery_completed", label: "Delivery completed" },
+  { value: "api", label: "API event" },
+];
+
 export function ReputationEngine() {
   const [settings, setSettings] = useState<ReputationSettings>(DEFAULT_REPUTATION_SETTINGS);
   const [templates, setTemplates] = useState<ReputationTemplate[]>(DEFAULT_REPUTATION_TEMPLATES);
@@ -72,6 +81,8 @@ export function ReputationEngine() {
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingTemplates, setSavingTemplates] = useState(false);
   const [creatingRequest, setCreatingRequest] = useState(false);
+  const [submittingIntake, setSubmittingIntake] = useState(false);
+  const [creatingEventRequest, setCreatingEventRequest] = useState(false);
   const [apiState, setApiState] = useState<ApiState>({ setupRequired: false });
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
   const [recentRequests, setRecentRequests] = useState<RecentRequest[]>([]);
@@ -85,6 +96,17 @@ export function ReputationEngine() {
     customerName: "",
     phone: "",
     triggerSource: "manual",
+  });
+  const [demoIntakeForm, setDemoIntakeForm] = useState({
+    requestId: "",
+    score: "5",
+    feedbackText: "",
+  });
+  const [eventForm, setEventForm] = useState({
+    businessName: "",
+    customerName: "",
+    phone: "",
+    eventType: "appointment_completed",
   });
 
   async function loadReputationActivity() {
@@ -105,6 +127,10 @@ export function ReputationEngine() {
     setMetrics(requestsJson.metrics ?? EMPTY_METRICS);
     setSuggestedBusinessName(requestsJson.suggestedBusinessName ?? "Your Business");
     setManualForm((current) => ({
+      ...current,
+      businessName: current.businessName || requestsJson.suggestedBusinessName || "",
+    }));
+    setEventForm((current) => ({
       ...current,
       businessName: current.businessName || requestsJson.suggestedBusinessName || "",
     }));
@@ -153,6 +179,19 @@ export function ReputationEngine() {
     () => settings.smsTemplate.replace("{customer_name}", "Alex").replace("{business_name}", manualForm.businessName || suggestedBusinessName || "Your Business"),
     [manualForm.businessName, settings.smsTemplate, suggestedBusinessName],
   );
+
+  const pendingReplyRequests = useMemo(
+    () => recentRequests.filter((request) => request.review_token && !request.replied_at),
+    [recentRequests],
+  );
+
+  useEffect(() => {
+    setDemoIntakeForm((current) => {
+      if (!pendingReplyRequests.length) return { ...current, requestId: "" };
+      if (pendingReplyRequests.some((request) => request.id === current.requestId)) return current;
+      return { ...current, requestId: pendingReplyRequests[0].id };
+    });
+  }, [pendingReplyRequests]);
 
   async function refreshActivity() {
     const activityState = await loadReputationActivity();
@@ -218,6 +257,56 @@ export function ReputationEngine() {
       setError(err.message || "Failed to create request");
     } finally {
       setCreatingRequest(false);
+    }
+  }
+
+  async function submitDemoIntake() {
+    if (!demoIntakeForm.requestId) return;
+
+    setSubmittingIntake(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/reputation/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: demoIntakeForm.requestId,
+          score: Number(demoIntakeForm.score),
+          feedbackText: demoIntakeForm.feedbackText,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to submit intake");
+      await refreshActivity();
+      setDemoIntakeForm((current) => ({ ...current, feedbackText: "" }));
+      setMessage(`Demo reply captured. Request routed to ${json.status === "public_review_ready" ? "public-review-ready" : "private feedback"}.`);
+    } catch (err: any) {
+      setError(err.message || "Failed to submit intake");
+    } finally {
+      setSubmittingIntake(false);
+    }
+  }
+
+  async function createEventTriggeredRequest() {
+    setCreatingEventRequest(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/reputation/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(eventForm),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to create event-driven request");
+      setEventForm((current) => ({ ...current, customerName: "", phone: "" }));
+      await refreshActivity();
+      setMessage(`Event-triggered request queued from ${formatTriggerSource(json.triggerSource)}.`);
+    } catch (err: any) {
+      setError(err.message || "Failed to create event-driven request");
+    } finally {
+      setCreatingEventRequest(false);
     }
   }
 
@@ -320,10 +409,10 @@ export function ReputationEngine() {
               </CardHeader>
               <CardContent className="space-y-3 py-5 text-sm text-[var(--muted-foreground)]">
                 <ChecklistItem checked>Manual review request creation + simulated send</ChecklistItem>
+                <ChecklistItem checked>Operator demo intake for recent requests</ChecklistItem>
                 <ChecklistItem checked>Low-rating intake with private feedback capture</ChecklistItem>
                 <ChecklistItem checked>Positive snippet proof asset creation</ChecklistItem>
-                <ChecklistItem checked>Action Center reputation lane</ChecklistItem>
-                <ChecklistItem checked>Recent request activity surfaced in UI</ChecklistItem>
+                <ChecklistItem checked>Scoped event-triggered request posting route</ChecklistItem>
                 <ChecklistItem checked={false}>Live SMS provider integration (next)</ChecklistItem>
               </CardContent>
             </Card>
@@ -332,79 +421,176 @@ export function ReputationEngine() {
 
         <TabsContent value="campaigns" className="space-y-4">
           <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-            <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
-              <CardHeader className="border-b border-white/10 py-5">
-                <CardTitle className="flex items-center gap-2"><Send className="h-4 w-4 text-electric-500" /> Manual send</CardTitle>
-                <CardDescription>Create a review request now. It persists to the reputation tables, generates a token, and runs the simulated send job immediately.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 py-5">
-                <Field label="Business name">
-                  <Input value={manualForm.businessName} onChange={(event) => setManualForm((current) => ({ ...current, businessName: event.target.value }))} placeholder={suggestedBusinessName} />
-                </Field>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Customer name">
-                    <Input value={manualForm.customerName} onChange={(event) => setManualForm((current) => ({ ...current, customerName: event.target.value }))} placeholder="Alex Johnson" />
+            <div className="space-y-4">
+              <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+                <CardHeader className="border-b border-white/10 py-5">
+                  <CardTitle className="flex items-center gap-2"><Send className="h-4 w-4 text-electric-500" /> Manual send</CardTitle>
+                  <CardDescription>Create a review request now. It persists to the reputation tables, generates a token, and runs the simulated send job immediately.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 py-5">
+                  <Field label="Business name">
+                    <Input value={manualForm.businessName} onChange={(event) => setManualForm((current) => ({ ...current, businessName: event.target.value }))} placeholder={suggestedBusinessName} />
                   </Field>
-                  <Field label="Phone">
-                    <Input value={manualForm.phone} onChange={(event) => setManualForm((current) => ({ ...current, phone: event.target.value }))} placeholder="(555) 123-4567" />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="Customer name">
+                      <Input value={manualForm.customerName} onChange={(event) => setManualForm((current) => ({ ...current, customerName: event.target.value }))} placeholder="Alex Johnson" />
+                    </Field>
+                    <Field label="Phone">
+                      <Input value={manualForm.phone} onChange={(event) => setManualForm((current) => ({ ...current, phone: event.target.value }))} placeholder="(555) 123-4567" />
+                    </Field>
+                  </div>
+                  <Field label="Trigger source">
+                    <select
+                      value={manualForm.triggerSource}
+                      onChange={(event) => setManualForm((current) => ({ ...current, triggerSource: event.target.value }))}
+                      className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                    >
+                      {TRIGGER_SOURCE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
                   </Field>
-                </div>
-                <Field label="Trigger source">
-                  <select
-                    value={manualForm.triggerSource}
-                    onChange={(event) => setManualForm((current) => ({ ...current, triggerSource: event.target.value }))}
-                    className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
-                  >
-                    <option value="manual">Manual</option>
-                    <option value="api">API</option>
-                    <option value="stripe">Stripe</option>
-                    <option value="square">Square</option>
-                  </select>
-                </Field>
-                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm leading-6 text-[var(--foreground)]">{previewSms}</div>
-                <div className="flex justify-end">
-                  <Button onClick={createManualRequest} disabled={creatingRequest}>
-                    {creatingRequest ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                    Create and send
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm leading-6 text-[var(--foreground)]">{previewSms}</div>
+                  <div className="flex justify-end">
+                    <Button onClick={createManualRequest} disabled={creatingRequest}>
+                      {creatingRequest ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                      Create and send
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
-              <CardHeader className="border-b border-white/10 py-5">
-                <CardTitle>Recent request activity</CardTitle>
-                <CardDescription>Latest sends, replies, and public-review-ready requests.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 py-5">
-                {recentRequests.length === 0 ? (
-                  <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No requests yet. Create the first one from the manual send form.</div>
-                ) : (
-                  recentRequests.map((request) => {
-                    const contact = Array.isArray(request.contact) ? request.contact[0] : request.contact;
-                    return (
-                      <div key={request.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-                              <span>{contact?.name || "Customer"}</span>
-                              <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{request.trigger_source}</span>
-                              <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{request.status}</span>
+              <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+                <CardHeader className="border-b border-white/10 py-5">
+                  <CardTitle className="flex items-center gap-2"><Workflow className="h-4 w-4 text-electric-500" /> Event trigger test</CardTitle>
+                  <CardDescription>Small but real: post a completed appointment, job, or delivery event into the same request pipeline without using the manual creation route.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 py-5">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="Business name">
+                      <Input value={eventForm.businessName} onChange={(event) => setEventForm((current) => ({ ...current, businessName: event.target.value }))} placeholder={suggestedBusinessName} />
+                    </Field>
+                    <Field label="Event type">
+                      <select
+                        value={eventForm.eventType}
+                        onChange={(event) => setEventForm((current) => ({ ...current, eventType: event.target.value }))}
+                        className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                      >
+                        {TRIGGER_SOURCE_OPTIONS.filter((option) => option.value !== "manual").map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </Field>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="Customer name">
+                      <Input value={eventForm.customerName} onChange={(event) => setEventForm((current) => ({ ...current, customerName: event.target.value }))} placeholder="Jamie Customer" />
+                    </Field>
+                    <Field label="Phone">
+                      <Input value={eventForm.phone} onChange={(event) => setEventForm((current) => ({ ...current, phone: event.target.value }))} placeholder="(555) 555-0112" />
+                    </Field>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-xs leading-6 text-[var(--muted-foreground)]">
+                    POST /api/reputation/events → {`{ businessName, customerName, phone, eventType }`}
+                  </div>
+                  <div className="flex justify-end">
+                    <Button variant="outline" onClick={createEventTriggeredRequest} disabled={creatingEventRequest}>
+                      {creatingEventRequest ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Workflow className="mr-2 h-4 w-4" />}
+                      Post event trigger
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-4">
+              <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+                <CardHeader className="border-b border-white/10 py-5">
+                  <CardTitle>Recent request activity</CardTitle>
+                  <CardDescription>Latest sends, replies, and public-review-ready requests.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 py-5">
+                  {recentRequests.length === 0 ? (
+                    <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No requests yet. Create the first one from the manual send form.</div>
+                  ) : (
+                    recentRequests.map((request) => {
+                      const contact = Array.isArray(request.contact) ? request.contact[0] : request.contact;
+                      return (
+                        <div key={request.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                                <span>{contact?.name || "Customer"}</span>
+                                <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{formatTriggerSource(request.trigger_source)}</span>
+                                <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{request.status.replace(/_/g, " ")}</span>
+                              </div>
+                              <p className="mt-2 text-sm text-[var(--foreground)]">{request.business_id} · {contact?.phone || "No phone"}</p>
+                              <p className="mt-1 text-xs text-[var(--muted-foreground)]">Created {new Date(request.created_at).toLocaleString()}</p>
                             </div>
-                            <p className="mt-2 text-sm text-[var(--foreground)]">{request.business_id} · {contact?.phone || "No phone"}</p>
-                            <p className="mt-1 text-xs text-[var(--muted-foreground)]">Created {new Date(request.created_at).toLocaleString()}</p>
-                          </div>
-                          <div className="text-right text-xs text-[var(--muted-foreground)]">
-                            <div>{request.score ? `${request.score}/5 reply` : request.sent_at ? "Sent" : "Pending"}</div>
-                            {request.review_token ? <div className="mt-1">token ready</div> : null}
+                            <div className="text-right text-xs text-[var(--muted-foreground)]">
+                              <div>{request.score ? `${request.score}/5 reply` : request.sent_at ? "Sent" : "Pending"}</div>
+                              {request.review_token ? <div className="mt-1">token ready</div> : null}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })
-                )}
-              </CardContent>
-            </Card>
+                      );
+                    })
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+                <CardHeader className="border-b border-white/10 py-5">
+                  <CardTitle>Test intake reply</CardTitle>
+                  <CardDescription>Choose a recent request, simulate the customer score + feedback, and immediately refresh the inbox/proof state.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 py-5">
+                  <Field label="Recent request">
+                    <select
+                      value={demoIntakeForm.requestId}
+                      onChange={(event) => setDemoIntakeForm((current) => ({ ...current, requestId: event.target.value }))}
+                      className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                      disabled={pendingReplyRequests.length === 0}
+                    >
+                      {pendingReplyRequests.length === 0 ? (
+                        <option value="">No open requests available</option>
+                      ) : (
+                        pendingReplyRequests.map((request) => {
+                          const contact = Array.isArray(request.contact) ? request.contact[0] : request.contact;
+                          return (
+                            <option key={request.id} value={request.id}>
+                              {(contact?.name || "Customer")} · {formatTriggerSource(request.trigger_source)}
+                            </option>
+                          );
+                        })
+                      )}
+                    </select>
+                  </Field>
+                  <div className="grid gap-4 sm:grid-cols-[140px_1fr]">
+                    <Field label="Score">
+                      <select
+                        value={demoIntakeForm.score}
+                        onChange={(event) => setDemoIntakeForm((current) => ({ ...current, score: event.target.value }))}
+                        className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                      >
+                        {["5", "4", "3", "2", "1"].map((scoreOption) => (
+                          <option key={scoreOption} value={scoreOption}>{scoreOption} / 5</option>
+                        ))}
+                      </select>
+                    </Field>
+                    <Field label="Optional feedback">
+                      <Textarea value={demoIntakeForm.feedbackText} onChange={(event) => setDemoIntakeForm((current) => ({ ...current, feedbackText: event.target.value }))} className="min-h-24" placeholder="Fast, friendly, and easy to work with." />
+                    </Field>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button onClick={submitDemoIntake} disabled={submittingIntake || pendingReplyRequests.length === 0 || !demoIntakeForm.requestId}>
+                      {submittingIntake ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquare className="mr-2 h-4 w-4" />}
+                      Submit reply
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </TabsContent>
 
@@ -476,27 +662,19 @@ export function ReputationEngine() {
         </TabsContent>
 
         <TabsContent value="proof" className="space-y-4">
-          <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
-            <CardHeader className="border-b border-white/10 py-5">
-              <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-electric-500" /> Trust Proof Pipeline</CardTitle>
-              <CardDescription>Positive replies can now create lightweight proof snippets for later approval and publishing.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 py-5">
-              {proofAssets.length === 0 ? (
-                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No proof snippets yet. Positive inbound feedback with written text will appear here.</div>
-              ) : (
-                proofAssets.map((asset) => (
-                  <div key={asset.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
-                    <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-                      <span>{new Date(asset.created_at).toLocaleString()}</span>
-                      <span className="rounded-full border border-white/10 px-2 py-1">{asset.approved ? "approved" : "awaiting approval"}</span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-[var(--foreground)]">{asset.snippet}</p>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
+          <ProofShowcase
+            summary={{
+              totalRequests: metrics.total,
+              publicReady: metrics.publicReady,
+              awaitingReply: metrics.awaitingReply,
+              averageScore: recentRequests.filter((item) => typeof item.score === "number").length
+                ? Number((recentRequests.filter((item) => typeof item.score === "number").reduce((sum, item) => sum + Number(item.score || 0), 0) / recentRequests.filter((item) => typeof item.score === "number").length).toFixed(1))
+                : null,
+              proofAssets,
+            }}
+            title="Trust Proof Pipeline"
+            description="Positive replies can now create lightweight proof snippets for later approval and publishing."
+          />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">

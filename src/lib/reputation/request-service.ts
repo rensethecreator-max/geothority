@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
+import type { ReputationProofSummary } from "@/lib/reputation/types";
 
 export function isMissingTableError(error: any) {
   return error?.code === "42P01" || /relation .* does not exist/i.test(error?.message || "");
@@ -67,6 +68,54 @@ export async function upsertReputationContact(params: {
   return contact;
 }
 
+export async function createAndSendReputationRequest(params: {
+  supabase: any;
+  userId: string;
+  businessName: string;
+  customerName: string;
+  phone: string;
+  triggerSource: string;
+}) {
+  const { supabase, userId, businessName, customerName, phone, triggerSource } = params;
+
+  const contact = await upsertReputationContact({
+    supabase,
+    userId,
+    businessId: businessName,
+    customerName,
+    phone,
+    source: triggerSource,
+  });
+
+  if (contact.opt_out) {
+    return { success: false as const, error: "This contact has opted out of reputation requests", status: 409 };
+  }
+
+  const { data: createdRequest, error: requestError } = await supabase
+    .from("reputation_requests")
+    .insert({
+      user_id: userId,
+      business_id: businessName,
+      contact_id: contact.id,
+      trigger_source: triggerSource,
+      status: "pending",
+      review_token: crypto.randomUUID().replace(/-/g, ""),
+    })
+    .select("id")
+    .single();
+
+  if (requestError || !createdRequest) {
+    if (isMissingTableError(requestError)) {
+      return { success: false as const, error: "Reputation tables are not installed yet. Run the migration first.", status: 412 };
+    }
+    return { success: false as const, error: requestError?.message || "Failed to create request", status: 500 };
+  }
+
+  await sendReputationRequestNow(createdRequest.id);
+
+  return { success: true as const, requestId: createdRequest.id };
+}
+
 export async function sendReputationRequestNow(requestId: string) {
   const supabase = createServiceClient();
   if (!supabase) {
@@ -115,4 +164,46 @@ export async function sendReputationRequestNow(requestId: string) {
     .eq("id", requestRow.id);
 
   return { success: true, simulated: true, alreadySent: false };
+}
+
+export async function getReputationProofSummary(supabase: any, userId: string): Promise<ReputationProofSummary> {
+  const [requestsResult, proofResult] = await Promise.all([
+    supabase
+      .from("reputation_requests")
+      .select("id, status, score, replied_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(50),
+    supabase
+      .from("reputation_proof_assets")
+      .select("id, snippet, approved, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(3),
+  ]);
+
+  if (requestsResult.error) {
+    if (isMissingTableError(requestsResult.error)) {
+      return {
+        totalRequests: 0,
+        publicReady: 0,
+        awaitingReply: 0,
+        averageScore: null,
+        proofAssets: [],
+      };
+    }
+    throw new Error(requestsResult.error.message || "Failed to load reputation proof summary");
+  }
+
+  const requests = requestsResult.data ?? [];
+  const scoredRequests = requests.filter((item: any) => typeof item.score === "number");
+  const totalScore = scoredRequests.reduce((sum: number, item: any) => sum + Number(item.score || 0), 0);
+
+  return {
+    totalRequests: requests.length,
+    publicReady: requests.filter((item: any) => item.status === "public_review_ready").length,
+    awaitingReply: requests.filter((item: any) => item.status === "sent" && !item.replied_at).length,
+    averageScore: scoredRequests.length ? Number((totalScore / scoredRequests.length).toFixed(1)) : null,
+    proofAssets: proofResult.data ?? [],
+  };
 }
