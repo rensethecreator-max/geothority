@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, MessageSquare, ShieldCheck, Sparkles, Star, TrendingUp } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, MessageSquare, Send, ShieldCheck, Sparkles, Star, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,42 +28,113 @@ interface FeedbackItem {
   created_at: string;
 }
 
+interface RecentRequest {
+  id: string;
+  business_id: string;
+  trigger_source: string;
+  status: string;
+  score: number | null;
+  feedback_text: string | null;
+  review_token: string | null;
+  google_link_sent: boolean;
+  template_used: string | null;
+  sent_at: string | null;
+  replied_at: string | null;
+  created_at: string;
+  contact?: { name?: string | null; phone?: string | null } | { name?: string | null; phone?: string | null }[] | null;
+}
+
+interface ProofAsset {
+  id: string;
+  snippet: string;
+  approved: boolean;
+  created_at: string;
+}
+
+interface ReputationMetrics {
+  total: number;
+  awaitingReply: number;
+  publicReady: number;
+  unresolvedFeedback: number;
+}
+
+const EMPTY_METRICS: ReputationMetrics = {
+  total: 0,
+  awaitingReply: 0,
+  publicReady: 0,
+  unresolvedFeedback: 0,
+};
+
 export function ReputationEngine() {
   const [settings, setSettings] = useState<ReputationSettings>(DEFAULT_REPUTATION_SETTINGS);
   const [templates, setTemplates] = useState<ReputationTemplate[]>(DEFAULT_REPUTATION_TEMPLATES);
   const [loading, setLoading] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingTemplates, setSavingTemplates] = useState(false);
+  const [creatingRequest, setCreatingRequest] = useState(false);
   const [apiState, setApiState] = useState<ApiState>({ setupRequired: false });
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
+  const [recentRequests, setRecentRequests] = useState<RecentRequest[]>([]);
+  const [proofAssets, setProofAssets] = useState<ProofAsset[]>([]);
+  const [metrics, setMetrics] = useState<ReputationMetrics>(EMPTY_METRICS);
+  const [suggestedBusinessName, setSuggestedBusinessName] = useState("Your Business");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [manualForm, setManualForm] = useState({
+    businessName: "",
+    customerName: "",
+    phone: "",
+    triggerSource: "manual",
+  });
+
+  async function loadReputationActivity() {
+    const [feedbackRes, requestsRes] = await Promise.all([
+      fetch("/api/reputation/feedback", { cache: "no-store" }),
+      fetch("/api/reputation/requests", { cache: "no-store" }),
+    ]);
+
+    const feedbackJson = await feedbackRes.json();
+    const requestsJson = await requestsRes.json();
+
+    if (!feedbackRes.ok) throw new Error(feedbackJson.error || "Failed to load feedback items");
+    if (!requestsRes.ok) throw new Error(requestsJson.error || "Failed to load reputation activity");
+
+    setFeedbackItems(feedbackJson.items ?? []);
+    setRecentRequests(requestsJson.recentRequests ?? []);
+    setProofAssets(requestsJson.proofAssets ?? []);
+    setMetrics(requestsJson.metrics ?? EMPTY_METRICS);
+    setSuggestedBusinessName(requestsJson.suggestedBusinessName ?? "Your Business");
+    setManualForm((current) => ({
+      ...current,
+      businessName: current.businessName || requestsJson.suggestedBusinessName || "",
+    }));
+    return {
+      setupRequired: Boolean(feedbackJson.setupRequired || requestsJson.setupRequired),
+    };
+  }
 
   useEffect(() => {
     let mounted = true;
 
     async function load() {
       try {
-        const [settingsRes, templatesRes, feedbackRes] = await Promise.all([
+        const [settingsRes, templatesRes, activityState] = await Promise.all([
           fetch("/api/reputation/settings", { cache: "no-store" }),
           fetch("/api/reputation/templates", { cache: "no-store" }),
-          fetch("/api/reputation/feedback", { cache: "no-store" }),
+          loadReputationActivity(),
         ]);
 
         const settingsJson = await settingsRes.json();
         const templatesJson = await templatesRes.json();
-        const feedbackJson = await feedbackRes.json();
 
         if (!mounted) return;
 
         if (!settingsRes.ok) throw new Error(settingsJson.error || "Failed to load reputation settings");
         if (!templatesRes.ok) throw new Error(templatesJson.error || "Failed to load reputation templates");
-        if (!feedbackRes.ok) throw new Error(feedbackJson.error || "Failed to load feedback items");
 
         setSettings(settingsJson.settings ?? DEFAULT_REPUTATION_SETTINGS);
         setTemplates(templatesJson.templates ?? DEFAULT_REPUTATION_TEMPLATES);
-        setFeedbackItems(feedbackJson.items ?? []);
-        setApiState({ setupRequired: Boolean(settingsJson.setupRequired || templatesJson.setupRequired || feedbackJson.setupRequired) });
+        setApiState({ setupRequired: Boolean(settingsJson.setupRequired || templatesJson.setupRequired || activityState.setupRequired) });
       } catch (err: any) {
         if (!mounted) return;
         setError(err.message || "Failed to load reputation engine");
@@ -79,12 +150,14 @@ export function ReputationEngine() {
   }, []);
 
   const previewSms = useMemo(
-    () =>
-      settings.smsTemplate
-        .replace("{customer_name}", "Alex")
-        .replace("{business_name}", "Your business"),
-    [settings.smsTemplate],
+    () => settings.smsTemplate.replace("{customer_name}", "Alex").replace("{business_name}", manualForm.businessName || suggestedBusinessName || "Your Business"),
+    [manualForm.businessName, settings.smsTemplate, suggestedBusinessName],
   );
+
+  async function refreshActivity() {
+    const activityState = await loadReputationActivity();
+    setApiState((current) => ({ ...current, setupRequired: current.setupRequired || activityState.setupRequired }));
+  }
 
   async function saveSettings() {
     setSavingSettings(true);
@@ -126,6 +199,28 @@ export function ReputationEngine() {
     }
   }
 
+  async function createManualRequest() {
+    setCreatingRequest(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/reputation/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(manualForm),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to create request");
+      setManualForm((current) => ({ ...current, customerName: "", phone: "" }));
+      await refreshActivity();
+      setMessage("Review request created and sent.");
+    } catch (err: any) {
+      setError(err.message || "Failed to create request");
+    } finally {
+      setCreatingRequest(false);
+    }
+  }
+
   async function updateFeedbackStatus(id: string, followUpStatus: string) {
     setMessage(null);
     setError(null);
@@ -138,6 +233,10 @@ export function ReputationEngine() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to update feedback item");
       setFeedbackItems((current) => current.map((item) => (item.id === id ? { ...item, follow_up_status: followUpStatus } : item)));
+      setMetrics((current) => ({
+        ...current,
+        unresolvedFeedback: Math.max(0, current.unresolvedFeedback + (followUpStatus === "resolved" ? -1 : 0)),
+      }));
       setMessage("Feedback status updated.");
     } catch (err: any) {
       setError(err.message || "Failed to update feedback item");
@@ -162,12 +261,12 @@ export function ReputationEngine() {
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">Review momentum, private feedback, and trust proof — in one place.</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">
-            This is the first Geothority-native reputation layer. Use it to turn review health from a passive score input into an active authority lever.
+            Native request sending is live now: operators can launch requests manually, capture low-score feedback privately, and queue positive snippets for public proof.
           </p>
         </div>
         <div className="grid grid-cols-3 gap-3 text-xs sm:text-sm">
-          <StatCard label="Review health" value={settings.active ? "Active" : "Idle"} tone={settings.active ? "emerald" : "slate"} />
-          <StatCard label="Campaign delay" value={`${settings.smsDelayMinutes}m`} tone="blue" />
+          <StatCard label="Automation" value={settings.active ? "Active" : "Idle"} tone={settings.active ? "emerald" : "slate"} />
+          <StatCard label="Awaiting reply" value={`${metrics.awaitingReply}`} tone="blue" />
           <StatCard label="Public threshold" value={`${settings.positiveThreshold}+★`} tone="amber" />
         </div>
       </div>
@@ -178,9 +277,7 @@ export function ReputationEngine() {
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
             <div>
               <p className="font-semibold text-amber-200">Database setup still required</p>
-              <p className="mt-1 text-amber-100/90">
-                The UI is live, but the new reputation tables have not been installed in Supabase yet. Run the reputation migration before expecting persistence in production.
-              </p>
+              <p className="mt-1 text-amber-100/90">The UI is live, but the new reputation tables have not been installed in Supabase yet. Run the reputation migration before expecting persistence in production.</p>
             </div>
           </div>
         </div>
@@ -203,7 +300,7 @@ export function ReputationEngine() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
             <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
               <CardHeader className="border-b border-white/10 py-5">
                 <CardTitle>Review Health snapshot</CardTitle>
@@ -212,8 +309,8 @@ export function ReputationEngine() {
               <CardContent className="grid gap-4 py-5 sm:grid-cols-2 xl:grid-cols-4">
                 <Metric label="Automation" value={settings.active ? "On" : "Off"} detail={settings.active ? "Requests can be scheduled" : "No requests will be sent"} icon={ShieldCheck} />
                 <Metric label="Review route" value={`${settings.positiveThreshold}+ stars`} detail="Lower scores stay private" icon={Star} />
-                <Metric label="Delay" value={`${settings.smsDelayMinutes} minutes`} detail="Time after transaction" icon={TrendingUp} />
-                <Metric label="Proof mode" value="Ready" detail="Positive review snippets can feed trust pages next" icon={Sparkles} />
+                <Metric label="Awaiting reply" value={`${metrics.awaitingReply}`} detail="Requests already sent" icon={MessageSquare} />
+                <Metric label="Proof mode" value={`${proofAssets.length} snippets`} detail="Positive feedback ready for proof" icon={Sparkles} />
               </CardContent>
             </Card>
 
@@ -222,44 +319,93 @@ export function ReputationEngine() {
                 <CardTitle>What ships in this slice</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 py-5 text-sm text-[var(--muted-foreground)]">
-                <ChecklistItem checked>Native Reputation nav + dashboard surface</ChecklistItem>
-                <ChecklistItem checked>Persisted settings API</ChecklistItem>
-                <ChecklistItem checked>Template library persistence</ChecklistItem>
-                <ChecklistItem checked>Reusable scheduler service port</ChecklistItem>
-                <ChecklistItem checked={false}>Private feedback inbox (next)</ChecklistItem>
-                <ChecklistItem checked={false}>Public one-tap review page (next)</ChecklistItem>
+                <ChecklistItem checked>Manual review request creation + simulated send</ChecklistItem>
+                <ChecklistItem checked>Low-rating intake with private feedback capture</ChecklistItem>
+                <ChecklistItem checked>Positive snippet proof asset creation</ChecklistItem>
+                <ChecklistItem checked>Action Center reputation lane</ChecklistItem>
+                <ChecklistItem checked>Recent request activity surfaced in UI</ChecklistItem>
+                <ChecklistItem checked={false}>Live SMS provider integration (next)</ChecklistItem>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
         <TabsContent value="campaigns" className="space-y-4">
-          <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
-            <CardHeader className="border-b border-white/10 py-5">
-              <CardTitle>Campaign controls</CardTitle>
-              <CardDescription>Operator-simple first pass. Event sources and feedback routing come next.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-5 py-5 lg:grid-cols-2">
-              <div className="space-y-3">
-                <label className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Initial SMS preview</label>
-                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm leading-6 text-[var(--foreground)]">
-                  {previewSms}
+          <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+            <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+              <CardHeader className="border-b border-white/10 py-5">
+                <CardTitle className="flex items-center gap-2"><Send className="h-4 w-4 text-electric-500" /> Manual send</CardTitle>
+                <CardDescription>Create a review request now. It persists to the reputation tables, generates a token, and runs the simulated send job immediately.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 py-5">
+                <Field label="Business name">
+                  <Input value={manualForm.businessName} onChange={(event) => setManualForm((current) => ({ ...current, businessName: event.target.value }))} placeholder={suggestedBusinessName} />
+                </Field>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Customer name">
+                    <Input value={manualForm.customerName} onChange={(event) => setManualForm((current) => ({ ...current, customerName: event.target.value }))} placeholder="Alex Johnson" />
+                  </Field>
+                  <Field label="Phone">
+                    <Input value={manualForm.phone} onChange={(event) => setManualForm((current) => ({ ...current, phone: event.target.value }))} placeholder="(555) 123-4567" />
+                  </Field>
                 </div>
-              </div>
-              <div className="space-y-3">
-                <label className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Automation status</label>
-                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
-                  <p>
-                    When automation is active, Geothority can schedule review requests after transaction or trigger events, keep low-score feedback private, and later route positive proof into trust assets.
-                  </p>
-                  <div className="mt-4 flex items-center gap-3">
-                    <Switch checked={settings.active} onCheckedChange={(checked) => setSettings((current) => ({ ...current, active: checked }))} />
-                    <span className="font-medium text-[var(--foreground)]">{settings.active ? "Automation enabled" : "Automation disabled"}</span>
-                  </div>
+                <Field label="Trigger source">
+                  <select
+                    value={manualForm.triggerSource}
+                    onChange={(event) => setManualForm((current) => ({ ...current, triggerSource: event.target.value }))}
+                    className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                  >
+                    <option value="manual">Manual</option>
+                    <option value="api">API</option>
+                    <option value="stripe">Stripe</option>
+                    <option value="square">Square</option>
+                  </select>
+                </Field>
+                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm leading-6 text-[var(--foreground)]">{previewSms}</div>
+                <div className="flex justify-end">
+                  <Button onClick={createManualRequest} disabled={creatingRequest}>
+                    {creatingRequest ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                    Create and send
+                  </Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+              <CardHeader className="border-b border-white/10 py-5">
+                <CardTitle>Recent request activity</CardTitle>
+                <CardDescription>Latest sends, replies, and public-review-ready requests.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 py-5">
+                {recentRequests.length === 0 ? (
+                  <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No requests yet. Create the first one from the manual send form.</div>
+                ) : (
+                  recentRequests.map((request) => {
+                    const contact = Array.isArray(request.contact) ? request.contact[0] : request.contact;
+                    return (
+                      <div key={request.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                              <span>{contact?.name || "Customer"}</span>
+                              <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{request.trigger_source}</span>
+                              <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{request.status}</span>
+                            </div>
+                            <p className="mt-2 text-sm text-[var(--foreground)]">{request.business_id} · {contact?.phone || "No phone"}</p>
+                            <p className="mt-1 text-xs text-[var(--muted-foreground)]">Created {new Date(request.created_at).toLocaleString()}</p>
+                          </div>
+                          <div className="text-right text-xs text-[var(--muted-foreground)]">
+                            <div>{request.score ? `${request.score}/5 reply` : request.sent_at ? "Sent" : "Pending"}</div>
+                            {request.review_token ? <div className="mt-1">token ready</div> : null}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="templates" className="space-y-4">
@@ -303,9 +449,7 @@ export function ReputationEngine() {
             </CardHeader>
             <CardContent className="space-y-3 py-5">
               {feedbackItems.length === 0 ? (
-                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
-                  No private feedback items yet. Once low-score requests come in, they’ll appear here for follow-up.
-                </div>
+                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No private feedback items yet. Once low-score requests come in, they’ll appear here for follow-up.</div>
               ) : (
                 feedbackItems.map((item) => (
                   <div key={item.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
@@ -332,12 +476,27 @@ export function ReputationEngine() {
         </TabsContent>
 
         <TabsContent value="proof" className="space-y-4">
-          <PlaceholderCard
-            icon={Sparkles}
-            title="Trust Proof Pipeline"
-            description="Positive reviews should become reusable proof blocks for trust pages, city pages, and benchmark assets. This is where the self-marketing loop gets real."
-            bullets={["Approve standout snippets", "Tag by service / city / topic", "Publish into public authority surfaces"]}
-          />
+          <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+            <CardHeader className="border-b border-white/10 py-5">
+              <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-electric-500" /> Trust Proof Pipeline</CardTitle>
+              <CardDescription>Positive replies can now create lightweight proof snippets for later approval and publishing.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 py-5">
+              {proofAssets.length === 0 ? (
+                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No proof snippets yet. Positive inbound feedback with written text will appear here.</div>
+              ) : (
+                proofAssets.map((asset) => (
+                  <div key={asset.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                    <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                      <span>{new Date(asset.created_at).toLocaleString()}</span>
+                      <span className="rounded-full border border-white/10 px-2 py-1">{asset.approved ? "approved" : "awaiting approval"}</span>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-[var(--foreground)]">{asset.snippet}</p>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
@@ -353,21 +512,10 @@ export function ReputationEngine() {
                 </Field>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Delay (minutes)">
-                    <Input
-                      type="number"
-                      min={5}
-                      value={settings.smsDelayMinutes}
-                      onChange={(event) => setSettings((current) => ({ ...current, smsDelayMinutes: Number(event.target.value || 60) }))}
-                    />
+                    <Input type="number" min={5} value={settings.smsDelayMinutes} onChange={(event) => setSettings((current) => ({ ...current, smsDelayMinutes: Number(event.target.value || 60) }))} />
                   </Field>
                   <Field label="Positive threshold">
-                    <Input
-                      type="number"
-                      min={1}
-                      max={5}
-                      value={settings.positiveThreshold}
-                      onChange={(event) => setSettings((current) => ({ ...current, positiveThreshold: Number(event.target.value || 4) }))}
-                    />
+                    <Input type="number" min={1} max={5} value={settings.positiveThreshold} onChange={(event) => setSettings((current) => ({ ...current, positiveThreshold: Number(event.target.value || 4) }))} />
                   </Field>
                 </div>
                 <Field label="SMS template" hint="Merge fields: {customer_name}, {business_name}">
@@ -376,7 +524,7 @@ export function ReputationEngine() {
                 <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[var(--muted)]/20 px-4 py-3">
                   <div>
                     <p className="text-sm font-medium text-[var(--foreground)]">Activate review automation</p>
-                    <p className="text-xs text-[var(--muted-foreground)]">Keep this off until the event source and migration are ready.</p>
+                    <p className="text-xs text-[var(--muted-foreground)]">Manual sends work now. Leave this off until your event-source automations are ready.</p>
                   </div>
                   <Switch checked={settings.active} onCheckedChange={(checked) => setSettings((current) => ({ ...current, active: checked }))} />
                 </div>
@@ -397,13 +545,13 @@ export function ReputationEngine() {
                 </Card>
                 <Card className="rounded-2xl border-white/10 bg-[var(--muted)]/20 py-0">
                   <CardHeader className="border-b border-white/10 py-4">
-                    <CardTitle className="text-sm">Next integrations</CardTitle>
+                    <CardTitle className="text-sm">Current engine state</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 py-4 text-sm text-[var(--muted-foreground)]">
-                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> QStash-ready scheduler service ported</div>
-                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Template persistence scaffolded</div>
-                    <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-400" /> Send job route still needs implementation</div>
-                    <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-400" /> Event-source connectors still need wiring</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Send job route now runs the simulated outbound log</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Low-score replies create private feedback items</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Positive written replies create proof snippets</div>
+                    <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-400" /> Live provider delivery still intentionally simulated</div>
                   </CardContent>
                 </Card>
               </div>
@@ -430,22 +578,6 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       </div>
       {children}
     </label>
-  );
-}
-
-function PlaceholderCard({ icon: Icon, title, description, bullets }: { icon: any; title: string; description: string; bullets: string[] }) {
-  return (
-    <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
-      <CardHeader className="border-b border-white/10 py-5">
-        <CardTitle className="flex items-center gap-2"><Icon className="h-4 w-4 text-electric-500" /> {title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2 py-5 text-sm text-[var(--muted-foreground)]">
-        {bullets.map((bullet) => (
-          <div key={bullet} className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" /> {bullet}</div>
-        ))}
-      </CardContent>
-    </Card>
   );
 }
 

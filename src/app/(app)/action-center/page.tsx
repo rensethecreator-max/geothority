@@ -55,6 +55,37 @@ interface SyncSummary {
   created_at: string;
 }
 
+interface ReputationFeedbackSummary {
+  id: string;
+  business_id: string;
+  severity: string | null;
+  topic: string | null;
+  feedback_text: string;
+  follow_up_status: string;
+  created_at: string;
+}
+
+interface ReputationRequestSummary {
+  id: string;
+  business_id: string;
+  status: string;
+  created_at: string;
+  sent_at: string | null;
+  replied_at: string | null;
+  contact?: { name?: string | null; phone?: string | null } | null;
+}
+
+interface ReputationSummary {
+  counts: {
+    unresolvedFeedback: number;
+    newComplaints: number;
+    pendingFollowUps: number;
+    awaitingReplies: number;
+  };
+  feedback: ReputationFeedbackSummary[];
+  requests: ReputationRequestSummary[];
+}
+
 const STATUS_CFG: Record<
   string,
   { label: string; icon: typeof CheckCircle2; color: string; bg: string }
@@ -275,6 +306,11 @@ export default function ActionCenterPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [approving, setApproving] = useState<string | null>(null);
+  const [reputation, setReputation] = useState<ReputationSummary>({
+    counts: { unresolvedFeedback: 0, newComplaints: 0, pendingFollowUps: 0, awaitingReplies: 0 },
+    feedback: [],
+    requests: [],
+  });
   const [tab, setTab] = useState<"needs-action" | "running" | "completed" | "failed" | "syncs">("needs-action");
 
   const fetchData = useCallback(async () => {
@@ -296,6 +332,13 @@ export default function ActionCenterPage() {
       const data = await response.json();
       setPlans(data.plans ?? []);
       setSyncs(data.syncs ?? []);
+      setReputation(
+        data.reputation ?? {
+          counts: { unresolvedFeedback: 0, newComplaints: 0, pendingFollowUps: 0, awaitingReplies: 0 },
+          feedback: [],
+          requests: [],
+        },
+      );
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -385,6 +428,7 @@ export default function ActionCenterPage() {
               { label: "Awaiting review", value: `${needsAction.length} plans`, icon: AlertTriangle },
               { label: "Live runs", value: `${running.length} executing`, icon: Loader2 },
               { label: "Listing coverage", value: `${syncs.length} sync records`, icon: ShieldCheck },
+              { label: "Reputation follow-up", value: `${reputation.counts.unresolvedFeedback} open items`, icon: Activity },
             ].map((item) => (
               <div key={item.label} className="geo-premium-muted min-w-[180px] rounded-2xl px-4 py-3">
                 <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
@@ -430,6 +474,73 @@ export default function ActionCenterPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+        <div className="geo-premium-card rounded-3xl p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Reputation ops</div>
+              <h2 className="mt-2 text-xl font-semibold text-[var(--foreground)]">Private feedback and review follow-up</h2>
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">Keep low-score issues private, respond fast, and watch requests waiting on a reply.</p>
+            </div>
+            <Link href="/reputation" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-3 py-2 text-sm text-[var(--foreground)] transition-colors hover:border-electric-500/40 hover:text-electric-400">
+              Open reputation
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              { label: "New complaints", value: reputation.counts.newComplaints, tone: "text-red-300 bg-red-500/10" },
+              { label: "Open private feedback", value: reputation.counts.unresolvedFeedback, tone: "text-amber-200 bg-amber-500/10" },
+              { label: "Active follow-ups", value: reputation.counts.pendingFollowUps, tone: "text-blue-200 bg-blue-500/10" },
+              { label: "Awaiting replies", value: reputation.counts.awaitingReplies, tone: "text-emerald-200 bg-emerald-500/10" },
+            ].map((item) => (
+              <div key={item.label} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{item.label}</div>
+                <div className={`mt-2 inline-flex rounded-full px-3 py-1 text-lg font-semibold ${item.tone}`}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="geo-premium-card rounded-3xl p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Newest reputation work</div>
+              <h3 className="mt-2 text-lg font-semibold text-[var(--foreground)]">What needs attention first</h3>
+            </div>
+          </div>
+          <div className="mt-4 space-y-3">
+            {reputation.feedback.length === 0 && reputation.requests.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
+                Reputation follow-ups will appear here as soon as low-score feedback or outbound review requests start moving.
+              </div>
+            ) : (
+              <>
+                {reputation.feedback.slice(0, 3).map((item) => (
+                  <div key={item.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                    <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                      <span>{item.topic || item.business_id}</span>
+                      <span className="rounded-full border border-white/10 px-2 py-1">{item.follow_up_status}</span>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-[var(--foreground)] line-clamp-2">{item.feedback_text}</p>
+                  </div>
+                ))}
+                {reputation.requests.filter((item) => item.status === "sent" && !item.replied_at).slice(0, 2).map((item) => (
+                  <div key={item.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                    <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                      <span>{item.contact?.name || "Customer"}</span>
+                      <span className="rounded-full border border-white/10 px-2 py-1">awaiting reply</span>
+                    </div>
+                    <p className="mt-2 text-sm text-[var(--foreground)]">{item.business_id}</p>
+                    <p className="mt-1 text-xs text-[var(--muted-foreground)]">Sent {formatDistanceToNow(new Date(item.sent_at || item.created_at), { addSuffix: true })}</p>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {error && (
