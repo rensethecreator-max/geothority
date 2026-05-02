@@ -23,6 +23,8 @@ export function ProofShowcase({
     : summary.approvedProofCount > 0
       ? `${summary.approvedProofCount} approved proof asset${summary.approvedProofCount === 1 ? "" : "s"}`
       : "No approved proof assets yet";
+  const approvedAssets = summary.proofAssets.filter((asset) => asset.approved);
+  const featuredAssets = (approvedAssets.length > 0 ? approvedAssets : summary.proofAssets).slice(0, compact ? 2 : summary.proofAssets.length);
 
   return (
     <div className="geo-premium-card rounded-3xl p-6">
@@ -42,37 +44,35 @@ export function ProofShowcase({
         ) : null}
       </div>
 
-      <div className={`mt-5 grid gap-3 ${compact ? "md:grid-cols-4" : "lg:grid-cols-[0.9fr_1.1fr]"}`}>
-        <div className={`grid gap-3 ${compact ? "md:grid-cols-4" : "sm:grid-cols-2 xl:grid-cols-4"}`}>
+      <div className={`mt-5 grid gap-3 ${compact ? "xl:grid-cols-[1.05fr_0.95fr]" : "lg:grid-cols-[0.9fr_1.1fr]"}`}>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <ProofMetric label="Requests tracked" value={`${summary.totalRequests}`} icon={TrendingUp} />
           <ProofMetric label="Public-ready wins" value={`${summary.publicReady}`} icon={Star} />
           <ProofMetric label="Approved proof" value={`${summary.approvedProofCount}`} icon={Sparkles} />
           <ProofMetric label="Avg. reply score" value={summary.averageScore ? `${summary.averageScore}/5` : "—"} icon={MessageSquareQuote} />
         </div>
 
-        {!compact && (
-          <div className="space-y-3">
-            {summary.proofAssets.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
-                No proof snippets yet. Once a positive reply includes written feedback, it will show up here ready for approval.
-              </div>
-            ) : (
-              summary.proofAssets.map((asset) => (
-                <div key={asset.id} className="geo-proof-card rounded-2xl p-4">
-                  <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-                    <span>{new Date(asset.created_at).toLocaleDateString()}</span>
-                    <span className="rounded-full border border-white/10 px-2 py-1">{asset.approved ? "Approved" : "Awaiting approval"}</span>
-                  </div>
-                  {asset.topic ? <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-electric-300">{asset.topic}</div> : null}
-                  <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">“{asset.snippet}”</p>
-                  {asset.approved && asset.published_to?.length ? (
-                    <p className="mt-3 text-xs text-[var(--muted-foreground)]">Visible on: {asset.published_to.map(formatTriggerSource).join(", ")}</p>
-                  ) : null}
+        <div className="space-y-3">
+          {featuredAssets.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
+              No proof snippets yet. Once a positive reply includes written feedback, it will show up here ready for approval.
+            </div>
+          ) : (
+            featuredAssets.map((asset) => (
+              <div key={asset.id} className="geo-proof-card rounded-2xl p-4">
+                <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                  <span>{new Date(asset.created_at).toLocaleDateString()}</span>
+                  <span className="rounded-full border border-white/10 px-2 py-1">{asset.approved ? "Approved" : "Awaiting approval"}</span>
                 </div>
-              ))
-            )}
-          </div>
-        )}
+                {asset.topic ? <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-electric-300">{asset.topic}</div> : null}
+                <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">“{asset.snippet}”</p>
+                {asset.approved && asset.published_to?.length ? (
+                  <p className="mt-3 text-xs text-[var(--muted-foreground)]">Visible on: {asset.published_to.map(formatTriggerSource).join(", ")}</p>
+                ) : null}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

@@ -254,6 +254,16 @@ export function ReputationEngine() {
     [recentRequests],
   );
 
+  const pendingProofAssets = useMemo(
+    () => proofAssets.filter((asset) => !asset.approved),
+    [proofAssets],
+  );
+
+  const approvedProofAssets = useMemo(
+    () => proofAssets.filter((asset) => asset.approved),
+    [proofAssets],
+  );
+
   const selectedDemoRequest = useMemo(
     () => pendingReplyRequests.find((request) => request.id === demoIntakeForm.requestId) ?? null,
     [demoIntakeForm.requestId, pendingReplyRequests],
@@ -440,12 +450,12 @@ export function ReputationEngine() {
       const res = await fetch(`/api/reputation/proof-assets/${assetId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ approved, publishedTo: approved ? ["public_profile"] : [] }),
+        body: JSON.stringify({ approved, publishedTo: approved ? ["public_profile", "dashboard"] : [] }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to update proof asset");
       await refreshActivity();
-      setMessage(approved ? "Proof asset approved and marked for the public profile surface." : "Proof asset moved back to pending approval.");
+      setMessage(approved ? "Proof asset approved and marked for your public profile + dashboard trust surfaces." : "Proof asset moved back to pending approval.");
     } catch (err: any) {
       setError(err.message || "Failed to update proof asset");
     } finally {
@@ -937,52 +947,106 @@ export function ReputationEngine() {
               proofAssets,
             }}
             title="Trust Proof Pipeline"
-            description="Positive replies now create proof candidates you can approve before they surface on the public profile."
+            description="Positive replies now create proof candidates you can approve before they surface across your public profile and dashboard trust surfaces."
           />
 
           <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
             <CardHeader className="border-b border-white/10 py-5">
-              <CardTitle>Approval queue</CardTitle>
-              <CardDescription>Approve the strongest snippets now. Approved items are marked for the public profile surface.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Workflow className="h-4 w-4 text-electric-500" /> Approval workflow</CardTitle>
+              <CardDescription>Keep publishable proof clean: review pending snippets, then promote approved ones into the live trust stack.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 py-5">
+            <CardContent className="space-y-4 py-5">
+              <div className="grid gap-3 lg:grid-cols-3">
+                {[
+                  { label: "Capture", detail: "Positive written replies create proof candidates automatically." },
+                  { label: "Review", detail: "Pending snippets stay separate until the wording feels client-safe." },
+                  { label: "Publish", detail: "Approved snippets now feed the public profile and dashboard surfaces." },
+                ].map((step) => (
+                  <div key={step.label} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-electric-300">{step.label}</div>
+                    <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{step.detail}</p>
+                  </div>
+                ))}
+              </div>
+
               {proofAssets.length === 0 ? (
                 <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No proof assets yet. Capture a positive written reply from the intake flow to populate this queue.</div>
               ) : (
-                proofAssets.map((asset) => (
-                  <div key={asset.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-                          <span>{asset.topic || "Proof snippet"}</span>
-                          <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{asset.approved ? "approved" : "pending approval"}</span>
-                          {asset.approved && asset.published_to?.length ? <span className="rounded-full border border-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-300">{asset.published_to.map(formatTriggerSource).join(", ")}</span> : null}
-                        </div>
-                        <p className="text-sm leading-6 text-[var(--foreground)]">“{asset.snippet}”</p>
-                        <p className="text-xs text-[var(--muted-foreground)]">Created {new Date(asset.created_at).toLocaleString()}</p>
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <div className="space-y-3 rounded-2xl border border-white/10 bg-[var(--muted)]/10 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-[var(--foreground)]">Awaiting approval</div>
+                        <p className="mt-1 text-xs text-[var(--muted-foreground)]">Keep this queue tight. Promote only the snippets you would feel good publishing.</p>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={proofMutationId === asset.id || !asset.approved}
-                          onClick={() => updateProofApproval(asset.id, false)}
-                        >
-                          {proofMutationId === asset.id && asset.approved ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                          Move to pending
-                        </Button>
-                        <Button
-                          size="sm"
-                          disabled={proofMutationId === asset.id || asset.approved}
-                          onClick={() => updateProofApproval(asset.id, true)}
-                        >
-                          {proofMutationId === asset.id && !asset.approved ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                          Approve for profile
-                        </Button>
-                      </div>
+                      <span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">{pendingProofAssets.length}</span>
                     </div>
+                    {pendingProofAssets.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-white/10 bg-background/20 p-4 text-sm text-[var(--muted-foreground)]">Nothing waiting right now. New positive replies will land here first.</div>
+                    ) : pendingProofAssets.map((asset) => (
+                      <div key={asset.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                              <span>{asset.topic || "Proof snippet"}</span>
+                              <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">Pending approval</span>
+                            </div>
+                            <p className="text-sm leading-6 text-[var(--foreground)]">“{asset.snippet}”</p>
+                            <p className="text-xs text-[var(--muted-foreground)]">Created {new Date(asset.created_at).toLocaleString()}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              disabled={proofMutationId === asset.id}
+                              onClick={() => updateProofApproval(asset.id, true)}
+                            >
+                              {proofMutationId === asset.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                              Approve for trust surfaces
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))
+
+                  <div className="space-y-3 rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.03] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-[var(--foreground)]">Approved + live-ready</div>
+                        <p className="mt-1 text-xs text-[var(--muted-foreground)]">These assets are ready to reinforce trust anywhere Geothority shows proof.</p>
+                      </div>
+                      <span className="rounded-full border border-emerald-500/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-300">{approvedProofAssets.length}</span>
+                    </div>
+                    {approvedProofAssets.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-white/10 bg-background/20 p-4 text-sm text-[var(--muted-foreground)]">Approve your first proof snippet to start populating the live trust surfaces.</div>
+                    ) : approvedProofAssets.map((asset) => (
+                      <div key={asset.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                              <span>{asset.topic || "Proof snippet"}</span>
+                              <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">Approved</span>
+                              <span className="rounded-full border border-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-300">{asset.published_to?.length ? asset.published_to.map(formatTriggerSource).join(", ") : "Ready to publish"}</span>
+                            </div>
+                            <p className="text-sm leading-6 text-[var(--foreground)]">“{asset.snippet}”</p>
+                            <p className="text-xs text-[var(--muted-foreground)]">Created {new Date(asset.created_at).toLocaleString()}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={proofMutationId === asset.id}
+                              onClick={() => updateProofApproval(asset.id, false)}
+                            >
+                              {proofMutationId === asset.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                              Move to pending
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -1040,7 +1104,7 @@ export function ReputationEngine() {
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Send job route now runs the simulated outbound log</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Low-score replies create private feedback items</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Positive written replies create proof snippets</div>
-                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Approved proof assets can surface on the public profile</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Approved proof assets can surface on the public profile and dashboard</div>
                     <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-400" /> Live provider delivery still intentionally simulated</div>
                   </CardContent>
                 </Card>

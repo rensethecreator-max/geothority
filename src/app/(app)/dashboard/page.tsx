@@ -22,6 +22,7 @@ import {
 import { InfoTooltip, LayerInfoTooltip } from "@/components/ui/info-tooltip";
 import Link from "next/link";
 import { ReviewHealthCard } from "@/components/reputation/review-health-card";
+import { ProofShowcase } from "@/components/reputation/proof-showcase";
 import { HealthPulse } from "@/components/dashboard/health-pulse";
 import { SetupChecklist } from "@/components/dashboard/setup-checklist";
 import {
@@ -38,6 +39,7 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { readOnboardingCompletion } from "@/lib/onboarding";
+import type { ReputationProofSummary } from "@/lib/reputation/types";
 
 interface ScoreHistoryEntry {
   id: string;
@@ -76,6 +78,7 @@ export default function DashboardPage() {
   const [scans, setScans] = useState<Scan[]>([]);
   const [latestScan, setLatestScan] = useState<Scan | null>(null);
   const [scoreHistory, setScoreHistory] = useState<ScoreHistoryEntry[]>([]);
+  const [proofSummary, setProofSummary] = useState<ReputationProofSummary | null>(null);
   const [activeLines, setActiveLines] = useState<Record<string, boolean>>({
     overall: true, layer1: false, layer2: false, layer3: false, layer4: false, layer5: false,
   });
@@ -96,7 +99,7 @@ export default function DashboardPage() {
         return;
       }
 
-      const [profileRes, scansRes, historyRes] = await Promise.all([
+      const [profileRes, scansRes, historyRes, proofRes] = await Promise.all([
         supabase.from("user_profiles").select("*").eq("id", user.id).single(),
         supabase
           .from("scans")
@@ -110,6 +113,7 @@ export default function DashboardPage() {
           .eq("user_id", user.id)
           .order("scanned_at", { ascending: true })
           .limit(30),
+        fetch("/api/reputation/proof-summary", { cache: "no-store" }).catch(() => null),
       ]);
 
       if (profileRes.data) {
@@ -123,6 +127,10 @@ export default function DashboardPage() {
         if (scansRes.data.length > 0) setLatestScan(scansRes.data[0]);
       }
       if (historyRes.data) setScoreHistory(historyRes.data);
+      if (proofRes?.ok) {
+        const proofJson = await proofRes.json().catch(() => ({}));
+        setProofSummary(proofJson.summary ?? null);
+      }
 
       setLoading(false);
     }
@@ -319,6 +327,17 @@ export default function DashboardPage() {
       <SetupChecklist />
 
       <ReviewHealthCard reviewHealthScore={ls.layer4} />
+
+      {proofSummary && (proofSummary.approvedProofCount > 0 || proofSummary.pendingProofCount > 0) ? (
+        <ProofShowcase
+          summary={proofSummary}
+          title="Approved proof now reinforces your dashboard"
+          description="Bring your strongest customer snippets into the operator view so trust wins stay visible while you manage score lift."
+          ctaHref="/reputation"
+          ctaLabel="Manage proof"
+          compact
+        />
+      ) : null}
 
       {/* Trust Stack + Quick Win */}
       <div className="grid gap-6 lg:grid-cols-5">
