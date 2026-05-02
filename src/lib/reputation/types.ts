@@ -3,6 +3,8 @@ export interface ReputationProofAssetPreview {
   snippet: string;
   approved: boolean;
   created_at: string;
+  topic?: string | null;
+  published_to?: string[] | null;
 }
 
 export interface ReputationProofSummary {
@@ -10,5 +12,7 @@ export interface ReputationProofSummary {
   publicReady: number;
   awaitingReply: number;
   averageScore: number | null;
+  approvedProofCount: number;
+  pendingProofCount: number;
   proofAssets: ReputationProofAssetPreview[];
 }

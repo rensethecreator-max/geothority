@@ -1,14 +1,7 @@
 import { MessageSquareQuote, Sparkles, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { formatTriggerSource } from "@/lib/reputation/format";
 import type { ReputationProofSummary } from "@/lib/reputation/types";
-
-export function formatTriggerSource(triggerSource: string | null | undefined) {
-  if (!triggerSource) return "Manual";
-  return triggerSource
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
 
 export function ProofShowcase({
   summary,
@@ -25,6 +18,12 @@ export function ProofShowcase({
   ctaLabel?: string;
   compact?: boolean;
 }) {
+  const approvalLabel = summary.pendingProofCount > 0
+    ? `${summary.approvedProofCount} approved · ${summary.pendingProofCount} awaiting approval`
+    : summary.approvedProofCount > 0
+      ? `${summary.approvedProofCount} approved proof asset${summary.approvedProofCount === 1 ? "" : "s"}`
+      : "No approved proof assets yet";
+
   return (
     <div className="geo-premium-card rounded-3xl p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -34,6 +33,7 @@ export function ProofShowcase({
           </div>
           <h3 className="mt-3 text-xl font-semibold tracking-tight text-[var(--foreground)]">{title}</h3>
           <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{description}</p>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{approvalLabel}</p>
         </div>
         {ctaHref && ctaLabel ? (
           <Link href={ctaHref} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2.5 text-sm font-medium text-[var(--foreground)] transition-colors hover:border-emerald-500/30 hover:text-emerald-300">
@@ -42,10 +42,11 @@ export function ProofShowcase({
         ) : null}
       </div>
 
-      <div className={`mt-5 grid gap-3 ${compact ? "md:grid-cols-3" : "lg:grid-cols-[0.9fr_1.1fr]"}`}>
-        <div className={`grid gap-3 ${compact ? "md:grid-cols-3" : "sm:grid-cols-3"}`}>
+      <div className={`mt-5 grid gap-3 ${compact ? "md:grid-cols-4" : "lg:grid-cols-[0.9fr_1.1fr]"}`}>
+        <div className={`grid gap-3 ${compact ? "md:grid-cols-4" : "sm:grid-cols-2 xl:grid-cols-4"}`}>
           <ProofMetric label="Requests tracked" value={`${summary.totalRequests}`} icon={TrendingUp} />
           <ProofMetric label="Public-ready wins" value={`${summary.publicReady}`} icon={Star} />
+          <ProofMetric label="Approved proof" value={`${summary.approvedProofCount}`} icon={Sparkles} />
           <ProofMetric label="Avg. reply score" value={summary.averageScore ? `${summary.averageScore}/5` : "—"} icon={MessageSquareQuote} />
         </div>
 
@@ -62,7 +63,11 @@ export function ProofShowcase({
                     <span>{new Date(asset.created_at).toLocaleDateString()}</span>
                     <span className="rounded-full border border-white/10 px-2 py-1">{asset.approved ? "Approved" : "Awaiting approval"}</span>
                   </div>
+                  {asset.topic ? <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-electric-300">{asset.topic}</div> : null}
                   <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">“{asset.snippet}”</p>
+                  {asset.approved && asset.published_to?.length ? (
+                    <p className="mt-3 text-xs text-[var(--muted-foreground)]">Visible on: {asset.published_to.map(formatTriggerSource).join(", ")}</p>
+                  ) : null}
                 </div>
               ))
             )}

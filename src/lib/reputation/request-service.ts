@@ -75,8 +75,26 @@ export async function createAndSendReputationRequest(params: {
   customerName: string;
   phone: string;
   triggerSource: string;
+  externalEventId?: string | null;
 }) {
-  const { supabase, userId, businessName, customerName, phone, triggerSource } = params;
+  const { supabase, userId, businessName, customerName, phone, triggerSource, externalEventId } = params;
+
+  if (externalEventId) {
+    const { data: existingRequest, error: existingRequestError } = await supabase
+      .from("reputation_requests")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("external_event_id", externalEventId)
+      .maybeSingle();
+
+    if (existingRequestError && !isMissingTableError(existingRequestError)) {
+      return { success: false as const, error: existingRequestError.message || "Failed to check existing request", status: 500 };
+    }
+
+    if (existingRequest?.id) {
+      return { success: true as const, requestId: existingRequest.id, deduplicated: true };
+    }
+  }
 
   const contact = await upsertReputationContact({
     supabase,
@@ -98,6 +116,7 @@ export async function createAndSendReputationRequest(params: {
       business_id: businessName,
       contact_id: contact.id,
       trigger_source: triggerSource,
+      external_event_id: externalEventId || null,
       status: "pending",
       review_token: crypto.randomUUID().replace(/-/g, ""),
     })
@@ -108,12 +127,26 @@ export async function createAndSendReputationRequest(params: {
     if (isMissingTableError(requestError)) {
       return { success: false as const, error: "Reputation tables are not installed yet. Run the migration first.", status: 412 };
     }
+
+    if (externalEventId && requestError?.code === "23505") {
+      const { data: existingRequest } = await supabase
+        .from("reputation_requests")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("external_event_id", externalEventId)
+        .maybeSingle();
+
+      if (existingRequest?.id) {
+        return { success: true as const, requestId: existingRequest.id, deduplicated: true };
+      }
+    }
+
     return { success: false as const, error: requestError?.message || "Failed to create request", status: 500 };
   }
 
   await sendReputationRequestNow(createdRequest.id);
 
-  return { success: true as const, requestId: createdRequest.id };
+  return { success: true as const, requestId: createdRequest.id, deduplicated: false };
 }
 
 export async function sendReputationRequestNow(requestId: string) {
@@ -166,20 +199,45 @@ export async function sendReputationRequestNow(requestId: string) {
   return { success: true, simulated: true, alreadySent: false };
 }
 
-export async function getReputationProofSummary(supabase: any, userId: string): Promise<ReputationProofSummary> {
-  const [requestsResult, proofResult] = await Promise.all([
+export async function getReputationProofSummary(
+  supabase: any,
+  userId: string,
+  options?: { approvedOnly?: boolean; limit?: number },
+): Promise<ReputationProofSummary> {
+  const approvedOnly = Boolean(options?.approvedOnly);
+  const limit = options?.limit ?? 6;
+
+  const proofAssetsQuery = supabase
+    .from("reputation_proof_assets")
+    .select("id, snippet, approved, created_at, topic, published_to")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (approvedOnly) {
+    proofAssetsQuery.eq("approved", true);
+  }
+
+  const [requestsResult, proofResult, approvedCountResult, pendingCountResult] = await Promise.all([
     supabase
       .from("reputation_requests")
       .select("id, status, score, replied_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(50),
+    proofAssetsQuery,
     supabase
       .from("reputation_proof_assets")
-      .select("id, snippet, approved, created_at")
+      .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(3),
+      .eq("approved", true),
+    approvedOnly
+      ? Promise.resolve({ count: 0, error: null })
+      : supabase
+          .from("reputation_proof_assets")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("approved", false),
   ]);
 
   if (requestsResult.error) {
@@ -189,10 +247,24 @@ export async function getReputationProofSummary(supabase: any, userId: string): 
         publicReady: 0,
         awaitingReply: 0,
         averageScore: null,
+        approvedProofCount: 0,
+        pendingProofCount: 0,
         proofAssets: [],
       };
     }
     throw new Error(requestsResult.error.message || "Failed to load reputation proof summary");
+  }
+
+  if (proofResult.error && !isMissingTableError(proofResult.error)) {
+    throw new Error(proofResult.error.message || "Failed to load reputation proof assets");
+  }
+
+  if (approvedCountResult.error && !isMissingTableError(approvedCountResult.error)) {
+    throw new Error(approvedCountResult.error.message || "Failed to load approved proof count");
+  }
+
+  if (pendingCountResult?.error && !isMissingTableError(pendingCountResult.error)) {
+    throw new Error(pendingCountResult.error.message || "Failed to load pending proof count");
   }
 
   const requests = requestsResult.data ?? [];
@@ -204,6 +276,8 @@ export async function getReputationProofSummary(supabase: any, userId: string): 
     publicReady: requests.filter((item: any) => item.status === "public_review_ready").length,
     awaitingReply: requests.filter((item: any) => item.status === "sent" && !item.replied_at).length,
     averageScore: scoredRequests.length ? Number((totalScore / scoredRequests.length).toFixed(1)) : null,
+    approvedProofCount: approvedCountResult.count ?? 0,
+    pendingProofCount: approvedOnly ? 0 : pendingCountResult?.count ?? 0,
     proofAssets: proofResult.data ?? [],
   };
 }

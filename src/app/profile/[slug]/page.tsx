@@ -127,7 +127,7 @@ async function fetchProfile(slug: string): Promise<PublicBusinessProfile | null>
   if (!user || !isEligibleForPublicProfile(user.plan)) return null;
 
   const businessName = scan.business_name || user.business_name || "Unknown Business";
-  const proofSummary = await getReputationProofSummary(supabase, scan.user_id).catch(() => null);
+  const proofSummary = await getReputationProofSummary(supabase, scan.user_id, { approvedOnly: true, limit: 3 }).catch(() => null);
 
   const profile: PublicBusinessProfile = {
     slug,

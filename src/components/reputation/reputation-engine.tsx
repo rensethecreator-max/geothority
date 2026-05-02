@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, MessageSquare, Send, ShieldCheck, Sparkles, Star, TrendingUp, Workflow } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, MessageSquare, RefreshCw, Send, ShieldCheck, Sparkles, Star, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,8 @@ import {
   type ReputationSettings,
   type ReputationTemplate,
 } from "@/lib/reputation/defaults";
-import { formatTriggerSource, ProofShowcase } from "@/components/reputation/proof-showcase";
+import { formatTriggerSource } from "@/lib/reputation/format";
+import { ProofShowcase } from "@/components/reputation/proof-showcase";
 
 interface ApiState {
   setupRequired: boolean;
@@ -50,6 +51,8 @@ interface ProofAsset {
   snippet: string;
   approved: boolean;
   created_at: string;
+  topic?: string | null;
+  published_to?: string[] | null;
 }
 
 interface ReputationMetrics {
@@ -57,6 +60,8 @@ interface ReputationMetrics {
   awaitingReply: number;
   publicReady: number;
   unresolvedFeedback: number;
+  approvedProofCount: number;
+  pendingProofCount: number;
 }
 
 const EMPTY_METRICS: ReputationMetrics = {
@@ -64,6 +69,8 @@ const EMPTY_METRICS: ReputationMetrics = {
   awaitingReply: 0,
   publicReady: 0,
   unresolvedFeedback: 0,
+  approvedProofCount: 0,
+  pendingProofCount: 0,
 };
 
 const TRIGGER_SOURCE_OPTIONS = [
@@ -83,6 +90,8 @@ export function ReputationEngine() {
   const [creatingRequest, setCreatingRequest] = useState(false);
   const [submittingIntake, setSubmittingIntake] = useState(false);
   const [creatingEventRequest, setCreatingEventRequest] = useState(false);
+  const [refreshingActivity, setRefreshingActivity] = useState(false);
+  const [proofMutationId, setProofMutationId] = useState<string | null>(null);
   const [apiState, setApiState] = useState<ApiState>({ setupRequired: false });
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
   const [recentRequests, setRecentRequests] = useState<RecentRequest[]>([]);
@@ -107,6 +116,7 @@ export function ReputationEngine() {
     customerName: "",
     phone: "",
     eventType: "appointment_completed",
+    externalEventId: "",
   });
 
   async function loadReputationActivity() {
@@ -124,7 +134,10 @@ export function ReputationEngine() {
     setFeedbackItems(feedbackJson.items ?? []);
     setRecentRequests(requestsJson.recentRequests ?? []);
     setProofAssets(requestsJson.proofAssets ?? []);
-    setMetrics(requestsJson.metrics ?? EMPTY_METRICS);
+    setMetrics({
+      ...EMPTY_METRICS,
+      ...(requestsJson.metrics ?? {}),
+    });
     setSuggestedBusinessName(requestsJson.suggestedBusinessName ?? "Your Business");
     setManualForm((current) => ({
       ...current,
@@ -185,6 +198,11 @@ export function ReputationEngine() {
     [recentRequests],
   );
 
+  const selectedDemoRequest = useMemo(
+    () => pendingReplyRequests.find((request) => request.id === demoIntakeForm.requestId) ?? null,
+    [demoIntakeForm.requestId, pendingReplyRequests],
+  );
+
   useEffect(() => {
     setDemoIntakeForm((current) => {
       if (!pendingReplyRequests.length) return { ...current, requestId: "" };
@@ -193,9 +211,18 @@ export function ReputationEngine() {
     });
   }, [pendingReplyRequests]);
 
-  async function refreshActivity() {
-    const activityState = await loadReputationActivity();
-    setApiState((current) => ({ ...current, setupRequired: current.setupRequired || activityState.setupRequired }));
+  async function refreshActivity(showSuccessMessage = false) {
+    setRefreshingActivity(true);
+    setError(null);
+    try {
+      const activityState = await loadReputationActivity();
+      setApiState((current) => ({ ...current, setupRequired: current.setupRequired || activityState.setupRequired }));
+      if (showSuccessMessage) setMessage("Reputation activity refreshed.");
+    } catch (err: any) {
+      setError(err.message || "Failed to refresh reputation activity");
+    } finally {
+      setRefreshingActivity(false);
+    }
   }
 
   async function saveSettings() {
@@ -300,9 +327,9 @@ export function ReputationEngine() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to create event-driven request");
-      setEventForm((current) => ({ ...current, customerName: "", phone: "" }));
+      setEventForm((current) => ({ ...current, customerName: "", phone: "", externalEventId: "" }));
       await refreshActivity();
-      setMessage(`Event-triggered request queued from ${formatTriggerSource(json.triggerSource)}.`);
+      setMessage(json.deduplicated ? `Event ${json.externalEventId || "request"} already existed — showing the existing request.` : `Event-triggered request queued from ${json.triggerSourceLabel || formatTriggerSource(json.triggerSource)}.`);
     } catch (err: any) {
       setError(err.message || "Failed to create event-driven request");
     } finally {
@@ -332,6 +359,27 @@ export function ReputationEngine() {
     }
   }
 
+  async function updateProofApproval(assetId: string, approved: boolean) {
+    setProofMutationId(assetId);
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await fetch(`/api/reputation/proof-assets/${assetId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approved, publishedTo: approved ? ["public_profile"] : [] }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to update proof asset");
+      await refreshActivity();
+      setMessage(approved ? "Proof asset approved and marked for the public profile surface." : "Proof asset moved back to pending approval.");
+    } catch (err: any) {
+      setError(err.message || "Failed to update proof asset");
+    } finally {
+      setProofMutationId(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="geo-premium-card rounded-3xl px-6 py-16 text-center">
@@ -350,13 +398,19 @@ export function ReputationEngine() {
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">Review momentum, private feedback, and trust proof — in one place.</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">
-            Native request sending is live now: operators can launch requests manually, capture low-score feedback privately, and queue positive snippets for public proof.
+            Native request sending is live now: operators can launch requests manually, capture low-score feedback privately, and move positive proof through a lightweight approval workflow.
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-3 text-xs sm:text-sm">
-          <StatCard label="Automation" value={settings.active ? "Active" : "Idle"} tone={settings.active ? "emerald" : "slate"} />
-          <StatCard label="Awaiting reply" value={`${metrics.awaitingReply}`} tone="blue" />
-          <StatCard label="Public threshold" value={`${settings.positiveThreshold}+★`} tone="amber" />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="grid grid-cols-3 gap-3 text-xs sm:text-sm">
+            <StatCard label="Automation" value={settings.active ? "Active" : "Idle"} tone={settings.active ? "emerald" : "slate"} />
+            <StatCard label="Awaiting reply" value={`${metrics.awaitingReply}`} tone="blue" />
+            <StatCard label="Public threshold" value={`${settings.positiveThreshold}+★`} tone="amber" />
+          </div>
+          <Button variant="outline" onClick={() => void refreshActivity(true)} disabled={refreshingActivity}>
+            {refreshingActivity ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+            Refresh state
+          </Button>
         </div>
       </div>
 
@@ -399,7 +453,7 @@ export function ReputationEngine() {
                 <Metric label="Automation" value={settings.active ? "On" : "Off"} detail={settings.active ? "Requests can be scheduled" : "No requests will be sent"} icon={ShieldCheck} />
                 <Metric label="Review route" value={`${settings.positiveThreshold}+ stars`} detail="Lower scores stay private" icon={Star} />
                 <Metric label="Awaiting reply" value={`${metrics.awaitingReply}`} detail="Requests already sent" icon={MessageSquare} />
-                <Metric label="Proof mode" value={`${proofAssets.length} snippets`} detail="Positive feedback ready for proof" icon={Sparkles} />
+                <Metric label="Proof mode" value={`${metrics.approvedProofCount}/${metrics.approvedProofCount + metrics.pendingProofCount}`} detail="Approved vs total proof assets" icon={Sparkles} />
               </CardContent>
             </Card>
 
@@ -411,8 +465,8 @@ export function ReputationEngine() {
                 <ChecklistItem checked>Manual review request creation + simulated send</ChecklistItem>
                 <ChecklistItem checked>Operator demo intake for recent requests</ChecklistItem>
                 <ChecklistItem checked>Low-rating intake with private feedback capture</ChecklistItem>
-                <ChecklistItem checked>Positive snippet proof asset creation</ChecklistItem>
-                <ChecklistItem checked>Scoped event-triggered request posting route</ChecklistItem>
+                <ChecklistItem checked>Positive snippet proof asset creation + approval-ready workflow</ChecklistItem>
+                <ChecklistItem checked>Webhook-compatible event ingest with idempotency key support</ChecklistItem>
                 <ChecklistItem checked={false}>Live SMS provider integration (next)</ChecklistItem>
               </CardContent>
             </Card>
@@ -463,7 +517,7 @@ export function ReputationEngine() {
               <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
                 <CardHeader className="border-b border-white/10 py-5">
                   <CardTitle className="flex items-center gap-2"><Workflow className="h-4 w-4 text-electric-500" /> Event trigger test</CardTitle>
-                  <CardDescription>Small but real: post a completed appointment, job, or delivery event into the same request pipeline without using the manual creation route.</CardDescription>
+                  <CardDescription>Post a completed appointment, job, or delivery event into the same request pipeline. Re-send the same external event ID and the route will return the original request instead of creating a duplicate.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 py-5">
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -490,8 +544,12 @@ export function ReputationEngine() {
                       <Input value={eventForm.phone} onChange={(event) => setEventForm((current) => ({ ...current, phone: event.target.value }))} placeholder="(555) 555-0112" />
                     </Field>
                   </div>
+                  <Field label="External event ID" hint="Use the same value again to prove idempotent replay safety.">
+                    <Input value={eventForm.externalEventId} onChange={(event) => setEventForm((current) => ({ ...current, externalEventId: event.target.value }))} placeholder="appt_10492" />
+                  </Field>
                   <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-xs leading-6 text-[var(--muted-foreground)]">
-                    POST /api/reputation/events → {`{ businessName, customerName, phone, eventType }`}
+                    POST /api/reputation/events → {`{ businessName, customerName, phone, eventType, externalEventId }`}<br />
+                    POST /api/reputation/webhook + x-geothority-webhook-secret → {`{ userId, businessName, customerName, phone, eventType, externalEventId }`}
                   </div>
                   <div className="flex justify-end">
                     <Button variant="outline" onClick={createEventTriggeredRequest} disabled={creatingEventRequest}>
@@ -526,6 +584,7 @@ export function ReputationEngine() {
                               </div>
                               <p className="mt-2 text-sm text-[var(--foreground)]">{request.business_id} · {contact?.phone || "No phone"}</p>
                               <p className="mt-1 text-xs text-[var(--muted-foreground)]">Created {new Date(request.created_at).toLocaleString()}</p>
+                              {request.feedback_text ? <p className="mt-2 text-xs text-[var(--muted-foreground)]">Latest reply: “{request.feedback_text}”</p> : null}
                             </div>
                             <div className="text-right text-xs text-[var(--muted-foreground)]">
                               <div>{request.score ? `${request.score}/5 reply` : request.sent_at ? "Sent" : "Pending"}</div>
@@ -542,7 +601,7 @@ export function ReputationEngine() {
               <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
                 <CardHeader className="border-b border-white/10 py-5">
                   <CardTitle>Test intake reply</CardTitle>
-                  <CardDescription>Choose a recent request, simulate the customer score + feedback, and immediately refresh the inbox/proof state.</CardDescription>
+                  <CardDescription>Choose a recent request, simulate the customer score + feedback, submit it into the intake route, and immediately refresh the inbox/proof state.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 py-5">
                   <Field label="Recent request">
@@ -566,6 +625,11 @@ export function ReputationEngine() {
                       )}
                     </select>
                   </Field>
+                  {selectedDemoRequest ? (
+                    <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
+                      Routing <span className="text-[var(--foreground)]">{(Array.isArray(selectedDemoRequest.contact) ? selectedDemoRequest.contact[0] : selectedDemoRequest.contact)?.name || "Customer"}</span> through the intake route for <span className="text-[var(--foreground)]">{selectedDemoRequest.business_id}</span>. Scores below {settings.positiveThreshold} stay private; higher scores can move into approval-ready proof.
+                    </div>
+                  ) : null}
                   <div className="grid gap-4 sm:grid-cols-[140px_1fr]">
                     <Field label="Score">
                       <select
@@ -670,11 +734,60 @@ export function ReputationEngine() {
               averageScore: recentRequests.filter((item) => typeof item.score === "number").length
                 ? Number((recentRequests.filter((item) => typeof item.score === "number").reduce((sum, item) => sum + Number(item.score || 0), 0) / recentRequests.filter((item) => typeof item.score === "number").length).toFixed(1))
                 : null,
+              approvedProofCount: metrics.approvedProofCount,
+              pendingProofCount: metrics.pendingProofCount,
               proofAssets,
             }}
             title="Trust Proof Pipeline"
-            description="Positive replies can now create lightweight proof snippets for later approval and publishing."
+            description="Positive replies now create proof candidates you can approve before they surface on the public profile."
           />
+
+          <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+            <CardHeader className="border-b border-white/10 py-5">
+              <CardTitle>Approval queue</CardTitle>
+              <CardDescription>Approve the strongest snippets now. Approved items are marked for the public profile surface.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 py-5">
+              {proofAssets.length === 0 ? (
+                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No proof assets yet. Capture a positive written reply from the intake flow to populate this queue.</div>
+              ) : (
+                proofAssets.map((asset) => (
+                  <div key={asset.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                          <span>{asset.topic || "Proof snippet"}</span>
+                          <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{asset.approved ? "approved" : "pending approval"}</span>
+                          {asset.approved && asset.published_to?.length ? <span className="rounded-full border border-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-300">{asset.published_to.map(formatTriggerSource).join(", ")}</span> : null}
+                        </div>
+                        <p className="text-sm leading-6 text-[var(--foreground)]">“{asset.snippet}”</p>
+                        <p className="text-xs text-[var(--muted-foreground)]">Created {new Date(asset.created_at).toLocaleString()}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={proofMutationId === asset.id || !asset.approved}
+                          onClick={() => updateProofApproval(asset.id, false)}
+                        >
+                          {proofMutationId === asset.id && asset.approved ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                          Move to pending
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={proofMutationId === asset.id || asset.approved}
+                          onClick={() => updateProofApproval(asset.id, true)}
+                        >
+                          {proofMutationId === asset.id && !asset.approved ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                          Approve for profile
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
@@ -716,7 +829,7 @@ export function ReputationEngine() {
                   <CardContent className="space-y-3 py-4 text-sm">
                     <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-[var(--foreground)]">{previewSms}</div>
                     <div className="rounded-xl border border-white/10 bg-background/40 p-3 text-[var(--muted-foreground)]">
-                      Scores {settings.positiveThreshold}-5 → public review page<br />
+                      Scores {settings.positiveThreshold}-5 → public review page + proof approval queue<br />
                       Scores 1-{Math.max(1, settings.positiveThreshold - 1)} → private feedback inbox
                     </div>
                   </CardContent>
@@ -729,6 +842,7 @@ export function ReputationEngine() {
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Send job route now runs the simulated outbound log</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Low-score replies create private feedback items</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Positive written replies create proof snippets</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Approved proof assets can surface on the public profile</div>
                     <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-400" /> Live provider delivery still intentionally simulated</div>
                   </CardContent>
                 </Card>

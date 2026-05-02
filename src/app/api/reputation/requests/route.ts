@@ -59,6 +59,8 @@ export async function GET() {
         awaitingReply: proofSummary.awaitingReply,
         publicReady: proofSummary.publicReady,
         unresolvedFeedback,
+        approvedProofCount: proofSummary.approvedProofCount,
+        pendingProofCount: proofSummary.pendingProofCount,
       },
       setupRequired: false,
     });
