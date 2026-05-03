@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { formatTriggerSource } from "@/lib/reputation/format";
 import { ingestReputationEvent, normalizeReputationEventPayload } from "@/lib/reputation/event-ingest";
+import { constantTimeEquals } from "@/lib/security/request-auth";
 
 function hasValidWebhookSecret(req: NextRequest) {
   const configuredSecret = process.env.GEOTHORITY_REPUTATION_WEBHOOK_SECRET;
@@ -10,7 +11,7 @@ function hasValidWebhookSecret(req: NextRequest) {
   }
 
   const providedSecret = req.headers.get("x-geothority-webhook-secret") || req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!providedSecret || providedSecret !== configuredSecret) {
+  if (!constantTimeEquals(providedSecret, configuredSecret)) {
     return { ok: false as const, error: "Invalid webhook secret", status: 401 };
   }
 
@@ -42,6 +43,10 @@ export async function POST(req: NextRequest) {
 
     if (!normalized.success) {
       return NextResponse.json({ error: normalized.error }, { status: normalized.status });
+    }
+
+    if (!normalized.payload.externalEventId) {
+      return NextResponse.json({ error: "externalEventId or idempotencyKey is required for webhook ingestion" }, { status: 400 });
     }
 
     const result = await ingestReputationEvent({

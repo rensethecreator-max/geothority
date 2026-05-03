@@ -99,14 +99,20 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
   const qstashUrl = process.env.UPSTASH_QSTASH_URL;
   const qstashToken = process.env.UPSTASH_QSTASH_TOKEN;
+  const jobSecret = process.env.GEOTHORITY_REPUTATION_JOB_SECRET;
 
   if (qstashUrl && qstashToken) {
+    if (!jobSecret) {
+      throw new Error("GEOTHORITY_REPUTATION_JOB_SECRET is required when QStash scheduling is enabled");
+    }
+
     await fetch(`${qstashUrl}/v2/publish/${appUrl}/api/reputation/jobs/send-request`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${qstashToken}`,
         "Content-Type": "application/json",
         "Upstash-Delay": `${delaySeconds}s`,
+        "Upstash-Forward-x-geothority-job-secret": jobSecret,
       },
       body: JSON.stringify({ requestId: request.id }),
     });
