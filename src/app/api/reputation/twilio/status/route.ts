@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     const { data: messageLog } = await supabase
       .from("reputation_message_log")
-      .select("id, request_id")
+      .select("id, request_id, delivery_state, error_detail")
       .eq("provider_sid", messageSid)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -61,17 +61,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, ignored: true });
     }
 
-    await supabase
-      .from("reputation_message_log")
-      .update({
-        delivery_state: deliveryState,
-        error_detail: errorMessage || errorCode,
-      })
-      .eq("id", messageLog.id);
+    const nextErrorDetail = errorMessage || errorCode;
+    const messageLogPatch: Record<string, string | null> = {};
+
+    if (messageLog.delivery_state !== deliveryState) {
+      messageLogPatch.delivery_state = deliveryState;
+    }
+
+    if ((messageLog.error_detail || null) !== nextErrorDetail) {
+      messageLogPatch.error_detail = nextErrorDetail;
+    }
+
+    if (Object.keys(messageLogPatch).length > 0) {
+      await supabase.from("reputation_message_log").update(messageLogPatch).eq("id", messageLog.id);
+    }
 
     const { data: requestRow } = await supabase
       .from("reputation_requests")
-      .select("id, user_id, status, delivery_state")
+      .select("id, user_id, status, delivery_state, last_send_error")
       .eq("id", messageLog.request_id)
       .maybeSingle();
 
@@ -79,15 +86,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, ignored: true });
     }
 
-    const requestPatch: Record<string, string | null> = {
-      delivery_state: deliveryState,
-    };
+    const nextRequestError =
+      deliveryState === "failed" || deliveryState === "undelivered"
+        ? errorMessage || errorCode || deliveryState
+        : requestRow.last_send_error;
 
-    if (deliveryState === "failed" || deliveryState === "undelivered") {
-      requestPatch.last_send_error = errorMessage || errorCode || deliveryState;
+    const requestPatch: Record<string, string | null> = {};
+
+    if (requestRow.delivery_state !== deliveryState) {
+      requestPatch.delivery_state = deliveryState;
     }
 
-    await supabase.from("reputation_requests").update(requestPatch).eq("id", requestRow.id);
+    if ((requestRow.last_send_error || null) !== (nextRequestError || null)) {
+      requestPatch.last_send_error = nextRequestError || null;
+    }
+
+    const requestChanged = Object.keys(requestPatch).length > 0;
+    const messageLogChanged = Object.keys(messageLogPatch).length > 0;
+
+    if (!requestChanged && !messageLogChanged) {
+      return NextResponse.json({ success: true, requestId: requestRow.id, deliveryState, deduped: true });
+    }
+
+    if (requestChanged) {
+      await supabase.from("reputation_requests").update(requestPatch).eq("id", requestRow.id);
+    }
 
     await appendReputationLedgerEvent(supabase, {
       userId: requestRow.user_id,
@@ -104,6 +127,8 @@ export async function POST(req: NextRequest) {
         deliveryState,
         errorCode,
         errorMessage,
+        requestChanged,
+        messageLogChanged,
       },
     });
 
