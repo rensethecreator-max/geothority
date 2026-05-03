@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
+import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import { isMissingTableError } from "@/lib/reputation/request-service";
 
 export async function POST(req: NextRequest) {
@@ -69,6 +70,23 @@ export async function POST(req: NextRequest) {
       if (updateError) {
         return NextResponse.json({ error: updateError.message }, { status: 500 });
       }
+
+      await appendReputationLedgerEvent(supabase, {
+        userId: requestRow.user_id,
+        requestId: requestRow.id,
+        actorType: "customer",
+        eventType: "request.reply_recorded",
+        fromStatus: requestRow.status,
+        toStatus: nextStatus,
+        channel: "sms",
+        summary: "Recorded a customer reply and advanced the request state.",
+        metadata: {
+          score,
+          repliedAt,
+          feedbackProvided: Boolean(feedbackText),
+          positiveThreshold,
+        },
+      });
     }
 
     const { data: existingMessageLog } = await supabase
@@ -81,16 +99,30 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (!existingMessageLog) {
+      const inboundBody = feedbackText ? `${score}: ${feedbackText}` : String(score);
       const { error: logError } = await supabase.from("reputation_message_log").insert({
         request_id: requestRow.id,
         direction: "in",
-        body: feedbackText ? `${score}: ${feedbackText}` : String(score),
+        body: inboundBody,
         provider_sid: null,
       });
 
       if (logError) {
         return NextResponse.json({ error: logError.message }, { status: 500 });
       }
+
+      await appendReputationLedgerEvent(supabase, {
+        userId: requestRow.user_id,
+        requestId: requestRow.id,
+        actorType: "customer",
+        eventType: "message.inbound_logged",
+        channel: "sms",
+        summary: "Logged an inbound customer reply.",
+        metadata: {
+          score,
+          bodyPreview: inboundBody.slice(0, 160),
+        },
+      });
     }
 
     if (belowThreshold) {
@@ -119,19 +151,55 @@ export async function POST(req: NextRequest) {
         if (feedbackUpdateError) {
           return NextResponse.json({ error: feedbackUpdateError.message }, { status: 500 });
         }
+
+        await appendReputationLedgerEvent(supabase, {
+          userId: requestRow.user_id,
+          requestId: requestRow.id,
+          feedbackItemId: existingFeedback.id,
+          actorType: "system",
+          eventType: "feedback.updated",
+          toStatus: existingFeedback.follow_up_status === "resolved" ? "resolved" : "new",
+          channel: "sms",
+          summary: "Updated the private feedback recovery record.",
+          metadata: {
+            severity: feedbackPayload.severity,
+            topic: feedbackPayload.topic,
+          },
+        });
       } else {
-        const { error: feedbackInsertError } = await supabase.from("reputation_feedback_items").insert({
+        const feedbackInsertPayload = {
           user_id: requestRow.user_id,
           request_id: requestRow.id,
           business_id: requestRow.business_id,
           ...feedbackPayload,
           follow_up_status: "new",
           recovery_outcome: "pending",
-        });
+        };
+
+        const { data: createdFeedback, error: feedbackInsertError } = await supabase
+          .from("reputation_feedback_items")
+          .insert(feedbackInsertPayload)
+          .select("id, follow_up_status")
+          .single();
 
         if (feedbackInsertError) {
           return NextResponse.json({ error: feedbackInsertError.message }, { status: 500 });
         }
+
+        await appendReputationLedgerEvent(supabase, {
+          userId: requestRow.user_id,
+          requestId: requestRow.id,
+          feedbackItemId: createdFeedback?.id,
+          actorType: "system",
+          eventType: "feedback.created",
+          toStatus: createdFeedback?.follow_up_status || "new",
+          channel: "sms",
+          summary: "Created a private feedback recovery record.",
+          metadata: {
+            severity: feedbackPayload.severity,
+            topic: feedbackPayload.topic,
+          },
+        });
       }
     } else if (feedbackText) {
       const proofPayload = {
@@ -147,30 +215,66 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
 
       if (existingProof?.id) {
+        const resetPublishedTargets = existingProof.approved ? [] : existingProof.published_to;
         const { error: proofUpdateError } = await supabase
           .from("reputation_proof_assets")
           .update({
             ...proofPayload,
             approved: false,
-            published_to: existingProof.approved ? [] : existingProof.published_to,
+            published_to: resetPublishedTargets,
           })
           .eq("id", existingProof.id);
 
         if (proofUpdateError) {
           return NextResponse.json({ error: proofUpdateError.message }, { status: 500 });
         }
-      } else {
-        const { error: proofInsertError } = await supabase.from("reputation_proof_assets").insert({
-          user_id: requestRow.user_id,
-          business_id: requestRow.business_id,
-          request_id: requestRow.id,
-          ...proofPayload,
-          approved: false,
+
+        await appendReputationLedgerEvent(supabase, {
+          userId: requestRow.user_id,
+          requestId: requestRow.id,
+          proofAssetId: existingProof.id,
+          actorType: "system",
+          eventType: "proof.updated",
+          fromStatus: existingProof.approved ? "approved" : "pending_review",
+          toStatus: "pending_review",
+          channel: "review_link",
+          summary: "Updated a proof asset from a positive reply.",
+          metadata: {
+            topic: proofPayload.topic,
+            approvalReset: existingProof.approved,
+            publishedTo: resetPublishedTargets,
+          },
         });
+      } else {
+        const { data: createdProof, error: proofInsertError } = await supabase
+          .from("reputation_proof_assets")
+          .insert({
+            user_id: requestRow.user_id,
+            business_id: requestRow.business_id,
+            request_id: requestRow.id,
+            ...proofPayload,
+            approved: false,
+          })
+          .select("id")
+          .single();
 
         if (proofInsertError) {
           return NextResponse.json({ error: proofInsertError.message }, { status: 500 });
         }
+
+        await appendReputationLedgerEvent(supabase, {
+          userId: requestRow.user_id,
+          requestId: requestRow.id,
+          proofAssetId: createdProof?.id,
+          actorType: "system",
+          eventType: "proof.created",
+          toStatus: "pending_review",
+          channel: "review_link",
+          summary: "Created a proof asset from a positive reply.",
+          metadata: {
+            topic: proofPayload.topic,
+          },
+        });
       }
     }
 

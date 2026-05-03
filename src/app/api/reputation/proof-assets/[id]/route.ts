@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
+import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import { isMissingTableError } from "@/lib/reputation/request-service";
 
 const ALLOWED_PUBLISH_TARGETS = new Set(["public_profile", "dashboard"]);
@@ -39,12 +40,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ? ["public_profile"]
         : [];
 
+    const { data: existingAsset, error: existingAssetError } = await supabase
+      .from("reputation_proof_assets")
+      .select("id, request_id, approved, published_to")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (existingAssetError) {
+      if (isMissingTableError(existingAssetError)) {
+        return NextResponse.json({ error: "Reputation tables are not installed yet. Run the migration first." }, { status: 412 });
+      }
+      return NextResponse.json({ error: existingAssetError.message || "Failed to load proof asset" }, { status: 500 });
+    }
+
+    if (!existingAsset) {
+      return NextResponse.json({ error: "Proof asset not found" }, { status: 404 });
+    }
+
     const { data, error } = await supabase
       .from("reputation_proof_assets")
       .update({ approved, published_to: publishedTo })
       .eq("id", id)
       .eq("user_id", user.id)
-      .select("id, snippet, approved, created_at, topic, published_to")
+      .select("id, request_id, snippet, approved, created_at, topic, published_to")
       .maybeSingle();
 
     if (error) {
@@ -57,6 +76,23 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!data) {
       return NextResponse.json({ error: "Proof asset not found" }, { status: 404 });
     }
+
+    await appendReputationLedgerEvent(supabase, {
+      userId: user.id,
+      requestId: data.request_id || null,
+      proofAssetId: data.id,
+      actorType: "user",
+      actorId: user.id,
+      eventType: "proof.approval_changed",
+      fromStatus: existingAsset.approved ? "approved" : "pending_review",
+      toStatus: approved ? "approved" : "pending_review",
+      channel: "dashboard",
+      summary: approved ? "Approved a proof asset for publishing." : "Revoked proof asset approval.",
+      metadata: {
+        previousPublishedTo: existingAsset.published_to || [],
+        publishedTo,
+      },
+    });
 
     return NextResponse.json({ success: true, asset: data });
   } catch (err: any) {

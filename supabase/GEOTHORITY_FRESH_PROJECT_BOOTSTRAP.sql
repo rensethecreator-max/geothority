@@ -2069,6 +2069,12 @@ create table if not exists public.reputation_requests (
   trigger_source text not null default 'manual',
   external_event_id text,
   status text not null default 'pending',
+  delivery_state text not null default 'pending',
+  send_attempt_count integer not null default 0,
+  last_send_attempt_at timestamptz,
+  last_send_error text,
+  next_retry_at timestamptz,
+  dead_lettered_at timestamptz,
   score integer,
   feedback_text text,
   review_token text unique,
@@ -2082,14 +2088,28 @@ create table if not exists public.reputation_requests (
 create index if not exists reputation_requests_contact_created_idx
   on public.reputation_requests (contact_id, created_at desc);
 
+create index if not exists reputation_requests_delivery_state_idx
+  on public.reputation_requests (user_id, delivery_state, created_at desc);
+
+create index if not exists reputation_requests_next_retry_idx
+  on public.reputation_requests (delivery_state, next_retry_at)
+  where next_retry_at is not null;
+
 create table if not exists public.reputation_message_log (
   id uuid primary key default gen_random_uuid(),
   request_id uuid not null references public.reputation_requests(id) on delete cascade,
   direction text not null,
   body text not null,
   provider_sid text,
+  attempt_number integer not null default 1,
+  delivery_state text not null default 'sent',
+  error_detail text,
+  simulated boolean not null default true,
   created_at timestamptz not null default now()
 );
+
+create index if not exists reputation_message_log_request_attempt_idx
+  on public.reputation_message_log (request_id, attempt_number desc, created_at desc);
 
 create table if not exists public.reputation_templates (
   id text primary key,
@@ -2249,4 +2269,68 @@ create unique index if not exists reputation_proof_assets_request_id_unique
 
 -- ==================================================================
 -- END 20260503_reputation_intake_idempotency.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260503_reputation_event_ledger.sql
+-- ==================================================================
+-- Immutable reputation event ledger for request state transitions and approval history.
+
+create table if not exists public.reputation_event_ledger (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  request_id uuid references public.reputation_requests(id) on delete cascade,
+  proof_asset_id uuid references public.reputation_proof_assets(id) on delete set null,
+  feedback_item_id uuid references public.reputation_feedback_items(id) on delete set null,
+  actor_type text not null default 'system',
+  actor_id uuid references auth.users(id) on delete set null,
+  event_type text not null,
+  from_status text,
+  to_status text,
+  channel text,
+  summary text,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists reputation_event_ledger_user_created_idx
+  on public.reputation_event_ledger (user_id, created_at desc);
+
+create index if not exists reputation_event_ledger_request_created_idx
+  on public.reputation_event_ledger (request_id, created_at desc)
+  where request_id is not null;
+
+create index if not exists reputation_event_ledger_event_type_idx
+  on public.reputation_event_ledger (event_type, created_at desc);
+
+create or replace function public.prevent_reputation_event_ledger_mutation()
+returns trigger
+language plpgsql
+as $$
+begin
+  raise exception 'reputation_event_ledger is append-only';
+end;
+$$;
+
+drop trigger if exists reputation_event_ledger_no_update on public.reputation_event_ledger;
+create trigger reputation_event_ledger_no_update
+  before update on public.reputation_event_ledger
+  for each row
+  execute function public.prevent_reputation_event_ledger_mutation();
+
+drop trigger if exists reputation_event_ledger_no_delete on public.reputation_event_ledger;
+create trigger reputation_event_ledger_no_delete
+  before delete on public.reputation_event_ledger
+  for each row
+  execute function public.prevent_reputation_event_ledger_mutation();
+
+alter table public.reputation_event_ledger enable row level security;
+
+create policy if not exists "reputation_event_ledger_select_own"
+  on public.reputation_event_ledger
+  for select using (auth.uid() = user_id);
+
+-- ==================================================================
+-- END 20260503_reputation_event_ledger.sql
 -- ==================================================================
