@@ -347,7 +347,7 @@ export async function sendReputationRequestNow(requestId: string) {
 
   try {
     const [{ data: settings }, { data: contact, error: contactError }] = await Promise.all([
-      supabase.from("reputation_settings").select("sms_template, twilio_number").eq("user_id", requestRow.user_id).maybeSingle(),
+      supabase.from("reputation_settings").select("sms_template").eq("user_id", requestRow.user_id).maybeSingle(),
       supabase.from("reputation_contacts").select("name, phone").eq("id", requestRow.contact_id).single(),
     ]);
 
@@ -361,7 +361,7 @@ export async function sendReputationRequestNow(requestId: string) {
 
     body = buildReputationMessageBody(settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate, contact.name || "there", requestRow.business_id);
     const reviewToken = requestRow.review_token || crypto.randomUUID().replace(/-/g, "");
-    const transport = getReputationTransport({ hasSenderOverride: Boolean(settings?.twilio_number) });
+    const transport = getReputationTransport();
     transportName = transport.name;
     transportSimulated = transport.simulated;
     const delivery = await transport.deliver({
@@ -373,7 +373,6 @@ export async function sendReputationRequestNow(requestId: string) {
       body,
       attemptNumber: attemptCount,
       reviewToken,
-      fromNumber: settings?.twilio_number || null,
     });
 
     await appendReputationLedgerEvent(supabase, {

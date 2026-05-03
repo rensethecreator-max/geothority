@@ -118,11 +118,11 @@ export class TwilioReputationTransport implements ReputationTransport {
   async deliver(message: ReputationOutboundMessage): Promise<ReputationDeliveryResult> {
     const accountSid = getRequiredEnv("TWILIO_ACCOUNT_SID");
     const authToken = getRequiredEnv("TWILIO_AUTH_TOKEN");
-    const fromNumber = message.fromNumber?.trim() || process.env.TWILIO_FROM_NUMBER?.trim();
+    const fromNumber = process.env.TWILIO_FROM_NUMBER?.trim();
     const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID?.trim();
 
     if (!fromNumber && !messagingServiceSid) {
-      throw new Error("TWILIO_FROM_NUMBER, reputation_settings.twilio_number, or TWILIO_MESSAGING_SERVICE_SID must be configured");
+      throw new Error("TWILIO_FROM_NUMBER or TWILIO_MESSAGING_SERVICE_SID must be configured");
     }
 
     const form = new URLSearchParams({

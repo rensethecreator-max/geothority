@@ -11,7 +11,6 @@ export interface ReputationOutboundMessage {
   body: string;
   attemptNumber: number;
   reviewToken: string;
-  fromNumber?: string | null;
 }
 
 export interface ReputationDeliveryResult {
@@ -48,18 +47,18 @@ class SimulatedReputationTransport implements ReputationTransport {
 const simulatedTransport = new SimulatedReputationTransport();
 const twilioTransport = new TwilioReputationTransport();
 
-function isTwilioConfigured(hasSenderOverride = false) {
+function isTwilioConfigured() {
   const hasCoreCredentials = Boolean(process.env.TWILIO_ACCOUNT_SID?.trim() && process.env.TWILIO_AUTH_TOKEN?.trim());
-  const hasSender = Boolean(process.env.TWILIO_FROM_NUMBER?.trim() || process.env.TWILIO_MESSAGING_SERVICE_SID?.trim() || hasSenderOverride);
+  const hasSender = Boolean(process.env.TWILIO_FROM_NUMBER?.trim() || process.env.TWILIO_MESSAGING_SERVICE_SID?.trim());
   return hasCoreCredentials && hasSender;
 }
 
-export function getReputationTransport(options?: { hasSenderOverride?: boolean }): ReputationTransport {
+export function getReputationTransport(): ReputationTransport {
   const configuredTransport = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
 
   switch (configuredTransport) {
     case "auto":
-      return isTwilioConfigured(Boolean(options?.hasSenderOverride)) ? twilioTransport : simulatedTransport;
+      return isTwilioConfigured() ? twilioTransport : simulatedTransport;
     case "simulated":
       return simulatedTransport;
     case "twilio":
