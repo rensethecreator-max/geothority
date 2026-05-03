@@ -5,6 +5,7 @@ import { recordReputationReply } from "@/lib/reputation/intake-service";
 import {
   buildTwilioWebhookUrl,
   extractScoreAndFeedback,
+  extractRequestReference,
   isStopKeyword,
   normalizeSmsPhone,
   verifyTwilioSignature,
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
     const fromPhone = normalizeSmsPhone(fields.From || "");
     const body = (fields.Body || "").trim();
     const providerSid = fields.MessageSid || null;
+    const requestReference = extractRequestReference(body);
 
     if (!fromPhone || !body) {
       return twiml();
@@ -98,13 +100,19 @@ export async function POST(req: NextRequest) {
       return twiml("Thanks — we couldn't match that request, but your reply was received.");
     }
 
-    const { data: requestRows } = await supabase
+    let requestQuery = supabase
       .from("reputation_requests")
-      .select("id, user_id, status, replied_at, contact_id, sent_at, created_at")
+      .select("id, user_id, status, replied_at, contact_id, sent_at, created_at, review_token")
       .in("contact_id", contactIds)
       .order("sent_at", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false })
       .limit(10);
+
+    if (requestReference) {
+      requestQuery = requestQuery.ilike("review_token", `${requestReference.toLowerCase()}%`);
+    }
+
+    const { data: requestRows } = await requestQuery;
 
     const openSentRequest = (requestRows || []).find(
       (item: { sent_at?: string | null; replied_at?: string | null; status?: string | null }) =>
@@ -144,6 +152,7 @@ export async function POST(req: NextRequest) {
           phone: fromPhone,
           matchedContactCount: 1,
           optedOutContactId: requestRow.contact_id,
+          requestReference,
         },
       });
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { isMissingTableError } from "@/lib/reputation/request-service";
 
 export async function POST(req: NextRequest, { params }: { params: { token: string } }) {
   try {
@@ -32,6 +33,9 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
       .maybeSingle();
 
     if (requestError) {
+      if (isMissingTableError(requestError)) {
+        return NextResponse.json({ error: "Invalid or unavailable review link" }, { status: 404 });
+      }
       return NextResponse.json({ error: requestError.message }, { status: 500 });
     }
 

@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import type { ReputationDeliveryResult, ReputationOutboundMessage, ReputationTransport } from "@/lib/reputation/transport";
 
 const TWILIO_STOP_KEYWORDS = new Set(["stop", "stopall", "unsubscribe", "cancel", "end", "quit"]);
+const REQUEST_REFERENCE_REGEX = /\bref[:\s#-]*([a-z0-9]{6,12})\b/i;
 
 export type TwilioMessageStatus =
   | "accepted"
@@ -25,8 +26,18 @@ export function isStopKeyword(body: string) {
   return TWILIO_STOP_KEYWORDS.has(body.trim().toLowerCase());
 }
 
+export function buildRequestReference(reviewToken: string | null | undefined) {
+  const normalized = String(reviewToken || "").replace(/[^a-z0-9]/gi, "").toUpperCase();
+  return normalized.slice(0, 8);
+}
+
+export function extractRequestReference(body: string) {
+  const match = body.match(REQUEST_REFERENCE_REGEX);
+  return match?.[1]?.toUpperCase() || null;
+}
+
 export function extractScoreAndFeedback(body: string) {
-  const trimmed = body.trim();
+  const trimmed = body.replace(REQUEST_REFERENCE_REGEX, "").trim();
   const match = trimmed.match(/\b([1-5])\b/);
   if (!match || match.index == null) return null;
 

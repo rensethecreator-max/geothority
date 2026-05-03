@@ -3,13 +3,14 @@ import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
 import { getReputationTransport } from "@/lib/reputation/transport";
+import { buildRequestReference } from "@/lib/reputation/twilio";
 import type { ReputationAnalyticsSummary, ReputationProofSummary, ReputationSourcePerformance } from "@/lib/reputation/types";
 
 const MAX_REPUTATION_SEND_ATTEMPTS = 3;
 const RETRY_DELAYS_SECONDS = [5 * 60, 30 * 60];
 
 export function isMissingTableError(error: any) {
-  return error?.code === "42P01" || /relation .* does not exist/i.test(error?.message || "");
+  return error?.code === "42P01" || /relation .* does not exist/i.test(error?.message || "") || /could not find the table/i.test(error?.message || "");
 }
 
 export function normalizePhoneNumber(phone: string) {
@@ -36,7 +37,8 @@ export async function enqueueReputationSendAttempt(params: { requestId: string; 
     return { scheduled: false as const, reason: "job_secret_missing" };
   }
 
-  const response = await fetch(`${qstashUrl}/v2/publish/${appUrl}/api/reputation/jobs/send-request`, {
+  const destinationUrl = `${appUrl}/api/reputation/jobs/send-request`;
+  const response = await fetch(`${qstashUrl}/v2/publish/${encodeURIComponent(destinationUrl)}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${qstashToken}`,
@@ -83,8 +85,10 @@ async function bestEffortLogSendAttempt(params: {
   }
 }
 
-function buildReputationMessageBody(template: string, customerName: string, businessName: string) {
-  return template.replace("{customer_name}", customerName || "there").replace("{business_name}", businessName);
+function buildReputationMessageBody(template: string, customerName: string, businessName: string, reviewToken: string) {
+  const baseMessage = template.replace("{customer_name}", customerName || "there").replace("{business_name}", businessName).trim();
+  const reference = buildRequestReference(reviewToken);
+  return reference ? `${baseMessage} Ref ${reference}` : baseMessage;
 }
 
 export async function getPreferredBusinessName(supabase: any, userId: string) {
@@ -437,8 +441,8 @@ export async function sendReputationRequestNow(requestId: string) {
     attemptCount = Number(claimedRequest.send_attempt_count || nextAttemptCount);
     currentRequestStatus = claimedRequest.status || requestRow.status;
 
-    body = buildReputationMessageBody(settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate, contact.name || "there", requestRow.business_id);
     const reviewToken = requestRow.review_token || crypto.randomUUID().replace(/-/g, "");
+    body = buildReputationMessageBody(settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate, contact.name || "there", requestRow.business_id, reviewToken);
     const configuredMode = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
     const transport = getReputationTransport();
     transportName = transport.name;

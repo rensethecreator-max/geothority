@@ -332,7 +332,7 @@ export function ReputationEngine() {
   }, []);
 
   const previewSms = useMemo(
-    () => settings.smsTemplate.replace("{customer_name}", "Alex").replace("{business_name}", manualForm.businessName || suggestedBusinessName || "Your Business"),
+    () => `${settings.smsTemplate.replace("{customer_name}", "Alex").replace("{business_name}", manualForm.businessName || suggestedBusinessName || "Your Business")} Ref ABC12345`,
     [manualForm.businessName, settings.smsTemplate, suggestedBusinessName],
   );
 

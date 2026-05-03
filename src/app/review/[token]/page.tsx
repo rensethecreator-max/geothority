@@ -1,17 +1,22 @@
 import { notFound } from "next/navigation";
 import { PublicReviewFlow } from "@/components/reputation/public-review-flow";
 import { createServiceClient } from "@/lib/supabase/server";
+import { isMissingTableError } from "@/lib/reputation/request-service";
 import { buildGoogleReviewUrl, generateReputationTemplates } from "@/lib/reputation/template-utils";
 
 export default async function ReviewTokenPage({ params }: { params: { token: string } }) {
   const supabase = createServiceClient();
   if (!supabase) notFound();
 
-  const { data: requestRow } = await supabase
+  const { data: requestRow, error: requestError } = await supabase
     .from("reputation_requests")
     .select("id, user_id, business_id, status, template_used")
     .eq("review_token", params.token)
     .maybeSingle();
+
+  if (requestError && isMissingTableError(requestError)) {
+    notFound();
+  }
 
   if (!requestRow || requestRow.status !== "public_review_ready") {
     notFound();
