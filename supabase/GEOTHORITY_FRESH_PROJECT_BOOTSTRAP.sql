@@ -1,5 +1,5 @@
 -- Geothority fresh-project bootstrap for a dedicated Supabase project
--- Generated on 2026-04-26 to migrate only Geothority schema
+-- Generated on 2026-05-03 to migrate only Geothority schema
 -- Ordered to satisfy table dependencies for a clean project bootstrap
 create extension if not exists pgcrypto;
 
@@ -2026,4 +2026,227 @@ CREATE POLICY "Users manage own trust signal scores"
 
 -- ==================================================================
 -- END 20260420_phases_5_through_8.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260501_reputation_engine.sql
+-- ==================================================================
+-- Reputation Engine foundational schema for Geothority
+
+create table if not exists public.reputation_settings (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null unique references auth.users(id) on delete cascade,
+  google_review_link text,
+  sms_delay_minutes integer not null default 60,
+  positive_threshold integer not null default 4,
+  sms_template text not null default 'Hi {customer_name}! Thanks for choosing {business_name}. How was your experience? Reply 1-5 and we''ll take it from there. (Reply STOP to opt out)',
+  active boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.reputation_contacts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  business_id text not null,
+  phone text not null,
+  name text,
+  email text,
+  opt_out boolean not null default false,
+  source text default 'manual',
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists reputation_contacts_business_phone_idx
+  on public.reputation_contacts (business_id, phone);
+
+create table if not exists public.reputation_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  business_id text not null,
+  contact_id uuid not null references public.reputation_contacts(id) on delete cascade,
+  trigger_source text not null default 'manual',
+  external_event_id text,
+  status text not null default 'pending',
+  score integer,
+  feedback_text text,
+  review_token text unique,
+  google_link_sent boolean not null default false,
+  template_used text,
+  sent_at timestamptz,
+  replied_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists reputation_requests_contact_created_idx
+  on public.reputation_requests (contact_id, created_at desc);
+
+create table if not exists public.reputation_message_log (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid not null references public.reputation_requests(id) on delete cascade,
+  direction text not null,
+  body text not null,
+  provider_sid text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.reputation_templates (
+  id text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  category text not null,
+  category_label text not null,
+  icon text not null default '⭐',
+  template_text text not null,
+  is_default boolean not null default false,
+  usage_count integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists reputation_templates_user_idx
+  on public.reputation_templates (user_id, created_at asc);
+
+create table if not exists public.reputation_feedback_items (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  request_id uuid references public.reputation_requests(id) on delete set null,
+  business_id text not null,
+  severity text default 'medium',
+  topic text,
+  feedback_text text not null,
+  follow_up_status text not null default 'new',
+  assigned_to uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.reputation_proof_assets (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  business_id text not null,
+  request_id uuid references public.reputation_requests(id) on delete set null,
+  snippet text not null,
+  topic text,
+  sentiment text default 'positive',
+  approved boolean not null default false,
+  published_to text[] default '{}',
+  created_at timestamptz not null default now()
+);
+
+alter table public.reputation_settings enable row level security;
+alter table public.reputation_templates enable row level security;
+
+create policy if not exists "reputation_settings_select_own"
+  on public.reputation_settings
+  for select using (auth.uid() = user_id);
+
+create policy if not exists "reputation_settings_upsert_own"
+  on public.reputation_settings
+  for insert with check (auth.uid() = user_id);
+
+create policy if not exists "reputation_settings_update_own"
+  on public.reputation_settings
+  for update using (auth.uid() = user_id);
+
+create policy if not exists "reputation_templates_select_own"
+  on public.reputation_templates
+  for select using (auth.uid() = user_id);
+
+create policy if not exists "reputation_templates_insert_own"
+  on public.reputation_templates
+  for insert with check (auth.uid() = user_id);
+
+create policy if not exists "reputation_templates_update_own"
+  on public.reputation_templates
+  for update using (auth.uid() = user_id);
+
+create policy if not exists "reputation_templates_delete_own"
+  on public.reputation_templates
+  for delete using (auth.uid() = user_id);
+
+-- ==================================================================
+-- END 20260501_reputation_engine.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260502_feedback_recovery.sql
+-- ==================================================================
+alter table public.reputation_feedback_items
+  add column if not exists assigned_owner_name text,
+  add column if not exists follow_up_due_date date,
+  add column if not exists resolution_notes text,
+  add column if not exists recovery_outcome text,
+  add column if not exists resolved_at timestamptz;
+
+create index if not exists reputation_feedback_items_follow_up_due_date_idx
+  on public.reputation_feedback_items (user_id, follow_up_due_date);
+
+-- ==================================================================
+-- END 20260502_feedback_recovery.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260502_reputation_event_idempotency.sql
+-- ==================================================================
+-- Ensure external event ingests are idempotent per user.
+create unique index if not exists reputation_requests_user_external_event_idx
+  on public.reputation_requests (user_id, external_event_id)
+  where external_event_id is not null;
+
+-- ==================================================================
+-- END 20260502_reputation_event_idempotency.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260503_reputation_contacts_multitenant_uniqueness.sql
+-- ==================================================================
+-- Fix reputation contact uniqueness to scope by user and normalized phone.
+
+update public.reputation_contacts
+set phone = regexp_replace(phone, '[^0-9+]', '', 'g')
+where phone ~ '[^0-9+]';
+
+with ranked as (
+  select ctid,
+         row_number() over (
+           partition by user_id, business_id, phone
+           order by created_at asc, id asc
+         ) as rn
+  from public.reputation_contacts
+)
+delete from public.reputation_contacts
+where ctid in (
+  select ctid
+  from ranked
+  where rn > 1
+);
+
+drop index if exists public.reputation_contacts_business_phone_idx;
+
+create unique index if not exists reputation_contacts_user_business_phone_idx
+  on public.reputation_contacts (user_id, business_id, phone);
+
+-- ==================================================================
+-- END 20260503_reputation_contacts_multitenant_uniqueness.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260503_reputation_intake_idempotency.sql
+-- ==================================================================
+-- Prevent duplicate proof/feedback records when the same intake request is retried.
+
+create unique index if not exists reputation_feedback_items_request_id_unique
+  on public.reputation_feedback_items (request_id)
+  where request_id is not null;
+
+create unique index if not exists reputation_proof_assets_request_id_unique
+  on public.reputation_proof_assets (request_id)
+  where request_id is not null;
+
+-- ==================================================================
+-- END 20260503_reputation_intake_idempotency.sql
 -- ==================================================================

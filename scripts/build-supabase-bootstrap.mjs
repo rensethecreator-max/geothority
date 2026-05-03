@@ -23,6 +23,11 @@ const ordered = [
   'supabase/migrations/20260420_citation_truth_gbp_posts.sql',
   'supabase/migrations/20260420_gbp_auth_ai_visibility.sql',
   'supabase/migrations/20260420_phases_5_through_8.sql',
+  'supabase/migrations/20260501_reputation_engine.sql',
+  'supabase/migrations/20260502_feedback_recovery.sql',
+  'supabase/migrations/20260502_reputation_event_idempotency.sql',
+  'supabase/migrations/20260503_reputation_contacts_multitenant_uniqueness.sql',
+  'supabase/migrations/20260503_reputation_intake_idempotency.sql',
 ];
 
 const missing = ordered.filter(f => !fs.existsSync(path.join(root, f)));
@@ -33,7 +38,7 @@ if (missing.length) {
 
 const out = [];
 out.push('-- Geothority fresh-project bootstrap for a dedicated Supabase project');
-out.push('-- Generated on 2026-04-26 to migrate only Geothority schema');
+out.push(`-- Generated on ${new Date().toISOString().slice(0, 10)} to migrate only Geothority schema`);
 out.push('-- Ordered to satisfy table dependencies for a clean project bootstrap');
 out.push('create extension if not exists pgcrypto;');
 out.push('');
