@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, MessageSquare, RefreshCw, Send, ShieldCheck, Sparkles, Star, Workflow } from "lucide-react";
+import Link from "next/link";
+import { AlertTriangle, CheckCircle2, Loader2, MessageSquare, RefreshCw, Send, Settings, ShieldCheck, Sparkles, Star, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,22 @@ interface ApiState {
   activitySetupRequired: boolean;
   settingsSetupRequired: boolean;
   templatesSetupRequired: boolean;
+}
+
+interface ReputationTransportDiagnostics {
+  mode: string;
+  ready: boolean;
+  twilioRequested: boolean;
+  activeTransport: "simulated" | "twilio";
+  missing: string[];
+  checks: {
+    hasAccountSid: boolean;
+    hasAuthToken: boolean;
+    hasFromNumber: boolean;
+    hasMessagingServiceSid: boolean;
+    hasSender: boolean;
+    hasBaseUrl: boolean;
+  };
 }
 
 interface FeedbackItem {
@@ -148,6 +165,14 @@ function formatWorkflowLabel(value: string | null | undefined) {
   return value.replace(/_/g, " ");
 }
 
+function formatTransportMode(mode: string | null | undefined) {
+  if (!mode) return "Unknown";
+  if (mode === "auto") return "Auto";
+  if (mode === "twilio") return "Twilio";
+  if (mode === "simulated") return "Simulated";
+  return mode.charAt(0).toUpperCase() + mode.slice(1);
+}
+
 export function ReputationEngine() {
   const [settings, setSettings] = useState<ReputationSettings>(DEFAULT_REPUTATION_SETTINGS);
   const [templates, setTemplates] = useState<ReputationTemplate[]>(DEFAULT_REPUTATION_TEMPLATES);
@@ -173,6 +198,7 @@ export function ReputationEngine() {
   const [metrics, setMetrics] = useState<ReputationMetrics>(EMPTY_METRICS);
   const [analytics, setAnalytics] = useState<ReputationAnalyticsSummary | null>(null);
   const [ops, setOps] = useState<ReputationOpsSummary>({ queued: 0, retryScheduled: 0, stuckSending: 0, deadLettered: 0, overdueRetry: 0, latestFailure: null });
+  const [transportDiagnostics, setTransportDiagnostics] = useState<ReputationTransportDiagnostics | null>(null);
   const [suggestedBusinessName, setSuggestedBusinessName] = useState("Your Business");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -210,6 +236,17 @@ export function ReputationEngine() {
       templatesSetupRequired,
       setupRequired: activitySetupRequired || settingsSetupRequired || templatesSetupRequired,
     };
+  }
+
+  async function loadTransportDiagnostics() {
+    try {
+      const res = await fetch("/api/diagnostics/keys", { cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load transport diagnostics");
+      setTransportDiagnostics(json.reputationTransport ?? null);
+    } catch {
+      setTransportDiagnostics(null);
+    }
   }
 
   async function loadReputationActivity() {
@@ -255,6 +292,7 @@ export function ReputationEngine() {
 
     async function load() {
       try {
+        const diagnosticsPromise = loadTransportDiagnostics();
         const [settingsRes, templatesRes, activityState] = await Promise.all([
           fetch("/api/reputation/settings", { cache: "no-store" }),
           fetch("/api/reputation/templates", { cache: "no-store" }),
@@ -278,6 +316,7 @@ export function ReputationEngine() {
             templatesSetupRequired: templatesJson.setupRequired,
           }),
         );
+        await diagnosticsPromise;
       } catch (err: any) {
         if (!mounted) return;
         setError(err.message || "Failed to load reputation engine");
@@ -317,6 +356,16 @@ export function ReputationEngine() {
     [demoIntakeForm.requestId, pendingReplyRequests],
   );
 
+  const liveDeliveryEnabled = transportDiagnostics?.activeTransport === "twilio";
+  const transportModeLabel = formatTransportMode(transportDiagnostics?.mode);
+  const transportStatusTone = transportDiagnostics
+    ? transportDiagnostics.activeTransport === "twilio"
+      ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
+      : transportDiagnostics.mode === "simulated"
+        ? "border-blue-500/20 bg-blue-500/10 text-blue-200"
+        : "border-amber-500/20 bg-amber-500/10 text-amber-100"
+    : "border-white/10 bg-[var(--muted)]/20 text-[var(--foreground)]";
+
   useEffect(() => {
     setDemoIntakeForm((current) => {
       if (!pendingReplyRequests.length) return { ...current, requestId: "" };
@@ -329,6 +378,7 @@ export function ReputationEngine() {
     setRefreshingActivity(true);
     setError(null);
     try {
+      const diagnosticsPromise = loadTransportDiagnostics();
       const [settingsRes, templatesRes, activityState] = await Promise.all([
         fetch("/api/reputation/settings", { cache: "no-store" }),
         fetch("/api/reputation/templates", { cache: "no-store" }),
@@ -350,6 +400,7 @@ export function ReputationEngine() {
           templatesSetupRequired: templatesJson.setupRequired,
         }),
       );
+      await diagnosticsPromise;
       if (showSuccessMessage) setMessage("Reputation activity refreshed.");
     } catch (err: any) {
       setError(err.message || "Failed to refresh reputation activity");
@@ -616,15 +667,74 @@ export function ReputationEngine() {
                 <CardTitle>What ships in this slice</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 py-5 text-sm text-[var(--muted-foreground)]">
-                <ChecklistItem checked>Manual review request creation + simulated send</ChecklistItem>
+                <ChecklistItem checked>Manual review request creation + immediate send execution</ChecklistItem>
                 <ChecklistItem checked>Operator demo intake for recent requests</ChecklistItem>
                 <ChecklistItem checked>Low-rating intake with private feedback capture</ChecklistItem>
                 <ChecklistItem checked>Positive snippet proof asset creation + approval-ready workflow</ChecklistItem>
                 <ChecklistItem checked>Webhook-compatible event ingest with idempotency key support</ChecklistItem>
-                <ChecklistItem checked={false}>Live SMS provider integration (next)</ChecklistItem>
+                <ChecklistItem checked={liveDeliveryEnabled}>{liveDeliveryEnabled ? "Live SMS provider delivery is active" : "Live SMS provider delivery is not ready yet"}</ChecklistItem>
               </CardContent>
             </Card>
           </div>
+
+          <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+            <CardHeader className="border-b border-white/10 py-5">
+              <CardTitle>Delivery readiness</CardTitle>
+              <CardDescription>Operator-facing Twilio status for the reputation send path, without exposing secrets.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 py-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="space-y-2">
+                  <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${transportStatusTone}`}>
+                    {liveDeliveryEnabled ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+                    {liveDeliveryEnabled ? "Live Twilio ready" : transportDiagnostics?.mode === "simulated" ? "Simulation mode" : "Twilio needs setup"}
+                  </div>
+                  <p className="text-sm text-[var(--foreground)]">
+                    {liveDeliveryEnabled
+                      ? "Reputation sends are using the live Twilio transport, so delivery callbacks and inbound reply handling can run end-to-end."
+                      : transportDiagnostics?.mode === "simulated"
+                        ? "The engine is intentionally running in simulated mode. Manual sends still work for demos, but no live SMS leaves Twilio from this path."
+                        : "The engine is falling back to the simulated transport until the missing Twilio pieces are configured."}
+                  </p>
+                </div>
+                <Link
+                  href="/settings"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-3 py-2 text-sm text-[var(--foreground)] transition-colors hover:border-electric-500/40 hover:text-electric-400"
+                >
+                  <Settings className="h-4 w-4" />
+                  Open settings
+                </Link>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Configured mode</div>
+                  <div className="mt-2 text-lg font-semibold text-[var(--foreground)]">{transportModeLabel}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Active send path</div>
+                  <div className="mt-2 text-lg font-semibold text-[var(--foreground)]">{liveDeliveryEnabled ? "Twilio" : "Simulated"}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Readiness</div>
+                  <div className="mt-2 text-lg font-semibold text-[var(--foreground)]">{liveDeliveryEnabled || transportDiagnostics?.mode === "simulated" ? "Ready" : "Blocked"}</div>
+                </div>
+              </div>
+
+              {transportDiagnostics && transportDiagnostics.mode !== "simulated" && !liveDeliveryEnabled && transportDiagnostics.missing.length > 0 ? (
+                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-100">
+                  <div className="font-medium text-amber-200">Missing for live Twilio</div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {transportDiagnostics.missing.map((item) => (
+                      <span key={item} className="rounded-full border border-amber-500/20 px-2.5 py-1 text-xs text-amber-100">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
 
           {analytics && (
             <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
@@ -689,7 +799,7 @@ export function ReputationEngine() {
               <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
                 <CardHeader className="border-b border-white/10 py-5">
                   <CardTitle className="flex items-center gap-2"><Send className="h-4 w-4 text-electric-500" /> Manual send</CardTitle>
-                  <CardDescription>Create a review request now. It persists to the reputation tables, generates a token, and runs the simulated send job immediately.</CardDescription>
+                  <CardDescription>Create a review request now. It persists to the reputation tables, generates a token, and runs the active delivery path immediately.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 py-5">
                   <Field label="Business name">
@@ -1234,11 +1344,18 @@ export function ReputationEngine() {
                     <CardTitle className="text-sm">Current engine state</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 py-4 text-sm text-[var(--muted-foreground)]">
-                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Send job route now runs the simulated outbound log</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Send job route is wired and executes the current delivery path</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Low-score replies create private feedback items</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Positive written replies create proof snippets</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Approved proof assets can surface on the public profile and dashboard</div>
-                    <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-400" /> Live provider delivery still intentionally simulated</div>
+                    <div className="flex items-center gap-2">
+                      {liveDeliveryEnabled ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <AlertTriangle className="h-4 w-4 text-amber-400" />}
+                      {liveDeliveryEnabled
+                        ? "Live Twilio delivery is active for the reputation send path"
+                        : transportDiagnostics?.mode === "simulated"
+                          ? "Delivery is intentionally simulated in this environment"
+                          : "Twilio is not fully configured, so delivery is falling back to simulation"}
+                    </div>
                   </CardContent>
                 </Card>
               </div>

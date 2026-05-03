@@ -8,18 +8,28 @@ function getReputationTransportDiagnostics() {
   const hasFromNumber = Boolean(process.env.TWILIO_FROM_NUMBER?.trim());
   const hasMessagingServiceSid = Boolean(process.env.TWILIO_MESSAGING_SERVICE_SID?.trim());
   const hasBaseUrl = Boolean((process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "").trim());
-  const usingTwilio = mode === "twilio" || mode === "auto";
+  const hasSender = hasFromNumber || hasMessagingServiceSid;
+  const twilioRequested = mode === "twilio" || mode === "auto";
+  const ready = hasAccountSid && hasAuthToken && hasSender && hasBaseUrl;
+  const missing = [
+    !hasAccountSid ? "Account SID" : null,
+    !hasAuthToken ? "Auth token" : null,
+    !hasSender ? "From number or messaging service" : null,
+    !hasBaseUrl ? "Canonical app URL" : null,
+  ].filter(Boolean);
 
   return {
     mode,
-    ready: mode === "simulated" || (hasAccountSid && hasAuthToken && (hasFromNumber || hasMessagingServiceSid) && hasBaseUrl),
-    usingTwilio,
+    ready: mode === "simulated" ? true : ready,
+    twilioRequested,
+    activeTransport: mode === "simulated" ? "simulated" : ready ? "twilio" : "simulated",
+    missing,
     checks: {
       hasAccountSid,
       hasAuthToken,
       hasFromNumber,
       hasMessagingServiceSid,
-      hasSender: hasFromNumber || hasMessagingServiceSid,
+      hasSender,
       hasBaseUrl,
     },
   };
