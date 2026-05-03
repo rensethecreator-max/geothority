@@ -20,6 +20,9 @@ import type { ReputationAnalyticsSummary } from "@/lib/reputation/types";
 
 interface ApiState {
   setupRequired: boolean;
+  activitySetupRequired: boolean;
+  settingsSetupRequired: boolean;
+  templatesSetupRequired: boolean;
 }
 
 interface FeedbackItem {
@@ -142,7 +145,12 @@ export function ReputationEngine() {
   const [refreshingActivity, setRefreshingActivity] = useState(false);
   const [proofMutationId, setProofMutationId] = useState<string | null>(null);
   const [savingFeedbackId, setSavingFeedbackId] = useState<string | null>(null);
-  const [apiState, setApiState] = useState<ApiState>({ setupRequired: false });
+  const [apiState, setApiState] = useState<ApiState>({
+    setupRequired: false,
+    activitySetupRequired: false,
+    settingsSetupRequired: false,
+    templatesSetupRequired: false,
+  });
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<string, FeedbackDraft>>({});
   const [recentRequests, setRecentRequests] = useState<RecentRequest[]>([]);
@@ -170,6 +178,23 @@ export function ReputationEngine() {
     eventType: "appointment_completed",
     externalEventId: "",
   });
+
+  function buildApiState(state: {
+    activitySetupRequired?: boolean;
+    settingsSetupRequired?: boolean;
+    templatesSetupRequired?: boolean;
+  }): ApiState {
+    const activitySetupRequired = Boolean(state.activitySetupRequired);
+    const settingsSetupRequired = Boolean(state.settingsSetupRequired);
+    const templatesSetupRequired = Boolean(state.templatesSetupRequired);
+
+    return {
+      activitySetupRequired,
+      settingsSetupRequired,
+      templatesSetupRequired,
+      setupRequired: activitySetupRequired || settingsSetupRequired || templatesSetupRequired,
+    };
+  }
 
   async function loadReputationActivity() {
     const [feedbackRes, requestsRes] = await Promise.all([
@@ -204,7 +229,7 @@ export function ReputationEngine() {
       businessName: current.businessName || requestsJson.suggestedBusinessName || "",
     }));
     return {
-      setupRequired: Boolean(feedbackJson.setupRequired || requestsJson.setupRequired),
+      activitySetupRequired: Boolean(feedbackJson.setupRequired || requestsJson.setupRequired),
     };
   }
 
@@ -229,7 +254,13 @@ export function ReputationEngine() {
 
         setSettings(settingsJson.settings ?? DEFAULT_REPUTATION_SETTINGS);
         setTemplates(templatesJson.templates ?? DEFAULT_REPUTATION_TEMPLATES);
-        setApiState({ setupRequired: Boolean(settingsJson.setupRequired || templatesJson.setupRequired || activityState.setupRequired) });
+        setApiState(
+          buildApiState({
+            activitySetupRequired: activityState.activitySetupRequired,
+            settingsSetupRequired: settingsJson.setupRequired,
+            templatesSetupRequired: templatesJson.setupRequired,
+          }),
+        );
       } catch (err: any) {
         if (!mounted) return;
         setError(err.message || "Failed to load reputation engine");
@@ -281,8 +312,27 @@ export function ReputationEngine() {
     setRefreshingActivity(true);
     setError(null);
     try {
-      const activityState = await loadReputationActivity();
-      setApiState((current) => ({ ...current, setupRequired: current.setupRequired || activityState.setupRequired }));
+      const [settingsRes, templatesRes, activityState] = await Promise.all([
+        fetch("/api/reputation/settings", { cache: "no-store" }),
+        fetch("/api/reputation/templates", { cache: "no-store" }),
+        loadReputationActivity(),
+      ]);
+
+      const settingsJson = await settingsRes.json();
+      const templatesJson = await templatesRes.json();
+
+      if (!settingsRes.ok) throw new Error(settingsJson.error || "Failed to load reputation settings");
+      if (!templatesRes.ok) throw new Error(templatesJson.error || "Failed to load reputation templates");
+
+      setSettings(settingsJson.settings ?? DEFAULT_REPUTATION_SETTINGS);
+      setTemplates(templatesJson.templates ?? DEFAULT_REPUTATION_TEMPLATES);
+      setApiState(
+        buildApiState({
+          activitySetupRequired: activityState.activitySetupRequired,
+          settingsSetupRequired: settingsJson.setupRequired,
+          templatesSetupRequired: templatesJson.setupRequired,
+        }),
+      );
       if (showSuccessMessage) setMessage("Reputation activity refreshed.");
     } catch (err: any) {
       setError(err.message || "Failed to refresh reputation activity");
@@ -503,7 +553,11 @@ export function ReputationEngine() {
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
             <div>
               <p className="font-semibold text-amber-200">Database setup still required</p>
-              <p className="mt-1 text-amber-100/90">The UI is live, but the new reputation tables have not been installed in Supabase yet. Run the reputation migration before expecting persistence in production.</p>
+              <p className="mt-1 text-amber-100/90">
+                {apiState.activitySetupRequired
+                  ? "The core reputation tables are still missing in Supabase, so requests and follow-up activity will not persist until the reputation migration runs."
+                  : "Some reputation configuration tables are still missing in Supabase. Defaults are being shown for now, but run the reputation migration to restore full settings and template persistence."}
+              </p>
             </div>
           </div>
         </div>
