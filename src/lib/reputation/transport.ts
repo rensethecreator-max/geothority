@@ -1,4 +1,6 @@
-export type ReputationTransportName = "simulated";
+import { TwilioReputationTransport } from "@/lib/reputation/twilio";
+
+export type ReputationTransportName = "simulated" | "twilio";
 
 export interface ReputationOutboundMessage {
   requestId: string;
@@ -9,23 +11,26 @@ export interface ReputationOutboundMessage {
   body: string;
   attemptNumber: number;
   reviewToken: string;
+  fromNumber?: string | null;
 }
 
 export interface ReputationDeliveryResult {
   provider: ReputationTransportName;
   providerSid: string | null;
-  deliveryState: "sent";
+  deliveryState: "accepted" | "scheduled" | "queued" | "sending" | "sent" | "delivered" | "undelivered" | "failed";
   simulated: boolean;
   metadata?: Record<string, unknown>;
 }
 
 export interface ReputationTransport {
   readonly name: ReputationTransportName;
+  readonly simulated: boolean;
   deliver(message: ReputationOutboundMessage): Promise<ReputationDeliveryResult>;
 }
 
 class SimulatedReputationTransport implements ReputationTransport {
   readonly name = "simulated" as const;
+  readonly simulated = true;
 
   async deliver(message: ReputationOutboundMessage): Promise<ReputationDeliveryResult> {
     return {
@@ -41,13 +46,24 @@ class SimulatedReputationTransport implements ReputationTransport {
 }
 
 const simulatedTransport = new SimulatedReputationTransport();
+const twilioTransport = new TwilioReputationTransport();
 
-export function getReputationTransport(): ReputationTransport {
-  const configuredTransport = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "simulated").trim().toLowerCase();
+function isTwilioConfigured(hasSenderOverride = false) {
+  const hasCoreCredentials = Boolean(process.env.TWILIO_ACCOUNT_SID?.trim() && process.env.TWILIO_AUTH_TOKEN?.trim());
+  const hasSender = Boolean(process.env.TWILIO_FROM_NUMBER?.trim() || process.env.TWILIO_MESSAGING_SERVICE_SID?.trim() || hasSenderOverride);
+  return hasCoreCredentials && hasSender;
+}
+
+export function getReputationTransport(options?: { hasSenderOverride?: boolean }): ReputationTransport {
+  const configuredTransport = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
 
   switch (configuredTransport) {
+    case "auto":
+      return isTwilioConfigured(Boolean(options?.hasSenderOverride)) ? twilioTransport : simulatedTransport;
     case "simulated":
       return simulatedTransport;
+    case "twilio":
+      return twilioTransport;
     default:
       throw new Error(`Unsupported reputation transport: ${configuredTransport}`);
   }

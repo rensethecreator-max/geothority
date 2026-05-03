@@ -343,10 +343,11 @@ export async function sendReputationRequestNow(requestId: string) {
 
   let body = "";
   let transportName: string | null = null;
+  let transportSimulated = true;
 
   try {
     const [{ data: settings }, { data: contact, error: contactError }] = await Promise.all([
-      supabase.from("reputation_settings").select("sms_template").eq("user_id", requestRow.user_id).maybeSingle(),
+      supabase.from("reputation_settings").select("sms_template, twilio_number").eq("user_id", requestRow.user_id).maybeSingle(),
       supabase.from("reputation_contacts").select("name, phone").eq("id", requestRow.contact_id).single(),
     ]);
 
@@ -360,8 +361,9 @@ export async function sendReputationRequestNow(requestId: string) {
 
     body = buildReputationMessageBody(settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate, contact.name || "there", requestRow.business_id);
     const reviewToken = requestRow.review_token || crypto.randomUUID().replace(/-/g, "");
-    const transport = getReputationTransport();
+    const transport = getReputationTransport({ hasSenderOverride: Boolean(settings?.twilio_number) });
     transportName = transport.name;
+    transportSimulated = transport.simulated;
     const delivery = await transport.deliver({
       requestId: requestRow.id,
       userId: requestRow.user_id,
@@ -371,6 +373,7 @@ export async function sendReputationRequestNow(requestId: string) {
       body,
       attemptNumber: attemptCount,
       reviewToken,
+      fromNumber: settings?.twilio_number || null,
     });
 
     await appendReputationLedgerEvent(supabase, {
@@ -389,6 +392,7 @@ export async function sendReputationRequestNow(requestId: string) {
         transport: delivery.provider,
         providerSid: delivery.providerSid,
         simulated: delivery.simulated,
+        transportMetadata: delivery.metadata || null,
       },
     });
 
@@ -432,6 +436,7 @@ export async function sendReputationRequestNow(requestId: string) {
         transport: delivery.provider,
         providerSid: delivery.providerSid,
         simulated: delivery.simulated,
+        transportMetadata: delivery.metadata || null,
         reviewTokenPresent: Boolean(reviewToken),
       },
     });
@@ -461,13 +466,13 @@ export async function sendReputationRequestNow(requestId: string) {
         await bestEffortLogSendAttempt({
           supabase,
           requestId: requestRow.id,
-        body: body || `Failed to send request ${requestRow.id}`,
-        attemptNumber: attemptCount,
-        deliveryState: "retry_schedule_failed",
-        providerSid: null,
-        errorDetail: scheduleError?.message || "Failed to schedule retry",
-        simulated: true,
-      });
+          body: body || `Failed to send request ${requestRow.id}`,
+          attemptNumber: attemptCount,
+          deliveryState: "retry_schedule_failed",
+          providerSid: null,
+          errorDetail: scheduleError?.message || "Failed to schedule retry",
+          simulated: transportSimulated,
+        });
       }
     }
 
@@ -481,7 +486,7 @@ export async function sendReputationRequestNow(requestId: string) {
       deliveryState,
       providerSid: null,
       errorDetail: errorMessage,
-      simulated: true,
+      simulated: transportSimulated,
     });
 
     const failedStatus = retryScheduled ? "pending" : "failed";
@@ -519,7 +524,7 @@ export async function sendReputationRequestNow(requestId: string) {
 
     return {
       success: false,
-      simulated: true,
+      simulated: transportSimulated,
       alreadySent: false,
       attemptCount,
       deliveryState,
