@@ -1,4 +1,5 @@
 import { enqueueReputationSendAttempt, normalizePhoneNumber } from "@/lib/reputation/request-service";
+import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
 import { createServiceClient } from "@/lib/supabase/server";
 
 interface ScheduleReviewRequestParams {
@@ -16,6 +17,7 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
 
   const { userId, businessId, phone, customerName, paymentId, paymentSource } = params;
   const normalizedPhone = normalizePhoneNumber(phone);
+  const businessIdentity = getReputationBusinessIdentity(businessId);
 
   const { data: settings, error: settingsError } = await supabase
     .from("reputation_settings")
@@ -35,7 +37,7 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
     .from("reputation_contacts")
     .select("id, opt_out")
     .eq("user_id", userId)
-    .eq("business_id", businessId)
+    .eq("business_key", businessIdentity.businessKey)
     .eq("phone", normalizedPhone)
     .maybeSingle();
 
@@ -44,7 +46,8 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
       .from("reputation_contacts")
       .insert({
         user_id: userId,
-        business_id: businessId,
+        business_id: businessIdentity.displayName,
+        business_key: businessIdentity.businessKey,
         phone: normalizedPhone,
         name: customerName,
         source: paymentSource,
@@ -81,7 +84,8 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
     .from("reputation_requests")
     .insert({
       user_id: userId,
-      business_id: businessId,
+      business_id: businessIdentity.displayName,
+      business_key: businessIdentity.businessKey,
       contact_id: existingContact.id,
       trigger_source: paymentSource,
       external_event_id: paymentId,

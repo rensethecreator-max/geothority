@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
+import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
 import type { ReputationAnalyticsSummary, ReputationProofSummary, ReputationSourcePerformance } from "@/lib/reputation/types";
 
 const MAX_REPUTATION_SEND_ATTEMPTS = 3;
@@ -100,12 +101,13 @@ export async function upsertReputationContact(params: {
 }) {
   const { supabase, userId, businessId, customerName, phone, source } = params;
   const normalizedPhone = normalizePhoneNumber(phone);
+  const businessIdentity = getReputationBusinessIdentity(businessId);
 
   let { data: contact } = await supabase
     .from("reputation_contacts")
     .select("id, name, phone, opt_out")
     .eq("user_id", userId)
-    .eq("business_id", businessId)
+    .eq("business_key", businessIdentity.businessKey)
     .eq("phone", normalizedPhone)
     .maybeSingle();
 
@@ -114,7 +116,8 @@ export async function upsertReputationContact(params: {
       .from("reputation_contacts")
       .insert({
         user_id: userId,
-        business_id: businessId,
+        business_id: businessIdentity.displayName,
+        business_key: businessIdentity.businessKey,
         phone: normalizedPhone,
         name: customerName,
         source,
@@ -130,7 +133,13 @@ export async function upsertReputationContact(params: {
   } else if ((customerName && contact.name !== customerName) || contact.phone !== normalizedPhone) {
     await supabase
       .from("reputation_contacts")
-      .update({ name: customerName || contact.name, phone: normalizedPhone, source })
+      .update({
+        business_id: businessIdentity.displayName,
+        business_key: businessIdentity.businessKey,
+        name: customerName || contact.name,
+        phone: normalizedPhone,
+        source,
+      })
       .eq("id", contact.id);
     contact = { ...contact, name: customerName || contact.name, phone: normalizedPhone };
   }
@@ -148,6 +157,7 @@ export async function createAndSendReputationRequest(params: {
   externalEventId?: string | null;
 }) {
   const { supabase, userId, businessName, customerName, phone, triggerSource, externalEventId } = params;
+  const businessIdentity = getReputationBusinessIdentity(businessName);
 
   if (externalEventId) {
     const { data: existingRequest, error: existingRequestError } = await supabase
@@ -181,7 +191,7 @@ export async function createAndSendReputationRequest(params: {
   const contact = await upsertReputationContact({
     supabase,
     userId,
-    businessId: businessName,
+    businessId: businessIdentity.displayName,
     customerName,
     phone,
     source: triggerSource,
@@ -195,7 +205,8 @@ export async function createAndSendReputationRequest(params: {
     .from("reputation_requests")
     .insert({
       user_id: userId,
-      business_id: businessName,
+      business_id: businessIdentity.displayName,
+      business_key: businessIdentity.businessKey,
       contact_id: contact.id,
       trigger_source: triggerSource,
       external_event_id: externalEventId || null,
@@ -253,7 +264,7 @@ export async function createAndSendReputationRequest(params: {
     channel: "sms",
     summary: "Created a reputation request record.",
     metadata: {
-      businessName,
+      businessName: businessIdentity.displayName,
       customerName,
       triggerSource,
       externalEventId: externalEventId || null,

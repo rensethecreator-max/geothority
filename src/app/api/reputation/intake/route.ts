@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
+import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
 import { isMissingTableError } from "@/lib/reputation/request-service";
 
 export async function POST(req: NextRequest) {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     const { data: requestRow, error: requestError } = await supabase
       .from("reputation_requests")
-      .select("id, user_id, business_id, status, score, feedback_text, replied_at")
+      .select("id, user_id, business_id, business_key, status, score, feedback_text, replied_at")
       .eq("id", requestId)
       .single();
 
@@ -125,6 +126,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const businessIdentity = getReputationBusinessIdentity(requestRow.business_id || "");
+
     if (belowThreshold) {
       const feedbackPayload = {
         severity: score <= 2 ? "high" : "medium",
@@ -171,6 +174,7 @@ export async function POST(req: NextRequest) {
           user_id: requestRow.user_id,
           request_id: requestRow.id,
           business_id: requestRow.business_id,
+          business_key: requestRow.business_key || businessIdentity.businessKey,
           ...feedbackPayload,
           follow_up_status: "new",
           recovery_outcome: "pending",
@@ -251,6 +255,7 @@ export async function POST(req: NextRequest) {
           .insert({
             user_id: requestRow.user_id,
             business_id: requestRow.business_id,
+            business_key: requestRow.business_key || businessIdentity.businessKey,
             request_id: requestRow.id,
             ...proofPayload,
             approved: false,

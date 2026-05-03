@@ -2255,6 +2255,161 @@ create unique index if not exists reputation_contacts_user_business_phone_idx
 
 
 -- ==================================================================
+-- BEGIN 20260503_reputation_business_identity_key.sql
+-- ==================================================================
+-- Add stable business identity keys so reputation records do not fragment on freeform business_id text.
+
+alter table if exists public.reputation_contacts
+  add column if not exists business_key text;
+
+alter table if exists public.reputation_requests
+  add column if not exists business_key text;
+
+alter table if exists public.reputation_feedback_items
+  add column if not exists business_key text;
+
+alter table if exists public.reputation_proof_assets
+  add column if not exists business_key text;
+
+update public.reputation_contacts
+set business_key = regexp_replace(
+  regexp_replace(
+    regexp_replace(lower(trim(coalesce(business_id, ''))), '&', ' and ', 'g'),
+    '[^a-z0-9]+',
+    '-',
+    'g'
+  ),
+  '(^-+|-+$)',
+  '',
+  'g'
+)
+where coalesce(business_key, '') = '';
+
+update public.reputation_requests
+set business_key = regexp_replace(
+  regexp_replace(
+    regexp_replace(lower(trim(coalesce(business_id, ''))), '&', ' and ', 'g'),
+    '[^a-z0-9]+',
+    '-',
+    'g'
+  ),
+  '(^-+|-+$)',
+  '',
+  'g'
+)
+where coalesce(business_key, '') = '';
+
+update public.reputation_feedback_items
+set business_key = regexp_replace(
+  regexp_replace(
+    regexp_replace(lower(trim(coalesce(business_id, ''))), '&', ' and ', 'g'),
+    '[^a-z0-9]+',
+    '-',
+    'g'
+  ),
+  '(^-+|-+$)',
+  '',
+  'g'
+)
+where coalesce(business_key, '') = '';
+
+update public.reputation_proof_assets
+set business_key = regexp_replace(
+  regexp_replace(
+    regexp_replace(lower(trim(coalesce(business_id, ''))), '&', ' and ', 'g'),
+    '[^a-z0-9]+',
+    '-',
+    'g'
+  ),
+  '(^-+|-+$)',
+  '',
+  'g'
+)
+where coalesce(business_key, '') = '';
+
+update public.reputation_contacts
+set business_key = 'business'
+where coalesce(business_key, '') = '';
+
+update public.reputation_requests
+set business_key = 'business'
+where coalesce(business_key, '') = '';
+
+update public.reputation_feedback_items
+set business_key = 'business'
+where coalesce(business_key, '') = '';
+
+update public.reputation_proof_assets
+set business_key = 'business'
+where coalesce(business_key, '') = '';
+
+with ranked_contacts as (
+  select
+    id,
+    first_value(id) over (
+      partition by user_id, business_key, phone
+      order by created_at asc, id asc
+    ) as survivor_id,
+    row_number() over (
+      partition by user_id, business_key, phone
+      order by created_at asc, id asc
+    ) as rn
+  from public.reputation_contacts
+)
+update public.reputation_requests as requests
+set contact_id = ranked_contacts.survivor_id
+from ranked_contacts
+where requests.contact_id = ranked_contacts.id
+  and ranked_contacts.rn > 1
+  and ranked_contacts.survivor_id <> ranked_contacts.id;
+
+with ranked_contacts as (
+  select
+    id,
+    row_number() over (
+      partition by user_id, business_key, phone
+      order by created_at asc, id asc
+    ) as rn
+  from public.reputation_contacts
+)
+delete from public.reputation_contacts contacts
+using ranked_contacts
+where contacts.id = ranked_contacts.id
+  and ranked_contacts.rn > 1;
+
+alter table if exists public.reputation_contacts
+  alter column business_key set not null;
+
+alter table if exists public.reputation_requests
+  alter column business_key set not null;
+
+alter table if exists public.reputation_feedback_items
+  alter column business_key set not null;
+
+alter table if exists public.reputation_proof_assets
+  alter column business_key set not null;
+
+drop index if exists public.reputation_contacts_business_phone_idx;
+drop index if exists public.reputation_contacts_user_business_phone_idx;
+
+create unique index if not exists reputation_contacts_user_business_key_phone_idx
+  on public.reputation_contacts (user_id, business_key, phone);
+
+create index if not exists reputation_requests_user_business_key_created_idx
+  on public.reputation_requests (user_id, business_key, created_at desc);
+
+create index if not exists reputation_feedback_items_user_business_key_created_idx
+  on public.reputation_feedback_items (user_id, business_key, created_at desc);
+
+create index if not exists reputation_proof_assets_user_business_key_created_idx
+  on public.reputation_proof_assets (user_id, business_key, created_at desc);
+
+-- ==================================================================
+-- END 20260503_reputation_business_identity_key.sql
+-- ==================================================================
+
+
+-- ==================================================================
 -- BEGIN 20260503_reputation_intake_idempotency.sql
 -- ==================================================================
 -- Prevent duplicate proof/feedback records when the same intake request is retried.
@@ -2269,6 +2424,40 @@ create unique index if not exists reputation_proof_assets_request_id_unique
 
 -- ==================================================================
 -- END 20260503_reputation_intake_idempotency.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260503_reputation_send_runtime.sql
+-- ==================================================================
+-- Reputation send runtime hardening: execution state, retry visibility, and dead-letter metadata
+
+alter table if exists public.reputation_requests
+  add column if not exists delivery_state text not null default 'pending',
+  add column if not exists send_attempt_count integer not null default 0,
+  add column if not exists last_send_attempt_at timestamptz,
+  add column if not exists last_send_error text,
+  add column if not exists next_retry_at timestamptz,
+  add column if not exists dead_lettered_at timestamptz;
+
+create index if not exists reputation_requests_delivery_state_idx
+  on public.reputation_requests (user_id, delivery_state, created_at desc);
+
+create index if not exists reputation_requests_next_retry_idx
+  on public.reputation_requests (delivery_state, next_retry_at)
+  where next_retry_at is not null;
+
+alter table if exists public.reputation_message_log
+  add column if not exists attempt_number integer not null default 1,
+  add column if not exists delivery_state text not null default 'sent',
+  add column if not exists error_detail text,
+  add column if not exists simulated boolean not null default true;
+
+create index if not exists reputation_message_log_request_attempt_idx
+  on public.reputation_message_log (request_id, attempt_number desc, created_at desc);
+
+-- ==================================================================
+-- END 20260503_reputation_send_runtime.sql
 -- ==================================================================
 
 
