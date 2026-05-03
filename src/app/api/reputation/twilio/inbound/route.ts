@@ -72,6 +72,20 @@ export async function POST(req: NextRequest) {
       return twiml();
     }
 
+    if (providerSid) {
+      const { data: existingInbound } = await supabase
+        .from("reputation_message_log")
+        .select("id")
+        .eq("provider_sid", providerSid)
+        .eq("direction", "in")
+        .limit(1)
+        .maybeSingle();
+
+      if (existingInbound?.id) {
+        return twiml("Thanks for your feedback.");
+      }
+    }
+
     const { data: contacts } = await supabase
       .from("reputation_contacts")
       .select("id")
@@ -86,18 +100,27 @@ export async function POST(req: NextRequest) {
 
     const { data: requestRows } = await supabase
       .from("reputation_requests")
-      .select("id, user_id, status, replied_at, contact_id, sent_at")
+      .select("id, user_id, status, replied_at, contact_id, sent_at, created_at")
       .in("contact_id", contactIds)
+      .order("sent_at", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false })
       .limit(10);
 
-    const requestRow = (requestRows || []).find((item: { sent_at?: string | null }) => Boolean(item.sent_at)) || requestRows?.[0];
+    const openSentRequest = (requestRows || []).find(
+      (item: { sent_at?: string | null; replied_at?: string | null; status?: string | null }) =>
+        Boolean(item.sent_at) && !item.replied_at && item.status === "sent",
+    );
+    const requestRow =
+      openSentRequest ||
+      (requestRows || []).find((item: { sent_at?: string | null; replied_at?: string | null }) => Boolean(item.sent_at) && !item.replied_at) ||
+      (requestRows || []).find((item: { sent_at?: string | null }) => Boolean(item.sent_at)) ||
+      requestRows?.[0];
     if (!requestRow?.id) {
       return twiml("Thanks — we couldn't match that request, but your reply was received.");
     }
 
     if (isStopKeyword(body)) {
-      await supabase.from("reputation_contacts").update({ opt_out: true }).eq("id", requestRow.contact_id);
+      await supabase.from("reputation_contacts").update({ opt_out: true }).in("id", contactIds);
 
       await supabase.from("reputation_message_log").insert({
         request_id: requestRow.id,
@@ -119,6 +142,7 @@ export async function POST(req: NextRequest) {
           providerSid,
           keyword: body.toLowerCase(),
           phone: fromPhone,
+          matchedContactCount: contactIds.length,
         },
       });
 

@@ -106,6 +106,30 @@ const KEY_DEFS: KeyDef[] = [
     impact: "Server-side GBP token refresh and direct Google publish flows after Supabase OAuth is connected",
     category: "recommended",
   },
+  {
+    key: "Twilio Reputation Transport",
+    envVar: "TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER|TWILIO_MESSAGING_SERVICE_SID",
+    envVars: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER", "TWILIO_MESSAGING_SERVICE_SID"],
+    isConfigured: () => {
+      const mode = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
+      if (mode === "simulated") return true;
+      const hasCoreCredentials = !!process.env.TWILIO_ACCOUNT_SID && !!process.env.TWILIO_AUTH_TOKEN;
+      const hasSender = !!process.env.TWILIO_FROM_NUMBER || !!process.env.TWILIO_MESSAGING_SERVICE_SID;
+      return hasCoreCredentials && hasSender;
+    },
+    required: false,
+    impact: "Live reputation SMS delivery, inbound replies, STOP compliance, and delivery callbacks",
+    category: "recommended",
+  },
+  {
+    key: "Canonical App URL",
+    envVar: "APP_URL / NEXT_PUBLIC_APP_URL",
+    envVars: ["APP_URL", "NEXT_PUBLIC_APP_URL"],
+    isConfigured: () => !!process.env.APP_URL || !!process.env.NEXT_PUBLIC_APP_URL,
+    required: false,
+    impact: "Correct Twilio callback URLs, review links, and public route generation",
+    category: "recommended",
+  },
   // Optional — nice-to-have
   {
     key: "SerpAPI",

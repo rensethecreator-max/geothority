@@ -1,6 +1,30 @@
 import { NextResponse } from "next/server";
 import { getApiKeyStatus } from "@/lib/api-key-check";
 
+function getReputationTransportDiagnostics() {
+  const mode = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
+  const hasAccountSid = Boolean(process.env.TWILIO_ACCOUNT_SID?.trim());
+  const hasAuthToken = Boolean(process.env.TWILIO_AUTH_TOKEN?.trim());
+  const hasFromNumber = Boolean(process.env.TWILIO_FROM_NUMBER?.trim());
+  const hasMessagingServiceSid = Boolean(process.env.TWILIO_MESSAGING_SERVICE_SID?.trim());
+  const hasBaseUrl = Boolean((process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "").trim());
+  const usingTwilio = mode === "twilio" || mode === "auto";
+
+  return {
+    mode,
+    ready: mode === "simulated" || (hasAccountSid && hasAuthToken && (hasFromNumber || hasMessagingServiceSid) && hasBaseUrl),
+    usingTwilio,
+    checks: {
+      hasAccountSid,
+      hasAuthToken,
+      hasFromNumber,
+      hasMessagingServiceSid,
+      hasSender: hasFromNumber || hasMessagingServiceSid,
+      hasBaseUrl,
+    },
+  };
+}
+
 export const dynamic = "force-dynamic";
 
 /**
@@ -20,5 +44,5 @@ export async function GET() {
     category: k.category,
   }));
 
-  return NextResponse.json({ keys: safe });
+  return NextResponse.json({ keys: safe, reputationTransport: getReputationTransportDiagnostics() });
 }
