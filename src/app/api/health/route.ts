@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getKeysSummary } from "@/lib/api-key-check";
+import { getReputationTransportDiagnostics } from "@/lib/reputation/diagnostics";
 
 /**
  * GET /api/health
@@ -36,6 +37,22 @@ export async function GET() {
   };
 
   if (keySummary.criticalMissing.length > 0) {
+    checks.status = "degraded";
+  }
+
+  const reputation = getReputationTransportDiagnostics();
+  checks.reputation = {
+    mode: reputation.mode,
+    validMode: reputation.validMode,
+    ready: reputation.ready,
+    activeTransport: reputation.activeTransport,
+    callbacksReady: reputation.callbacksReady,
+    queueReady: reputation.queueReady,
+    automationReady: reputation.automationReady,
+    missing: reputation.missing,
+  };
+
+  if (!reputation.validMode || (reputation.mode === "twilio" && !reputation.ready)) {
     checks.status = "degraded";
   }
 

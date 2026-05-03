@@ -32,7 +32,6 @@ function request(host, path, method = 'GET') {
         path,
         method,
         timeout: 15000,
-        rejectUnauthorized: false,
         headers: { 'user-agent': 'geothority-deployment-truth-check/1.0' },
       },
       (res) => {
@@ -85,6 +84,25 @@ async function resolveHost(host) {
 
   result.root = await request(host, '/', 'HEAD');
   result.health = await request(host, '/api/health');
+  result.diagnostics = await request(host, '/api/diagnostics/keys');
+
+  if (result.health?.body?.reputation) {
+    const reputation = result.health.body.reputation;
+    result.reputation = {
+      mode: reputation.mode,
+      validMode: reputation.validMode,
+      activeTransport: reputation.activeTransport,
+      ready: reputation.ready,
+      callbacksReady: reputation.callbacksReady,
+      queueReady: reputation.queueReady,
+      automationReady: reputation.automationReady,
+      missing: reputation.missing,
+    };
+  }
+
+  if (result.diagnostics?.statusCode === 401) {
+    result.diagnosticsAuth = 'authenticated';
+  }
 
   return result;
 }

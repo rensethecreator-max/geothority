@@ -113,19 +113,37 @@ const KEY_DEFS: KeyDef[] = [
     isConfigured: () => {
       const mode = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
       if (mode === "simulated") return true;
-      const hasCoreCredentials = !!process.env.TWILIO_ACCOUNT_SID && !!process.env.TWILIO_AUTH_TOKEN;
-      const hasSender = !!process.env.TWILIO_FROM_NUMBER || !!process.env.TWILIO_MESSAGING_SERVICE_SID;
-      return hasCoreCredentials && hasSender;
+      const hasCoreCredentials = !!process.env.TWILIO_ACCOUNT_SID?.trim() && !!process.env.TWILIO_AUTH_TOKEN?.trim();
+      const hasSender = !!process.env.TWILIO_FROM_NUMBER?.trim() || !!process.env.TWILIO_MESSAGING_SERVICE_SID?.trim();
+      const hasBaseUrl = !!process.env.APP_URL?.trim() || !!process.env.NEXT_PUBLIC_APP_URL?.trim();
+      return hasCoreCredentials && hasSender && hasBaseUrl;
     },
     required: false,
     impact: "Live reputation SMS delivery, inbound replies, STOP compliance, and delivery callbacks",
     category: "recommended",
   },
   {
+    key: "Reputation Queue",
+    envVar: "UPSTASH_QSTASH_URL / UPSTASH_QSTASH_TOKEN / GEOTHORITY_REPUTATION_JOB_SECRET",
+    envVars: ["UPSTASH_QSTASH_URL", "UPSTASH_QSTASH_TOKEN", "GEOTHORITY_REPUTATION_JOB_SECRET"],
+    isConfigured: () => !!process.env.UPSTASH_QSTASH_URL?.trim() && !!process.env.UPSTASH_QSTASH_TOKEN?.trim() && !!process.env.GEOTHORITY_REPUTATION_JOB_SECRET?.trim(),
+    required: false,
+    impact: "Delayed review sends, retries, and async reputation delivery jobs",
+    category: "recommended",
+  },
+  {
+    key: "Reputation Webhook Secret",
+    envVar: "GEOTHORITY_REPUTATION_WEBHOOK_SECRET",
+    isConfigured: () => !!process.env.GEOTHORITY_REPUTATION_WEBHOOK_SECRET?.trim(),
+    required: false,
+    impact: "Secure external event ingestion for native reputation automation",
+    category: "recommended",
+  },
+  {
     key: "Canonical App URL",
     envVar: "APP_URL / NEXT_PUBLIC_APP_URL",
     envVars: ["APP_URL", "NEXT_PUBLIC_APP_URL"],
-    isConfigured: () => !!process.env.APP_URL || !!process.env.NEXT_PUBLIC_APP_URL,
+    isConfigured: () => !!process.env.APP_URL?.trim() || !!process.env.NEXT_PUBLIC_APP_URL?.trim(),
     required: false,
     impact: "Correct Twilio callback URLs, review links, and public route generation",
     category: "recommended",

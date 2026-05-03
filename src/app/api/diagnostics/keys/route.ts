@@ -1,39 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getApiKeyStatus } from "@/lib/api-key-check";
-
-function getReputationTransportDiagnostics() {
-  const mode = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
-  const hasAccountSid = Boolean(process.env.TWILIO_ACCOUNT_SID?.trim());
-  const hasAuthToken = Boolean(process.env.TWILIO_AUTH_TOKEN?.trim());
-  const hasFromNumber = Boolean(process.env.TWILIO_FROM_NUMBER?.trim());
-  const hasMessagingServiceSid = Boolean(process.env.TWILIO_MESSAGING_SERVICE_SID?.trim());
-  const hasBaseUrl = Boolean((process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "").trim());
-  const hasSender = hasFromNumber || hasMessagingServiceSid;
-  const twilioRequested = mode === "twilio" || mode === "auto";
-  const ready = hasAccountSid && hasAuthToken && hasSender && hasBaseUrl;
-  const missing = [
-    !hasAccountSid ? "Account SID" : null,
-    !hasAuthToken ? "Auth token" : null,
-    !hasSender ? "From number or messaging service" : null,
-    !hasBaseUrl ? "Canonical app URL" : null,
-  ].filter(Boolean);
-
-  return {
-    mode,
-    ready: mode === "simulated" ? true : ready,
-    twilioRequested,
-    activeTransport: mode === "simulated" ? "simulated" : ready ? "twilio" : "simulated",
-    missing,
-    checks: {
-      hasAccountSid,
-      hasAuthToken,
-      hasFromNumber,
-      hasMessagingServiceSid,
-      hasSender,
-      hasBaseUrl,
-    },
-  };
-}
+import { getAuthUser } from "@/lib/auth-helpers";
+import { getReputationTransportDiagnostics } from "@/lib/reputation/diagnostics";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +10,10 @@ export const dynamic = "force-dynamic";
  * Returns the configuration status of all API keys.
  * Only available to authenticated users.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await getAuthUser(req);
+  if ("error" in auth) return auth.error;
+
   const keys = getApiKeyStatus();
 
   // Don't expose actual key values — just whether they're configured

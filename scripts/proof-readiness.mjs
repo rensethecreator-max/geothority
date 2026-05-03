@@ -13,7 +13,7 @@ const baseArg = args.find((arg) => arg.startsWith('--base-url='));
 const envPath = path.resolve(cwd, envArg ? envArg.slice('--env='.length) : '.env.local');
 const envFromFile = loadEnvFile(envPath);
 const mergedEnv = { ...envFromFile, ...process.env };
-const baseUrl = normalizeBaseUrl(baseArg ? baseArg.slice('--base-url='.length) : mergedEnv.NEXT_PUBLIC_APP_URL);
+const baseUrl = normalizeBaseUrl(baseArg ? baseArg.slice('--base-url='.length) : mergedEnv.APP_URL || mergedEnv.NEXT_PUBLIC_APP_URL);
 
 const REQUIRED_GROUPS = [
   {
@@ -65,6 +65,18 @@ const REQUIRED_GROUPS = [
     reason: 'Without runtime Google creds, refresh/publish proof is limited after the first sign-in.',
   },
   {
+    name: 'Reputation automation queue',
+    severity: 'recommended',
+    envVars: ['UPSTASH_QSTASH_URL', 'UPSTASH_QSTASH_TOKEN', 'GEOTHORITY_REPUTATION_JOB_SECRET'],
+    reason: 'Delayed review sends and retry scheduling depend on QStash plus the protected job secret.',
+  },
+  {
+    name: 'Reputation webhook ingestion',
+    severity: 'recommended',
+    envVars: ['GEOTHORITY_REPUTATION_WEBHOOK_SECRET'],
+    reason: 'Native event ingestion should stay protected before live payment/CRM-triggered sends are enabled.',
+  },
+  {
     name: 'Scheduled jobs',
     severity: 'recommended',
     envVars: ['CRON_SECRET'],
@@ -90,7 +102,7 @@ for (const group of REQUIRED_GROUPS) {
   });
 }
 
-const appUrlChecks = checkAppUrl(mergedEnv.NEXT_PUBLIC_APP_URL);
+const appUrlChecks = checkAppUrl(mergedEnv.APP_URL || mergedEnv.NEXT_PUBLIC_APP_URL);
 results.push(...appUrlChecks);
 
 const authChecks = checkAuthConfiguration(mergedEnv);
@@ -195,7 +207,7 @@ function checkAppUrl(appUrl) {
 
 function checkAuthConfiguration(env) {
   const checks = [];
-  const appUrl = env.NEXT_PUBLIC_APP_URL;
+  const appUrl = env.APP_URL || env.NEXT_PUBLIC_APP_URL;
   if (hasValue(appUrl)) {
     const callback = `${appUrl.replace(/\/$/, '')}/api/auth/callback`;
     checks.push({
@@ -223,6 +235,31 @@ function checkAuthConfiguration(env) {
 
 function checkOptionalSignals(env) {
   const checks = [];
+  const reputationMode = (env.GEOTHORITY_REPUTATION_TRANSPORT || 'auto').trim().toLowerCase();
+  const twilioCredsReady = hasValue(env.TWILIO_ACCOUNT_SID) && hasValue(env.TWILIO_AUTH_TOKEN);
+  const twilioSenderReady = hasValue(env.TWILIO_FROM_NUMBER) || hasValue(env.TWILIO_MESSAGING_SERVICE_SID);
+  const canonicalUrlReady = hasValue(env.APP_URL) || hasValue(env.NEXT_PUBLIC_APP_URL);
+
+  checks.push({
+    type: 'ops',
+    severity: reputationMode === 'simulated' ? 'info' : 'recommended',
+    name: 'Reputation transport mode is valid',
+    passed: ['auto', 'simulated', 'twilio'].includes(reputationMode),
+    detail: ['auto', 'simulated', 'twilio'].includes(reputationMode)
+      ? `GEOTHORITY_REPUTATION_TRANSPORT=${reputationMode}`
+      : `Unsupported GEOTHORITY_REPUTATION_TRANSPORT=${reputationMode || '(empty)'}`,
+  });
+
+  checks.push({
+    type: 'ops',
+    severity: reputationMode === 'simulated' ? 'info' : 'recommended',
+    name: 'Live reputation transport prerequisites',
+    passed: reputationMode === 'simulated' || (twilioCredsReady && twilioSenderReady && canonicalUrlReady),
+    detail: reputationMode === 'simulated'
+      ? 'Simulated mode explicitly enabled.'
+      : `twilioCreds=${String(twilioCredsReady)}, sender=${String(twilioSenderReady)}, canonicalUrl=${String(canonicalUrlReady)}`,
+  });
+
   const cronSecret = env.CRON_SECRET || '';
   checks.push({
     type: 'ops',
@@ -263,14 +300,38 @@ async function runHttpChecks(urlBase) {
         body = text.slice(0, 300);
       }
       const passed = response.ok;
-      checks.push({
+      const check = {
         type: 'http',
         severity: endpoint === '/api/health' ? 'critical' : 'info',
         name: `HTTP ${endpoint}`,
         passed,
         detail: `${response.status} ${response.statusText}`,
         sample: sanitizeBody(body),
-      });
+      };
+      checks.push(check);
+
+      if (endpoint === '/api/health' && body && typeof body === 'object' && body.reputation) {
+        const reputation = body.reputation;
+        checks.push({
+          type: 'http',
+          severity: 'recommended',
+          name: 'Health exposes reputation readiness',
+          passed: typeof reputation.mode === 'string' && typeof reputation.activeTransport === 'string',
+          detail: typeof reputation.mode === 'string'
+            ? `mode=${reputation.mode}, activeTransport=${reputation.activeTransport}`
+            : 'Missing reputation summary in /api/health response.',
+        });
+
+        if (reputation.mode && reputation.mode !== 'simulated') {
+          checks.push({
+            type: 'http',
+            severity: 'recommended',
+            name: 'Live reputation health is ready',
+            passed: reputation.ready === true && reputation.callbacksReady === true,
+            detail: `ready=${String(reputation.ready)}, callbacksReady=${String(reputation.callbacksReady)}, queueReady=${String(reputation.queueReady)}`,
+          });
+        }
+      }
     } catch (error) {
       checks.push({
         type: 'http',

@@ -326,29 +326,16 @@ export async function sendReputationRequestNow(requestId: string) {
     };
   }
 
-  const attemptCount = Number(requestRow.send_attempt_count || 0) + 1;
-  const attemptedAt = new Date().toISOString();
-
-  await supabase
-    .from("reputation_requests")
-    .update({
-      delivery_state: "sending",
-      send_attempt_count: attemptCount,
-      last_send_attempt_at: attemptedAt,
-      last_send_error: null,
-      next_retry_at: null,
-      dead_lettered_at: null,
-    })
-    .eq("id", requestRow.id);
-
   let body = "";
   let transportName: string | null = null;
   let transportSimulated = true;
+  let attemptCount = Number(requestRow.send_attempt_count || 0);
+  let currentRequestStatus = requestRow.status;
 
   try {
     const [{ data: settings }, { data: contact, error: contactError }] = await Promise.all([
       supabase.from("reputation_settings").select("sms_template").eq("user_id", requestRow.user_id).maybeSingle(),
-      supabase.from("reputation_contacts").select("name, phone").eq("id", requestRow.contact_id).single(),
+      supabase.from("reputation_contacts").select("name, phone, opt_out").eq("id", requestRow.contact_id).single(),
     ]);
 
     if (contactError || !contact) {
@@ -359,11 +346,108 @@ export async function sendReputationRequestNow(requestId: string) {
       throw new Error("Contact phone is missing");
     }
 
+    if (contact.opt_out) {
+      await supabase
+        .from("reputation_requests")
+        .update({
+          status: "failed",
+          delivery_state: "failed",
+          last_send_error: "Contact opted out before send",
+          next_retry_at: null,
+          dead_lettered_at: new Date().toISOString(),
+        })
+        .eq("id", requestRow.id);
+
+      await appendReputationLedgerEvent(supabase, {
+        userId: requestRow.user_id,
+        requestId: requestRow.id,
+        actorType: "job",
+        eventType: "request.send_skipped",
+        fromStatus: requestRow.status,
+        toStatus: "failed",
+        channel: "sms",
+        summary: "Skipped send because the contact had already opted out.",
+        metadata: {
+          attemptCount,
+          contactId: requestRow.contact_id,
+        },
+      });
+
+      return {
+        success: false,
+        simulated: true,
+        alreadySent: false,
+        attemptCount,
+        deliveryState: "failed",
+        retryScheduled: false,
+        error: "Contact opted out before send",
+      };
+    }
+
+    const nextAttemptCount = Number(requestRow.send_attempt_count || 0) + 1;
+    const attemptedAt = new Date().toISOString();
+    const { data: claimedRequest, error: claimError } = await supabase
+      .from("reputation_requests")
+      .update({
+        delivery_state: "sending",
+        send_attempt_count: nextAttemptCount,
+        last_send_attempt_at: attemptedAt,
+        last_send_error: null,
+        next_retry_at: null,
+        dead_lettered_at: null,
+      })
+      .eq("id", requestRow.id)
+      .eq("send_attempt_count", Number(requestRow.send_attempt_count || 0))
+      .is("sent_at", null)
+      .neq("status", "sent")
+      .select("id, status, send_attempt_count")
+      .maybeSingle();
+
+    if (claimError) {
+      throw new Error(claimError.message || "Failed to claim reputation send attempt");
+    }
+
+    if (!claimedRequest?.id) {
+      await appendReputationLedgerEvent(supabase, {
+        userId: requestRow.user_id,
+        requestId: requestRow.id,
+        actorType: "job",
+        eventType: "request.send_skipped",
+        fromStatus: requestRow.status,
+        toStatus: requestRow.status,
+        channel: "sms",
+        summary: "Skipped send because another worker already claimed or completed this request.",
+        metadata: {
+          requestId: requestRow.id,
+        },
+      });
+
+      return {
+        success: false,
+        simulated: true,
+        alreadySent: false,
+        attemptCount,
+        deliveryState: requestRow.delivery_state || "sending",
+        retryScheduled: false,
+        skipped: true,
+        error: "Request already claimed by another worker",
+      };
+    }
+
+    attemptCount = Number(claimedRequest.send_attempt_count || nextAttemptCount);
+    currentRequestStatus = claimedRequest.status || requestRow.status;
+
     body = buildReputationMessageBody(settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate, contact.name || "there", requestRow.business_id);
     const reviewToken = requestRow.review_token || crypto.randomUUID().replace(/-/g, "");
+    const configuredMode = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
     const transport = getReputationTransport();
     transportName = transport.name;
     transportSimulated = transport.simulated;
+
+    if (process.env.NODE_ENV === "production" && configuredMode !== "simulated" && transport.simulated) {
+      throw new Error("Live reputation transport is not configured for production sends");
+    }
+
     const delivery = await transport.deliver({
       requestId: requestRow.id,
       userId: requestRow.user_id,
@@ -380,7 +464,7 @@ export async function sendReputationRequestNow(requestId: string) {
       requestId: requestRow.id,
       actorType: "job",
       eventType: "message.outbound_queued",
-      fromStatus: requestRow.status,
+      fromStatus: currentRequestStatus,
       toStatus: "sent",
       channel: "sms",
       summary: "Queued the outbound reputation request message.",
@@ -425,7 +509,7 @@ export async function sendReputationRequestNow(requestId: string) {
       requestId: requestRow.id,
       actorType: "job",
       eventType: "request.sent",
-      fromStatus: requestRow.status,
+      fromStatus: currentRequestStatus,
       toStatus: "sent",
       channel: "sms",
       summary: "Marked the reputation request as sent.",
@@ -458,9 +542,22 @@ export async function sendReputationRequestNow(requestId: string) {
 
     if (retryDelaySeconds && attemptCount < MAX_REPUTATION_SEND_ATTEMPTS) {
       try {
-        await enqueueReputationSendAttempt({ requestId: requestRow.id, delaySeconds: retryDelaySeconds });
-        retryScheduled = true;
-        nextRetryAt = buildRetryDate(retryDelaySeconds);
+        const queueResult = await enqueueReputationSendAttempt({ requestId: requestRow.id, delaySeconds: retryDelaySeconds });
+        if (queueResult.scheduled) {
+          retryScheduled = true;
+          nextRetryAt = buildRetryDate(retryDelaySeconds);
+        } else {
+          await bestEffortLogSendAttempt({
+            supabase,
+            requestId: requestRow.id,
+            body: body || `Failed to send request ${requestRow.id}`,
+            attemptNumber: attemptCount,
+            deliveryState: "retry_schedule_failed",
+            providerSid: null,
+            errorDetail: `Retry not enqueued: ${queueResult.reason}`,
+            simulated: transportSimulated,
+          });
+        }
       } catch (scheduleError: any) {
         await bestEffortLogSendAttempt({
           supabase,
@@ -507,7 +604,7 @@ export async function sendReputationRequestNow(requestId: string) {
       requestId: requestRow.id,
       actorType: "job",
       eventType: retryScheduled ? "request.retry_scheduled" : "request.failed",
-      fromStatus: requestRow.status,
+      fromStatus: currentRequestStatus,
       toStatus: failedStatus,
       channel: "sms",
       summary: retryScheduled ? "Scheduled a retry after a failed send attempt." : "Marked the reputation request as failed after send attempts were exhausted.",

@@ -10,9 +10,9 @@ npm run proof:readiness
 
 What it checks safely:
 - critical env coverage (Supabase, OpenAI, Maps, Foursquare)
-- recommended proof-pass env coverage (Stripe, Resend, Google runtime OAuth, cron secret)
+- recommended proof-pass env coverage (Stripe, Resend, Google runtime OAuth, reputation queue/webhook secrets, cron secret)
 - app URL / auth callback expectations
-- optional live HTTP checks when a base URL is provided
+- optional live HTTP checks when a base URL is provided, including `/api/health` reputation readiness signals
 
 Useful variants:
 
@@ -48,6 +48,7 @@ npm run proof:readiness -- --base-url=http://localhost:3010
 Minimum expected live results:
 - `/api/health` responds successfully
 - `/api/gbp/status` responds successfully for an anonymous session
+- `/api/health` includes the expected reputation transport mode/readiness summary
 - output shows the expected `/api/auth/callback` URL
 
 ## 4) Operator proof checklist for Vercel/live pass
@@ -77,6 +78,14 @@ Minimum expected live results:
 ### Cron/automation checks
 - Verify `CRON_SECRET` is present and long enough.
 - Confirm protected cron endpoints are tested only with the bearer secret.
+- Verify `UPSTASH_QSTASH_URL`, `UPSTASH_QSTASH_TOKEN`, and `GEOTHORITY_REPUTATION_JOB_SECRET` are present before testing delayed reputation sends or retry behavior.
+- Verify `GEOTHORITY_REPUTATION_WEBHOOK_SECRET` exists before enabling external event ingestion.
+
+### Reputation engine checks
+- Open `/reputation` and confirm the transport card matches the intended mode: simulated for demo/safe mode, Twilio for live mode.
+- In live mode, confirm the authenticated diagnostics no longer report missing sender/base URL/callback prerequisites.
+- Send one test request end-to-end and verify status callback updates the delivery state instead of leaving the request stuck in `sending`.
+- Reply with `STOP` from a test number and confirm opt-out is logged before any further sends are attempted.
 
 ## 5) Safe diagnostics rules
 

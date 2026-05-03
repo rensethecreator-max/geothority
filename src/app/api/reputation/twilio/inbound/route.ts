@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (isStopKeyword(body)) {
-      await supabase.from("reputation_contacts").update({ opt_out: true }).in("id", contactIds);
+      await supabase.from("reputation_contacts").update({ opt_out: true }).eq("id", requestRow.contact_id);
 
       await supabase.from("reputation_message_log").insert({
         request_id: requestRow.id,
@@ -142,7 +142,8 @@ export async function POST(req: NextRequest) {
           providerSid,
           keyword: body.toLowerCase(),
           phone: fromPhone,
-          matchedContactCount: contactIds.length,
+          matchedContactCount: 1,
+          optedOutContactId: requestRow.contact_id,
         },
       });
 
