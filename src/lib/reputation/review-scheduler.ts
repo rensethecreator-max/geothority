@@ -1,4 +1,4 @@
-import { normalizePhoneNumber } from "@/lib/reputation/request-service";
+import { enqueueReputationSendAttempt, normalizePhoneNumber } from "@/lib/reputation/request-service";
 import { createServiceClient } from "@/lib/supabase/server";
 
 interface ScheduleReviewRequestParams {
@@ -87,6 +87,11 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
       external_event_id: paymentId,
       status: "pending",
       review_token: reviewToken,
+      delivery_state: "pending",
+      send_attempt_count: 0,
+      last_send_error: null,
+      next_retry_at: null,
+      dead_lettered_at: null,
     })
     .select("id")
     .single();
@@ -96,26 +101,10 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
   }
 
   const delaySeconds = (settings.sms_delay_minutes || 60) * 60;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
-  const qstashUrl = process.env.UPSTASH_QSTASH_URL;
-  const qstashToken = process.env.UPSTASH_QSTASH_TOKEN;
-  const jobSecret = process.env.GEOTHORITY_REPUTATION_JOB_SECRET;
+  const queueResult = await enqueueReputationSendAttempt({ requestId: request.id, delaySeconds });
 
-  if (qstashUrl && qstashToken) {
-    if (!jobSecret) {
-      throw new Error("GEOTHORITY_REPUTATION_JOB_SECRET is required when QStash scheduling is enabled");
-    }
-
-    await fetch(`${qstashUrl}/v2/publish/${appUrl}/api/reputation/jobs/send-request`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${qstashToken}`,
-        "Content-Type": "application/json",
-        "Upstash-Delay": `${delaySeconds}s`,
-        "Upstash-Forward-x-geothority-job-secret": jobSecret,
-      },
-      body: JSON.stringify({ requestId: request.id }),
-    });
+  if (!queueResult.scheduled) {
+    throw new Error(`Failed to schedule review request send (${queueResult.reason})`);
   }
 
   return { scheduled: true, requestId: request.id } as const;

@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
       success: true,
       requestId: result.requestId,
       deduplicated: Boolean(result.deduplicated),
+      sendOutcome: result.sendOutcome ?? null,
       triggerSource: normalized.payload.eventType,
       triggerSourceLabel: formatTriggerSource(normalized.payload.eventType),
       externalEventId: normalized.payload.externalEventId,

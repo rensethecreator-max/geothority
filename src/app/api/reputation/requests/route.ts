@@ -26,7 +26,7 @@ export async function GET() {
       supabase
         .from("reputation_requests")
         .select(
-          "id, business_id, trigger_source, status, score, feedback_text, review_token, google_link_sent, template_used, sent_at, replied_at, created_at, contact:reputation_contacts(name, phone)",
+          "id, business_id, trigger_source, status, delivery_state, send_attempt_count, last_send_attempt_at, last_send_error, next_retry_at, dead_lettered_at, score, feedback_text, review_token, google_link_sent, template_used, sent_at, replied_at, created_at, contact:reputation_contacts(name, phone)",
         )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
 
-    return NextResponse.json({ success: true, requestId: result.requestId });
+    return NextResponse.json({ success: true, requestId: result.requestId, deduplicated: result.deduplicated, sendOutcome: result.sendOutcome ?? null });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

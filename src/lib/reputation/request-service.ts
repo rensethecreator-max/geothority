@@ -1,6 +1,10 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
+import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import type { ReputationAnalyticsSummary, ReputationProofSummary, ReputationSourcePerformance } from "@/lib/reputation/types";
+
+const MAX_REPUTATION_SEND_ATTEMPTS = 3;
+const RETRY_DELAYS_SECONDS = [5 * 60, 30 * 60];
 
 export function isMissingTableError(error: any) {
   return error?.code === "42P01" || /relation .* does not exist/i.test(error?.message || "");
@@ -8,6 +12,72 @@ export function isMissingTableError(error: any) {
 
 export function normalizePhoneNumber(phone: string) {
   return phone.replace(/[^\d+]/g, "").trim();
+}
+
+function buildRetryDate(delaySeconds: number) {
+  return new Date(Date.now() + delaySeconds * 1000).toISOString();
+}
+
+export async function enqueueReputationSendAttempt(params: { requestId: string; delaySeconds?: number }) {
+  const { requestId, delaySeconds = 0 } = params;
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
+  const qstashUrl = process.env.UPSTASH_QSTASH_URL;
+  const qstashToken = process.env.UPSTASH_QSTASH_TOKEN;
+  const jobSecret = process.env.GEOTHORITY_REPUTATION_JOB_SECRET;
+
+  if (!qstashUrl || !qstashToken) {
+    return { scheduled: false as const, reason: "qstash_not_configured" };
+  }
+
+  if (!jobSecret) {
+    return { scheduled: false as const, reason: "job_secret_missing" };
+  }
+
+  const response = await fetch(`${qstashUrl}/v2/publish/${appUrl}/api/reputation/jobs/send-request`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${qstashToken}`,
+      "Content-Type": "application/json",
+      ...(delaySeconds > 0 ? { "Upstash-Delay": `${delaySeconds}s` } : {}),
+      "Upstash-Forward-x-geothority-job-secret": jobSecret,
+    },
+    body: JSON.stringify({ requestId }),
+  });
+
+  if (!response.ok) {
+    const responseText = await response.text().catch(() => "");
+    throw new Error(responseText || `Failed to enqueue send attempt (${response.status})`);
+  }
+
+  return { scheduled: true as const, reason: null };
+}
+
+async function bestEffortLogSendAttempt(params: {
+  supabase: any;
+  requestId: string;
+  body: string;
+  attemptNumber: number;
+  deliveryState: string;
+  errorDetail?: string | null;
+  simulated?: boolean;
+}) {
+  const { supabase, requestId, body, attemptNumber, deliveryState, errorDetail = null, simulated = true } = params;
+
+  try {
+    await supabase.from("reputation_message_log").insert({
+      request_id: requestId,
+      direction: "out",
+      body,
+      provider_sid: null,
+      attempt_number: attemptNumber,
+      delivery_state: deliveryState,
+      error_detail: errorDetail,
+      simulated,
+    });
+  } catch {
+    // Best effort only — request state is the source of truth.
+  }
 }
 
 export async function getPreferredBusinessName(supabase: any, userId: string) {
@@ -92,6 +162,18 @@ export async function createAndSendReputationRequest(params: {
     }
 
     if (existingRequest?.id) {
+      await appendReputationLedgerEvent(supabase, {
+        userId,
+        requestId: existingRequest.id,
+        actorType: "system",
+        eventType: "request.deduplicated",
+        summary: "Ignored duplicate reputation event for an existing request.",
+        metadata: {
+          externalEventId,
+          triggerSource,
+        },
+      });
+
       return { success: true as const, requestId: existingRequest.id, deduplicated: true };
     }
   }
@@ -119,6 +201,11 @@ export async function createAndSendReputationRequest(params: {
       external_event_id: externalEventId || null,
       status: "pending",
       review_token: crypto.randomUUID().replace(/-/g, ""),
+      delivery_state: "pending",
+      send_attempt_count: 0,
+      last_send_error: null,
+      next_retry_at: null,
+      dead_lettered_at: null,
     })
     .select("id")
     .single();
@@ -137,6 +224,19 @@ export async function createAndSendReputationRequest(params: {
         .maybeSingle();
 
       if (existingRequest?.id) {
+        await appendReputationLedgerEvent(supabase, {
+          userId,
+          requestId: existingRequest.id,
+          actorType: "system",
+          eventType: "request.deduplicated",
+          summary: "Ignored duplicate reputation event after a uniqueness conflict.",
+          metadata: {
+            externalEventId,
+            triggerSource,
+            conflictCode: requestError.code,
+          },
+        });
+
         return { success: true as const, requestId: existingRequest.id, deduplicated: true };
       }
     }
@@ -144,9 +244,26 @@ export async function createAndSendReputationRequest(params: {
     return { success: false as const, error: requestError?.message || "Failed to create request", status: 500 };
   }
 
-  await sendReputationRequestNow(createdRequest.id);
+  await appendReputationLedgerEvent(supabase, {
+    userId,
+    requestId: createdRequest.id,
+    actorType: externalEventId ? "webhook" : "user",
+    eventType: "request.created",
+    toStatus: "pending",
+    channel: "sms",
+    summary: "Created a reputation request record.",
+    metadata: {
+      businessName,
+      customerName,
+      triggerSource,
+      externalEventId: externalEventId || null,
+      normalizedPhone: contact.phone,
+    },
+  });
 
-  return { success: true as const, requestId: createdRequest.id, deduplicated: false };
+  const sendOutcome = await sendReputationRequestNow(createdRequest.id);
+
+  return { success: true as const, requestId: createdRequest.id, deduplicated: false, sendOutcome };
 }
 
 export async function sendReputationRequestNow(requestId: string) {
@@ -157,7 +274,9 @@ export async function sendReputationRequestNow(requestId: string) {
 
   const { data: requestRow, error: requestError } = await supabase
     .from("reputation_requests")
-    .select("id, user_id, business_id, contact_id, status, sent_at, review_token")
+    .select(
+      "id, user_id, business_id, contact_id, status, sent_at, review_token, send_attempt_count, last_send_attempt_at, last_send_error, next_retry_at, dead_lettered_at, delivery_state",
+    )
     .eq("id", requestId)
     .single();
 
@@ -166,37 +285,212 @@ export async function sendReputationRequestNow(requestId: string) {
   }
 
   if (requestRow.status === "sent" && requestRow.sent_at) {
-    return { success: true, simulated: true, alreadySent: true };
+    await appendReputationLedgerEvent(supabase, {
+      userId: requestRow.user_id,
+      requestId: requestRow.id,
+      actorType: "job",
+      eventType: "request.send_skipped",
+      fromStatus: requestRow.status,
+      toStatus: requestRow.status,
+      channel: "sms",
+      summary: "Skipped send because the request was already marked as sent.",
+      metadata: {
+        sentAt: requestRow.sent_at,
+      },
+    });
+
+    return {
+      success: true,
+      simulated: true,
+      alreadySent: true,
+      attemptCount: requestRow.send_attempt_count ?? 0,
+      deliveryState: "sent",
+      retryScheduled: false,
+    };
   }
 
-  const [{ data: settings }, { data: contact }] = await Promise.all([
-    supabase.from("reputation_settings").select("sms_template").eq("user_id", requestRow.user_id).maybeSingle(),
-    supabase.from("reputation_contacts").select("name, phone").eq("id", requestRow.contact_id).single(),
-  ]);
-
-  const body = (settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate)
-    .replace("{customer_name}", contact?.name || "there")
-    .replace("{business_name}", requestRow.business_id);
-
-  await supabase.from("reputation_message_log").insert({
-    request_id: requestRow.id,
-    direction: "out",
-    body,
-    provider_sid: null,
-  });
-
-  const reviewToken = requestRow.review_token || crypto.randomUUID().replace(/-/g, "");
+  const attemptCount = Number(requestRow.send_attempt_count || 0) + 1;
+  const attemptedAt = new Date().toISOString();
 
   await supabase
     .from("reputation_requests")
     .update({
-      status: "sent",
-      sent_at: new Date().toISOString(),
-      review_token: reviewToken,
+      delivery_state: "sending",
+      send_attempt_count: attemptCount,
+      last_send_attempt_at: attemptedAt,
+      last_send_error: null,
+      next_retry_at: null,
+      dead_lettered_at: null,
     })
     .eq("id", requestRow.id);
 
-  return { success: true, simulated: true, alreadySent: false };
+  let body = "";
+
+  try {
+    const [{ data: settings }, { data: contact, error: contactError }] = await Promise.all([
+      supabase.from("reputation_settings").select("sms_template").eq("user_id", requestRow.user_id).maybeSingle(),
+      supabase.from("reputation_contacts").select("name, phone").eq("id", requestRow.contact_id).single(),
+    ]);
+
+    if (contactError || !contact) {
+      throw new Error(contactError?.message || "Contact not found");
+    }
+
+    if (!contact.phone) {
+      throw new Error("Contact phone is missing");
+    }
+
+    body = (settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate)
+      .replace("{customer_name}", contact.name || "there")
+      .replace("{business_name}", requestRow.business_id);
+
+    await appendReputationLedgerEvent(supabase, {
+      userId: requestRow.user_id,
+      requestId: requestRow.id,
+      actorType: "job",
+      eventType: "message.outbound_queued",
+      fromStatus: requestRow.status,
+      toStatus: "sent",
+      channel: "sms",
+      summary: "Queued the outbound reputation request message.",
+      metadata: {
+        attemptCount,
+        bodyPreview: body.slice(0, 160),
+        templateSource: settings?.sms_template ? "custom" : "default",
+        simulated: true,
+      },
+    });
+
+    await bestEffortLogSendAttempt({
+      supabase,
+      requestId: requestRow.id,
+      body,
+      attemptNumber: attemptCount,
+      deliveryState: "sent",
+      simulated: true,
+    });
+
+    const reviewToken = requestRow.review_token || crypto.randomUUID().replace(/-/g, "");
+
+    const sentAt = new Date().toISOString();
+
+    await supabase
+      .from("reputation_requests")
+      .update({
+        status: "sent",
+        sent_at: sentAt,
+        review_token: reviewToken,
+        delivery_state: "sent",
+        last_send_error: null,
+        next_retry_at: null,
+        dead_lettered_at: null,
+      })
+      .eq("id", requestRow.id);
+
+    await appendReputationLedgerEvent(supabase, {
+      userId: requestRow.user_id,
+      requestId: requestRow.id,
+      actorType: "job",
+      eventType: "request.sent",
+      fromStatus: requestRow.status,
+      toStatus: "sent",
+      channel: "sms",
+      summary: "Marked the reputation request as sent.",
+      metadata: {
+        attemptCount,
+        sentAt,
+        simulated: true,
+        reviewTokenPresent: Boolean(reviewToken),
+      },
+    });
+
+    return {
+      success: true,
+      simulated: true,
+      alreadySent: false,
+      attemptCount,
+      deliveryState: "sent",
+      retryScheduled: false,
+    };
+  } catch (error: any) {
+    const errorMessage = error?.message || "Failed to send reputation request";
+    const retryDelaySeconds = RETRY_DELAYS_SECONDS[attemptCount - 1] ?? null;
+    let retryScheduled = false;
+    let nextRetryAt: string | null = null;
+
+    if (retryDelaySeconds && attemptCount < MAX_REPUTATION_SEND_ATTEMPTS) {
+      try {
+        await enqueueReputationSendAttempt({ requestId: requestRow.id, delaySeconds: retryDelaySeconds });
+        retryScheduled = true;
+        nextRetryAt = buildRetryDate(retryDelaySeconds);
+      } catch (scheduleError: any) {
+        await bestEffortLogSendAttempt({
+          supabase,
+          requestId: requestRow.id,
+          body: body || `Failed to send request ${requestRow.id}`,
+          attemptNumber: attemptCount,
+          deliveryState: "retry_schedule_failed",
+          errorDetail: scheduleError?.message || "Failed to schedule retry",
+          simulated: true,
+        });
+      }
+    }
+
+    const deliveryState = retryScheduled ? "retry_scheduled" : "failed";
+
+    await bestEffortLogSendAttempt({
+      supabase,
+      requestId: requestRow.id,
+      body: body || `Failed to send request ${requestRow.id}`,
+      attemptNumber: attemptCount,
+      deliveryState,
+      errorDetail: errorMessage,
+      simulated: true,
+    });
+
+    const failedStatus = retryScheduled ? "pending" : "failed";
+    const deadLetteredAt = retryScheduled ? null : new Date().toISOString();
+
+    await supabase
+      .from("reputation_requests")
+      .update({
+        status: failedStatus,
+        delivery_state: deliveryState,
+        last_send_error: errorMessage,
+        next_retry_at: nextRetryAt,
+        dead_lettered_at: deadLetteredAt,
+      })
+      .eq("id", requestRow.id);
+
+    await appendReputationLedgerEvent(supabase, {
+      userId: requestRow.user_id,
+      requestId: requestRow.id,
+      actorType: "job",
+      eventType: retryScheduled ? "request.retry_scheduled" : "request.failed",
+      fromStatus: requestRow.status,
+      toStatus: failedStatus,
+      channel: "sms",
+      summary: retryScheduled ? "Scheduled a retry after a failed send attempt." : "Marked the reputation request as failed after send attempts were exhausted.",
+      metadata: {
+        attemptCount,
+        deliveryState,
+        errorMessage,
+        nextRetryAt,
+        deadLetteredAt,
+      },
+    });
+
+    return {
+      success: false,
+      simulated: true,
+      alreadySent: false,
+      attemptCount,
+      deliveryState,
+      retryScheduled,
+      nextRetryAt,
+      error: errorMessage,
+    };
+  }
 }
 
 function buildRate(numerator: number, denominator: number) {
