@@ -52,6 +52,12 @@ interface RecentRequest {
   business_id: string;
   trigger_source: string;
   status: string;
+  delivery_state?: string | null;
+  send_attempt_count?: number | null;
+  last_send_attempt_at?: string | null;
+  last_send_error?: string | null;
+  next_retry_at?: string | null;
+  dead_lettered_at?: string | null;
   score: number | null;
   feedback_text: string | null;
   review_token: string | null;
@@ -61,6 +67,15 @@ interface RecentRequest {
   replied_at: string | null;
   created_at: string;
   contact?: { name?: string | null; phone?: string | null } | { name?: string | null; phone?: string | null }[] | null;
+}
+
+interface ReputationOpsSummary {
+  queued: number;
+  retryScheduled: number;
+  stuckSending: number;
+  deadLettered: number;
+  overdueRetry: number;
+  latestFailure: (Pick<RecentRequest, "id" | "business_id" | "delivery_state" | "send_attempt_count" | "last_send_error" | "next_retry_at" | "dead_lettered_at" | "created_at" | "contact">) | null;
 }
 
 interface ProofAsset {
@@ -157,6 +172,7 @@ export function ReputationEngine() {
   const [proofAssets, setProofAssets] = useState<ProofAsset[]>([]);
   const [metrics, setMetrics] = useState<ReputationMetrics>(EMPTY_METRICS);
   const [analytics, setAnalytics] = useState<ReputationAnalyticsSummary | null>(null);
+  const [ops, setOps] = useState<ReputationOpsSummary>({ queued: 0, retryScheduled: 0, stuckSending: 0, deadLettered: 0, overdueRetry: 0, latestFailure: null });
   const [suggestedBusinessName, setSuggestedBusinessName] = useState("Your Business");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -219,6 +235,7 @@ export function ReputationEngine() {
       ...(requestsJson.metrics ?? {}),
     });
     setAnalytics(requestsJson.analytics ?? null);
+    setOps(requestsJson.ops ?? { queued: 0, retryScheduled: 0, stuckSending: 0, deadLettered: 0, overdueRetry: 0, latestFailure: null });
     setSuggestedBusinessName(requestsJson.suggestedBusinessName ?? "Your Business");
     setManualForm((current) => ({
       ...current,
@@ -757,6 +774,46 @@ export function ReputationEngine() {
             <div className="space-y-4">
               <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
                 <CardHeader className="border-b border-white/10 py-5">
+                  <CardTitle>Delivery ops</CardTitle>
+                  <CardDescription>Spot retries, dead letters, and stale sends before they hide in the queue.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 py-5">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <StatCard label="Queued" value={`${ops.queued}`} tone={ops.queued > 0 ? "blue" : "slate"} />
+                    <StatCard label="Retry scheduled" value={`${ops.retryScheduled}`} tone={ops.retryScheduled > 0 ? "amber" : "slate"} />
+                    <StatCard label="Stuck sending" value={`${ops.stuckSending}`} tone={ops.stuckSending > 0 ? "amber" : "emerald"} />
+                    <StatCard label="Dead-lettered" value={`${ops.deadLettered}`} tone={ops.deadLettered > 0 ? "amber" : "emerald"} />
+                  </div>
+                  <div className={`rounded-2xl border p-4 text-sm ${ops.stuckSending > 0 || ops.overdueRetry > 0 || ops.deadLettered > 0 ? "border-amber-500/20 bg-amber-500/10 text-amber-100" : "border-emerald-500/20 bg-emerald-500/10 text-emerald-100"}`}>
+                    {ops.stuckSending > 0 || ops.overdueRetry > 0 || ops.deadLettered > 0
+                      ? `${ops.stuckSending} stuck send${ops.stuckSending === 1 ? "" : "s"}, ${ops.overdueRetry} overdue retr${ops.overdueRetry === 1 ? "y" : "ies"}, ${ops.deadLettered} dead-lettered.`
+                      : "Queue looks healthy — no stuck sends, overdue retries, or dead letters right now."}
+                  </div>
+                  {ops.latestFailure ? (() => {
+                    const contact = Array.isArray(ops.latestFailure.contact) ? ops.latestFailure.contact[0] : ops.latestFailure.contact;
+                    return (
+                      <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Latest delivery risk</div>
+                            <div className="mt-1 font-medium text-[var(--foreground)]">{contact?.name || "Customer"} · {ops.latestFailure.business_id}</div>
+                          </div>
+                          <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-[var(--muted-foreground)]">{formatWorkflowLabel(ops.latestFailure.delivery_state)}</span>
+                        </div>
+                        {ops.latestFailure.last_send_error ? <p className="mt-3 text-[var(--foreground)]">{ops.latestFailure.last_send_error}</p> : null}
+                        <div className="mt-3 text-xs text-[var(--muted-foreground)]">
+                          Attempt {ops.latestFailure.send_attempt_count ?? 0}
+                          {ops.latestFailure.next_retry_at ? ` · Retries ${new Date(ops.latestFailure.next_retry_at).toLocaleString()}` : ""}
+                          {ops.latestFailure.dead_lettered_at ? ` · Dead-lettered ${new Date(ops.latestFailure.dead_lettered_at).toLocaleString()}` : ""}
+                        </div>
+                      </div>
+                    );
+                  })() : null}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
+                <CardHeader className="border-b border-white/10 py-5">
                   <CardTitle>Recent request activity</CardTitle>
                   <CardDescription>Latest sends, replies, and public-review-ready requests.</CardDescription>
                 </CardHeader>
@@ -774,13 +831,18 @@ export function ReputationEngine() {
                                 <span>{contact?.name || "Customer"}</span>
                                 <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{formatTriggerSource(request.trigger_source)}</span>
                                 <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{request.status.replace(/_/g, " ")}</span>
+                                {request.delivery_state ? <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">{formatWorkflowLabel(request.delivery_state)}</span> : null}
                               </div>
                               <p className="mt-2 text-sm text-[var(--foreground)]">{request.business_id} · {contact?.phone || "No phone"}</p>
                               <p className="mt-1 text-xs text-[var(--muted-foreground)]">Created {new Date(request.created_at).toLocaleString()}</p>
+                              {request.last_send_error ? <p className="mt-2 text-xs text-amber-200">Send issue: {request.last_send_error}</p> : null}
+                              {request.next_retry_at ? <p className="mt-1 text-xs text-[var(--muted-foreground)]">Retry due {new Date(request.next_retry_at).toLocaleString()}</p> : null}
+                              {request.dead_lettered_at ? <p className="mt-1 text-xs text-amber-200">Dead-lettered {new Date(request.dead_lettered_at).toLocaleString()}</p> : null}
                               {request.feedback_text ? <p className="mt-2 text-xs text-[var(--muted-foreground)]">Latest reply: “{request.feedback_text}”</p> : null}
                             </div>
                             <div className="text-right text-xs text-[var(--muted-foreground)]">
                               <div>{request.score ? `${request.score}/5 reply` : request.sent_at ? "Sent" : "Pending"}</div>
+                              <div className="mt-1">Attempt {request.send_attempt_count ?? 0}</div>
                               {request.review_token ? <div className="mt-1">token ready</div> : null}
                             </div>
                           </div>
@@ -999,6 +1061,23 @@ export function ReputationEngine() {
               approvedProofCount: metrics.approvedProofCount,
               pendingProofCount: metrics.pendingProofCount,
               proofAssets,
+              analytics: analytics ?? {
+                requestsSent: 0,
+                repliedCount: 0,
+                positiveCount: 0,
+                proofGeneratedCount: 0,
+                replyRate: 0,
+                positiveRate: 0,
+                proofGenerationRate: 0,
+                recovery: {
+                  totalFeedback: 0,
+                  unresolved: 0,
+                  reviewing: 0,
+                  resolved: 0,
+                  highSeverity: 0,
+                },
+                sourcePerformance: [],
+              },
             }}
             title="Trust Proof Pipeline"
             description="Positive replies now create proof candidates you can approve before they surface across your public profile and dashboard trust surfaces."

@@ -22,7 +22,10 @@ export async function GET() {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }
 
-    const [requestsResult, feedbackResult, proofSummary, businessName] = await Promise.all([
+    const nowIso = new Date().toISOString();
+    const sendingStaleBeforeIso = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
+    const [requestsResult, feedbackResult, proofSummary, businessName, queuedCountResult, retryScheduledCountResult, stuckSendingCountResult, deadLetterCountResult, overdueRetryCountResult, latestFailureResult] = await Promise.all([
       supabase
         .from("reputation_requests")
         .select(
@@ -38,6 +41,41 @@ export async function GET() {
         .neq("follow_up_status", "resolved"),
       getReputationProofSummary(supabase, user.id),
       getPreferredBusinessName(supabase, user.id),
+      supabase
+        .from("reputation_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("status", "pending")
+        .in("delivery_state", ["pending", "retry_scheduled"]),
+      supabase
+        .from("reputation_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("delivery_state", "retry_scheduled"),
+      supabase
+        .from("reputation_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("delivery_state", "sending")
+        .lt("last_send_attempt_at", sendingStaleBeforeIso),
+      supabase
+        .from("reputation_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .not("dead_lettered_at", "is", null),
+      supabase
+        .from("reputation_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("delivery_state", "retry_scheduled")
+        .lt("next_retry_at", nowIso),
+      supabase
+        .from("reputation_requests")
+        .select("id, business_id, delivery_state, send_attempt_count, last_send_error, next_retry_at, dead_lettered_at, created_at, contact:reputation_contacts(name, phone)")
+        .eq("user_id", user.id)
+        .or("delivery_state.in.(retry_scheduled,failed),dead_lettered_at.not.is.null")
+        .order("created_at", { ascending: false })
+        .limit(1),
     ]);
 
     if (requestsResult.error) {
@@ -47,8 +85,15 @@ export async function GET() {
       return NextResponse.json({ error: requestsResult.error.message }, { status: 500 });
     }
 
+    const opsResults = [queuedCountResult, retryScheduledCountResult, stuckSendingCountResult, deadLetterCountResult, overdueRetryCountResult, latestFailureResult];
+    const opsError = opsResults.find((result: any) => result?.error && !isMissingTableError(result.error))?.error;
+    if (opsError) {
+      return NextResponse.json({ error: opsError.message || "Failed to load delivery diagnostics" }, { status: 500 });
+    }
+
     const requests = requestsResult.data ?? [];
     const unresolvedFeedback = feedbackResult.count ?? 0;
+    const latestFailure = (latestFailureResult.data ?? [])[0] ?? null;
 
     return NextResponse.json({
       recentRequests: requests,
@@ -63,6 +108,14 @@ export async function GET() {
         pendingProofCount: proofSummary.pendingProofCount,
       },
       analytics: proofSummary.analytics,
+      ops: {
+        queued: queuedCountResult.count ?? 0,
+        retryScheduled: retryScheduledCountResult.count ?? 0,
+        stuckSending: stuckSendingCountResult.count ?? 0,
+        deadLettered: deadLetterCountResult.count ?? 0,
+        overdueRetry: overdueRetryCountResult.count ?? 0,
+        latestFailure,
+      },
       setupRequired: false,
     });
   } catch (err: any) {
