@@ -34,7 +34,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Also fetch recent listing_syncs for a unified view
-    const [{ data: syncs }, { data: feedbackItems, error: feedbackError }, { data: recentRequests, error: requestsError }] = await Promise.all([
+    const [
+      { data: syncs },
+      { data: feedbackItems, error: feedbackError },
+      { data: recentRequests, error: requestsError },
+      { data: proofAssets, error: proofError },
+    ] = await Promise.all([
       supabase
         .from("listing_syncs")
         .select("id, business_name, city, state, sync_status, directories_reached, created_at")
@@ -53,20 +58,30 @@ export async function GET(request: NextRequest) {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(8),
+      supabase
+        .from("reputation_proof_assets")
+        .select("id, business_id, snippet, topic, approved, published_to, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(8),
     ]);
 
     const feedback = feedbackError ? [] : feedbackItems ?? [];
     const activeFollowUpStatuses = new Set(["reviewing", "outreach_queued", "waiting_on_customer"]);
     const requests = requestsError ? [] : recentRequests ?? [];
+    const proof = proofError ? [] : proofAssets ?? [];
     const reputation = {
       counts: {
         unresolvedFeedback: feedback.filter((item: any) => item.follow_up_status !== "resolved").length,
         newComplaints: feedback.filter((item: any) => item.follow_up_status === "new").length,
         pendingFollowUps: feedback.filter((item: any) => activeFollowUpStatuses.has(item.follow_up_status)).length,
         awaitingReplies: requests.filter((item: any) => item.status === "sent" && !item.replied_at).length,
+        pendingProofApprovals: proof.filter((item: any) => !item.approved).length,
+        approvedProof: proof.filter((item: any) => item.approved).length,
       },
       feedback,
       requests,
+      proof,
     };
 
     return NextResponse.json({

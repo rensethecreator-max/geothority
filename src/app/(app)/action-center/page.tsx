@@ -78,15 +78,28 @@ interface ReputationRequestSummary {
   contact?: { name?: string | null; phone?: string | null } | null;
 }
 
+interface ReputationProofSummary {
+  id: string;
+  business_id: string;
+  snippet: string;
+  topic: string | null;
+  approved: boolean;
+  published_to?: string[] | null;
+  created_at: string;
+}
+
 interface ReputationSummary {
   counts: {
     unresolvedFeedback: number;
     newComplaints: number;
     pendingFollowUps: number;
     awaitingReplies: number;
+    pendingProofApprovals: number;
+    approvedProof: number;
   };
   feedback: ReputationFeedbackSummary[];
   requests: ReputationRequestSummary[];
+  proof: ReputationProofSummary[];
 }
 
 const STATUS_CFG: Record<
@@ -315,9 +328,10 @@ export default function ActionCenterPage() {
   const [error, setError] = useState<string | null>(null);
   const [approving, setApproving] = useState<string | null>(null);
   const [reputation, setReputation] = useState<ReputationSummary>({
-    counts: { unresolvedFeedback: 0, newComplaints: 0, pendingFollowUps: 0, awaitingReplies: 0 },
+    counts: { unresolvedFeedback: 0, newComplaints: 0, pendingFollowUps: 0, awaitingReplies: 0, pendingProofApprovals: 0, approvedProof: 0 },
     feedback: [],
     requests: [],
+    proof: [],
   });
   const [tab, setTab] = useState<"needs-action" | "running" | "completed" | "failed" | "syncs">("needs-action");
 
@@ -342,9 +356,10 @@ export default function ActionCenterPage() {
       setSyncs(data.syncs ?? []);
       setReputation(
         data.reputation ?? {
-          counts: { unresolvedFeedback: 0, newComplaints: 0, pendingFollowUps: 0, awaitingReplies: 0 },
+          counts: { unresolvedFeedback: 0, newComplaints: 0, pendingFollowUps: 0, awaitingReplies: 0, pendingProofApprovals: 0, approvedProof: 0 },
           feedback: [],
           requests: [],
+          proof: [],
         },
       );
       setError(null);
@@ -437,6 +452,7 @@ export default function ActionCenterPage() {
               { label: "Live runs", value: `${running.length} executing`, icon: Loader2 },
               { label: "Listing coverage", value: `${syncs.length} sync records`, icon: ShieldCheck },
               { label: "Reputation follow-up", value: `${reputation.counts.unresolvedFeedback} open items`, icon: Activity },
+              { label: "Proof approvals", value: `${reputation.counts.pendingProofApprovals} pending`, icon: ShieldCheck },
             ].map((item) => (
               <div key={item.label} className="geo-premium-muted min-w-[180px] rounded-2xl px-4 py-3">
                 <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
@@ -497,12 +513,13 @@ export default function ActionCenterPage() {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             {[
               { label: "New complaints", value: reputation.counts.newComplaints, tone: "text-red-300 bg-red-500/10" },
               { label: "Open private feedback", value: reputation.counts.unresolvedFeedback, tone: "text-amber-200 bg-amber-500/10" },
               { label: "Active follow-ups", value: reputation.counts.pendingFollowUps, tone: "text-blue-200 bg-blue-500/10" },
               { label: "Awaiting replies", value: reputation.counts.awaitingReplies, tone: "text-emerald-200 bg-emerald-500/10" },
+              { label: "Proof awaiting approval", value: reputation.counts.pendingProofApprovals, tone: "text-fuchsia-200 bg-fuchsia-500/10" },
             ].map((item) => (
               <div key={item.label} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{item.label}</div>
@@ -520,7 +537,7 @@ export default function ActionCenterPage() {
             </div>
           </div>
           <div className="mt-4 space-y-3">
-            {reputation.feedback.length === 0 && reputation.requests.length === 0 ? (
+            {reputation.feedback.length === 0 && reputation.requests.length === 0 && reputation.proof.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
                 Reputation follow-ups will appear here as soon as low-score feedback or outbound review requests start moving.
               </div>
@@ -537,6 +554,19 @@ export default function ActionCenterPage() {
                       <span className="rounded-full border border-white/10 px-2 py-1">Owner: {item.assigned_owner_name || "Unassigned"}</span>
                       <span className="rounded-full border border-white/10 px-2 py-1">Due: {item.follow_up_due_date || "Not set"}</span>
                       <span className="rounded-full border border-white/10 px-2 py-1">Outcome: {formatWorkflowLabel(item.recovery_outcome || "pending")}</span>
+                    </div>
+                  </div>
+                ))}
+                {reputation.proof.filter((item) => !item.approved).slice(0, 2).map((item) => (
+                  <div key={item.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
+                    <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                      <span>{item.topic || item.business_id}</span>
+                      <span className="rounded-full border border-white/10 px-2 py-1">proof approval</span>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-[var(--foreground)] line-clamp-2">“{item.snippet}”</p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[var(--muted-foreground)]">
+                      <span className="rounded-full border border-white/10 px-2 py-1">Created {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
+                      <span className="rounded-full border border-white/10 px-2 py-1">Dashboard-ready after approval</span>
                     </div>
                   </div>
                 ))}
