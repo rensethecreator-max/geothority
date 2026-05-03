@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
+import { getReputationTransport } from "@/lib/reputation/transport";
 import type { ReputationAnalyticsSummary, ReputationProofSummary, ReputationSourcePerformance } from "@/lib/reputation/types";
 
 const MAX_REPUTATION_SEND_ATTEMPTS = 3;
@@ -60,17 +61,18 @@ async function bestEffortLogSendAttempt(params: {
   body: string;
   attemptNumber: number;
   deliveryState: string;
+  providerSid?: string | null;
   errorDetail?: string | null;
   simulated?: boolean;
 }) {
-  const { supabase, requestId, body, attemptNumber, deliveryState, errorDetail = null, simulated = true } = params;
+  const { supabase, requestId, body, attemptNumber, deliveryState, providerSid = null, errorDetail = null, simulated = true } = params;
 
   try {
     await supabase.from("reputation_message_log").insert({
       request_id: requestId,
       direction: "out",
       body,
-      provider_sid: null,
+      provider_sid: providerSid,
       attempt_number: attemptNumber,
       delivery_state: deliveryState,
       error_detail: errorDetail,
@@ -79,6 +81,10 @@ async function bestEffortLogSendAttempt(params: {
   } catch {
     // Best effort only — request state is the source of truth.
   }
+}
+
+function buildReputationMessageBody(template: string, customerName: string, businessName: string) {
+  return template.replace("{customer_name}", customerName || "there").replace("{business_name}", businessName);
 }
 
 export async function getPreferredBusinessName(supabase: any, userId: string) {
@@ -336,6 +342,7 @@ export async function sendReputationRequestNow(requestId: string) {
     .eq("id", requestRow.id);
 
   let body = "";
+  let transportName: string | null = null;
 
   try {
     const [{ data: settings }, { data: contact, error: contactError }] = await Promise.all([
@@ -351,9 +358,20 @@ export async function sendReputationRequestNow(requestId: string) {
       throw new Error("Contact phone is missing");
     }
 
-    body = (settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate)
-      .replace("{customer_name}", contact.name || "there")
-      .replace("{business_name}", requestRow.business_id);
+    body = buildReputationMessageBody(settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate, contact.name || "there", requestRow.business_id);
+    const reviewToken = requestRow.review_token || crypto.randomUUID().replace(/-/g, "");
+    const transport = getReputationTransport();
+    transportName = transport.name;
+    const delivery = await transport.deliver({
+      requestId: requestRow.id,
+      userId: requestRow.user_id,
+      businessName: requestRow.business_id,
+      customerName: contact.name || "there",
+      phone: contact.phone,
+      body,
+      attemptNumber: attemptCount,
+      reviewToken,
+    });
 
     await appendReputationLedgerEvent(supabase, {
       userId: requestRow.user_id,
@@ -368,7 +386,9 @@ export async function sendReputationRequestNow(requestId: string) {
         attemptCount,
         bodyPreview: body.slice(0, 160),
         templateSource: settings?.sms_template ? "custom" : "default",
-        simulated: true,
+        transport: delivery.provider,
+        providerSid: delivery.providerSid,
+        simulated: delivery.simulated,
       },
     });
 
@@ -377,11 +397,10 @@ export async function sendReputationRequestNow(requestId: string) {
       requestId: requestRow.id,
       body,
       attemptNumber: attemptCount,
-      deliveryState: "sent",
-      simulated: true,
+      deliveryState: delivery.deliveryState,
+      providerSid: delivery.providerSid,
+      simulated: delivery.simulated,
     });
-
-    const reviewToken = requestRow.review_token || crypto.randomUUID().replace(/-/g, "");
 
     const sentAt = new Date().toISOString();
 
@@ -391,7 +410,7 @@ export async function sendReputationRequestNow(requestId: string) {
         status: "sent",
         sent_at: sentAt,
         review_token: reviewToken,
-        delivery_state: "sent",
+        delivery_state: delivery.deliveryState,
         last_send_error: null,
         next_retry_at: null,
         dead_lettered_at: null,
@@ -410,17 +429,21 @@ export async function sendReputationRequestNow(requestId: string) {
       metadata: {
         attemptCount,
         sentAt,
-        simulated: true,
+        transport: delivery.provider,
+        providerSid: delivery.providerSid,
+        simulated: delivery.simulated,
         reviewTokenPresent: Boolean(reviewToken),
       },
     });
 
     return {
       success: true,
-      simulated: true,
+      simulated: delivery.simulated,
       alreadySent: false,
       attemptCount,
-      deliveryState: "sent",
+      deliveryState: delivery.deliveryState,
+      transport: delivery.provider,
+      providerSid: delivery.providerSid,
       retryScheduled: false,
     };
   } catch (error: any) {
@@ -438,12 +461,13 @@ export async function sendReputationRequestNow(requestId: string) {
         await bestEffortLogSendAttempt({
           supabase,
           requestId: requestRow.id,
-          body: body || `Failed to send request ${requestRow.id}`,
-          attemptNumber: attemptCount,
-          deliveryState: "retry_schedule_failed",
-          errorDetail: scheduleError?.message || "Failed to schedule retry",
-          simulated: true,
-        });
+        body: body || `Failed to send request ${requestRow.id}`,
+        attemptNumber: attemptCount,
+        deliveryState: "retry_schedule_failed",
+        providerSid: null,
+        errorDetail: scheduleError?.message || "Failed to schedule retry",
+        simulated: true,
+      });
       }
     }
 
@@ -455,6 +479,7 @@ export async function sendReputationRequestNow(requestId: string) {
       body: body || `Failed to send request ${requestRow.id}`,
       attemptNumber: attemptCount,
       deliveryState,
+      providerSid: null,
       errorDetail: errorMessage,
       simulated: true,
     });
@@ -485,6 +510,7 @@ export async function sendReputationRequestNow(requestId: string) {
       metadata: {
         attemptCount,
         deliveryState,
+        transport: transportName,
         errorMessage,
         nextRetryAt,
         deadLetteredAt,
