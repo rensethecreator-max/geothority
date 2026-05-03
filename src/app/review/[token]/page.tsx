@@ -9,11 +9,11 @@ export default async function ReviewTokenPage({ params }: { params: { token: str
 
   const { data: requestRow } = await supabase
     .from("reputation_requests")
-    .select("id, user_id, business_id, template_used")
+    .select("id, user_id, business_id, status, template_used")
     .eq("review_token", params.token)
     .maybeSingle();
 
-  if (!requestRow) {
+  if (!requestRow || requestRow.status !== "public_review_ready") {
     notFound();
   }
 
@@ -44,6 +44,7 @@ export default async function ReviewTokenPage({ params }: { params: { token: str
 
   return (
     <PublicReviewFlow
+      token={params.token}
       businessName={requestRow.business_id}
       googleUrl={buildGoogleReviewUrl(settings?.google_review_link, requestRow.business_id)}
       templates={generated.map((template) => ({

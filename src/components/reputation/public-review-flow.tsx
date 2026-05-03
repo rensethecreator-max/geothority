@@ -11,15 +11,34 @@ interface ReviewTemplateView {
 }
 
 interface PublicReviewFlowProps {
+  token: string;
   businessName: string;
   googleUrl: string;
   templates: ReviewTemplateView[];
   alreadyUsed: boolean;
 }
 
-export function PublicReviewFlow({ businessName, googleUrl, templates, alreadyUsed }: PublicReviewFlowProps) {
+export function PublicReviewFlow({ token, businessName, googleUrl, templates, alreadyUsed }: PublicReviewFlowProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [banner, setBanner] = useState(false);
+
+  async function trackReviewAction(action: "open_google" | "use_template", templateId?: string) {
+    try {
+      await fetch(`/api/review/${encodeURIComponent(token)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, templateId }),
+        keepalive: true,
+      });
+    } catch {
+      // Non-blocking tracking only.
+    }
+  }
+
+  function openGoogleReview() {
+    void trackReviewAction("open_google");
+    window.open(googleUrl, "_blank", "noopener,noreferrer");
+  }
 
   async function handleTemplateClick(template: ReviewTemplateView) {
     try {
@@ -35,9 +54,10 @@ export function PublicReviewFlow({ businessName, googleUrl, templates, alreadyUs
       document.body.removeChild(ta);
     }
 
+    void trackReviewAction("use_template", template.id);
     setCopiedId(template.id);
     setBanner(true);
-    setTimeout(() => window.open(googleUrl, "_blank", "noopener,noreferrer"), 140);
+    setTimeout(() => openGoogleReview(), 140);
     setTimeout(() => {
       setBanner(false);
       setCopiedId(null);
@@ -96,14 +116,13 @@ export function PublicReviewFlow({ businessName, googleUrl, templates, alreadyUs
         </div>
 
         <div className="text-center">
-          <a
-            href={googleUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={openGoogleReview}
             className="inline-flex items-center gap-2 text-sm font-medium text-electric-500 hover:text-electric-400"
           >
             Prefer to write your own? Open Google Reviews <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          </button>
         </div>
       </div>
     </div>
