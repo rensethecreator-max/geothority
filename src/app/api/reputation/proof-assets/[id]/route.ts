@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
 import { isMissingTableError } from "@/lib/reputation/request-service";
 
+const ALLOWED_PUBLISH_TARGETS = new Set(["public_profile", "dashboard"]);
+
 async function getSessionUser() {
   const supabase = await createServerSupabase();
   const {
@@ -26,7 +28,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const body = await req.json();
     const approved = Boolean(body.approved);
     const publishedTo = Array.isArray(body.publishedTo)
-      ? body.publishedTo.map((value: unknown) => String(value).trim()).filter(Boolean)
+      ? Array.from(
+          new Set(
+            body.publishedTo
+              .map((value: unknown) => String(value).trim())
+              .filter((value) => ALLOWED_PUBLISH_TARGETS.has(value)),
+          ),
+        )
       : approved
         ? ["public_profile"]
         : [];

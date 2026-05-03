@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     const { data: requestRow, error: requestError } = await supabase
       .from("reputation_requests")
-      .select("id, user_id, business_id, status")
+      .select("id, user_id, business_id, status, score, feedback_text, replied_at")
       .eq("id", requestId)
       .single();
 
@@ -43,51 +43,138 @@ export async function POST(req: NextRequest) {
     const belowThreshold = score < positiveThreshold;
     const nextStatus = belowThreshold ? "feedback_received" : "public_review_ready";
 
-    const { error: updateError } = await supabase
-      .from("reputation_requests")
-      .update({
-        score,
-        feedback_text: feedbackText || null,
-        replied_at: repliedAt,
-        status: nextStatus,
-      })
-      .eq("id", requestRow.id);
+    if (requestRow.replied_at) {
+      const sameScore = requestRow.score === score;
+      const sameFeedback = (requestRow.feedback_text || "") === (feedbackText || "");
 
-    if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 });
+      if (!sameScore || !sameFeedback) {
+        return NextResponse.json(
+          { error: "This request already has a recorded response." },
+          { status: 409 },
+        );
+      }
     }
 
-    await supabase.from("reputation_message_log").insert({
-      request_id: requestRow.id,
-      direction: "in",
-      body: feedbackText ? `${score}: ${feedbackText}` : String(score),
-      provider_sid: null,
-    });
+    if (!requestRow.replied_at) {
+      const { error: updateError } = await supabase
+        .from("reputation_requests")
+        .update({
+          score,
+          feedback_text: feedbackText || null,
+          replied_at: repliedAt,
+          status: nextStatus,
+        })
+        .eq("id", requestRow.id);
+
+      if (updateError) {
+        return NextResponse.json({ error: updateError.message }, { status: 500 });
+      }
+    }
+
+    const { data: existingMessageLog } = await supabase
+      .from("reputation_message_log")
+      .select("id")
+      .eq("request_id", requestRow.id)
+      .eq("direction", "in")
+      .eq("body", feedbackText ? `${score}: ${feedbackText}` : String(score))
+      .limit(1)
+      .maybeSingle();
+
+    if (!existingMessageLog) {
+      const { error: logError } = await supabase.from("reputation_message_log").insert({
+        request_id: requestRow.id,
+        direction: "in",
+        body: feedbackText ? `${score}: ${feedbackText}` : String(score),
+        provider_sid: null,
+      });
+
+      if (logError) {
+        return NextResponse.json({ error: logError.message }, { status: 500 });
+      }
+    }
 
     if (belowThreshold) {
-      await supabase.from("reputation_feedback_items").insert({
-        user_id: requestRow.user_id,
-        request_id: requestRow.id,
-        business_id: requestRow.business_id,
+      const feedbackPayload = {
         severity: score <= 2 ? "high" : "medium",
         topic: `Low rating (${score}/5)`,
         feedback_text: feedbackText || `Customer replied with a ${score}/5 score and no written feedback.`,
-        follow_up_status: "new",
-        recovery_outcome: "pending",
-      });
+      };
+
+      const { data: existingFeedback } = await supabase
+        .from("reputation_feedback_items")
+        .select("id, follow_up_status, assigned_owner_name, follow_up_due_date, resolution_notes, recovery_outcome, resolved_at")
+        .eq("request_id", requestRow.id)
+        .maybeSingle();
+
+      if (existingFeedback?.id) {
+        const { error: feedbackUpdateError } = await supabase
+          .from("reputation_feedback_items")
+          .update({
+            ...feedbackPayload,
+            follow_up_status: existingFeedback.follow_up_status === "resolved" ? existingFeedback.follow_up_status : "new",
+            recovery_outcome: existingFeedback.recovery_outcome || "pending",
+          })
+          .eq("id", existingFeedback.id);
+
+        if (feedbackUpdateError) {
+          return NextResponse.json({ error: feedbackUpdateError.message }, { status: 500 });
+        }
+      } else {
+        const { error: feedbackInsertError } = await supabase.from("reputation_feedback_items").insert({
+          user_id: requestRow.user_id,
+          request_id: requestRow.id,
+          business_id: requestRow.business_id,
+          ...feedbackPayload,
+          follow_up_status: "new",
+          recovery_outcome: "pending",
+        });
+
+        if (feedbackInsertError) {
+          return NextResponse.json({ error: feedbackInsertError.message }, { status: 500 });
+        }
+      }
     } else if (feedbackText) {
-      await supabase.from("reputation_proof_assets").insert({
-        user_id: requestRow.user_id,
-        business_id: requestRow.business_id,
-        request_id: requestRow.id,
+      const proofPayload = {
         snippet: feedbackText,
         topic: `Review snippet (${score}/5)`,
         sentiment: "positive",
-        approved: false,
-      });
+      };
+
+      const { data: existingProof } = await supabase
+        .from("reputation_proof_assets")
+        .select("id, approved, published_to")
+        .eq("request_id", requestRow.id)
+        .maybeSingle();
+
+      if (existingProof?.id) {
+        const { error: proofUpdateError } = await supabase
+          .from("reputation_proof_assets")
+          .update({
+            ...proofPayload,
+            approved: false,
+            published_to: existingProof.approved ? [] : existingProof.published_to,
+          })
+          .eq("id", existingProof.id);
+
+        if (proofUpdateError) {
+          return NextResponse.json({ error: proofUpdateError.message }, { status: 500 });
+        }
+      } else {
+        const { error: proofInsertError } = await supabase.from("reputation_proof_assets").insert({
+          user_id: requestRow.user_id,
+          business_id: requestRow.business_id,
+          request_id: requestRow.id,
+          ...proofPayload,
+          approved: false,
+        });
+
+        if (proofInsertError) {
+          return NextResponse.json({ error: proofInsertError.message }, { status: 500 });
+        }
+      }
     }
 
-    return NextResponse.json({ success: true, status: nextStatus, positiveThreshold });
+    return NextResponse.json({ success: true, status: nextStatus, positiveThreshold, duplicateIgnored: Boolean(requestRow.replied_at) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
