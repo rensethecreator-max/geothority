@@ -143,12 +143,12 @@ const industries: Record<string, {
         desc: "Generate Dentist, MedicalOrganization, and FAQPage schema in 60 seconds. Rich snippets help patients see your hours, services, and reviews directly in search results.",
       },
       {
-        title: "Review Strategy via Starcepta",
-        desc: "Integrate with Starcepta to send one-tap review requests to patients after appointments. More reviews = higher local pack ranking and more patient trust.",
+        title: "Native Reputation Engine",
+        desc: "Launch Geothority's built-in one-tap review request workflow after appointments. More reviews means stronger local pack rankings, better trust signals, and more patient confidence.",
       },
     ],
     testimonial: {
-      quote: "We went from 47 reviews to 190 in 4 months using Geothority + Starcepta. Our new patient bookings from Google increased 40%. The Trust Stack score was eye-opening.",
+      quote: "We went from 47 reviews to 190 in 4 months using Geothority's Reputation Engine. Our new patient bookings from Google increased 40%. The Trust Stack score was eye-opening.",
       author: "Dr. Angela R.",
       role: "Family Dentist, Tampa FL",
     },
@@ -243,12 +243,12 @@ const industries: Record<string, {
         desc: "Generate Restaurant, Menu, and LocalBusiness schema including cuisine type, price range, reservation links, and hours. Rich results show your info before customers click.",
       },
       {
-        title: "Review Boost via Starcepta",
-        desc: "Send automatic review requests after dining experiences. More reviews, higher rating, better local pack ranking - the virtuous cycle that keeps your tables full.",
+        title: "Review Boost via Reputation Engine",
+        desc: "Send automatic review requests after dining experiences. More reviews, higher ratings, and better local pack momentum create the virtuous cycle that keeps your tables full.",
       },
     ],
     testimonial: {
-      quote: "We added 85 reviews in 2 months using Starcepta through Geothority. Our OpenTable reservations from Google increased 55% once we hit the local pack. Game changer.",
+      quote: "We added 85 reviews in 2 months using Geothority's Reputation Engine. Our OpenTable reservations from Google increased 55% once we hit the local pack. Game changer.",
       author: "Sofia M.",
       role: "Owner, Italian Restaurant, Dallas TX",
     },

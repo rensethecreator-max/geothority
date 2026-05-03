@@ -457,9 +457,9 @@ Port from Starcepta, but reskin to Geothority.
 2. native review automation CTAs
 3. native proof/publishing flows
 
-Relevant files to revise later:
-- `src/components/upsell/StarceptaBanner.tsx`
-- `src/app/(public)/bundle/page.tsx`
+Relevant files addressed in the seam-removal pass:
+- `src/components/upsell/ReputationEngineBanner.tsx`
+- `src/app/(public)/bundle/page.tsx` (now redirected away from separate-product positioning)
 - pricing and homepage copy that treats reviews as external
 
 ---

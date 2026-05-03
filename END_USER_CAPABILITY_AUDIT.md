@@ -25,7 +25,7 @@
 - CTA buttons → Stripe checkout
 
 ### Bundle Page (`/bundle`)
-- "Local Dominance Bundle" — Geothority + Starcepta + 4MinuteSEO
+- Reputation Engine is now positioned as a native Geothority capability rather than a separate Starcepta bundle surface
 - Bundle features listed for each product
 - Save $96/mo messaging
 - CTA to bundle purchase
@@ -175,7 +175,7 @@
   - Each fix has impact rating, instructions, and copy button
   - Some fixes auto-applied flag
 - **PDF Report Export** — Client-side HTML-to-PDF generation with styled report (Trust Stack breakdown, quick wins, competitor gaps, recommendations)
-- **Starcepta Upsell Banner** — Shown on scan results, promotes Starcepta review product
+- **Reputation Engine CTA** — Shown on scan results when review health is weak, routes users into the native review workflow
 
 ### Scan History
 - `GET /api/scan` returns last 20 scans for the user
@@ -193,7 +193,7 @@
 - **Score History Chart** — Line chart (Recharts) showing Trust Stack score over time; toggle per-layer lines
 - **Health Pulse** widget — Recent activity/status feed
 - **Recent Scans List** — Links to scan detail pages
-- **Starcepta Upsell Banner** (dismissible)
+- **Reputation Engine Banner** (dismissible when used)
 - **CTA to run new scan** when no scans exist
 - All data fetched from Supabase
 
@@ -598,9 +598,9 @@
 - The GBP sync exists but automated weekly posting is not implemented
 
 ### 🟡 Automated Review Request Campaigns (Growth Plan Feature)
-- Listed as a Growth plan feature in pricing
-- No UI or API endpoint exists for generating review request campaigns
-- This functionality appears to be deferred to the Starcepta bundle partner
+- Reputation Engine now exists natively inside Geothority
+- Core review workflow scaffolding, settings, review flow, and runtime diagnostics are present
+- Remaining work is production-hardening the live provider/runtime path rather than handing the feature off to a separate Starcepta product
 
 ### 🟡 Citation Sync Across 80+ Directories (Growth Plan Feature)
 - Listed as a Growth feature; real implementation uses Foursquare API which feeds ~50 directories

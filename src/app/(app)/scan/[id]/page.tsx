@@ -655,7 +655,7 @@ export default function ScanResultPage() {
           ))}
         </div>
 
-        {/* Cross-sell: Starcepta */}
+        {/* Reputation Engine CTA */}
         {ls.layer4 < 60 && (
           <div className="mt-6 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-2xl border border-green-500/20 p-6">
             <div className="flex items-start gap-4">
@@ -663,17 +663,15 @@ export default function ScanResultPage() {
                 <Star className="w-5 h-5 text-green-400" />
               </div>
               <div className="flex-1">
-                <h4 className="font-bold">Your Review Program Needs More Consistency</h4>
+                <h4 className="font-bold">Your Reputation Engine Needs Attention</h4>
                 <p className="text-sm text-gray-400 mt-1">
-                  Review velocity and response habits influence trust. If you want help systematizing requests after real customer interactions, Starcepta is one option to evaluate.
+                  Review velocity and response habits influence trust. Launch a native Reputation Engine workflow to systematize review requests, collect private feedback, and turn stronger review momentum into better local trust.
                 </p>
                 <a
-                  href="https://starcepta.com?ref=geothority"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/reputation"
                   className="inline-flex items-center gap-1 text-sm text-green-400 hover:text-green-300 mt-2 font-medium"
                 >
-                  Try Starcepta Free <ArrowRight className="w-3 h-3" />
+                  Open Reputation Engine <ArrowRight className="w-3 h-3" />
                 </a>
               </div>
             </div>
