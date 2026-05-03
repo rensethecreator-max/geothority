@@ -1,3 +1,4 @@
+import { normalizePhoneNumber } from "@/lib/reputation/request-service";
 import { createServiceClient } from "@/lib/supabase/server";
 
 interface ScheduleReviewRequestParams {
@@ -14,6 +15,7 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
   if (!supabase) throw new Error("Supabase service client unavailable");
 
   const { userId, businessId, phone, customerName, paymentId, paymentSource } = params;
+  const normalizedPhone = normalizePhoneNumber(phone);
 
   const { data: settings, error: settingsError } = await supabase
     .from("reputation_settings")
@@ -34,7 +36,7 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
     .select("id, opt_out")
     .eq("user_id", userId)
     .eq("business_id", businessId)
-    .eq("phone", phone)
+    .eq("phone", normalizedPhone)
     .maybeSingle();
 
   if (!existingContact) {
@@ -43,7 +45,7 @@ export async function scheduleReviewRequest(params: ScheduleReviewRequestParams)
       .insert({
         user_id: userId,
         business_id: businessId,
-        phone,
+        phone: normalizedPhone,
         name: customerName,
         source: paymentSource,
       })
