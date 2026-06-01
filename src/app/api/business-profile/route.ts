@@ -8,6 +8,19 @@ import { createHash } from "crypto";
  * DELETE /api/business-profile — Delete the profile
  */
 
+function isMissingTableError(error: any) {
+  return error?.code === "42P01"
+    || error?.code === "PGRST205"
+    || /relation .* does not exist/i.test(error?.message || "")
+    || /Could not find the table .* in the schema cache/i.test(error?.message || "");
+}
+
+function isSchemaDriftError(error: any) {
+  return isMissingTableError(error)
+    || error?.code === "PGRST204"
+    || /Could not find the '.*' column of '.*' in the schema cache/i.test(error?.message || "");
+}
+
 function normalizeNAP(input: { businessName: string; address?: string; city: string; state: string; zip?: string; phone?: string }) {
   const parts = [
     input.businessName?.trim().toLowerCase(),
@@ -32,15 +45,19 @@ export async function GET(req: NextRequest) {
       .eq("user_id", user.id)
       .single();
 
-    if (error && error.code !== "PGRST116") {
+    if (error && error.code !== "PGRST116" && !isSchemaDriftError(error)) {
       return NextResponse.json({ error: "DB error" }, { status: 500 });
     }
 
     // Also fetch citation sync summary
-    const { data: syncStates } = await supabase
+    const { data: syncStates, error: syncError } = await supabase
       .from("citation_sync_states")
       .select("directory_id, sync_status, consistency_score, last_checked, drift_detected")
       .eq("user_id", user.id);
+
+    if (syncError && !isSchemaDriftError(syncError)) {
+      return NextResponse.json({ error: "DB error" }, { status: 500 });
+    }
 
     const syncSummary = {
       totalDirectories: syncStates?.length ?? 0,
@@ -54,8 +71,9 @@ export async function GET(req: NextRequest) {
     };
 
     return NextResponse.json({
-      profile: profile ?? null,
+      profile: isSchemaDriftError(error) ? null : (profile ?? null),
       syncSummary,
+      setupRequired: isSchemaDriftError(error) || isSchemaDriftError(syncError),
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -116,10 +134,34 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
+      if (isSchemaDriftError(error)) {
+        return NextResponse.json({
+          profile: {
+            user_id: user.id,
+            business_name: businessName || userProfile?.business_name || null,
+            address: address ?? null,
+            city: city || userProfile?.city || null,
+            state: state || userProfile?.state || null,
+            zip: zip ?? null,
+            phone: phone ?? null,
+            website: website || userProfile?.website_url || null,
+            email: email ?? null,
+            categories: categories ?? [],
+            primary_category: primaryCategory ?? null,
+            description: description ?? null,
+            hours_json: hoursJson ?? null,
+            latitude: latitude ?? null,
+            longitude: longitude ?? null,
+            nap_hash: napHash,
+            verification_source: "fallback",
+          },
+          setupRequired: true,
+        });
+      }
       return NextResponse.json({ error: "Failed to save profile", details: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ profile });
+    return NextResponse.json({ profile, setupRequired: false });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -136,10 +178,11 @@ export async function DELETE(req: NextRequest) {
       .delete()
       .eq("user_id", user.id);
 
-    if (error) return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+    if (error && !isSchemaDriftError(error)) {
+      return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+    }
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-

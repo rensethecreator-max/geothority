@@ -21,6 +21,62 @@ const PROTECTED_PATHS = [
 
 // Admin-only paths (require ADMIN_EMAILS match)
 const ADMIN_PATHS = ["/admin"];
+const ONBOARDING_FLOW_PATHS = [
+  "/onboarding",
+  "/dashboard",
+  "/scan",
+  "/action-center",
+  "/reputation",
+  "/gbp-health",
+  "/billing",
+];
+
+function pathMatches(pathname: string, paths: string[]) {
+  return paths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
+
+async function inferOnboardingCompletion(supabase: ReturnType<typeof createServerClient>, userId: string) {
+  const profileCheck = await supabase
+    .from("user_profiles")
+    .select("onboarding_completed, business_name, city, state")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!profileCheck.error) {
+    return {
+      completed: profileCheck.data?.onboarding_completed === true,
+      drifted: false,
+    };
+  }
+
+  if (!isMissingOnboardingColumnError(profileCheck.error)) {
+    throw profileCheck.error;
+  }
+
+  const [fallbackProfile, scanCountResult] = await Promise.all([
+    supabase
+      .from("user_profiles")
+      .select("business_name, city, state")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabase
+      .from("scans")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+  ]);
+
+  const hasBusinessContext = Boolean(
+    fallbackProfile.data?.business_name
+    && fallbackProfile.data?.city
+    && fallbackProfile.data?.state,
+  );
+  const hasScanHistory = (scanCountResult.count ?? 0) > 0;
+
+  return {
+    completed: hasBusinessContext && hasScanHistory,
+    drifted: true,
+  };
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -53,7 +109,7 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Check if path is protected
-  const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
+  const isProtected = pathMatches(pathname, PROTECTED_PATHS);
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
@@ -64,7 +120,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Check admin paths
-  const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p));
+  const isAdminPath = pathMatches(pathname, ADMIN_PATHS);
   if (isAdminPath && user) {
     const adminEmails = (process.env.ADMIN_EMAILS ?? "")
       .split(",")
@@ -95,20 +151,16 @@ export async function updateSession(request: NextRequest) {
   const isAppPath = isProtected && !pathname.startsWith("/admin") && !pathname.startsWith("/api");
   if (isAppPath && user && pathname !== "/onboarding" && pathname !== "/billing") {
     try {
-      const { data: profileCheck, error: profileError } = await supabase
-        .from("user_profiles")
-        .select("onboarding_completed")
-        .eq("id", user.id)
-        .single();
+      const onboardingState = await inferOnboardingCompletion(supabase, user.id);
+      const allowedDuringOnboarding = pathMatches(pathname, ONBOARDING_FLOW_PATHS);
+      const shouldForceOnboardingLanding = pathname === "/dashboard";
 
-      if (profileError && !isMissingOnboardingColumnError(profileError)) {
-        throw profileError;
-      }
-
-      // Only redirect if profile exists and onboarding is explicitly false
-      if (profileCheck && profileCheck.onboarding_completed === false) {
+      if (!onboardingState.completed && (shouldForceOnboardingLanding || !allowedDuringOnboarding)) {
         const url = request.nextUrl.clone();
         url.pathname = "/onboarding";
+        if (onboardingState.drifted) {
+          url.searchParams.set("drift", "missing_onboarding_completed_column");
+        }
         return NextResponse.redirect(url);
       }
     } catch {

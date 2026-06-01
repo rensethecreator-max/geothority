@@ -95,6 +95,19 @@ export async function POST(req: NextRequest) {
             subscription_status: subscriptionStatus ?? (trialEndsAt ? "trialing" : "active"),
             trial_ends_at: trialEndsAt,
           });
+
+        await supabase.from("analytics_events").insert({
+          user_id: supabaseId,
+          event_name: "subscription_started",
+          metadata: {
+            plan: resolvedPlan,
+            billingCycle,
+            stripeCustomerId: customerId,
+            subscriptionId,
+            status: subscriptionStatus,
+          },
+          session_id: "server-stripe-webhook",
+        });
       }
       break;
     }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
+import { recordJourneyMilestone } from "@/lib/journey-events";
 import { createAndSendReputationRequest, getPreferredBusinessName, getReputationProofSummary, isMissingTableError } from "@/lib/reputation/request-service";
 
 async function getSessionUser() {
@@ -156,6 +157,10 @@ export async function POST(req: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+
+    if (!result.deduplicated && (result.sendOutcome?.success || result.sendOutcome?.alreadySent)) {
+      await recordJourneyMilestone(user.id, "first_reputation_request_sent");
     }
 
     return NextResponse.json({ success: true, requestId: result.requestId, deduplicated: result.deduplicated, sendOutcome: result.sendOutcome ?? null });

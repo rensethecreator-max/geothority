@@ -3,7 +3,10 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_TEMPLATES } from "@/lib/reputation/defaults";
 
 function isMissingTableError(error: any) {
-  return error?.code === "42P01" || /relation .* does not exist/i.test(error?.message || "");
+  return error?.code === "42P01"
+    || error?.code === "PGRST205"
+    || /relation .* does not exist/i.test(error?.message || "")
+    || /Could not find the table .* in the schema cache/i.test(error?.message || "");
 }
 
 export async function GET() {

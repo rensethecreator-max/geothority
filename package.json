@@ -8,6 +8,7 @@
     "build:proof": "next build",
     "start": "next start",
     "lint": "next lint",
+    "e2e:new-user": "bash -lc 'set -a && source .env.local && set +a && npx playwright test tests/e2e/new-user-journey.spec.mjs'",
     "ops:deployment-truth": "node scripts/check-deployment-truth.mjs",
     "ops:cron:smoke": "node scripts/cron-smoke.mjs",
     "proof:readiness": "node scripts/proof-readiness.mjs"

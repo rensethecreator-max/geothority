@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { syncGBPData } from "@/lib/google-business/sync";
 import { requirePlan } from "@/lib/plan-gate";
 import { getAutomationPolicy, isAutoAllowed } from "@/lib/automation-policies";
+import { recordJourneyMilestone } from "@/lib/journey-events";
 
 /**
  * POST /api/gbp/sync
@@ -54,6 +55,8 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       supabase,
     });
+
+    await recordJourneyMilestone(session.user.id, "gbp_connected");
 
     return NextResponse.json({
       success: true,

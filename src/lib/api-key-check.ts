@@ -21,8 +21,10 @@ type KeyDef = Omit<KeyStatus, "configured"> & {
 const KEY_DEFS: KeyDef[] = [
   // Critical — features are broken without these
   {
-    key: "OpenAI",
-    envVar: "OPENAI_API_KEY",
+    key: "Primary AI Provider",
+    envVar: "OPENROUTER_API_KEY / OPENAI_API_KEY",
+    envVars: ["OPENROUTER_API_KEY", "OPENAI_API_KEY"],
+    isConfigured: () => !!process.env.OPENROUTER_API_KEY || !!process.env.OPENAI_API_KEY,
     required: true,
     impact: "AI Overview, content generation, schema recommendations, chat assistant",
     category: "critical",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -17,6 +17,8 @@ export interface WizardStep {
   content: React.ReactNode;
   actionLabel: string;
   actionPath?: string;
+  onAction?: () => Promise<{ redirectTo?: string; preventAdvance?: boolean } | void> | { redirectTo?: string; preventAdvance?: boolean } | void;
+  markCompleteOnAction?: boolean;
   canSkip: boolean;
 }
 
@@ -24,6 +26,7 @@ interface OnboardingWizardProps {
   open: boolean;
   onClose: () => void;
   steps: WizardStep[];
+  initialStepIndex?: number;
   onStepComplete?: (stepId: string) => void;
   onFinish?: () => void;
 }
@@ -32,32 +35,53 @@ export default function OnboardingWizard({
   open,
   onClose,
   steps,
+  initialStepIndex = 0,
   onStepComplete,
   onFinish,
 }: OnboardingWizardProps) {
   const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(initialStepIndex);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setCurrentIndex(initialStepIndex);
+  }, [initialStepIndex, open]);
 
   const currentStep = steps[currentIndex];
   const isLast = currentIndex === steps.length - 1;
   const progressPct = ((currentIndex + 1) / steps.length) * 100;
 
-  const handleAction = () => {
-    onStepComplete?.(currentStep.id);
-    if (isLast) {
-      onFinish?.();
-      onClose();
-      return;
+  const handleAction = async () => {
+    setBusy(true);
+    try {
+      const result = await currentStep.onAction?.();
+      if (result?.preventAdvance) return;
+
+      if (currentStep.markCompleteOnAction !== false) {
+        onStepComplete?.(currentStep.id);
+      }
+
+      const redirectTarget = result?.redirectTo || currentStep.actionPath;
+      if (redirectTarget) {
+        router.push(redirectTarget);
+        onClose();
+        return;
+      }
+
+      if (isLast) {
+        onFinish?.();
+        onClose();
+        return;
+      }
+
+      setCurrentIndex((i) => i + 1);
+    } finally {
+      setBusy(false);
     }
-    if (currentStep.actionPath) {
-      router.push(currentStep.actionPath);
-      onClose();
-      return;
-    }
-    setCurrentIndex((i) => i + 1);
   };
 
   const handleSkip = () => {
+    if (busy) return;
     if (isLast) {
       onFinish?.();
       onClose();
@@ -99,19 +123,19 @@ export default function OnboardingWizard({
         <DialogFooter className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             {currentIndex > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => setCurrentIndex((i) => i - 1)}>
+              <Button variant="ghost" size="sm" onClick={() => setCurrentIndex((i) => i - 1)} disabled={busy}>
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back
               </Button>
             )}
             {currentStep.canSkip && !isLast && (
-              <Button variant="ghost" size="sm" onClick={handleSkip}>
+              <Button variant="ghost" size="sm" onClick={handleSkip} disabled={busy}>
                 Skip
               </Button>
             )}
           </div>
 
-          <Button onClick={handleAction} className="bg-electric-500 hover:bg-electric-400">
+          <Button onClick={handleAction} className="bg-electric-500 hover:bg-electric-400" disabled={busy}>
             {isLast ? (
               <>
                 <CheckCircle2 className="h-4 w-4 mr-2" />

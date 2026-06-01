@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getLaunchStepsLive } from "@/lib/activation-diagnosis";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,9 @@ export async function GET(request: NextRequest) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -35,11 +39,47 @@ export async function GET(request: NextRequest) {
 
     // Also fetch recent listing_syncs for a unified view
     const [
+      { data: latestScan, error: latestScanError },
+      { data: gbpProfile, error: gbpError },
+      { data: reputationSettings, error: reputationSettingsError },
+      { data: operatorRuns, error: operatorRunsError },
+      { data: operatorRunEvents, error: operatorRunEventsError },
       { data: syncs },
       { data: feedbackItems, error: feedbackError },
       { data: recentRequests, error: requestsError },
       { data: proofAssets, error: proofError },
     ] = await Promise.all([
+      supabase
+        .from("scans")
+        .select("id, business_name, city, state, created_at, geothority_score, layer_scores, quick_wins")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("gbp_profiles")
+        .select("id, business_name, last_synced_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("reputation_settings")
+        .select("google_review_link, active")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("operator_runs")
+        .select("id, scan_id, status, operator_action, message, redirect_to, metadata, current_stage, stage_status, plan_id, completed_at, created_at, updated_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(12),
+      supabase
+        .from("operator_run_events")
+        .select("id, run_id, stage, status, title, detail, metadata, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(72),
       supabase
         .from("listing_syncs")
         .select("id, business_name, city, state, sync_status, directories_reached, created_at")
@@ -66,10 +106,35 @@ export async function GET(request: NextRequest) {
         .limit(8),
     ]);
 
+    if (latestScanError) {
+      console.error("Action center latest scan query error:", latestScanError);
+    }
+
+    if (gbpError) {
+      console.error("Action center GBP profile query error:", gbpError);
+    }
+
+    if (reputationSettingsError) {
+      console.error("Action center reputation settings query error:", reputationSettingsError);
+    }
+
+    if (operatorRunsError) {
+      console.error("Action center operator runs query error:", operatorRunsError);
+    }
+    if (operatorRunEventsError) {
+      console.error("Action center operator run events query error:", operatorRunEventsError);
+    }
+
     const feedback = feedbackError ? [] : feedbackItems ?? [];
     const activeFollowUpStatuses = new Set(["reviewing", "outreach_queued", "waiting_on_customer"]);
     const requests = requestsError ? [] : recentRequests ?? [];
     const proof = proofError ? [] : proofAssets ?? [];
+    const gbpConnected = Boolean(session?.provider_token || gbpProfile);
+    const reputationActivated = Boolean(
+      reputationSettings &&
+      ((reputationSettings as { active?: boolean | null }).active ||
+        (reputationSettings as { google_review_link?: string | null }).google_review_link),
+    );
     const reputation = {
       counts: {
         unresolvedFeedback: feedback.filter((item: any) => item.follow_up_status !== "resolved").length,
@@ -84,9 +149,32 @@ export async function GET(request: NextRequest) {
       proof,
     };
 
+    const eventsByRunId = new Map<string, any[]>();
+    for (const event of operatorRunEvents ?? []) {
+      const existing = eventsByRunId.get(event.run_id) ?? [];
+      existing.push(event);
+      eventsByRunId.set(event.run_id, existing);
+    }
+
+    const operatorRunsWithEvents = (operatorRuns ?? []).map((run: any) => ({
+      ...run,
+      events: (eventsByRunId.get(run.id) ?? []).sort(
+        (a, b) => +new Date(a.created_at) - +new Date(b.created_at)
+      ),
+    }));
+
     return NextResponse.json({
       plans: plans ?? [],
+      operatorRuns: operatorRunsWithEvents,
       syncs: syncs ?? [],
+      latestScan: latestScan ?? null,
+      launchState: {
+        gbpConnected,
+        reputationActivated,
+        launchStepsLive: getLaunchStepsLive(gbpConnected, reputationActivated),
+        gbpBusinessName: gbpProfile?.business_name ?? null,
+        gbpLastSyncedAt: gbpProfile?.last_synced_at ?? null,
+      },
       reputation,
     });
   } catch (err) {

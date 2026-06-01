@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
+import { recordJourneyMilestone } from "@/lib/journey-events";
 
 function isMissingTableError(error: any) {
-  return error?.code === "42P01" || /relation .* does not exist/i.test(error?.message || "");
+  return error?.code === "42P01"
+    || error?.code === "PGRST205"
+    || /relation .* does not exist/i.test(error?.message || "")
+    || /Could not find the table .* in the schema cache/i.test(error?.message || "");
 }
 
 export async function GET() {
@@ -76,6 +80,10 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Reputation tables are not installed yet. Run the migration first." }, { status: 412 });
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    if (payload.active || payload.google_review_link) {
+      await recordJourneyMilestone(session.user.id, "reputation_activated");
     }
 
     return NextResponse.json({ success: true, settings: body });

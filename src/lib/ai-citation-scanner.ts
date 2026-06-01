@@ -6,6 +6,21 @@
 
 const PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions";
 
+function getOpenAICompatibleConfig() {
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+  return {
+    apiKey: openrouterKey || process.env.OPENAI_API_KEY,
+    baseUrl: openrouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1",
+    headers: openrouterKey
+      ? {
+          "HTTP-Referer": "https://www.geothority.io",
+          "X-Title": "Geothority",
+        }
+      : {},
+    defaultModel: openrouterKey ? "openai/gpt-4.1-mini" : "gpt-4o-mini",
+  };
+}
+
 export type AIEngine = "chatgpt" | "perplexity" | "claude" | "gemini" | "copilot" | "grok" | "deepseek" | "meta_ai" | "you_com" | "mistral" | "brave" | "phind" | "iask" | "qwen" | "cohere";
 
 export interface AICheckResult {
@@ -86,16 +101,31 @@ function getSnippet(text: string, businessName: string): string {
 async function checkChatGPT(config: ScanConfig): Promise<AICheckResult> {
   const { businessName, businessType, city } = config;
   const query = `Who are the best ${businessType} in ${city}? List your top 5 recommendations.`;
+  const llm = getOpenAICompatibleConfig();
+
+  if (!llm.apiKey) {
+    return {
+      engine: "chatgpt",
+      found: false,
+      mentioned: false,
+      snippet: "Error: Missing OPENROUTER_API_KEY or OPENAI_API_KEY",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch(`${llm.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${llm.apiKey}`,
+        ...llm.headers,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: llm.defaultModel,
         messages: [
           {
             role: "system",
@@ -217,16 +247,31 @@ async function checkPerplexity(config: ScanConfig): Promise<AICheckResult> {
 async function checkPerplexitySimulated(config: ScanConfig): Promise<AICheckResult> {
   const { businessName, businessType, city } = config;
   const query = `Based on web search results, what are the top recommended ${businessType} in ${city}? Include business names, ratings, and key differentiators.`;
+  const llm = getOpenAICompatibleConfig();
+
+  if (!llm.apiKey) {
+    return {
+      engine: "perplexity",
+      found: false,
+      mentioned: false,
+      snippet: "Error: Missing OPENROUTER_API_KEY or OPENAI_API_KEY",
+      competitors: [],
+      confidence: "low",
+      isReal: false,
+      status: "error",
+    };
+  }
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch(`${llm.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${llm.apiKey}`,
+        ...llm.headers,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: llm.defaultModel,
         messages: [
           {
             role: "system",

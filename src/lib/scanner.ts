@@ -457,7 +457,7 @@ function generateQuickWins(
   if (!data.hasFAQSchema) {
     wins.push({
       title: "Add FAQ Schema Markup",
-      description: `Adding FAQ structured data helps your website appear in Google's "People Also Ask" section and AI search results. This is critical for GEO (Generative Engine Optimization).`,
+      description: `Adding FAQ structured data helps your website appear in Google's "People Also Ask" section and AI search results. This is critical for AEO (AI Engine Optimization).`,
       copyText: `<script type="application/ld+json">
 {
   "@context": "https://schema.org",

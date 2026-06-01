@@ -25,7 +25,8 @@ const REQUIRED_GROUPS = [
   {
     name: 'AI + local data',
     severity: 'critical',
-    envVars: ['OPENAI_API_KEY', 'GOOGLE_MAPS_API_KEY'],
+    envVars: ['GOOGLE_MAPS_API_KEY'],
+    alternative: ['OPENROUTER_API_KEY', 'OPENAI_API_KEY'],
     reason: 'Core scan, AI recommendations, and location-aware flows are degraded or broken without these.',
   },
   {

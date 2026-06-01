@@ -16,6 +16,30 @@ export async function ensureUserProfileExists(
   supabase: SupabaseClient,
   user: User
 ) {
+  const existingProfileResult = await supabase
+    .from("user_profiles")
+    .select("id, onboarding_completed")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!existingProfileResult.error && existingProfileResult.data) {
+    return {
+      error: null,
+      usedFallback: false,
+      created: false,
+      onboardingCompleted: existingProfileResult.data.onboarding_completed === true,
+    };
+  }
+
+  if (existingProfileResult.error && !isMissingOnboardingColumnError(existingProfileResult.error)) {
+    return {
+      error: existingProfileResult.error,
+      usedFallback: false,
+      created: false,
+      onboardingCompleted: false,
+    };
+  }
+
   const profileSeed = {
     id: user.id,
     onboarding_completed: false,
@@ -27,7 +51,7 @@ export async function ensureUserProfileExists(
   });
 
   if (!isMissingOnboardingColumnError(error)) {
-    return { error, usedFallback: false };
+    return { error, usedFallback: false, created: !error, onboardingCompleted: false };
   }
 
   console.warn(
@@ -48,6 +72,8 @@ export async function ensureUserProfileExists(
   return {
     error: fallback.error,
     usedFallback: true,
+    created: !fallback.error,
+    onboardingCompleted: false,
     drift: "missing_onboarding_completed_column",
   };
 }

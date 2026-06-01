@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   CreditCard,
   ArrowRight,
@@ -17,7 +18,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  getLayerScores,
+  isEntryPlan,
+} from "@/lib/activation-diagnosis";
 import { apiRequest } from "@/lib/queryClient";
+import { useActivationState } from "@/hooks/use-activation-state";
 import { useToast } from "@/hooks/use-toast";
 
 interface SubscriptionData {
@@ -51,6 +57,8 @@ export default function BillingPortalPage() {
     },
   });
 
+  const activationState = useActivationState();
+
   const portalMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/billing/create-portal-session", {
@@ -71,6 +79,15 @@ export default function BillingPortalPage() {
   const plan = data?.subscription?.plan ?? "free";
   const planInfo = PLAN_LABELS[plan] ?? PLAN_LABELS.free;
   const hasBilling = !!data?.subscription?.stripeCustomerId;
+  const latestScan = activationState.latestScan;
+  const layerScores = getLayerScores(latestScan?.layer_scores);
+  const weakestLayerDiagnosis = activationState.weakestLayerDiagnosis;
+  const quickWinCount = activationState.quickWinCount;
+  const gbpConnected = activationState.gbpConnected;
+  const reputationActivated = activationState.reputationActivated;
+  const launchStepsLive = activationState.launchStepsLive;
+  const monetizationNeedsLaunchFirst = !gbpConnected || !reputationActivated;
+  const entryPlan = isEntryPlan(plan as any);
 
   if (isLoading) {
     return (
@@ -217,6 +234,54 @@ export default function BillingPortalPage() {
           </CardContent>
         </Card>
       </div>
+
+      {entryPlan && weakestLayerDiagnosis && (
+        <Card className="geo-premium-card rounded-3xl border-0 bg-transparent py-0">
+          <CardHeader className="px-6 pt-6">
+            <CardTitle className="text-base">Diagnosis-driven upgrade path</CardTitle>
+            <CardDescription>Billing guidance tied to your current weakest trust layer</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 px-6 pb-6">
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+              <p className="text-sm font-semibold text-emerald-200">{weakestLayerDiagnosis.headline}</p>
+              <p className="mt-2 text-sm text-emerald-50/90">{weakestLayerDiagnosis.detail}</p>
+              <p className="mt-2 text-sm text-emerald-50/75">{weakestLayerDiagnosis.paidUnlock}</p>
+              {quickWinCount > 0 && (
+                <p className="mt-2 text-sm text-emerald-50/75">
+                  You have {quickWinCount} quick win{quickWinCount === 1 ? "" : "s"} queued right now, so paid expansion becomes more valuable once you want sustained execution and monitoring, not just diagnosis.
+                </p>
+              )}
+            </div>
+
+            {monetizationNeedsLaunchFirst ? (
+              <div className="rounded-2xl border border-electric-500/20 bg-electric-500/10 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-electric-100">Finish launch before you judge expansion</p>
+                    <p className="mt-1 text-sm text-electric-50/80">
+                      You currently have {launchStepsLive}/3 launch systems live. GBP and Reputation Engine should be wired first so the subscription decision is based on a live operating system, not partial setup.
+                    </p>
+                  </div>
+                  <Link href={!gbpConnected ? "/gbp-health" : "/reputation"} className="inline-flex items-center gap-2 rounded-xl bg-electric-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-electric-400">
+                    {!gbpConnected ? "Connect GBP first" : "Activate review engine first"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                <Button onClick={() => router.push("/pricing")} className="bg-electric-500 hover:bg-electric-400">
+                  See the next-tier unlocks
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <p className="self-center text-sm text-[var(--muted-foreground)]">
+                  This pitch is anchored to your weakest layer, not a generic feature list.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {plan === "free" && (
         <Card className="geo-premium-card rounded-3xl border-0 bg-transparent py-0">

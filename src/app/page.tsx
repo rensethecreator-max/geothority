@@ -696,9 +696,9 @@ export default function HomePage() {
                       )}
                       {feature.title === "Schema Generation" && (
                         <div className="space-y-2 rounded-2xl bg-slate-950 px-3 py-2 text-[10px] text-emerald-300">
-                          <div>{'{'}"@type": "LocalBusiness"{'}'}</div>
-                          <div>{'{'}"areaServed": "Tampa"{'}'}</div>
-                          <div>{'{'}"sameAs": [ ... ]{'}'}</div>
+                          <div>{'{'}&quot;@type&quot;: &quot;LocalBusiness&quot;{'}'}</div>
+                          <div>{'{'}&quot;areaServed&quot;: &quot;Tampa&quot;{'}'}</div>
+                          <div>{'{'}&quot;sameAs&quot;: [ ... ]{'}'}</div>
                         </div>
                       )}
                       {feature.title === "Local Content Drafting" && (

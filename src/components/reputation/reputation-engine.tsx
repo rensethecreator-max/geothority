@@ -345,6 +345,7 @@ export function ReputationEngine() {
     () => proofAssets.filter((asset) => !asset.approved),
     [proofAssets],
   );
+  const reputationActivationReady = Boolean(settings.active && settings.googleReviewLink?.trim());
 
   const approvedProofAssets = useMemo(
     () => proofAssets.filter((asset) => asset.approved),
@@ -634,6 +635,50 @@ export function ReputationEngine() {
       {(message || error) && (
         <div className={`rounded-2xl px-4 py-3 text-sm ${error ? "border border-red-500/20 bg-red-500/10 text-red-200" : "border border-emerald-500/20 bg-emerald-500/10 text-emerald-200"}`}>
           {error || message}
+        </div>
+      )}
+
+      {!reputationActivationReady && !apiState.setupRequired && (
+        <div className="rounded-3xl border border-electric-500/20 bg-electric-500/10 px-5 py-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-electric-300/20 bg-electric-300/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-electric-200">
+                <Sparkles className="h-3.5 w-3.5" />
+                Activation guide
+              </div>
+              <h2 className="mt-3 text-xl font-semibold text-[var(--foreground)]">Finish launching the Reputation Engine</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-electric-50/90">
+                The infrastructure is here. To make this a live growth system instead of a dormant tool, finish the two setup moves below and then send your first request.
+              </p>
+            </div>
+            <div className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-electric-100">
+              {[Boolean(settings.googleReviewLink?.trim()), settings.active].filter(Boolean).length}/2 activation signals live
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-sm font-semibold text-[var(--foreground)]">1. Add review destination</div>
+              <p className="mt-2 text-xs leading-relaxed text-electric-50/80">
+                {settings.googleReviewLink?.trim()
+                  ? "Google review link is present."
+                  : "Paste your public Google review link in Settings so positive customers have a one-tap destination."}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-sm font-semibold text-[var(--foreground)]">2. Turn automation on</div>
+              <p className="mt-2 text-xs leading-relaxed text-electric-50/80">
+                {settings.active
+                  ? "Automation is currently active."
+                  : "Enable active sending once your review link and message template look right."}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-sm font-semibold text-[var(--foreground)]">3. Send a live test</div>
+              <p className="mt-2 text-xs leading-relaxed text-electric-50/80">
+                Use the Manual send form in Campaigns to test the first request and confirm delivery behavior end to end.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 

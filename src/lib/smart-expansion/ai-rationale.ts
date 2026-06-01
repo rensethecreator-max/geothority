@@ -20,7 +20,10 @@ export async function generateAIRationale(
   context: RationaleContext,
   openaiApiKey?: string
 ): Promise<string> {
-  const apiKey = openaiApiKey || process.env.OPENAI_API_KEY;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = openaiApiKey || openrouterKey || process.env.OPENAI_API_KEY;
+  const baseUrl = openrouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1";
+  const model = openrouterKey ? "openai/gpt-4.1-mini" : "gpt-4o-mini";
   if (!apiKey) return generateFallbackRationale(context);
 
   try {
@@ -39,14 +42,20 @@ Competitor Gaps: ${context.competitorGaps.join("; ") || "None identified"}
 
 Rationale:`;
 
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
+        ...(openrouterKey
+          ? {
+              "HTTP-Referer": "https://www.geothority.io",
+              "X-Title": "Geothority",
+            }
+          : {}),
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model,
         messages: [{ role: "user", content: prompt }],
         max_tokens: 150,
         temperature: 0.4,

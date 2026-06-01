@@ -104,7 +104,7 @@ export default function InsuranceAgentsPage() {
           <div className="bg-gradient-to-br from-electric-500/10 to-emerald-500/10 border border-emerald-500/20 rounded-3xl p-12">
             <h2 className="text-3xl font-bold mb-4">See Your Score in 90 Seconds</h2>
             <p className="text-[var(--muted-foreground)] mb-8 text-lg max-w-lg mx-auto">
-              Enter your business name, city, and website. Get a full GEO Authority Score with specific, ranked fixes ready to implement today.
+              Enter your business name, city, and website. Get a full AEO Authority Score with specific, ranked fixes ready to implement today.
             </p>
             <Link
               href="/login"

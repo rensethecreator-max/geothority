@@ -2,9 +2,19 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  getLayerScores,
+  getLaunchStepsLive,
+  getQuickWinCount,
+  getWeakestLayer,
+  getWeakestLayerDiagnosis,
+  LAYER_LABELS,
+  type TrustLayerKey,
+} from "@/lib/activation-diagnosis";
 import {
   Activity,
   CheckCircle2,
@@ -21,6 +31,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Orbit,
+  Radar,
 } from "lucide-react";
 
 interface PlanSummary {
@@ -102,6 +113,53 @@ interface ReputationSummary {
   proof: ReputationProofSummary[];
 }
 
+interface LatestScanSummary {
+  id: string;
+  business_name: string | null;
+  city: string | null;
+  state: string | null;
+  created_at: string;
+  geothority_score: number | null;
+  layer_scores: Record<string, number> | null;
+  quick_wins: Array<{ title?: string | null }> | null;
+}
+
+interface LaunchStateSummary {
+  gbpConnected: boolean;
+  reputationActivated: boolean;
+  launchStepsLive: number;
+  gbpBusinessName?: string | null;
+  gbpLastSyncedAt?: string | null;
+}
+
+interface OperatorRunSummary {
+  id: string;
+  scan_id: string | null;
+  status: "blocked" | "ready" | "launched" | "resumed" | "failed";
+  operator_action: string;
+  message: string;
+  redirect_to: string | null;
+  metadata?: Record<string, unknown> | null;
+  current_stage?: string | null;
+  stage_status?: string | null;
+  plan_id?: string | null;
+  completed_at?: string | null;
+  created_at: string;
+  updated_at: string;
+  events?: OperatorRunEventSummary[];
+}
+
+interface OperatorRunEventSummary {
+  id: string;
+  run_id: string;
+  stage: string;
+  status: "started" | "completed" | "blocked" | "redirected" | "failed" | "info";
+  title: string;
+  detail: string;
+  metadata?: Record<string, unknown> | null;
+  created_at: string;
+}
+
 const STATUS_CFG: Record<
   string,
   { label: string; icon: typeof CheckCircle2; color: string; bg: string }
@@ -130,6 +188,22 @@ const SYNC_STATUS_CFG: Record<string, { label: string; color: string; bg: string
 function formatWorkflowLabel(value: string | null | undefined) {
   if (!value) return "—";
   return value.replace(/_/g, " ");
+}
+
+function getRunTone(status: OperatorRunSummary["status"]) {
+  if (status === "failed") return "border-red-500/20 bg-red-500/10";
+  if (status === "blocked") return "border-amber-500/20 bg-amber-500/10";
+  if (status === "ready") return "border-blue-500/20 bg-blue-500/10";
+  return "border-emerald-500/20 bg-emerald-500/10";
+}
+
+function getEventTone(status: OperatorRunEventSummary["status"]) {
+  if (status === "failed") return "border-red-500/20 bg-red-500/10 text-red-100";
+  if (status === "blocked") return "border-amber-500/20 bg-amber-500/10 text-amber-100";
+  if (status === "redirected") return "border-electric-500/20 bg-electric-500/10 text-electric-100";
+  if (status === "info") return "border-white/10 bg-white/5 text-[var(--foreground)]";
+  if (status === "started") return "border-blue-500/20 bg-blue-500/10 text-blue-100";
+  return "border-emerald-500/20 bg-emerald-500/10 text-emerald-100";
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -322,7 +396,9 @@ function SyncRow({ sync }: { sync: SyncSummary }) {
 }
 
 export default function ActionCenterPage() {
+  const router = useRouter();
   const [plans, setPlans] = useState<PlanSummary[]>([]);
+  const [operatorRuns, setOperatorRuns] = useState<OperatorRunSummary[]>([]);
   const [syncs, setSyncs] = useState<SyncSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -333,6 +409,13 @@ export default function ActionCenterPage() {
     requests: [],
     proof: [],
   });
+  const [latestScan, setLatestScan] = useState<LatestScanSummary | null>(null);
+  const [launchState, setLaunchState] = useState<LaunchStateSummary>({
+    gbpConnected: false,
+    reputationActivated: false,
+    launchStepsLive: 1,
+  });
+  const [launchingOperator, setLaunchingOperator] = useState(false);
   const [tab, setTab] = useState<"needs-action" | "running" | "completed" | "failed" | "syncs">("needs-action");
 
   const fetchData = useCallback(async () => {
@@ -353,7 +436,16 @@ export default function ActionCenterPage() {
       if (!response.ok) throw new Error("Failed to fetch action center data");
       const data = await response.json();
       setPlans(data.plans ?? []);
+      setOperatorRuns(data.operatorRuns ?? []);
       setSyncs(data.syncs ?? []);
+      setLatestScan(data.latestScan ?? null);
+      setLaunchState(
+        data.launchState ?? {
+          gbpConnected: false,
+          reputationActivated: false,
+          launchStepsLive: 1,
+        },
+      );
       setReputation(
         data.reputation ?? {
           counts: { unresolvedFeedback: 0, newComplaints: 0, pendingFollowUps: 0, awaitingReplies: 0, pendingProofApprovals: 0, approvedProof: 0 },
@@ -405,10 +497,44 @@ export default function ActionCenterPage() {
     }
   };
 
+  const handleRunOperator = async () => {
+    if (launchingOperator) return;
+
+    setLaunchingOperator(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/operator/launch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to run the operator.");
+      }
+
+      await fetchData();
+      if (payload.redirectTo) {
+        router.push(payload.redirectTo);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to run the operator.");
+    } finally {
+      setLaunchingOperator(false);
+    }
+  };
+
   const needsAction = plans.filter((plan) => plan.status === "paused" || plan.status === "planning");
   const running = plans.filter((plan) => plan.status === "executing");
   const completed = plans.filter((plan) => plan.status === "completed");
   const failed = plans.filter((plan) => plan.status === "failed");
+  const latestScanPlan = latestScan ? plans.find((plan) => plan.scan_id === latestScan.id) ?? null : null;
+  const latestScanId = latestScan?.id ?? null;
+  const launchSystemsMissing = !launchState.gbpConnected || !launchState.reputationActivated;
+  const latestLayerScores = getLayerScores(latestScan?.layer_scores);
+  const weakestLayer = latestScan ? getWeakestLayer(latestLayerScores) : null;
+  const weakestLayerDiagnosis = latestScan ? getWeakestLayerDiagnosis(latestLayerScores) : null;
+  const quickWinCount = getQuickWinCount(latestScan?.quick_wins);
 
   const tabs: { key: typeof tab; label: string; count: number }[] = [
     { key: "needs-action", label: "Needs Action", count: needsAction.length },
@@ -442,17 +568,20 @@ export default function ActionCenterPage() {
             </div>
             <h1 className="text-3xl font-semibold tracking-tight">Action Center</h1>
             <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
-              Review automation approvals, watch execution progress, and confirm trust-impact before changes go live.
+              {latestScan
+                ? `${latestScan.business_name || "Your business"}${latestScan.city || latestScan.state ? ` · ${[latestScan.city, latestScan.state].filter(Boolean).join(", ")}` : ""} · Last scan ${new Date(latestScan.created_at).toLocaleDateString()}. Review automation approvals, watch execution progress, and move the current diagnosis into action.`
+                : "Review automation approvals, watch execution progress, and confirm trust-impact before changes go live."}
               {latestHeartbeat ? ` Latest movement landed ${formatDistanceToNow(new Date(latestHeartbeat.updated_at), { addSuffix: true })}.` : ""}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             {[
+              { label: "Launch systems", value: `${launchState.launchStepsLive}/3 live`, icon: Radar },
               { label: "Awaiting review", value: `${needsAction.length} plans`, icon: AlertTriangle },
               { label: "Live runs", value: `${running.length} executing`, icon: Loader2 },
-              { label: "Listing coverage", value: `${syncs.length} sync records`, icon: ShieldCheck },
+              { label: "Current diagnosis", value: weakestLayer ? LAYER_LABELS[weakestLayer[0] as TrustLayerKey] : "Waiting for scan", icon: ShieldCheck },
               { label: "Reputation follow-up", value: `${reputation.counts.unresolvedFeedback} open items`, icon: Activity },
-              { label: "Proof approvals", value: `${reputation.counts.pendingProofApprovals} pending`, icon: ShieldCheck },
+              { label: "Quick wins", value: latestScan ? `${quickWinCount} queued` : "No scan yet", icon: Zap },
             ].map((item) => (
               <div key={item.label} className="geo-premium-muted min-w-[180px] rounded-2xl px-4 py-3">
                 <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
@@ -473,6 +602,108 @@ export default function ActionCenterPage() {
           </div>
         </div>
       </div>
+
+      {(launchSystemsMissing || weakestLayerDiagnosis || latestScanPlan || latestScan) && (
+        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+          <div className={`rounded-3xl p-5 sm:p-6 ${launchSystemsMissing ? "border border-electric-500/20 bg-electric-500/10" : "geo-premium-card"}`}>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl">
+                <div className={`text-xs font-semibold uppercase tracking-[0.18em] ${launchSystemsMissing ? "text-electric-300" : "text-[var(--muted-foreground)]"}`}>
+                  Launch cockpit
+                </div>
+                <h2 className="mt-2 text-xl font-semibold">
+                  {launchSystemsMissing
+                    ? "The baseline exists. Now wire the compounding systems."
+                    : "The core launch systems are live."}
+                </h2>
+                <p className={`mt-2 text-sm leading-7 ${launchSystemsMissing ? "text-electric-50/90" : "text-[var(--muted-foreground)]"}`}>
+                  {launchSystemsMissing
+                    ? "Action Center should reflect the same sequence as dashboard: first scan, then GBP connection, then Reputation Engine activation so execution can run against live trust signals instead of one-time audit data."
+                    : "GBP and the Reputation Engine are both active, so Action Center can focus on execution flow, approvals, and the diagnosis coming out of the latest scan."}
+                </p>
+              </div>
+              <div className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${launchSystemsMissing ? "border-white/15 text-electric-100" : "border-electric-500/20 bg-electric-500/10 text-electric-400"}`}>
+                {launchState.launchStepsLive}/3 launch systems live
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {!launchState.gbpConnected && (
+                <Link href="/gbp-health" className="rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-electric-300/40">
+                  <div className="text-sm font-semibold">Connect GBP</div>
+                  <p className={`mt-2 text-xs leading-relaxed ${launchSystemsMissing ? "text-electric-50/80" : "text-[var(--muted-foreground)]"}`}>
+                    Unlock profile health, monitoring, and better layer-1 trust diagnostics.
+                  </p>
+                </Link>
+              )}
+              {!launchState.reputationActivated && (
+                <Link href="/reputation" className="rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-electric-300/40">
+                  <div className="text-sm font-semibold">Activate Reputation Engine</div>
+                  <p className={`mt-2 text-xs leading-relaxed ${launchSystemsMissing ? "text-electric-50/80" : "text-[var(--muted-foreground)]"}`}>
+                    Add your review link, switch automation on, and send the first request.
+                  </p>
+                </Link>
+              )}
+              {launchState.gbpConnected && launchState.reputationActivated && (
+                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 md:col-span-2">
+                  <div className="text-sm font-semibold">Launch sequence complete</div>
+                  <p className="mt-2 text-xs leading-relaxed text-[var(--muted-foreground)]">
+                    Both live trust systems are active. The next best move is to keep execution plans flowing from the newest scan and clear approvals quickly.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="geo-premium-card rounded-3xl p-5 sm:p-6">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Current diagnosis</div>
+            <h2 className="mt-2 text-xl font-semibold text-[var(--foreground)]">
+              {weakestLayerDiagnosis?.headline ?? "Action Center is waiting for your latest scan."}
+            </h2>
+            <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
+              {weakestLayerDiagnosis?.detail ?? "Run a scan to give Action Center a state-aware diagnosis and route the right fix path into execution."}
+            </p>
+            {latestScan && weakestLayer && (
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                Latest weakest layer: <span className="font-medium text-[var(--foreground)]">{LAYER_LABELS[weakestLayer[0] as TrustLayerKey]}</span>
+                {" "}at {weakestLayer[1]}/100. {quickWinCount} quick win{quickWinCount === 1 ? "" : "s"} are attached to this scan.
+              </p>
+            )}
+            <div className="mt-5 flex flex-col gap-3">
+              {latestScanPlan && latestScanId ? (
+                <>
+                  <Link href={`/scan/${latestScanId}#fix-package`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-electric-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-electric-400">
+                    Open current execution plan
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link href="/scan" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition-colors hover:border-electric-500/30">
+                    Run another scan
+                  </Link>
+                </>
+              ) : latestScan ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleRunOperator}
+                    disabled={launchingOperator}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-electric-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-electric-400 disabled:opacity-60"
+                  >
+                    {launchingOperator ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                    {launchingOperator ? "Running operator..." : "Run operator next step"}
+                  </button>
+                  <Link href={`/scan/${latestScan.id}`} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition-colors hover:border-electric-500/30">
+                    Open latest scan
+                  </Link>
+                </>
+              ) : (
+                <Link href="/scan" className="inline-flex items-center justify-center gap-2 rounded-xl bg-electric-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-electric-400">
+                  Run your first scan
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
@@ -498,6 +729,101 @@ export default function ActionCenterPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      <div className="geo-premium-card rounded-3xl p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-4 flex-col sm:flex-row">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Operator timeline</div>
+            <h2 className="mt-2 text-xl font-semibold text-[var(--foreground)]">Durable run history</h2>
+            <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
+              Every operator decision is now recorded so you can see whether Geothority blocked, launched, resumed, or redirected the next coordinated move.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRunOperator}
+            disabled={launchingOperator}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-electric-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-electric-400 disabled:opacity-60"
+          >
+            {launchingOperator ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+            {launchingOperator ? "Running operator..." : "Run operator"}
+          </button>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          {operatorRuns.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
+              No operator runs recorded yet. Kick off the operator to start building the timeline.
+            </div>
+          ) : (
+            operatorRuns.map((run) => {
+              return (
+                <div key={run.id} className={`rounded-2xl border p-4 ${getRunTone(run.status)}`}>
+                  <div className="flex items-start justify-between gap-3 flex-col sm:flex-row">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold text-[var(--foreground)]">{formatWorkflowLabel(run.operator_action)}</span>
+                        <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                          {run.status}
+                        </span>
+                        {run.current_stage ? (
+                          <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                            {formatWorkflowLabel(run.current_stage)}
+                          </span>
+                        ) : null}
+                        {run.stage_status ? (
+                          <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                            {formatWorkflowLabel(run.stage_status)}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-2 text-sm text-[var(--foreground)]">{run.message}</p>
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[var(--muted-foreground)]">
+                        <span>{formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}</span>
+                        {run.plan_id ? <span>Plan {run.plan_id.slice(0, 12)}…</span> : null}
+                        {run.completed_at ? (
+                          <span>Completed {formatDistanceToNow(new Date(run.completed_at), { addSuffix: true })}</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    {run.redirect_to ? (
+                      <Link
+                        href={run.redirect_to}
+                        className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition-colors hover:border-electric-500/30"
+                      >
+                        Open next surface
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    ) : null}
+                  </div>
+                  {run.events?.length ? (
+                    <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+                      {run.events.map((event) => (
+                        <div
+                          key={event.id}
+                          className={`rounded-xl border px-3 py-3 ${getEventTone(event.status)}`}
+                        >
+                          <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.16em]">
+                            <span className="font-semibold">{formatWorkflowLabel(event.stage)}</span>
+                            <span className="rounded-full border border-white/10 px-2 py-0.5">
+                              {formatWorkflowLabel(event.status)}
+                            </span>
+                            <span className="text-[var(--muted-foreground)] normal-case tracking-normal">
+                              {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
+                            </span>
+                          </div>
+                          <div className="mt-2 text-sm font-medium text-[var(--foreground)]">{event.title}</div>
+                          <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">{event.detail}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">

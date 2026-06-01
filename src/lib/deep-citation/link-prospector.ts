@@ -509,7 +509,8 @@ export async function enrichOpportunitiesWithAI(
   opportunities: LinkOpportunity[],
   config: LinkProspectConfig
 ): Promise<LinkOpportunity[]> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = openrouterKey || process.env.OPENAI_API_KEY;
   if (!apiKey) return opportunities;
 
   // Batch the top 5 opportunities for AI enrichment
@@ -527,14 +528,20 @@ For each, provide:
 Respond in JSON format as an array of objects with: index, url, contactInfo, contactName fields.`;
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch(`${openrouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
+        ...(openrouterKey
+          ? {
+              "HTTP-Referer": "https://www.geothority.io",
+              "X-Title": "Geothority",
+            }
+          : {}),
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: openrouterKey ? "openai/gpt-4.1-mini" : "gpt-4o-mini",
         messages: [
           { role: "system", content: "You are a local SEO link building expert. Provide accurate, actionable contact information for local link opportunities. Respond with valid JSON only." },
           { role: "user", content: prompt },

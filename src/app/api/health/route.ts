@@ -3,6 +3,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getKeysSummary } from "@/lib/api-key-check";
 import { getReputationTransportDiagnostics } from "@/lib/reputation/diagnostics";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /**
  * GET /api/health
  * Basic health check: DB connectivity, API key status, version.

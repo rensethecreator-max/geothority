@@ -10,6 +10,15 @@ import { QuickWinCard } from "@/components/scan/quick-win-card";
 import { ReviewHealthCard } from "@/components/reputation/review-health-card";
 import { PDFReportButton } from "@/components/scan/pdf-report";
 import { useAchievements } from "@/hooks/use-achievements";
+import { useActivationState } from "@/hooks/use-activation-state";
+import {
+  getLayerScores,
+  getQuickWinCount,
+  getTopLayer,
+  getWeakestLayerDiagnosis,
+  isEntryPlan,
+  LAYER_LABELS,
+} from "@/lib/activation-diagnosis";
 import {
   ArrowLeft,
   ExternalLink,
@@ -232,7 +241,9 @@ export default function ScanResultPage() {
   const [autoPublishingStepIds, setAutoPublishingStepIds] = useState<string[]>([]);
   const [verifyingPlan, setVerifyingPlan] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [planTier, setPlanTier] = useState<string | null>(null);
   const supabase = createClient();
+  const activationState = useActivationState({ scan, fetchLatestScan: false });
 
   // IMPORTANT: All hooks must be called before any conditional returns
   useAchievements({ scanScore: scan?.geothority_score ?? 0, scanCount: scan ? 1 : 0 });
@@ -251,7 +262,7 @@ export default function ScanResultPage() {
           .single(),
         supabase
           .from("user_profiles")
-          .select("cms_credentials, automation_policies")
+          .select("cms_credentials, automation_policies, plan")
           .eq("id", user.id)
           .single(),
         supabase
@@ -265,6 +276,7 @@ export default function ScanResultPage() {
       ]);
 
       if (data) setScan(data);
+      setPlanTier(profile?.plan ?? null);
       if (existingPlan) {
         setExecPlan({
           id: existingPlan.id,
@@ -553,8 +565,16 @@ export default function ScanResultPage() {
     );
   }
 
-  const ls = scan.layer_scores || { layer1: 0, layer2: 0, layer3: 0, layer4: 0, layer5: 0 };
+  const ls = getLayerScores(scan.layer_scores);
   const quickWins = scan.quick_wins || [];
+  const quickWinCount = getQuickWinCount(quickWins);
+  const topLayer = getTopLayer(ls);
+  const weakestLayerDiagnosis = getWeakestLayerDiagnosis(ls);
+  const gbpConnected = activationState.gbpConnected;
+  const reputationActivated = activationState.reputationActivated;
+  const launchStepsLive = activationState.launchStepsLive;
+  const monetizationNeedsLaunchFirst = !gbpConnected || !reputationActivated;
+  const isFreeishPlan = isEntryPlan(planTier as any);
   const competitors = scan.competitor_gaps || [];
 
   // Group fixes by group label for display
@@ -638,6 +658,87 @@ export default function ScanResultPage() {
       <div className="bg-[var(--card)] rounded-xl p-6 border border-[var(--border)]">
         <TrustStackVisualization layerScores={ls} />
       </div>
+
+      {(!gbpConnected || !reputationActivated) && (
+        <div className="rounded-2xl border border-electric-500/20 bg-electric-500/10 p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-electric-300">Launch cockpit</div>
+              <h2 className="mt-2 text-lg font-semibold">Your scan baseline is in. Wire the compounding systems next.</h2>
+              <p className="mt-2 max-w-2xl text-sm text-electric-50/90">
+                The fastest score lift now usually comes from connecting GBP and activating the Reputation Engine so this scan turns into live trust data instead of staying a one-time diagnosis.
+              </p>
+            </div>
+            <div className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-electric-100">
+              {launchStepsLive}/3 launch systems live
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {!gbpConnected && (
+              <Link href="/gbp-health" className="rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-electric-300/40">
+                <div className="text-sm font-semibold">Connect GBP</div>
+                <p className="mt-2 text-xs leading-relaxed text-electric-50/80">
+                  Unlock profile health, monitoring, and stronger layer-1 trust diagnostics.
+                </p>
+              </Link>
+            )}
+            {!reputationActivated && (
+              <Link href="/reputation" className="rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-electric-300/40">
+                <div className="text-sm font-semibold">Activate Reputation Engine</div>
+                <p className="mt-2 text-xs leading-relaxed text-electric-50/80">
+                  Add your review link, switch automation on, and start building fresh review momentum.
+                </p>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {isFreeishPlan && weakestLayerDiagnosis && (
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">Diagnosis-driven upgrade path</div>
+              <h2 className="mt-2 text-lg font-semibold">{weakestLayerDiagnosis.headline}</h2>
+              <p className="mt-2 text-sm text-emerald-50/90">{weakestLayerDiagnosis.detail}</p>
+              <p className="mt-2 text-sm text-emerald-50/75">{weakestLayerDiagnosis.paidUnlock}</p>
+              {quickWinCount > 0 && (
+                <p className="mt-2 text-sm text-emerald-50/75">
+                  You currently have {quickWinCount} quick win{quickWinCount === 1 ? "" : "s"} queued. Paid value matters most once you want Geothority to help you sustain and monitor the fixes, not just surface them.
+                </p>
+              )}
+              {topLayer && (
+                <p className="mt-2 text-sm text-emerald-50/75">
+                  Your strongest layer right now is {LAYER_LABELS[topLayer[0]]} at {topLayer[1]}/100.
+                </p>
+              )}
+            </div>
+            <div className="flex min-w-[240px] flex-col gap-3">
+              {monetizationNeedsLaunchFirst ? (
+                <>
+                  <Link href={!gbpConnected ? "/gbp-health" : "/reputation"} className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-300">
+                    {!gbpConnected ? "Connect GBP first" : "Activate review engine first"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <p className="text-center text-xs text-emerald-50/70">
+                    Best sequence: finish the live launch systems before judging paid expansion.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Link href="/pricing" className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-300">
+                    See the next-tier unlocks
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <p className="text-center text-xs text-emerald-50/70">
+                    This upgrade case is tied to your current weakest layer, not a generic feature list.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Wins */}
       <div>

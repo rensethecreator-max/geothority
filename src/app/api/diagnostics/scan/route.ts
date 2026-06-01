@@ -8,9 +8,12 @@ const REQUIRED_ENV_VARS = [
   "SUPABASE_SERVICE_ROLE_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
-  "OPENAI_API_KEY",
   "RESEND_API_KEY",
   "NEXT_PUBLIC_APP_URL",
+];
+
+const REQUIRED_ENV_ALTERNATIVES: Array<{ names: string[]; label: string }> = [
+  { names: ["OPENROUTER_API_KEY", "OPENAI_API_KEY"], label: "OPENROUTER_API_KEY or OPENAI_API_KEY" },
 ];
 
 const REQUIRED_TABLES = [
@@ -32,6 +35,22 @@ function checkEnvVarIntegrity(): Array<{ name: string; issue: string }> {
       problems.push({ name: varName, issue: "contains newline characters" });
     } else if (val !== val.trim()) {
       problems.push({ name: varName, issue: "has leading/trailing whitespace" });
+    }
+  }
+  for (const alternative of REQUIRED_ENV_ALTERNATIVES) {
+    const values = alternative.names
+      .map((name) => ({ name, value: process.env[name] }))
+      .filter((entry) => !!entry.value);
+    if (values.length === 0) {
+      problems.push({ name: alternative.label, issue: "missing" });
+      continue;
+    }
+    for (const entry of values) {
+      if (/[\r\n]/.test(entry.value!)) {
+        problems.push({ name: entry.name, issue: "contains newline characters" });
+      } else if (entry.value !== entry.value!.trim()) {
+        problems.push({ name: entry.name, issue: "has leading/trailing whitespace" });
+      }
     }
   }
   return problems;

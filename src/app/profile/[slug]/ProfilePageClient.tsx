@@ -42,7 +42,7 @@ export default function ProfilePageClient({ profile }: { profile: PublicBusiness
             {profile.geoReadinessScore !== null && (
               <div className="ml-8">
                 <div className="text-2xl font-semibold text-blue-400">{profile.geoReadinessScore}</div>
-                <div className="text-sm text-gray-400">GEO Readiness</div>
+                <div className="text-sm text-gray-400">AEO Readiness</div>
               </div>
             )}
           </div>

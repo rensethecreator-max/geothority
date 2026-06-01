@@ -27,7 +27,7 @@ const faqSchema = {
       name: "What is Geothority?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Geothority is a local SEO and GEO (Generative Engine Optimization) platform built specifically for insurance agents and local businesses. It runs a 90-second website audit, scores your online presence across 5 trust layers, and gives you copy-paste fixes to rank higher in Google Maps, organic search, and AI answers like ChatGPT, Google AI Overviews, and Claude.",
+        text: "Geothority is a local SEO and AEO (AI Engine Optimization) platform built specifically for insurance agents and local businesses. It runs a 90-second website audit, scores your online presence across 5 trust layers, and gives you copy-paste fixes to rank higher in Google Maps, organic search, and AI answers like ChatGPT, Google AI Overviews, and Claude.",
       },
     },
     {
@@ -75,7 +75,7 @@ const faqSchema = {
       name: "How does the AI Overview Checker work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Geothority's AI Overview Checker runs your business against 20+ queries that trigger Google AI Overviews, ChatGPT, and Claude responses in your category. It checks whether your business is cited as a recommended answer, which competitors are appearing instead, and what content signals (schema, FAQ pages, entity mentions) are driving those citations. You get a GEO score and a checklist of optimizations - structured data improvements, FAQ content, and entity-building tactics - that increase the probability of appearing in AI-generated answers.",
+        text: "Geothority's AI Overview Checker runs your business against 20+ queries that trigger Google AI Overviews, ChatGPT, and Claude responses in your category. It checks whether your business is cited as a recommended answer, which competitors are appearing instead, and what content signals (schema, FAQ pages, entity mentions) are driving those citations. You get an AEO score and a checklist of optimizations - structured data improvements, FAQ content, and entity-building tactics - that increase the probability of appearing in AI-generated answers.",
       },
     },
     {
@@ -123,7 +123,7 @@ const faqSchema = {
       name: "What makes Geothority different from BrightLocal and Moz Local?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "BrightLocal and Moz Local are solid citation management tools, but they were built for SEO agencies managing dozens of clients. Geothority is built specifically for independent insurance agents and small local businesses who need to understand and act on their SEO themselves. Key differences: (1) GEO/AI Optimization - Geothority optimizes for AI Overviews, ChatGPT, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere citations; BrightLocal and Moz Local do not. (2) Industry focus - our Quick Wins and content templates are insurance-agent specific. (3) Built-in content generation - Geothority writes city landing pages and GBP posts; BrightLocal and Moz Local do not. (4) Competitor Watchdog - live monitoring of specific local competitors; not available in BrightLocal or Moz Local.",
+        text: "BrightLocal and Moz Local are solid citation management tools, but they were built for SEO agencies managing dozens of clients. Geothority is built specifically for independent insurance agents and small local businesses who need to understand and act on their SEO themselves. Key differences: (1) AEO/AI Optimization - Geothority optimizes for AI Overviews, ChatGPT, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere citations; BrightLocal and Moz Local do not. (2) Industry focus - our Quick Wins and content templates are insurance-agent specific. (3) Built-in content generation - Geothority writes city landing pages and GBP posts; BrightLocal and Moz Local do not. (4) Competitor Watchdog - live monitoring of specific local competitors; not available in BrightLocal or Moz Local.",
       },
     },
     {

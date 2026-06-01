@@ -63,37 +63,55 @@ const JOURNEY_CONFIGS: Record<string, JourneyConfig> = {
   <li>Trust Pages: About, FAQ, Service Areas</li>
   <li>Geo Content: City-specific landing pages</li>
   <li>Reviews: Velocity, recency & response rate</li>
-  <li>AI Optimization: Schema, entity density & GEO signals</li>
+  <li>AI Optimization: Schema, entity density & AEO signals</li>
 </ul>`,
       },
       {
         stepOrder: 3,
-        name: "Trust Stack Explained (Day 3)",
-        subject: "Your trust stack score explained",
+        name: "First Audit Complete",
+        subject: "Your first audit is in. Here’s where to move first.",
         templateId: "check_in",
-        type: "delay",
-        delayDays: 3,
-        bodyHtml: `<p>Your Trust Stack™ is the foundation of your local authority. The higher your score, the more Google trusts you as the default local answer for insurance in your area.</p>
-<p>Most agents score between 30–50. Top performers score 80+. The gap is almost always fixable in under 30 days with the right moves.</p>
-<p>Log in and check your score — then tap into your Quick Win cards to start moving the needle.</p>`,
+        type: "trigger",
+        triggerEvent: "first_scan_completed",
+        bodyHtml: `<p>Your first scan is done, which means Geothority can now stop guessing and start ranking your next moves by impact.</p>
+<p>Open your Trust Stack™ breakdown and look for the weakest layer first. That’s usually where the fastest score lift lives.</p>
+<p>Your quick wins are already ranked inside the app so you can move straight from diagnosis to execution.</p>`,
       },
       {
         stepOrder: 4,
-        name: "Quick Wins (Day 7)",
-        subject: "3 quick wins to boost your local rankings this week",
+        name: "GBP Connected",
+        subject: "Google Business is connected. Now use the signal.",
         templateId: "feature_tip",
-        type: "delay",
-        delayDays: 7,
-        bodyHtml: `<p>Here are 3 moves that will have the biggest impact on your local SEO rankings this week:</p>
-<ol>
-  <li><strong>Complete your Google Business Profile</strong> — Add photos, hours, and a keyword-rich description.</li>
-  <li><strong>Get 2 new reviews</strong> — Ask your last 2 satisfied clients. Each review boosts your Trust Stack™ score.</li>
-  <li><strong>Add a city-specific landing page</strong> — "Insurance Agent in [City]" pages are a top ranking signal for local search.</li>
-</ol>
-<p>Your Quick Win cards in Geothority have the exact copy you need for each of these. Just copy and paste.</p>`,
+        type: "trigger",
+        triggerEvent: "gbp_connected",
+        bodyHtml: `<p>Your Google Business Profile is now part of the system, which means your Trust Stack™ can use live local authority signals instead of just public website data.</p>
+<p>Next move: review your GBP health, fill any missing fields, and use the profile data to tighten your local trust layer.</p>
+<p>This is usually where weak foundation scores begin turning into visible ranking movement.</p>`,
       },
       {
         stepOrder: 5,
+        name: "Reputation Engine Activated",
+        subject: "Your review engine is live. Time to build momentum.",
+        templateId: "feature_tip",
+        type: "trigger",
+        triggerEvent: "reputation_activated",
+        bodyHtml: `<p>Your Reputation Engine is now live, which means Geothority can help you turn happy customers into fresh review velocity instead of waiting passively.</p>
+<p>Best next move: send the first request, confirm your review link is clean, and monitor the response trend over the next 7 days.</p>
+<p>Fresh, recent reviews are one of the fastest ways to strengthen your trust layer and local conversion proof.</p>`,
+      },
+      {
+        stepOrder: 6,
+        name: "First Reputation Request Sent",
+        subject: "Your first review request is out. Now watch the loop.",
+        templateId: "check_in",
+        type: "trigger",
+        triggerEvent: "first_reputation_request_sent",
+        bodyHtml: `<p>Your first reputation request has been sent, which means the review loop is officially live.</p>
+<p>Now the goal is simple: monitor replies, route private feedback quickly, and convert positive responses into public proof.</p>
+<p>This is where Geothority starts compounding trust instead of only diagnosing gaps.</p>`,
+      },
+      {
+        stepOrder: 7,
         name: "Upgrade Nudge (Day 14)",
         subject: "Upgrade to unlock competitor monitoring",
         templateId: "upgrade_nudge",
@@ -110,7 +128,7 @@ const JOURNEY_CONFIGS: Record<string, JourneyConfig> = {
 <p>At $49/mo, it's less than one referral fee. And the visibility you gain is permanent.</p>`,
       },
       {
-        stepOrder: 6,
+        stepOrder: 8,
         name: "Monthly Report (Day 30)",
         subject: "Your monthly local SEO health report",
         templateId: "check_in",

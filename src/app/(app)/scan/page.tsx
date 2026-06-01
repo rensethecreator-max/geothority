@@ -1,18 +1,65 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Loader2, Globe, Building2, MapPin } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { createClient } from "@/lib/supabase/client";
 
-export default function ScanPage() {
+function ScanPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const supabase = useMemo(() => createClient(), []);
   const [url, setUrl] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDefaults() {
+      const queryUrl = searchParams.get("url") ?? "";
+      const queryBusiness = searchParams.get("business") ?? "";
+      const queryCity = searchParams.get("city") ?? "";
+      const queryState = searchParams.get("state") ?? "";
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || cancelled) {
+        if (!cancelled) {
+          setUrl((current) => current || queryUrl);
+          setBusinessName((current) => current || queryBusiness);
+          setCity((current) => current || queryCity);
+          setState((current) => current || queryState);
+        }
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("business_name, city, state, website_url")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      setUrl(queryUrl || profile?.website_url || "");
+      setBusinessName(queryBusiness || profile?.business_name || "");
+      setCity(queryCity || profile?.city || "");
+      setState(queryState || profile?.state || "");
+    }
+
+    void loadDefaults();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, supabase]);
 
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,5 +206,13 @@ export default function ScanPage() {
         )}
       </form>
     </div>
+  );
+}
+
+export default function ScanPage() {
+  return (
+    <Suspense fallback={<div className="max-w-2xl mx-auto" />}>
+      <ScanPageContent />
+    </Suspense>
   );
 }

@@ -136,5 +136,5 @@ export const LAYER_DESCRIPTIONS: Record<number, string> = {
   2: "About, Service Areas, Licensing, FAQ pages",
   3: "City-specific & service+location landing pages",
   4: "Review velocity, recency & response rate",
-  5: "Schema markup, entity density & GEO signals",
+  5: "Schema markup, entity density & AEO signals",
 };

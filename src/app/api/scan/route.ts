@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { scanWebsite } from "@/lib/scanner";
 import { scanRatelimit, checkRateLimit } from "@/lib/ratelimit";
+import { recordJourneyMilestone } from "@/lib/journey-events";
 
 // Input validation constants
 const MAX_URL_LENGTH = 500;
@@ -141,6 +142,8 @@ export async function POST(req: NextRequest) {
       state: resolvedState,
       website_url: resolvedUrl,
     });
+
+    await recordJourneyMilestone(user.id, "first_scan_completed");
 
     return NextResponse.json({ scan });
   } catch (error) {

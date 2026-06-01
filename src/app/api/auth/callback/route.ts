@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { ensureUserProfileExists } from "@/lib/supabase/ensure-user-profile";
+import { createServiceClient } from "@/lib/supabase/server";
+import { initializeJourney } from "@/lib/email-journey-service";
+import { initializePushJourney } from "@/lib/push-notification-service";
 import type { EmailOtpType } from "@supabase/supabase-js";
 
 const EMAIL_OTP_TYPES: EmailOtpType[] = ["signup", "magiclink", "invite", "recovery", "email_change", "email"];
@@ -67,6 +70,40 @@ export async function GET(request: NextRequest) {
           code: profileSeed.error.code,
           drift: profileSeed.usedFallback ? "missing_onboarding_completed_column" : undefined,
         });
+      } else {
+        if (profileSeed.created) {
+          try {
+            const serviceSupabase = createServiceClient();
+            await serviceSupabase.from("analytics_events").insert({
+              user_id: user.id,
+              event_name: "user_registered",
+              metadata: {
+                provider: user.app_metadata?.provider ?? "unknown",
+                source: "auth_callback",
+              },
+              session_id: "server-auth-callback",
+            });
+          } catch (analyticsError) {
+            console.error("Failed to log user_registered event", {
+              userId: user.id,
+              error: analyticsError,
+            });
+          }
+        }
+
+        if (!profileSeed.onboardingCompleted) {
+          try {
+            await Promise.allSettled([
+              initializeJourney(user.id, "onboarding"),
+              initializePushJourney(user.id, "onboarding"),
+            ]);
+          } catch (journeyError) {
+            console.error("Failed to initialize onboarding journeys", {
+              userId: user.id,
+              error: journeyError,
+            });
+          }
+        }
       }
     }
 

@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Scan, UserProfile } from "@/lib/types";
 import { DashboardSkeleton } from "@/components/shared/loading-skeleton";
-import { WelcomeFlow } from "@/components/onboarding/welcome-flow";
 import { TrustStackVisualization, ScoreRing } from "@/components/scan/trust-stack";
 import { QuickWinCard } from "@/components/scan/quick-win-card";
 import {
@@ -14,10 +13,12 @@ import {
   Zap,
   ArrowRight,
   Clock,
+  PlayCircle,
   ExternalLink,
   ShieldCheck,
   Radar,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { InfoTooltip, LayerInfoTooltip } from "@/components/ui/info-tooltip";
 import Link from "next/link";
@@ -38,14 +39,44 @@ import {
   Legend,
 } from "recharts";
 import { format } from "date-fns";
-import { readOnboardingCompletion } from "@/lib/onboarding";
 import type { ReputationProofSummary } from "@/lib/reputation/types";
+import { useActivationState } from "@/hooks/use-activation-state";
+import {
+  getLayerScores,
+  getQuickWinCount,
+  getTopLayer,
+  getWeakestLayerDiagnosis,
+  isEntryPlan,
+  LAYER_LABELS,
+} from "@/lib/activation-diagnosis";
 
 interface ScoreHistoryEntry {
   id: string;
   overall_score: number;
   layer_scores: Record<string, number> | null;
   scanned_at: string;
+}
+
+interface DashboardExecutionPlanSummary {
+  id: string;
+  status: "planning" | "executing" | "paused" | "completed" | "failed";
+  progress: number;
+  completed: number;
+  total: number;
+  needs_input: number;
+}
+
+function normalizeExecutionPlanSummary(plan: any): DashboardExecutionPlanSummary | null {
+  if (!plan?.id) return null;
+
+  return {
+    id: plan.id,
+    status: plan.status,
+    progress: Number(plan.progress ?? 0),
+    completed: Number(plan.completed ?? 0),
+    total: Number(plan.total ?? 0),
+    needs_input: Number(plan.needs_input ?? plan.needsInput ?? 0),
+  };
 }
 
 interface ScoreChartTooltipProps {
@@ -74,11 +105,14 @@ function ScoreChartTooltip({ active, payload, label }: ScoreChartTooltipProps) {
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [_profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [scans, setScans] = useState<Scan[]>([]);
   const [latestScan, setLatestScan] = useState<Scan | null>(null);
   const [scoreHistory, setScoreHistory] = useState<ScoreHistoryEntry[]>([]);
   const [proofSummary, setProofSummary] = useState<ReputationProofSummary | null>(null);
+  const [latestExecutionPlan, setLatestExecutionPlan] = useState<DashboardExecutionPlanSummary | null>(null);
+  const [launchingFirstWin, setLaunchingFirstWin] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
   const [activeLines, setActiveLines] = useState<Record<string, boolean>>({
     overall: true, layer1: false, layer2: false, layer3: false, layer4: false, layer5: false,
   });
@@ -86,6 +120,7 @@ export default function DashboardPage() {
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
   const supabase = createClient();
   const router = useRouter();
+  const activationState = useActivationState({ scan: latestScan, fetchLatestScan: false });
 
   useEffect(() => {
     async function loadData() {
@@ -99,7 +134,7 @@ export default function DashboardPage() {
         return;
       }
 
-      const [profileRes, scansRes, historyRes, proofRes] = await Promise.all([
+      const [profileRes, scansRes, historyRes, proofRes, plansRes] = await Promise.all([
         supabase.from("user_profiles").select("*").eq("id", user.id).single(),
         supabase
           .from("scans")
@@ -114,13 +149,14 @@ export default function DashboardPage() {
           .order("scanned_at", { ascending: true })
           .limit(30),
         fetch("/api/reputation/proof-summary", { cache: "no-store" }).catch(() => null),
+        fetch("/api/action-center/plans?limit=20", { cache: "no-store" }).catch(() => null),
       ]);
 
       if (profileRes.data) {
         setProfile(profileRes.data);
-        setOnboardingDone(profileRes.data.onboarding_completed === true || readOnboardingCompletion());
+        setOnboardingDone(profileRes.data.onboarding_completed === true);
       } else {
-        setOnboardingDone(readOnboardingCompletion());
+        setOnboardingDone(false);
       }
       if (scansRes.data) {
         setScans(scansRes.data);
@@ -131,16 +167,17 @@ export default function DashboardPage() {
         const proofJson = await proofRes.json().catch(() => ({}));
         setProofSummary(proofJson.summary ?? null);
       }
+      if (plansRes?.ok && scansRes.data?.length) {
+        const plansJson = await plansRes.json().catch(() => ({}));
+        const matchingPlan = (plansJson.plans ?? []).find((plan: DashboardExecutionPlanSummary & { scan_id?: string }) => plan.scan_id === scansRes.data?.[0]?.id) ?? null;
+        setLatestExecutionPlan(normalizeExecutionPlanSummary(matchingPlan));
+      }
 
       setLoading(false);
     }
 
     loadData();
   }, [router, supabase]);
-
-  useEffect(() => {
-    setOnboardingDone((current) => current ?? readOnboardingCompletion());
-  }, []);
 
   if (loading) return <DashboardSkeleton />;
 
@@ -151,9 +188,24 @@ export default function DashboardPage() {
     // Show onboarding wizard if not completed
     if (!onboardingDone) {
       return (
-        <div>
+        <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-          <WelcomeFlow onComplete={() => setOnboardingDone(true)} />
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-electric-500/20 via-electric-500/10 to-transparent border border-electric-500/20 p-8">
+            <div className="relative z-10">
+              <h2 className="text-xl font-bold mb-2">Finish your launch sequence</h2>
+              <p className="text-sm text-[var(--muted-foreground)] mb-5 max-w-xl">
+                Your account exists, but Geothority still needs your setup flow completed before it can guide your first score lift, automate journeys, and recommend the right next move.
+              </p>
+              <Link
+                href="/onboarding"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-electric-500 hover:bg-electric-400 text-white rounded-lg text-sm font-semibold transition-colors"
+              >
+                <PlayCircle className="w-4 h-4" />
+                Continue Onboarding
+              </Link>
+            </div>
+            <div className="absolute top-4 right-4 w-32 h-32 rounded-full bg-electric-500/5 blur-2xl" />
+          </div>
         </div>
       );
     }
@@ -212,19 +264,106 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
+
+        <div className="mt-6 rounded-2xl border border-white/10 bg-[var(--card)] p-6">
+          <div className="flex items-start justify-between gap-4 flex-col sm:flex-row">
+            <div>
+              <h3 className="text-lg font-semibold">Launch cockpit</h3>
+              <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                The fastest path to a useful account is: baseline scan, GBP connection, then Reputation Engine activation.
+              </p>
+            </div>
+            <div className="rounded-full border border-electric-500/20 bg-electric-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-electric-400">
+              {[
+                true,
+                gbpConnected,
+                reputationActivated,
+              ].filter(Boolean).length}/3 live
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {[
+              {
+                title: "Run first scan",
+                description: "Create the baseline Trust Stack score and quick wins.",
+                href: "/scan",
+                complete: false,
+              },
+              {
+                title: "Connect GBP",
+                description: gbpConnected ? "Connection is present or a profile has already been synced." : "Unlock richer layer-1 trust data and automation.",
+                href: "/gbp-health",
+                complete: gbpConnected,
+              },
+              {
+                title: "Activate review engine",
+                description: reputationActivated ? "Review engine is already activated." : "Turn on review capture and private-feedback recovery.",
+                href: "/reputation",
+                complete: reputationActivated,
+              },
+            ].map((item) => (
+              <Link key={item.title} href={item.href} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 transition-colors hover:border-electric-500/30">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-sm font-semibold">{item.title}</div>
+                  <span className={`text-xs font-semibold uppercase tracking-[0.16em] ${item.complete ? "text-emerald-300" : "text-amber-200"}`}>
+                    {item.complete ? "Live" : "Next"}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-[var(--muted-foreground)] leading-relaxed">{item.description}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  const ls = latestScan.layer_scores || { layer1: 0, layer2: 0, layer3: 0, layer4: 0, layer5: 0 };
+  const ls = getLayerScores(latestScan.layer_scores);
   const quickWins = latestScan.quick_wins || [];
-  const topLayer = Object.entries(ls).sort((a, b) => b[1] - a[1])[0];
-  const layerLabels: Record<string, string> = {
-    layer1: "GBP authority",
-    layer2: "Website trust",
-    layer3: "Citation consistency",
-    layer4: "Review momentum",
-    layer5: "Content coverage",
+  const quickWinCount = getQuickWinCount(quickWins);
+  const topLayer = getTopLayer(ls);
+  const gbpConnected = activationState.gbpConnected;
+  const reputationActivated = activationState.reputationActivated;
+  const launchStepsLive = activationState.launchStepsLive;
+  const weakestLayerDiagnosis = getWeakestLayerDiagnosis(ls);
+  const monetizationNeedsLaunchFirst = !gbpConnected || !reputationActivated;
+  const isFreeishPlan = isEntryPlan(profile?.plan);
+  const firstWinReady = quickWinCount > 0;
+
+  const handleLaunchFirstWin = async () => {
+    if (!latestScan || launchingFirstWin) return;
+
+    setLaunchingFirstWin(true);
+    setLaunchError(null);
+
+    try {
+      const fixRes = await fetch("/api/scan/fix-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scanId: latestScan.id }),
+      });
+      const fixJson = await fixRes.json().catch(() => ({}));
+      if (!fixRes.ok) {
+        throw new Error(fixJson.error || "Failed to generate the first-win package.");
+      }
+
+      const planRes = await fetch("/api/fix-engine/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scanId: latestScan.id, mode: "ASSISTED" }),
+      });
+      const planJson = await planRes.json().catch(() => ({}));
+      if (!planRes.ok) {
+        throw new Error(planJson.error || "Failed to build the first-win execution plan.");
+      }
+
+      setLatestExecutionPlan(normalizeExecutionPlanSummary(planJson));
+      router.push(`/scan/${latestScan.id}#fix-package`);
+    } catch (error) {
+      setLaunchError(error instanceof Error ? error.message : "Failed to launch the first-win flow.");
+    } finally {
+      setLaunchingFirstWin(false);
+    }
   };
 
   return (
@@ -239,13 +378,13 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-semibold tracking-tight">{latestScan.business_name}</h1>
             <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
               {latestScan.city}, {latestScan.state} · Last scan {new Date(latestScan.created_at).toLocaleDateString()}.
-              Your moat is currently anchored by {topLayer ? layerLabels[topLayer[0]] : "trust coverage"}, with {quickWins.length} quick win{quickWins.length === 1 ? "" : "s"} ready to convert into score lift.
+              Your moat is currently anchored by {topLayer ? LAYER_LABELS[topLayer[0]] : "trust coverage"}, with {quickWinCount} quick win{quickWinCount === 1 ? "" : "s"} ready to convert into score lift.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             {[
-              { label: "Best layer", value: topLayer ? `${layerLabels[topLayer[0]]} · ${topLayer[1]}/100` : "Waiting for layer data", icon: ShieldCheck },
-              { label: "Response posture", value: quickWins.length > 0 ? `${quickWins.length} countermoves queued` : "No urgent fixes detected", icon: Sparkles },
+              { label: "Best layer", value: topLayer ? `${LAYER_LABELS[topLayer[0]]} · ${topLayer[1]}/100` : "Waiting for layer data", icon: ShieldCheck },
+              { label: "Response posture", value: quickWinCount > 0 ? `${quickWinCount} countermoves queued` : "No urgent fixes detected", icon: Sparkles },
             ].map((item) => (
               <div key={item.label} className="geo-premium-muted min-w-[220px] rounded-2xl px-4 py-3">
                 <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
@@ -265,6 +404,136 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {(!gbpConnected || !reputationActivated) && (
+        <div className="rounded-2xl border border-electric-500/20 bg-electric-500/10 p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-electric-300">Launch cockpit</div>
+              <h2 className="mt-2 text-lg font-semibold">You’ve got the baseline. Now wire the compounding systems.</h2>
+              <p className="mt-2 text-sm text-electric-50/90 max-w-2xl">
+                Your first scan is done. The next score lift usually comes from connecting GBP and activating the Reputation Engine so Geothority can work with live trust signals instead of one-time audit data.
+              </p>
+            </div>
+            <div className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-electric-100">
+              {launchStepsLive}/3 launch systems live
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {!gbpConnected && (
+              <Link href="/gbp-health" className="rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-electric-300/40">
+                <div className="text-sm font-semibold">Connect GBP</div>
+                <p className="mt-2 text-xs text-electric-50/80 leading-relaxed">
+                  Unlock profile health, monitoring, and better layer-1 trust diagnostics.
+                </p>
+              </Link>
+            )}
+            {!reputationActivated && (
+              <Link href="/reputation" className="rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-electric-300/40">
+                <div className="text-sm font-semibold">Activate Reputation Engine</div>
+                <p className="mt-2 text-xs text-electric-50/80 leading-relaxed">
+                  Add your review link, switch automation on, and send the first request.
+                </p>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {isFreeishPlan && weakestLayerDiagnosis && (
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">Diagnosis-driven upgrade path</div>
+              <h2 className="mt-2 text-lg font-semibold">{weakestLayerDiagnosis.headline}</h2>
+              <p className="mt-2 text-sm text-emerald-50/90">
+                {weakestLayerDiagnosis.detail}
+              </p>
+              <p className="mt-2 text-sm text-emerald-50/75">
+                {weakestLayerDiagnosis.paidUnlock}
+              </p>
+              {quickWinCount > 0 && (
+                <p className="mt-2 text-sm text-emerald-50/75">
+                  Right now you have {quickWinCount} quick win{quickWinCount === 1 ? "" : "s"} queued. The paid motion is most justified once you want Geothority to help you sustain and monitor the fixes, not just surface them.
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-3 min-w-[240px]">
+              {monetizationNeedsLaunchFirst ? (
+                <>
+                  <Link href={!gbpConnected ? "/gbp-health" : "/reputation"} className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-300">
+                    { !gbpConnected ? "Connect GBP first" : "Activate review engine first" }
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <p className="text-xs text-emerald-50/70 text-center">
+                    Best sequence: finish the live launch systems before judging paid expansion.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Link href="/pricing" className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-300">
+                    See the next-tier unlocks
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <p className="text-xs text-emerald-50/70 text-center">
+                    This upgrade case is based on your current weakest layer, not a generic feature list.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {firstWinReady && (
+        <div className="rounded-2xl border border-white/10 bg-[var(--card)] p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-electric-400">First-win execution</div>
+              <h2 className="mt-2 text-lg font-semibold">
+                {latestExecutionPlan
+                  ? "Your first-win execution plan already exists."
+                  : "Turn this scan into an execution plan."}
+              </h2>
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                {latestExecutionPlan
+                  ? `Current plan status: ${latestExecutionPlan.status}. ${latestExecutionPlan.completed}/${latestExecutionPlan.total} steps resolved, ${latestExecutionPlan.progress}% complete.`
+                  : "Use the current scan to generate fixes and build an assisted execution plan so Geothority can move from diagnosis into actual work."}
+              </p>
+              {latestExecutionPlan?.needs_input ? (
+                <p className="mt-2 text-sm text-amber-300">
+                  {latestExecutionPlan.needs_input} step{latestExecutionPlan.needs_input === 1 ? "" : "s"} currently need your approval or manual action.
+                </p>
+              ) : null}
+              {launchError ? (
+                <p className="mt-2 text-sm text-rose-300">{launchError}</p>
+              ) : null}
+            </div>
+            <div className="flex flex-col gap-3 min-w-[260px]">
+              {latestExecutionPlan ? (
+                <>
+                  <Link href={`/scan/${latestScan.id}#fix-package`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-electric-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-electric-400">
+                    Open execution plan
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link href="/action-center" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition-colors hover:border-electric-500/30">
+                    Open action center
+                  </Link>
+                </>
+              ) : (
+                <button
+                  onClick={handleLaunchFirstWin}
+                  disabled={launchingFirstWin}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-electric-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-electric-400 disabled:opacity-60"
+                >
+                  {launchingFirstWin ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                  {launchingFirstWin ? "Launching first win..." : "Launch first-win plan"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Score Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -299,7 +568,7 @@ export default function DashboardPage() {
               />
             </span>
           </div>
-          <div className="text-2xl font-bold">{quickWins.length}</div>
+          <div className="text-2xl font-bold">{quickWinCount}</div>
           <p className="text-xs text-[var(--muted-foreground)] mt-1">
             Actionable fixes to boost your score
           </p>

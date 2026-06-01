@@ -24,19 +24,31 @@ export async function GET(req: NextRequest) {
 
   const supabase = createServiceClient();
 
-  const countEvent = async (eventName: string) => {
-    const { count } = await supabase
+  const countDistinctActors = async (eventNames: string[]) => {
+    let query = supabase
       .from("analytics_events")
-      .select("*", { count: "exact", head: true })
-      .eq("event_name", eventName)
+      .select("user_id, session_id")
       .gte("created_at", since)
       .not("user_id", "is", null);
-    return count ?? 0;
+
+    if (eventNames.length === 1) {
+      query = query.eq("event_name", eventNames[0]);
+    } else {
+      query = query.in("event_name", eventNames);
+    }
+
+    const { data } = await query;
+    const distinctActors = new Set<string>();
+    for (const row of (data ?? []) as any[]) {
+      const actorId = row.user_id ?? row.session_id;
+      if (actorId) distinctActors.add(actorId);
+    }
+    return distinctActors.size;
   };
 
-  const registered = await countEvent("user_registered");
-  const onboarded = await countEvent("onboarding_completed");
-  const subscribed = await countEvent("subscription_started");
+  const registered = await countDistinctActors(["user_registered", "signup_completed"]);
+  const onboarded = await countDistinctActors(["onboarding_completed"]);
+  const subscribed = await countDistinctActors(["subscription_started"]);
 
   return NextResponse.json({
     range: days,
