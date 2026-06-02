@@ -493,22 +493,22 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#f7f8fc] text-slate-900">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(99,102,241,0.12),transparent_30%),radial-gradient(circle_at_86%_10%,rgba(20,184,166,0.1),transparent_26%)]" />
 
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/70 bg-white/82 backdrop-blur-2xl">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/90 bg-white/94 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/88">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           <Logo href="/" size={32} className="text-slate-950" />
 
           <div className="hidden items-center gap-8 md:flex">
-            <Link href="#features" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">Features</Link>
-            <Link href="#how-it-works" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">How It Works</Link>
-            <Link href="/pricing" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">Pricing</Link>
-            <Link href="/compare/geothority-vs-moz-local" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">Compare</Link>
-            <Link href="/service-facts" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">What You Get</Link>
-            <Link href="/faq" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">FAQ</Link>
+            <Link href="#features" className="text-sm font-medium text-slate-700 transition hover:text-slate-950">Features</Link>
+            <Link href="#how-it-works" className="text-sm font-medium text-slate-700 transition hover:text-slate-950">How It Works</Link>
+            <Link href="/pricing" className="text-sm font-medium text-slate-700 transition hover:text-slate-950">Pricing</Link>
+            <Link href="/compare/geothority-vs-moz-local" className="text-sm font-medium text-slate-700 transition hover:text-slate-950">Compare</Link>
+            <Link href="/service-facts" className="text-sm font-medium text-slate-700 transition hover:text-slate-950">What You Get</Link>
+            <Link href="/faq" className="text-sm font-medium text-slate-700 transition hover:text-slate-950">FAQ</Link>
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
-            <Link href="/login" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">Sign In</Link>
-            <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/12 transition hover:-translate-y-0.5 hover:bg-slate-800">
+            <Link href="/login" className="text-sm font-medium text-slate-700 transition hover:text-slate-950">Sign In</Link>
+            <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/18 transition hover:-translate-y-0.5 hover:bg-slate-800">
               Get Free Scan
             </Link>
           </div>
