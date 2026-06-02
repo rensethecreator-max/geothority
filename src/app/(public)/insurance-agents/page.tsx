@@ -125,6 +125,7 @@ export default function InsuranceAgentsPage() {
           <div className="flex items-center gap-6">
             <Link href="/pricing" className="hover:text-[var(--foreground)] transition-colors">Pricing</Link>
             <Link href="/faq" className="hover:text-[var(--foreground)] transition-colors">FAQ</Link>
+            <Link href="/service-facts" className="hover:text-[var(--foreground)] transition-colors">What You Get</Link>
             <Link href="/privacy" className="hover:text-[var(--foreground)] transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">Terms of Service</Link>
           </div>

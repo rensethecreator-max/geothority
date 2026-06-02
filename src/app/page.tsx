@@ -75,7 +75,7 @@ const workflowSteps = [
   {
     title: "Diagnose",
     icon: Compass,
-    text: "See what is suppressing visibility first — without digging through generic SEO noise.",
+    text: "See what is suppressing visibility first, without digging through generic SEO noise.",
   },
   {
     title: "Fix",
@@ -149,7 +149,7 @@ const tabs: Record<WalkthroughTab, {
   trust: {
     label: "Trust Stack",
     eyebrow: "Priority engine",
-    headline: "See what is driving — or dragging — visibility.",
+    headline: "See what is driving, or dragging, visibility.",
     body: "The Trust Stack shows which layers of authority are working, which are weak, and where to focus first.",
     bullets: ["multi-layer scoring", "clearer prioritization", "weekly updates"],
     metric: "78",
@@ -502,6 +502,7 @@ export default function HomePage() {
             <Link href="#how-it-works" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">How It Works</Link>
             <Link href="/pricing" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">Pricing</Link>
             <Link href="/compare/geothority-vs-moz-local" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">Compare</Link>
+            <Link href="/service-facts" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">What You Get</Link>
             <Link href="/faq" className="text-sm font-medium text-slate-600 transition hover:text-slate-950">FAQ</Link>
           </div>
 
@@ -523,6 +524,7 @@ export default function HomePage() {
             <Link href="#how-it-works" onClick={() => setMobileNav(false)} className="block py-3 text-base text-slate-700">How It Works</Link>
             <Link href="/pricing" className="block py-3 text-base text-slate-700">Pricing</Link>
             <Link href="/compare/geothority-vs-moz-local" className="block py-3 text-base text-slate-700">Compare</Link>
+            <Link href="/service-facts" className="block py-3 text-base text-slate-700">What You Get</Link>
             <Link href="/faq" className="block py-3 text-base text-slate-700">FAQ</Link>
             <Link href="/login" className="block py-3 text-base text-slate-700">Sign In</Link>
             <Link href="/signup" className="mt-2 block rounded-full bg-slate-950 py-3 text-center text-base font-semibold text-white">Get Free Scan</Link>
@@ -538,10 +540,10 @@ export default function HomePage() {
                 <Sparkles className="h-3.5 w-3.5" /> Visibility diagnosis + fix engine
               </div>
               <h1 className="mt-7 max-w-5xl text-[2.55rem] font-semibold leading-[0.96] tracking-[-0.07em] text-slate-950 sm:text-5xl lg:text-[5.15rem]">
-                Find out why you&apos;re not visible — and fix what&apos;s holding you back.
+                Find out why you&apos;re not visible, then fix what&apos;s holding you back.
               </h1>
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-800 sm:text-lg sm:leading-8">
-                Geothority scans your business across Google, Maps, directories, reviews, competitors, and AI search — then fixes what it can automatically, queues the right actions for approval, and guides the rest to completion.
+                Geothority scans your business across Google, Maps, directories, reviews, competitors, and AI search, then fixes what it can automatically, queues the right actions for approval, and guides the rest to completion.
               </p>
               <p className="mt-3 max-w-lg text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                 Built for teams that want resolution, not just reporting.
@@ -550,6 +552,9 @@ export default function HomePage() {
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-indigo-950 px-7 py-[1.1rem] text-base font-semibold text-white shadow-xl shadow-indigo-950/18 transition hover:-translate-y-0.5 hover:bg-indigo-900">
                   Get Free Scan <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link href="/service-facts" className="inline-flex items-center justify-center gap-2 rounded-full border border-indigo-200 bg-white px-7 py-4 text-base font-semibold text-indigo-950 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:bg-indigo-50">
+                  What You Get <ChevronRight className="h-4 w-4" />
                 </Link>
                 <Link href="#platform" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-7 py-4 text-base font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:text-indigo-700">
                   See the Platform <ChevronRight className="h-4 w-4" />
@@ -647,7 +652,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl">
             <SectionIntro
               eyebrow="Core capabilities"
-              title="Diagnosis, prioritization, and fix execution — in one platform."
+              title="Diagnosis, prioritization, and fix execution in one platform."
               text="Geothority helps serious operators see what matters, resolve what they can fast, and move the rest forward with more precision."
             />
             <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -752,7 +757,7 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
               <div className="text-[13px] font-bold uppercase tracking-[0.2em] text-cyan-200">Signature framework</div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">The Trust Stack shows why you&apos;re not visible — and what to fix first.</h2>
+              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">The Trust Stack shows why you&apos;re not visible, and what to fix first.</h2>
               <p className="mt-6 text-lg leading-8 text-white/88">
                 Instead of scattered reports and disconnected tasks, Geothority shows what is helping, what is holding you back, what can be fixed now, and where the team should focus next.
               </p>
@@ -766,7 +771,7 @@ export default function HomePage() {
               <Link href="#platform" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-50">
                 Explore the Platform <ArrowRight className="h-4 w-4" />
               </Link>
-              <p className="mt-5 text-sm text-white/82">Built to make visibility work feel more like a system and less like guesswork.</p>
+              <p className="mt-5 text-sm text-white/92">Built to make visibility work feel more like a system and less like guesswork.</p>
             </div>
 
             <div className="rounded-[34px] border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-200/80">
@@ -948,12 +953,12 @@ export default function HomePage() {
                   <h3 className="text-2xl font-semibold tracking-[-0.04em]">{plan.name}</h3>
                   <div className="mt-4 flex items-end gap-2">
                     <div className="text-4xl font-semibold tracking-[-0.06em]">{plan.price}</div>
-                    <div className={`pb-1 text-sm ${plan.featured ? "text-white/56" : "text-slate-500"}`}>/month</div>
+                    <div className={`pb-1 text-sm ${plan.featured ? "text-white/78" : "text-slate-500"}`}>/month</div>
                   </div>
-                  <p className={`mt-3 text-sm leading-6 ${plan.featured ? "text-white/66" : "text-slate-600"}`}>{plan.intro}</p>
+                  <p className={`mt-3 text-sm leading-6 ${plan.featured ? "text-white/88" : "text-slate-600"}`}>{plan.intro}</p>
                   <div className="mt-7 space-y-3">
                     {plan.bullets.map((bullet) => (
-                      <div key={bullet} className={`flex items-center gap-3 text-sm ${plan.featured ? "text-white/82" : "text-slate-700"}`}>
+                      <div key={bullet} className={`flex items-center gap-3 text-sm ${plan.featured ? "text-white/92" : "text-slate-700"}`}>
                         <CheckCircle2 className="h-4 w-4 text-emerald-400" /> {bullet}
                       </div>
                     ))}
@@ -973,12 +978,12 @@ export default function HomePage() {
             <div className="mx-auto max-w-3xl">
               <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10"><TrendingUp className="h-6 w-6 text-emerald-300" /></div>
               <h2 className="text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">See what is suppressing your visibility.</h2>
-              <p className="mt-5 text-lg leading-8 text-white/82">Run your first scan in about 90 seconds and get a clearer action path across local search and AI visibility.</p>
+              <p className="mt-5 text-lg leading-8 text-white/90">Run your first scan in about 90 seconds and get a clearer action path across local search and AI visibility.</p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-emerald-50">Get Free Scan <ArrowRight className="h-4 w-4" /></Link>
                 <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-white/15 px-7 py-4 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10">See Pricing</Link>
               </div>
-              <p className="mt-6 text-sm text-white/44">Built for ambitious local operators who want clarity, not more noise.</p>
+              <p className="mt-6 text-sm text-white/72">Built for ambitious local operators who want clarity, not more noise.</p>
             </div>
           </div>
         </section>
@@ -1004,6 +1009,7 @@ export default function HomePage() {
               <h4 className="font-semibold text-slate-950">Resources</h4>
               <div className="mt-4 space-y-3 text-sm text-slate-600">
                 <Link href="/faq" className="block hover:text-slate-950">FAQ</Link>
+                <Link href="/service-facts" className="block hover:text-slate-950">What You Get</Link>
                 <Link href="/contact" className="block hover:text-slate-950">Contact</Link>
               </div>
             </div>

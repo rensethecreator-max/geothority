@@ -31,9 +31,9 @@ const comparisons: Record<string, {
       { name: "Built for Insurance Agents", geo: true, comp: false },
     ],
     differentiators: [
-      "Geothority monitors 15 AI platforms (ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere) — BrightLocal doesn't check AI visibility at all.",
-      "We don't just detect problems — we automatically fix them. Geothority generates and applies FAQ schema, entity-rich content, structured markup, and GBP posts. BrightLocal only shows you what's wrong.",
-      "Our AI Recommendation Score (A+ through F) measures how often AI systems recommend your business vs competitors — and Competitor Frequency Tracking reveals when AI recommends competitors more often (e.g., '3.4x more than you').",
+      "Geothority monitors 15 AI platforms (ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere). BrightLocal does not check AI visibility at all.",
+      "We do not just detect problems. We automatically fix them. Geothority generates and applies FAQ schema, entity-rich content, structured markup, and GBP posts. BrightLocal only shows you what is wrong.",
+      "Our AI Recommendation Score (A+ through F) measures how often AI systems recommend your business vs competitors, and Competitor Frequency Tracking reveals when AI recommends competitors more often (for example, '3.4x more than you').",
       "Our Trust Stack framework gives you a single score and prioritized action plan, not a wall of data.",
     ],
     faqs: [
@@ -66,9 +66,9 @@ const comparisons: Record<string, {
       { name: "AI-Era Optimization", geo: true, comp: false },
     ],
     differentiators: [
-      "Geothority monitors 15 AI platforms (ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere) — Moz Local has zero AI visibility features.",
-      "We don't just detect problems — we automatically fix them. Geothority generates and applies FAQ schema, entity-rich content, structured markup, and GBP posts. Moz Local only syncs listings.",
-      "Our AI Recommendation Score (A+ through F) and Competitor Frequency Tracking show exactly how often AI recommends you vs competitors — with emotional urgency like 'AI recommends your competitors 3.4x more often.'",
+      "Geothority monitors 15 AI platforms (ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere). Moz Local has zero AI visibility features.",
+      "We do not just detect problems. We automatically fix them. Geothority generates and applies FAQ schema, entity-rich content, structured markup, and GBP posts. Moz Local only syncs listings.",
+      "Our AI Recommendation Score (A+ through F) and Competitor Frequency Tracking show exactly how often AI recommends you vs competitors, with urgency like 'AI recommends your competitors 3.4x more often.'",
       "Our content generator creates SEO-optimized city landing pages in seconds.",
     ],
     faqs: [
@@ -101,9 +101,9 @@ const comparisons: Record<string, {
       { name: "Learning Curve", geo: "Minutes", comp: "Weeks" },
     ],
     differentiators: [
-      "Geothority monitors 15 AI platforms — Semrush doesn't specifically check if ChatGPT, Perplexity, or Claude recommend your business.",
-      "We don't just detect problems — we automatically fix them with FAQ schema, entity-rich content, structured markup, and GBP posts. Semrush shows you data; Geothority takes action.",
-      "Our AI Recommendation Score (A+ through F) and Competitor Frequency Tracking reveal how often AI recommends you vs competitors — Semrush has no equivalent.",
+      "Geothority monitors 15 AI platforms. Semrush does not specifically check if ChatGPT, Perplexity, or Claude recommend your business.",
+      "We do not just detect problems. We automatically fix them with FAQ schema, entity-rich content, structured markup, and GBP posts. Semrush shows you data; Geothority takes action.",
+      "Our AI Recommendation Score (A+ through F) and Competitor Frequency Tracking reveal how often AI recommends you vs competitors. Semrush has no equivalent.",
       "At $139/mo, Semrush costs more than Geothority's Authority plan - and you still need add-ons for local SEO.",
     ],
     faqs: [
@@ -136,9 +136,9 @@ const comparisons: Record<string, {
       { name: "AI-Era Focus", geo: true, comp: false },
     ],
     differentiators: [
-      "Geothority monitors 15 AI platforms and provides an AI Recommendation Score — Whitespark has zero AI visibility features.",
-      "We don't just detect problems — we automatically fix them with FAQ schema, entity-rich content, structured markup, and GBP posts. Whitespark only shows you citation issues.",
-      "Competitor Frequency Tracking shows when AI recommends competitors more often (e.g., '3.4x more than you') — Whitespark can't tell you this.",
+      "Geothority monitors 15 AI platforms and provides an AI Recommendation Score. Whitespark has zero AI visibility features.",
+      "We do not just detect problems. We automatically fix them with FAQ schema, entity-rich content, structured markup, and GBP posts. Whitespark only shows you citation issues.",
+      "Competitor Frequency Tracking shows when AI recommends competitors more often (for example, '3.4x more than you'). Whitespark cannot tell you this.",
       "Geothority's local page generator creates city-specific landing pages that Whitespark can't.",
     ],
     faqs: [
@@ -171,15 +171,15 @@ const comparisons: Record<string, {
       { name: "Setup Complexity", geo: "Self-serve", comp: "Often needs agency" },
     ],
     differentiators: [
-      "Geothority monitors 15 AI platforms (ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere) — Yext has no AI recommendation tracking.",
-      "We don't just detect problems — we automatically fix them with FAQ schema, entity-rich content, structured markup, and GBP posts. Yext only manages listings; it doesn't optimize your AI visibility.",
-      "Our AI Recommendation Score and Competitor Frequency Tracking show how often AI recommends you vs competitors — as search shifts to AI, this matters more than directory listings.",
+      "Geothority monitors 15 AI platforms (ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere). Yext has no AI recommendation tracking.",
+      "We do not just detect problems. We automatically fix them with FAQ schema, entity-rich content, structured markup, and GBP posts. Yext only manages listings; it does not optimize your AI visibility.",
+      "Our AI Recommendation Score and Competitor Frequency Tracking show how often AI recommends you vs competitors. As search shifts to AI, this matters more than directory listings.",
       "If you stop paying Yext, your listings may revert. Geothority teaches you to build lasting SEO authority.",
     ],
     faqs: [
       { q: "Is Yext worth the price for small businesses?", a: "For a single location, Yext's value proposition is weaker. Geothority offers more actionable local SEO guidance at a fraction of the cost." },
       { q: "What happens if I cancel Yext?", a: "Some listings managed by Yext may revert. Geothority helps you build organic authority that persists even if you cancel." },
-      { q: "Does Yext check AI search?", a: "No. Yext focuses on directory listings. Geothority monitors 15 AI platforms, provides AI Recommendation Scores, and automatically fixes issues — Yext has none of these AI visibility features." },
+      { q: "Does Yext check AI search?", a: "No. Yext focuses on directory listings. Geothority monitors 15 AI platforms, provides AI Recommendation Scores, and automatically fixes issues. Yext has none of these AI visibility features." },
       { q: "Which syncs more directories?", a: "Yext syncs 80+ directories. Geothority checks 18 but focuses on the ones that matter most for local ranking." },
       { q: "Is Geothority easier to use?", a: "Much easier. Scan in 90 seconds, get your Trust Stack score, follow the action plan. No contracts, no setup calls needed." },
     ],

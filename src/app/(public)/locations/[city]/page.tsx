@@ -284,7 +284,7 @@ export default function CityPage({ params }: { params: { city: string } }) {
           ))}
         </div>
         <p className="mb-20 text-center text-xs text-[var(--muted-foreground)]">
-          Market context only — these figures are directional and should not be treated as guaranteed demand, rankings, or business outcomes.
+          Market context only. These figures are directional and should not be treated as guaranteed demand, rankings, or business outcomes.
         </p>
 
         {/* Neighborhoods */}

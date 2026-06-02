@@ -562,7 +562,7 @@ export default function PricingPage() {
                   <FeatureRow label="15 AI Platforms Monitored" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="We check whether your business appears in major AI answer surfaces and use that coverage to drive recommendations and execution." />
                   <FeatureRow label="Automatic AI Fixes" free={true} starter={true} growth={true} authority={true} tip="We turn findings into executable work including FAQ schema, entity-rich content, structured markup, and GBP recommendations. Some changes can be auto-applied; others stay in review until approved." />
                   <FeatureRow label="AI Recommendation Score (A+ to F)" free={true} starter={true} growth={true} authority={true} tip="A weighted scoring system that measures how often AI systems recommend your business vs competitors. Know exactly where you stand in AI-powered search." />
-                  <FeatureRow label="Competitor Frequency Tracking" free={false} starter={true} growth={true} authority={true} tip="See how often AI recommends your competitors vs you — e.g., 'AI systems recommend your competitors 3.4x more often than you.' Emotional urgency that drives action." />
+                  <FeatureRow label="Competitor Frequency Tracking" free={false} starter={true} growth={true} authority={true} tip="See how often AI recommends your competitors vs you, for example: 'AI systems recommend your competitors 3.4x more often than you.' Emotional urgency that drives action." />
 
                   <SectionHeader label="Content & Search" />
                   <FeatureRow label="Local Page Generation" free="1 / mo" starter="5 / mo" growth="Unlimited" authority="Unlimited" tip="Generate city-specific landing pages, service descriptions, and local content that Google and AI assistants trust. More pages means more local searches you rank for." />
@@ -643,7 +643,7 @@ export default function PricingPage() {
             <h2 className="text-3xl font-bold text-white text-center mb-3">
               Frequently Asked Questions
             </h2>
-            <p className="text-gray-500 text-center mb-10">
+            <p className="text-gray-400 text-center mb-10">
               Everything you need to know about pricing and plans.
             </p>
             <div className="space-y-3">
@@ -672,7 +672,7 @@ export default function PricingPage() {
                   Local Search?
                 </span>
               </h2>
-              <p className="text-xl text-gray-400 mb-10 max-w-xl mx-auto">
+              <p className="text-xl text-gray-300 mb-10 max-w-xl mx-auto">
                 Start with a free scan. Upgrade when you want more execution and monitoring.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -690,7 +690,7 @@ export default function PricingPage() {
                   View All Plans
                 </Link>
               </div>
-              <p className="text-gray-600 text-sm mt-6">
+              <p className="text-gray-400 text-sm mt-6">
                 30-day money-back guarantee · Cancel anytime · No contracts
               </p>
             </div>
@@ -701,12 +701,13 @@ export default function PricingPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 mt-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
           <p>© {new Date().getFullYear()} Geothority. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms of Service</Link>
             <Link href="/faq" className="hover:text-gray-300 transition-colors">FAQ</Link>
+            <Link href="/service-facts" className="hover:text-gray-300 transition-colors">What You Get</Link>
           </div>
         </div>
       </footer>

@@ -316,7 +316,7 @@ export default function IndustryPage({ params }: { params: { slug: string } }) {
           ))}
         </div>
         <p className="mb-20 text-center text-xs text-[var(--muted-foreground)]">
-          Market context only — use these numbers as directional planning inputs, not guarantees or benchmarks for your specific business.
+          Market context only. Use these numbers as directional planning inputs, not guarantees or benchmarks for your specific business.
         </p>
 
         {/* Pain Points */}

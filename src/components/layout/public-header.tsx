@@ -26,6 +26,16 @@ export function PublicHeader() {
               Features
             </Link>
             <Link
+              href="/service-facts"
+              className={`text-sm transition-colors ${
+                pathname === "/service-facts"
+                  ? "text-[var(--foreground)]"
+                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              What You Get
+            </Link>
+            <Link
               href="/for/insurance-agents"
               className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             >
@@ -80,6 +90,13 @@ export function PublicHeader() {
               className="block text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               Insurance Agents
+            </Link>
+            <Link
+              href="/service-facts"
+              onClick={() => setMobileOpen(false)}
+              className="block text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            >
+              What You Get
             </Link>
             <Link
               href="/pricing"

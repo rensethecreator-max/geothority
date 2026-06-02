@@ -208,6 +208,7 @@ export default function FAQPage() {
             <div className="flex flex-wrap items-center gap-5 text-sm text-[var(--muted-foreground)]">
               <Link href="/faq" className="hover:text-[var(--foreground)] transition-colors">FAQ</Link>
               <Link href="/pricing" className="hover:text-[var(--foreground)] transition-colors">Pricing</Link>
+              <Link href="/service-facts" className="hover:text-[var(--foreground)] transition-colors">What You Get</Link>
               <Link href="/compare/geothority-vs-brightlocal" className="hover:text-[var(--foreground)] transition-colors">Compare</Link>
               <Link href="/for/insurance-agents" className="hover:text-[var(--foreground)] transition-colors">Insurance Agents</Link>
               <Link href="/privacy" className="hover:text-[var(--foreground)] transition-colors">Privacy Policy</Link>
