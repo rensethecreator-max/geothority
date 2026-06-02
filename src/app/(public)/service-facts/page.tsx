@@ -94,7 +94,7 @@ export default function ServiceFactsPage() {
 
       <main className="pt-28 pb-20">
         <section className="px-4 sm:px-6">
-          <div className="mx-auto max-w-6xl rounded-[32px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] px-6 py-12 shadow-[0_24px_80px_rgba(4,10,18,0.24)] sm:px-10">
+          <div className="mx-auto max-w-6xl rounded-[32px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] px-6 py-12 shadow-[0_24px_80px_rgba(4,10,18,0.24)] sm:px-10">
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-300">
                 <Sparkles className="h-4 w-4" />
@@ -103,7 +103,7 @@ export default function ServiceFactsPage() {
               <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">
                 What Geothority actually does, what you get, and why it is different.
               </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--muted-foreground)]">
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--card-foreground)]">
                 Geothority is a local visibility operating system for teams that need more than reports. It helps diagnose
                 what is suppressing visibility, prioritize what matters, and move real fixes forward.
               </p>
@@ -158,7 +158,7 @@ export default function ServiceFactsPage() {
               </div>
               <div className="mt-6 space-y-4">
                 {subscriptionExpectations.map((item) => (
-                  <div key={item} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-4">
+                  <div key={item} className="flex items-start gap-3 rounded-2xl border border-white/12 bg-white/[0.05] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-300" />
                     <p className="text-sm leading-7 text-[var(--card-foreground)]">{item}</p>
                   </div>
@@ -166,16 +166,16 @@ export default function ServiceFactsPage() {
               </div>
             </div>
 
-            <div className="rounded-[30px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(92,230,186,0.08),rgba(27,38,59,0.96))] p-7">
+            <div className="rounded-[30px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(92,230,186,0.16),rgba(20,32,52,0.94))] p-7 shadow-[0_18px_55px_rgba(4,10,18,0.28)]">
               <div className="flex items-center gap-3">
                 <Compass className="h-5 w-5 text-emerald-300" />
                 <h2 className="text-2xl font-semibold">What happens in the first 30 days</h2>
               </div>
               <div className="mt-6 space-y-4">
                 {firstThirtyDays.map((item) => (
-                  <div key={item.title} className="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-4">
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">{item.title}</div>
-                    <p className="mt-2 text-sm leading-7 text-white/88">{item.text}</p>
+                  <div key={item.title} className="rounded-2xl border border-white/16 bg-white/[0.09] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100">{item.title}</div>
+                    <p className="mt-2 text-sm leading-7 text-slate-50">{item.text}</p>
                   </div>
                 ))}
               </div>
@@ -211,7 +211,7 @@ export default function ServiceFactsPage() {
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               {differentiation.map((item) => (
-                <div key={item} className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-4 text-sm leading-7 text-[var(--card-foreground)]">
+                <div key={item} className="rounded-2xl border border-white/12 bg-white/[0.05] px-4 py-4 text-sm leading-7 text-[var(--card-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                   {item}
                 </div>
               ))}
@@ -220,9 +220,9 @@ export default function ServiceFactsPage() {
         </section>
 
         <section className="px-4 pt-16 sm:px-6">
-          <div className="mx-auto max-w-4xl rounded-[32px] border border-emerald-500/20 bg-[linear-gradient(180deg,rgba(92,230,186,0.08),rgba(17,24,39,0.92))] px-6 py-12 text-center">
+          <div className="mx-auto max-w-4xl rounded-[32px] border border-emerald-500/20 bg-[linear-gradient(180deg,rgba(92,230,186,0.12),rgba(17,24,39,0.9))] px-6 py-12 text-center shadow-[0_20px_70px_rgba(4,10,18,0.26)]">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">If you want the truth fast, start with the scan.</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-white/88">
+            <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-slate-50">
               The scan gives you the cleanest picture of what is really happening in your visibility stack. From there,
               the subscription helps you keep fixing, monitoring, and improving instead of guessing.
             </p>
@@ -236,7 +236,7 @@ export default function ServiceFactsPage() {
               </Link>
               <Link
                 href="/pricing"
-                className="inline-flex items-center justify-center rounded-xl border border-white/15 px-6 py-3.5 font-semibold text-white transition hover:bg-white/8"
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10"
               >
                 Compare Plans
               </Link>

@@ -753,17 +753,17 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="overflow-hidden bg-slate-950 px-4 py-20 text-white sm:px-6 sm:py-28">
+        <section className="overflow-hidden bg-[linear-gradient(180deg,#03101f_0%,#071427_48%,#081326_100%)] px-4 py-20 text-white sm:px-6 sm:py-28">
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
-              <div className="text-[13px] font-bold uppercase tracking-[0.2em] text-cyan-200">Signature framework</div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">The Trust Stack shows why you&apos;re not visible, and what to fix first.</h2>
-              <p className="mt-6 text-lg leading-8 text-white/88">
+              <div className="text-[13px] font-bold uppercase tracking-[0.2em] text-cyan-100">Signature framework</div>
+              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white drop-shadow-[0_6px_30px_rgba(0,0,0,0.45)] sm:text-5xl">The Trust Stack shows why you&apos;re not visible, and what to fix first.</h2>
+              <p className="mt-6 text-lg leading-8 text-slate-100">
                 Instead of scattered reports and disconnected tasks, Geothority shows what is helping, what is holding you back, what can be fixed now, and where the team should focus next.
               </p>
               <div className="mt-8 grid gap-3">
                 {["Prioritize what matters most", "Separate signal from noise", "Spot fixable issues faster"].map((item) => (
-                  <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/12 bg-white/[0.07] px-4 py-3 text-white/92">
+                  <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/18 bg-white/[0.1] px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                     <CheckCircle2 className="h-5 w-5 text-emerald-300" /> {item}
                   </div>
                 ))}
@@ -771,7 +771,7 @@ export default function HomePage() {
               <Link href="#platform" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-50">
                 Explore the Platform <ArrowRight className="h-4 w-4" />
               </Link>
-              <p className="mt-5 text-sm text-white/92">Built to make visibility work feel more like a system and less like guesswork.</p>
+              <p className="mt-5 text-sm text-slate-200">Built to make visibility work feel more like a system and less like guesswork.</p>
             </div>
 
             <div className="rounded-[34px] border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-200/80">
