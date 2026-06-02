@@ -981,7 +981,7 @@ export default function HomePage() {
               <p className="mt-5 text-lg leading-8 !text-slate-100">Run your first scan in about 90 seconds and get a clearer action path across local search and AI visibility.</p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-emerald-50">Get Free Scan <ArrowRight className="h-4 w-4" /></Link>
-                <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-4 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10">See Pricing</Link>
+                <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-white/45 bg-white/5 px-7 py-4 font-semibold !text-white transition hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/12">See Pricing</Link>
               </div>
               <p className="mt-6 text-sm !text-slate-200">Built for ambitious local operators who want clarity, not more noise.</p>
             </div>
