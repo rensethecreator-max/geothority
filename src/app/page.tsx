@@ -950,9 +950,9 @@ export default function HomePage() {
               {pricing.map((plan) => (
                 <div key={plan.name} className={`rounded-[32px] border p-7 ${plan.featured ? "border-slate-900 bg-slate-950 text-white shadow-2xl shadow-slate-950/18" : "border-slate-200 bg-white text-slate-950 shadow-sm"}`}>
                   {plan.featured && <div className="mb-4 inline-flex rounded-full bg-emerald-300/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Recommended</div>}
-                  <h3 className={`text-2xl font-semibold tracking-[-0.04em] ${plan.featured ? "text-white" : "text-slate-950"}`}>{plan.name}</h3>
+                  <h3 className={`text-2xl font-semibold tracking-[-0.04em] ${plan.featured ? "!text-white" : "text-slate-950"}`}>{plan.name}</h3>
                   <div className="mt-4 flex items-end gap-2">
-                    <div className={`text-4xl font-semibold tracking-[-0.06em] ${plan.featured ? "text-white" : "text-slate-950"}`}>{plan.price}</div>
+                    <div className={`text-4xl font-semibold tracking-[-0.06em] ${plan.featured ? "!text-white" : "text-slate-950"}`}>{plan.price}</div>
                     <div className={`pb-1 text-sm ${plan.featured ? "text-white/78" : "text-slate-500"}`}>/month</div>
                   </div>
                   <p className={`mt-3 text-sm leading-6 ${plan.featured ? "text-slate-100" : "text-slate-600"}`}>{plan.intro}</p>
@@ -977,13 +977,13 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl overflow-hidden rounded-[38px] bg-slate-950 px-6 py-16 text-center text-white shadow-2xl shadow-slate-950/18 sm:px-10">
             <div className="mx-auto max-w-3xl">
               <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10"><TrendingUp className="h-6 w-6 text-emerald-300" /></div>
-              <h2 className="text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">See what is suppressing your visibility.</h2>
-              <p className="mt-5 text-lg leading-8 text-slate-100">Run your first scan in about 90 seconds and get a clearer action path across local search and AI visibility.</p>
+              <h2 className="text-3xl font-semibold tracking-[-0.05em] !text-white sm:text-5xl">See what is suppressing your visibility.</h2>
+              <p className="mt-5 text-lg leading-8 !text-slate-100">Run your first scan in about 90 seconds and get a clearer action path across local search and AI visibility.</p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-emerald-50">Get Free Scan <ArrowRight className="h-4 w-4" /></Link>
                 <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-4 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10">See Pricing</Link>
               </div>
-              <p className="mt-6 text-sm text-slate-200">Built for ambitious local operators who want clarity, not more noise.</p>
+              <p className="mt-6 text-sm !text-slate-200">Built for ambitious local operators who want clarity, not more noise.</p>
             </div>
           </div>
         </section>
