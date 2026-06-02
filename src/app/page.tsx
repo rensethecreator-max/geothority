@@ -537,16 +537,16 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.88fr_1.12fr]">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65 }}>
               <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300 bg-indigo-50 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-800 shadow-sm">
-                <Sparkles className="h-3.5 w-3.5" /> Visibility diagnosis + fix engine
+                <Sparkles className="h-3.5 w-3.5" /> Google + AI visibility
               </div>
               <h1 className="mt-7 max-w-5xl text-[2.55rem] font-semibold leading-[0.96] tracking-[-0.07em] text-slate-950 sm:text-5xl lg:text-[5.15rem]">
-                Find out why you&apos;re not visible, then fix what&apos;s holding you back.
+                Get found, trusted, and chosen across Google and AI search.
               </h1>
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-800 sm:text-lg sm:leading-8">
-                Geothority scans your business across Google, Maps, directories, reviews, competitors, and AI search, then fixes what it can automatically, queues the right actions for approval, and guides the rest to completion.
+                Geothority shows what is hurting your visibility, helps prioritize what matters most, and moves the right fixes forward so your business becomes easier to discover and easier to trust.
               </p>
               <p className="mt-3 max-w-lg text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-                Built for teams that want resolution, not just reporting.
+                Built for serious local operators who want progress, not just reporting.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -563,15 +563,15 @@ export default function HomePage() {
 
               <div className="mt-6 flex flex-wrap gap-3 text-sm font-medium text-slate-900">
                 {[
-                  "Automatic fixes where supported",
-                  "One-click approvals for high-impact actions",
+                  "Clear priorities instead of dashboard noise",
+                  "More visibility and trust over time",
                 ].map((item) => (
                   <div key={item} className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3.5 py-2 text-slate-950 shadow-sm">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {item}
                   </div>
                 ))}
               </div>
-              <p className="mt-5 text-[15px] font-medium leading-6 text-slate-800">Built for insurance agencies and serious local operators who need a clearer path from problem to completed fix.</p>
+              <p className="mt-5 text-[15px] font-medium leading-6 text-slate-800">Built for insurance agencies and local businesses that want a clearer path from weak visibility to steady improvement.</p>
             </motion.div>
 
             <HeroVisual />

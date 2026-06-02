@@ -54,7 +54,7 @@ const plans: Plan[] = [
     id: "free",
     name: "Free",
     monthlyPrice: 0,
-    description: "Get started with local SEO basics",
+    description: "See where your visibility is weak before you commit",
     cta: "Start Free",
     ctaHref: "/signup",
     popular: false,
@@ -83,7 +83,7 @@ const plans: Plan[] = [
     id: "starter",
     name: "Starter",
     monthlyPrice: 97,
-    description: "Best for individual agents",
+    description: "For single-location businesses that need a clear baseline",
     cta: "Start 14-Day Trial",
     ctaHref: "/signup",
     popular: false,
@@ -112,7 +112,7 @@ const plans: Plan[] = [
     id: "growth",
     name: "Growth",
     monthlyPrice: 197,
-    description: "Most Popular - everything you need",
+    description: "For teams that want ongoing monitoring and follow-through",
     cta: "Start 14-Day Trial",
     ctaHref: "/signup",
     popular: true,
@@ -141,7 +141,7 @@ const plans: Plan[] = [
     id: "authority",
     name: "Authority",
     monthlyPrice: 297,
-    description: "For multi-location businesses",
+    description: "For serious operators and multi-location visibility",
     cta: "Start 14-Day Trial",
     ctaHref: "/signup",
     popular: false,
@@ -308,19 +308,19 @@ export default function PricingPage() {
           <div className="text-center max-w-3xl mx-auto mb-16">
             <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium px-4 py-2 rounded-full mb-6">
               <Sparkles className="w-4 h-4" />
-              Plans for every local business
+              Straightforward pricing
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-5">
               <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                Simple, Transparent
+                Choose the Level
               </span>{" "}
               <br />
-              <span className="text-white">Pricing</span>
+              <span className="text-white">of Support You Need</span>
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-400 mb-10">
-              Start free. Upgrade when you&apos;re ready. Cancel anytime.
+              Start with a free scan. Upgrade when you want deeper monitoring, stronger follow-through, and more hands-on support.
             </p>
 
             {/* Monthly / Annual toggle */}
@@ -421,8 +421,8 @@ export default function PricingPage() {
 
                 {/* Feature list */}
                 <ul className="space-y-2.5 flex-1">
-                  {/* Scanning */}
-                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-1">Scanning</li>
+                  {/* Included */}
+                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-1">Included</li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {plan.features.dailyScans} daily scans
@@ -439,8 +439,8 @@ export default function PricingPage() {
                     <GeoTooltip tip="See how your local authority compares to competitors. Alerts notify you when they make a move." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
 
-                  {/* Citations */}
-                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">Citations</li>
+                  {/* Monitoring */}
+                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">Monitoring</li>
                   <li className="flex items-center gap-2.5 text-sm text-gray-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     Citation check (18 dirs)
@@ -496,8 +496,8 @@ export default function PricingPage() {
                     <GeoTooltip tip="Checks if ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere recommend your business when customers search for your services." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
                   </li>
 
-                  {/* Reports */}
-                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">Reports</li>
+                  {/* Support */}
+                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">Support & Reporting</li>
                   <li className="flex items-center gap-2.5 text-sm">
                     {plan.features.pdfReports !== "None" ? (
                       <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -596,11 +596,11 @@ export default function PricingPage() {
                   <Building2 className="w-4 h-4" />
                   Enterprise & Multi-Location
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-3">
-                  Need More? We&apos;ve Got You.
+              <h2 className="text-3xl font-bold text-white mb-3">
+                  Need multi-location or agency support?
                 </h2>
                 <p className="text-gray-400 text-lg leading-relaxed">
-                  Agency plan starting at <span className="text-white font-semibold">$997/mo</span> for multi-location businesses. Custom scan volumes, white-label dashboards, dedicated account management, and API access.
+                  Agency support starts at <span className="text-white font-semibold">$997/mo</span> for larger teams that need custom volume, white-label reporting, dedicated support, and deeper operational help.
                 </p>
               </div>
               <div className="flex sm:justify-end">
@@ -667,13 +667,13 @@ export default function PricingPage() {
                 Start in under 60 seconds
               </div>
               <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                Ready to Dominate{" "}
+                Ready to Get Found{" "}
                 <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                  Local Search?
+                  and Trusted?
                 </span>
               </h2>
               <p className="text-xl text-gray-300 mb-10 max-w-xl mx-auto">
-                Start with a free scan. Upgrade when you want more execution and monitoring.
+                Start with a free scan. Upgrade when you want more monitoring, more execution support, and a steadier path to better visibility.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
