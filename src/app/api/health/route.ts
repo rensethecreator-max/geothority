@@ -8,7 +8,8 @@ export const revalidate = 0;
 
 /**
  * GET /api/health
- * Basic health check: DB connectivity, API key status, version.
+ * Liveness-first health check: report dependency degradation in the body
+ * without blocking the platform from considering the app online.
  */
 export async function GET() {
   const checks: Record<string, string | object> = {
@@ -59,6 +60,5 @@ export async function GET() {
     checks.status = "degraded";
   }
 
-  const statusCode = checks.status === "ok" ? 200 : 503;
-  return NextResponse.json(checks, { status: statusCode });
+  return NextResponse.json(checks, { status: 200 });
 }
