@@ -11,7 +11,10 @@ import Link from "next/link";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
 
-export const revalidate = 3600;
+// This page depends on live Supabase data; building it statically can fail in
+// remote build environments even when the app itself is healthy at runtime.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Business Profiles Directory | Geothority",
