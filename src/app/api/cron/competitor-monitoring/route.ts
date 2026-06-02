@@ -102,6 +102,17 @@ type UserContext = {
   userScore: number | null;
 };
 
+function isSchemaDriftError(error: any) {
+  return error?.code === "42P01"
+    || error?.code === "42703"
+    || error?.code === "PGRST205"
+    || error?.code === "PGRST204"
+    || /relation .* does not exist/i.test(error?.message || "")
+    || /Could not find the table .* in the schema cache/i.test(error?.message || "")
+    || /Could not find the '.*' column of '.*' in the schema cache/i.test(error?.message || "")
+    || /column .* does not exist/i.test(error?.message || "");
+}
+
 // ── Main handler ────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
@@ -132,6 +143,16 @@ export async function GET(req: NextRequest) {
       .eq("active", true);
 
     if (compError) {
+      if (isSchemaDriftError(compError)) {
+        console.warn("[cron/competitor-monitoring] Skipping: competitors table/schema not available yet.", compError);
+        return NextResponse.json({
+          success: true,
+          skipped: true,
+          reason: "schema_not_ready",
+          usersProcessed: 0,
+          notificationsCreated: 0,
+        });
+      }
       console.error("[cron/competitor-monitoring] Error fetching competitors:", compError);
       return NextResponse.json({ error: "DB error fetching competitors" }, { status: 500 });
     }

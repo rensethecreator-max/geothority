@@ -9,6 +9,15 @@ import { getAppUrl } from "@/lib/app-url";
  * POST /api/cron/ai-visibility (with cron_secret)
  */
 
+function isSchemaDriftError(error: any) {
+  return error?.code === "42P01"
+    || error?.code === "PGRST205"
+    || error?.code === "PGRST204"
+    || /relation .* does not exist/i.test(error?.message || "")
+    || /Could not find the table .* in the schema cache/i.test(error?.message || "")
+    || /Could not find the '.*' column of '.*' in the schema cache/i.test(error?.message || "");
+}
+
 export async function POST(req: NextRequest) {
   // Verify cron secret
   const authHeader = req.headers.get("authorization");
@@ -30,6 +39,15 @@ export async function POST(req: NextRequest) {
       .limit(50);
 
     if (qsError) {
+      if (isSchemaDriftError(qsError)) {
+        console.warn("[cron/ai-visibility] Skipping: ai_query_sets schema not available yet.", qsError);
+        return NextResponse.json({
+          message: "AI visibility schema not installed yet",
+          skipped: true,
+          querySetsChecked: 0,
+          checksRun: 0,
+        });
+      }
       console.error("Failed to fetch stale query sets:", qsError);
       return NextResponse.json({ error: "Failed to fetch query sets" }, { status: 500 });
     }
@@ -40,10 +58,15 @@ export async function POST(req: NextRequest) {
 
     // Get user business profiles for the query set owners
     const userIds = Array.from(new Set(staleQuerySets.map((qs: any) => qs.user_id)));
-    const { data: profiles } = await supabase
+    const { data: profiles, error: profilesError } = await supabase
       .from("business_profiles")
       .select("user_id, business_name")
       .in("user_id", userIds);
+
+    if (profilesError && !isSchemaDriftError(profilesError)) {
+      console.error("[cron/ai-visibility] Failed to fetch business profiles:", profilesError);
+      return NextResponse.json({ error: "Failed to fetch business profiles" }, { status: 500 });
+    }
 
     const profileMap = new Map((profiles ?? []).map((p: any) => [p.user_id, p.business_name]));
 
@@ -96,27 +119,44 @@ export async function POST(req: NextRequest) {
       }
 
       // Update last_checked_at
-      await supabase
+      const { error: updateError } = await supabase
         .from("ai_query_sets")
         .update({ last_checked_at: new Date().toISOString() })
         .eq("id", qs.id);
+
+      if (updateError && !isSchemaDriftError(updateError)) {
+        console.error(`[cron/ai-visibility] Failed to update last_checked_at for ${qs.id}:`, updateError);
+      }
     }
 
     // Send email alerts for AI visibility score changes
     for (const qs of staleQuerySets) {
       try {
         // Get previous and current scorecard
-        const { data: scorecard } = await supabase
+        const { data: scorecard, error: scorecardError } = await supabase
           .from("ai_visibility_scorecards")
           .select("overall_score, previous_overall_score, score_delta")
           .eq("user_id", qs.user_id)
           .single();
 
+        if (scorecardError) {
+          if (isSchemaDriftError(scorecardError)) continue;
+          throw scorecardError;
+        }
+
         if (scorecard && scorecard.score_delta !== null && scorecard.score_delta !== 0) {
           // Get user email
           const { data: authData } = await supabase.auth.admin.getUserById(qs.user_id);
           const email = authData?.user?.email;
-          const { data: profile } = await supabase.from("business_profiles").select("business_name").eq("user_id", qs.user_id).single();
+          const { data: profile, error: profileError } = await supabase
+            .from("business_profiles")
+            .select("business_name")
+            .eq("user_id", qs.user_id)
+            .single();
+
+          if (profileError && !isSchemaDriftError(profileError)) {
+            throw profileError;
+          }
 
           if (email) {
             const prev = scorecard.previous_overall_score ?? 0;

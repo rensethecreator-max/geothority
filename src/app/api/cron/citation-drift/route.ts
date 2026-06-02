@@ -24,6 +24,15 @@ function normalizeNAP(input: { businessName: string; address?: string; city: str
   return createHash("sha256").update(parts.join("|")).digest("hex").slice(0, 16);
 }
 
+function isSchemaDriftError(error: any) {
+  return error?.code === "42P01"
+    || error?.code === "PGRST205"
+    || error?.code === "PGRST204"
+    || /relation .* does not exist/i.test(error?.message || "")
+    || /Could not find the table .* in the schema cache/i.test(error?.message || "")
+    || /Could not find the '.*' column of '.*' in the schema cache/i.test(error?.message || "");
+}
+
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
@@ -49,6 +58,17 @@ export async function GET(req: NextRequest) {
       .select("id, user_id, business_name, address, city, state, zip, phone, nap_hash, updated_at");
 
     if (profileError) {
+      if (isSchemaDriftError(profileError)) {
+        console.warn("[cron/citation-drift] Skipping: citation truth schema not available yet.", profileError);
+        return NextResponse.json({
+          success: true,
+          skipped: true,
+          reason: "schema_not_ready",
+          usersChecked: 0,
+          driftDetected: 0,
+          notificationsSent: 0,
+        });
+      }
       console.error("[cron/citation-drift] Error fetching profiles:", profileError);
       return NextResponse.json({ error: "DB error" }, { status: 500 });
     }
@@ -64,10 +84,18 @@ export async function GET(req: NextRequest) {
     for (const profile of profiles) {
       try {
         // Get sync states for this user
-        const { data: syncStates } = await supabase
+        const { data: syncStates, error: syncStatesError } = await supabase
           .from("citation_sync_states")
           .select("id, directory_id, nap_hash_at_check, last_checked, consistency_score")
           .eq("user_id", profile.user_id);
+
+        if (syncStatesError) {
+          if (isSchemaDriftError(syncStatesError)) {
+            console.warn(`[cron/citation-drift] Skipping user ${profile.user_id}: citation_sync_states schema not ready.`);
+            continue;
+          }
+          throw syncStatesError;
+        }
 
         if (!syncStates || syncStates.length === 0) continue;
 
@@ -107,7 +135,7 @@ export async function GET(req: NextRequest) {
               };
             }
 
-            await supabase
+            const { error: updateStateError } = await supabase
               .from("citation_sync_states")
               .update({
                 drift_detected: true,
@@ -116,15 +144,23 @@ export async function GET(req: NextRequest) {
               })
               .eq("id", state.id);
 
+            if (updateStateError && !isSchemaDriftError(updateStateError)) {
+              throw updateStateError;
+            }
+
             // Get directory name for notification
-            const { data: dir } = await supabase
+            const { data: dir, error: dirError } = await supabase
               .from("citation_directories")
               .select("name")
               .eq("id", state.directory_id)
               .single();
 
+            if (dirError && !isSchemaDriftError(dirError)) {
+              throw dirError;
+            }
+
             // Log drift entry
-            await supabase.from("citation_drift_log").insert({
+            const { error: driftLogError } = await supabase.from("citation_drift_log").insert({
               user_id: profile.user_id,
               citation_sync_state_id: state.id,
               directory_id: state.directory_id,
@@ -133,6 +169,10 @@ export async function GET(req: NextRequest) {
               after_value: newNAP,
               severity: napChanged ? "warning" : "info",
             });
+
+            if (driftLogError && !isSchemaDriftError(driftLogError)) {
+              throw driftLogError;
+            }
 
             driftDetected++;
 
@@ -159,7 +199,7 @@ export async function GET(req: NextRequest) {
     // Send notifications in batch
     if (notifications.length > 0) {
       const { error: notifError } = await supabase.from("notifications").insert(notifications);
-      if (notifError) {
+      if (notifError && !isSchemaDriftError(notifError)) {
         console.error("[cron/citation-drift] Notification insert error:", notifError);
       }
 
@@ -181,7 +221,15 @@ export async function GET(req: NextRequest) {
         try {
           const { data: authData } = await supabase.auth.admin.getUserById(userId);
           const email = authData?.user?.email;
-          const { data: profile } = await supabase.from("business_profiles").select("business_name").eq("user_id", userId).single();
+          const { data: profile, error: profileLookupError } = await supabase
+            .from("business_profiles")
+            .select("business_name")
+            .eq("user_id", userId)
+            .single();
+
+          if (profileLookupError && !isSchemaDriftError(profileLookupError)) {
+            throw profileLookupError;
+          }
           if (email) {
             await sendCitationDriftAlert(email, profile?.business_name || "Your Business", drifts);
           }
