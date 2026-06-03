@@ -8,15 +8,15 @@ import { generateOrganizationSchema, generateWebSiteSchema, generateSoftwareAppS
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Geothority - Local Search & AI Visibility for Insurance Agents",
+  title: "Geothority - Automated Local SEO, AEO/GEO & Google Review Growth",
   description:
-    "See how your business appears across local search and AI answer surfaces, then work through the highest-leverage fixes with clear guidance.",
+    "Automated Local SEO, AEO, generative engine optimization, AI engine optimization, and Google review growth for local businesses.",
   manifest: "/manifest.json",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io"),
   openGraph: {
-    title: "Geothority - Local Search & AI Visibility",
+    title: "Geothority - Local SEO, AEO/GEO & Google Review Growth",
     description:
-      "The local SEO platform that helps insurance agents measure local visibility, spot trust gaps, and prioritize the next fixes. Free website audit in 90 seconds.",
+      "The platform that helps local businesses improve Google visibility, AI engine readiness, generative search trust, citations, and 5-star Google review momentum.",
     url: process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io",
     siteName: "Geothority",
     type: "website",
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Geothority - Local Search & AI Visibility",
+    title: "Geothority - Local SEO, AEO/GEO & Review Growth",
     description:
-      "Free 90-second website audit. See your Geothority Score and get copy-paste fixes to improve local search coverage.",
+      "Free 90-second audit for Local SEO, AEO/GEO, AI visibility, citations, and Google review growth.",
     images: ["/og-image.png"],
   },
   appleWebApp: {

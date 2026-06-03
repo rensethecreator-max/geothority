@@ -21,6 +21,7 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Star,
   TrendingUp,
   X,
   Zap,
@@ -44,6 +45,33 @@ const socialProof = [
 ];
 
 const logoProof = ["Independent agencies", "Local operators", "Multi-location teams", "Visibility-led growth"];
+
+const outcomePillars = [
+  {
+    title: "Local SEO",
+    eyebrow: "Google + Maps",
+    text: "Improve Google Business Profile strength, local pages, citations, directories, service-area coverage, and the signals that help nearby buyers find you.",
+    proof: ["Google Maps readiness", "Citation cleanup", "Service-area content"],
+    icon: Search,
+    accent: "from-indigo-500 to-cyan-400",
+  },
+  {
+    title: "AEO + GEO",
+    eyebrow: "AI engine optimization",
+    text: "Make your business easier for ChatGPT, Gemini, Perplexity, AI Overviews, and generative search systems to understand, trust, and mention.",
+    proof: ["Entity clarity", "Schema + FAQ structure", "AI visibility checks"],
+    icon: Bot,
+    accent: "from-cyan-500 to-emerald-400",
+  },
+  {
+    title: "5-Star Review Growth",
+    eyebrow: "Google reputation",
+    text: "Turn happy customers into fresh Google reviews, route private feedback before it hurts you, and keep proof signals moving in the right direction.",
+    proof: ["Review requests", "Private feedback capture", "Proof assets"],
+    icon: Star,
+    accent: "from-amber-400 to-rose-400",
+  },
+];
 
 const executionModes = [
   {
@@ -91,16 +119,22 @@ const workflowSteps = [
 
 const capabilities = [
   {
-    title: "Trust Stack Scoring",
-    icon: Layers3,
-    text: "See how trust signals, content, listings, and AI visibility combine to shape your local presence.",
+    title: "Local SEO System",
+    icon: Search,
+    text: "Find and prioritize the Google, Maps, citation, service-area, and content gaps that suppress local demand.",
     accent: "from-indigo-500 to-violet-500",
   },
   {
-    title: "AI Visibility Monitoring",
+    title: "AEO / GEO Monitoring",
     icon: Bot,
-    text: "Track where AI assistants mention your business and what may be strengthening or suppressing that presence.",
+    text: "Track whether AI engines mention your business and what needs to improve for answer-engine and generative-engine visibility.",
     accent: "from-cyan-500 to-blue-500",
+  },
+  {
+    title: "Google Review Growth",
+    icon: Star,
+    text: "Procure more fresh 5-star Google reviews, capture private feedback, and strengthen the proof buyers and algorithms rely on.",
+    accent: "from-amber-500 to-rose-500",
   },
   {
     title: "Citation & Listing Review",
@@ -111,14 +145,8 @@ const capabilities = [
   {
     title: "Schema Generation",
     icon: Code2,
-    text: "Generate structured data faster so search engines can interpret your business more clearly.",
+    text: "Generate structured data faster so search engines and AI engines can interpret your business more clearly.",
     accent: "from-amber-500 to-orange-500",
-  },
-  {
-    title: "Local Content Drafting",
-    icon: FileText,
-    text: "Create city and service page drafts based on real visibility gaps and market opportunities.",
-    accent: "from-rose-500 to-pink-500",
   },
   {
     title: "Competitor Monitoring",
@@ -667,16 +695,16 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.88fr_1.12fr]">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65 }}>
               <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300 bg-indigo-50 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-800 shadow-sm">
-                <Sparkles className="h-3.5 w-3.5" /> Google + AI visibility
+                <Sparkles className="h-3.5 w-3.5" /> Local SEO + AEO + Google reviews
               </div>
               <h1 className="mt-7 max-w-5xl text-[2.55rem] font-semibold leading-[0.96] tracking-[-0.07em] text-slate-950 sm:text-5xl lg:text-[5.15rem]">
-                Get found, trusted, and chosen across Google and AI search.
+                Automated Local SEO, AEO, and 5-star review growth.
               </h1>
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-800 sm:text-lg sm:leading-8">
-                Geothority shows what is hurting your visibility, helps prioritize what matters most, and moves the right fixes forward so your business becomes easier to discover and easier to trust.
+                Geothority helps local businesses get found on Google, become easier for AI engines to understand and recommend, and procure fresh Google reviews from happy customers.
               </p>
               <p className="mt-3 max-w-lg text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-                Built for serious local operators who want progress, not just reporting.
+                AEO means AI Engine Optimization. GEO means Generative Engine Optimization. Together with Local SEO and reputation growth, they make your business clearer, more trusted, and easier to choose.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -693,18 +721,58 @@ export default function HomePage() {
 
               <div className="mt-6 flex flex-wrap gap-3 text-sm font-medium text-slate-900">
                 {[
-                  "Clear priorities instead of dashboard noise",
-                  "More visibility and trust over time",
+                  "Google Maps and local search fixes",
+                  "AI answer-engine readiness",
+                  "5-star review momentum",
                 ].map((item) => (
                   <div key={item} className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3.5 py-2 text-slate-950 shadow-sm">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {item}
                   </div>
                 ))}
               </div>
-              <p className="mt-5 text-[15px] font-medium leading-6 text-slate-800">Built for insurance agencies and local businesses that want a clearer path from weak visibility to steady improvement.</p>
+              <p className="mt-5 text-[15px] font-medium leading-6 text-slate-800">Built for insurance agencies and local businesses that want automated visibility work, not another passive SEO report.</p>
             </motion.div>
 
             <HeroVisual />
+          </div>
+        </section>
+
+        <section className="px-4 pb-6 sm:px-6 sm:pb-10">
+          <div className="mx-auto max-w-7xl rounded-[32px] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/5 sm:p-6">
+            <div className="grid gap-4 lg:grid-cols-3">
+              {outcomePillars.map((pillar, index) => {
+                const Icon = pillar.icon;
+                return (
+                  <motion.div
+                    key={pillar.title}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.35 }}
+                    transition={{ delay: index * 0.08, duration: 0.45 }}
+                    className="relative overflow-hidden rounded-[26px] border border-slate-200 bg-slate-50 p-5"
+                  >
+                    <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${pillar.accent}`} />
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-600">{pillar.eyebrow}</div>
+                        <h2 className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-slate-950">{pillar.title}</h2>
+                      </div>
+                      <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${pillar.accent} text-white shadow-lg shadow-slate-950/12`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                    </div>
+                    <p className="mt-4 text-sm leading-6 text-slate-700">{pillar.text}</p>
+                    <div className="mt-5 grid gap-2">
+                      {pillar.proof.map((item) => (
+                        <div key={item} className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {item}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -767,8 +835,8 @@ export default function HomePage() {
             <SectionIntro
               center
               eyebrow="How it works"
-              title="Find what&apos;s suppressing visibility. Fix what can be fixed."
-              text="Geothority helps your team move from scattered SEO effort to a more disciplined diagnose-and-fix workflow."
+              title="Find what&apos;s suppressing local SEO, AEO, and review momentum. Fix what can be fixed."
+              text="Geothority turns scattered SEO, AI visibility, and reputation work into a more disciplined scan, fix, and monitor workflow."
             />
             <div className="mt-12 grid gap-4 md:grid-cols-4">
               {workflowSteps.map((step, index) => {
@@ -791,8 +859,8 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl">
             <SectionIntro
               eyebrow="Core capabilities"
-              title="Diagnosis, prioritization, and fix execution in one platform."
-              text="Geothority helps serious operators see what matters, resolve what they can fast, and move the rest forward with more precision."
+              title="Local SEO, AEO/GEO, and reputation growth in one platform."
+              text="Geothority helps serious operators improve Google visibility, answer-engine readiness, citation consistency, competitor response, and review momentum from one operating system."
             />
             <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {capabilities.map((feature) => {
@@ -817,7 +885,7 @@ export default function HomePage() {
                         animate={{ x: ["0%", "680%"] }}
                         transition={{ repeat: Infinity, duration: 4.8, ease: "easeInOut", repeatDelay: 1.4 }}
                       />
-                      {feature.title === "Trust Stack Scoring" && (
+                      {feature.title === "Local SEO System" && (
                         <div className="flex h-full items-center gap-2">
                           {[74, 68, 82, 57].map((score, index) => (
                             <div key={index} className="flex-1">
@@ -834,7 +902,7 @@ export default function HomePage() {
                           ))}
                         </div>
                       )}
-                      {feature.title === "AI Visibility Monitoring" && (
+                      {feature.title === "AEO / GEO Monitoring" && (
                         <div className="flex h-full items-center justify-between px-1">
                           {["ChatGPT", "Gemini", "Perplexity"].map((label, index) => (
                             <div key={label} className="flex flex-col items-center gap-2">
@@ -844,6 +912,23 @@ export default function HomePage() {
                                 className={`h-3 w-3 rounded-full bg-gradient-to-r ${feature.accent}`}
                               />
                               <div className="text-[10px] font-medium text-slate-600">{label}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {feature.title === "Google Review Growth" && (
+                        <div className="space-y-2">
+                          {[5, 5, 4.8].map((rating, index) => (
+                            <div key={index} className="flex items-center gap-2 rounded-xl bg-white px-2 py-1.5">
+                              <motion.div
+                                animate={{ scale: [1, 1.18, 1], opacity: [0.7, 1, 0.7] }}
+                                transition={{ repeat: Infinity, duration: 1.9, delay: index * 0.18 }}
+                                className="flex text-amber-400"
+                              >
+                                <Star className="h-3.5 w-3.5 fill-current" />
+                              </motion.div>
+                              <div className="text-[10px] font-semibold text-slate-700">{rating.toFixed(index === 2 ? 1 : 0)} star review request</div>
+                              <div className="ml-auto rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-emerald-700">sent</div>
                             </div>
                           ))}
                         </div>
@@ -889,21 +974,6 @@ export default function HomePage() {
                           ))}
                         </div>
                       )}
-                      {feature.title === "Local Content Drafting" && (
-                        <div className="space-y-2">
-                          {["Tampa homeowners insurance", "Coverage options", "Why local trust matters"].map((line, index) => (
-                            <div key={line} className="rounded-xl bg-white px-3 py-2 text-[10px] text-slate-600">
-                              <motion.div
-                                initial={{ width: "12%" }}
-                                whileInView={{ width: index === 0 ? "80%" : index === 1 ? "60%" : "66%" }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1, duration: 0.65 }}
-                                className={`h-1.5 rounded-full ${index === 0 ? "bg-rose-400" : index === 1 ? "bg-pink-400" : "bg-slate-300"}`}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
                       {feature.title === "Competitor Monitoring" && (
                         <div className="flex h-full items-end gap-1.5">
                           {[18, 24, 20, 42, 36, 58, 52].map((height, index) => (
@@ -918,7 +988,7 @@ export default function HomePage() {
                           ))}
                         </div>
                       )}
-                      {! ["Trust Stack Scoring", "AI Visibility Monitoring", "Citation & Listing Review", "Schema Generation", "Local Content Drafting", "Competitor Monitoring"].includes(feature.title) && (
+                      {! ["Local SEO System", "AEO / GEO Monitoring", "Google Review Growth", "Citation & Listing Review", "Schema Generation", "Competitor Monitoring"].includes(feature.title) && (
                         <div className="flex h-full items-end gap-1.5">
                           {[24, 38, 30, 52, 46, 62, 58].map((height, index) => (
                             <motion.div
@@ -960,9 +1030,9 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="relative z-10">
               <div className="text-[13px] font-bold uppercase tracking-[0.2em] !text-cyan-50">Signature framework</div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] !text-white [text-shadow:0_18px_48px_rgba(2,6,23,0.92)] sm:text-5xl">The Trust Stack shows why you&apos;re not visible, and what to fix first.</h2>
+              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] !text-white [text-shadow:0_18px_48px_rgba(2,6,23,0.92)] sm:text-5xl">The Trust Stack powers your Local SEO, AEO, GEO, and review-growth plan.</h2>
               <p className="mt-6 text-lg leading-8 !text-slate-50">
-                Instead of scattered reports and disconnected tasks, Geothority shows what is helping, what is holding you back, what can be fixed now, and where the team should focus next.
+                Instead of scattered reports and disconnected tasks, Geothority shows what is helping, what is holding back Google visibility, what weakens AI engine trust, what can be fixed now, and where review momentum needs attention.
               </p>
               <div className="mt-8 grid gap-3">
                 {["Prioritize what matters most", "Separate signal from noise", "Spot fixable issues faster"].map((item) => (
