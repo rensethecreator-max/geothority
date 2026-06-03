@@ -483,14 +483,14 @@ function AiEnginesMonitorBand() {
                   {marqueeEngines.map((engine, index) => (
                     <div
                       key={`${engine.id}-${index}`}
-                      className="relative flex h-[118px] w-[136px] shrink-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.08] px-3 text-center shadow-[0_18px_44px_rgba(0,0,0,0.18)]"
+                      className="relative flex h-[120px] w-[136px] shrink-0 flex-col items-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.08] px-3 pb-3 pt-4 text-center shadow-[0_18px_44px_rgba(0,0,0,0.18)]"
                     >
                       <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${engine.tone}`} />
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/14 bg-white shadow-sm">
+                      <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl border border-white/14 bg-white shadow-sm">
                         <EngineLogo id={engine.id} color={engine.color} />
                       </div>
-                      <div className="mt-3 text-sm font-semibold leading-none !text-white">{engine.name}</div>
-                      <div className="mt-2 text-[9px] font-bold uppercase tracking-[0.16em] !text-slate-400">{engine.signal}</div>
+                      <div className="mt-2.5 text-sm font-semibold leading-none !text-white">{engine.name}</div>
+                      <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.16em] !text-slate-400">{engine.signal}</div>
                     </div>
                   ))}
                 </motion.div>
