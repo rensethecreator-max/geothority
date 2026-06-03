@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
 import { getAppUrl } from "@/lib/app-url";
+import { scanWebsite } from "@/lib/scanner";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -164,7 +165,7 @@ export async function GET(request: NextRequest) {
 
     const { data: usersWithScans, error } = await supabase
       .from("scans")
-      .select("user_id, url, created_at, geothority_score, quick_wins, id")
+      .select("user_id, url, created_at, geothority_score, quick_wins, id, business_name, city, state, raw_scan_data")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -199,27 +200,56 @@ export async function GET(request: NextRequest) {
         const rawData = (latestScan as unknown as Record<string, unknown>).raw_scan_data as Record<string, string> | null;
         const businessName = rawData?.businessName || rawData?.business_name || "";
 
-        // Trigger a new scan
-        const scanRes = await fetch(`${appUrl}/api/scan/run`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: latestScan.url, userId }),
-        });
+        const scanBusinessName = businessName || latestScan.business_name;
+        const scanCity = ((latestScan as unknown as Record<string, unknown>).city as string | undefined) || "";
+        const scanState = ((latestScan as unknown as Record<string, unknown>).state as string | undefined) || "";
 
-        if (!scanRes.ok) {
-          errors.push(`Scan failed for user ${userId}`);
+        if (!latestScan.url || !scanBusinessName || !scanCity || !scanState) {
+          errors.push(`Skipped user ${userId}: missing scan inputs`);
           continue;
         }
 
-        const newScan = await scanRes.json();
-        const newScore = newScan.geothority_score ?? newScan.score ?? 0;
+        // Trigger a new scan directly so cron does not depend on an auth-protected route.
+        const result = await scanWebsite(latestScan.url, scanBusinessName, scanCity, scanState);
+
+        const { data: scanRow, error: scanInsertError } = await supabase
+          .from("scans")
+          .insert({
+            user_id: userId,
+            url: result.url,
+            business_name: result.businessName,
+            city: result.city,
+            state: result.state,
+            geothority_score: result.localAuthorityScore,
+            layer_scores: result.layerScores,
+            quick_wins: result.quickWins,
+            competitor_gaps: result.competitorGaps,
+            raw_scan_data: result.rawScanData,
+          })
+          .select("id, geothority_score, quick_wins")
+          .single();
+
+        if (scanInsertError || !scanRow) {
+          errors.push(`Scan save failed for user ${userId}: ${scanInsertError?.message || "unknown error"}`);
+          continue;
+        }
+
+        await supabase.from("score_history").insert({
+          user_id: userId,
+          scan_id: scanRow.id,
+          overall_score: result.localAuthorityScore,
+          layer_scores: result.layerScores,
+          scanned_at: new Date().toISOString(),
+        });
+
+        const newScore = scanRow.geothority_score ?? 0;
         const oldScore = latestScan.geothority_score ?? 0;
-        const quickWins = newScan.quick_wins ?? [];
+        const quickWins = scanRow.quick_wins ?? [];
 
         scansTriggered++;
 
         // Send email notification
-        const scanUrl = `${appUrl}/scan/${newScan.id}`;
+        const scanUrl = `${appUrl}/scan/${scanRow.id}`;
         const diff = newScore - oldScore;
 
         const subject = diff > 0
