@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Target,
   TrendingUp,
   X,
   Zap,
@@ -92,9 +93,11 @@ const aiEngines = [
 ];
 
 const automationStats = [
-  { value: "90s", label: "first scan", detail: "Build the visibility baseline without waiting on a manual audit." },
-  { value: "100+", label: "data points", detail: "Review local SEO, AEO, listings, competitors, content, and reputation signals." },
-  { value: "24/7", label: "monitoring", detail: "Keep watching the surfaces that can change while the business is busy." },
+  { value: "90", label: "seconds", detail: "Scan your business before a manual audit could even start.", icon: Search },
+  { value: "100+", label: "data points", detail: "Analyze local SEO, AEO, listings, competitors, content, and reputation.", icon: BarChart3 },
+  { value: "1000s", label: "opportunities", detail: "Surface gaps across pages, reviews, listings, schema, and AI readiness.", icon: Target },
+  { value: "10x", label: "visibility potential", detail: "Focus every fix on better discoverability, not vanity reporting.", icon: TrendingUp },
+  { value: "24/7", label: "monitoring", detail: "Keep watching the surfaces that change while the business is busy.", icon: ShieldCheck },
 ];
 
 const automationLanes = [
@@ -109,6 +112,36 @@ const automationWorkflow = [
   { title: "Generate fixes", text: "Prepare schema, content drafts, review campaigns, and listing actions.", icon: Sparkles },
   { title: "Execute + monitor", text: "Run supported work, queue approvals, and keep tracking momentum.", icon: Radar },
 ];
+
+const whatGeothorityDoes = [
+  { task: "Website audit", mode: "Automatic", detail: "Scanned in 90 seconds", outcome: "Analyzes 100+ website and visibility factors", icon: FileText },
+  { task: "Find visibility problems", mode: "Automatic", detail: "Identified instantly", outcome: "Explains issues that cost Google and AI visibility", icon: Search },
+  { task: "Prioritize fixes", mode: "Automatic", detail: "Ranked by impact", outcome: "Pushes highest-impact opportunities to the top", icon: TrendingUp },
+  { task: "Create service pages", mode: "Automatic", detail: "Created for you", outcome: "Generates SEO-ready service pages", icon: FileText },
+  { task: "Create location pages", mode: "Automatic", detail: "Created for you", outcome: "Builds local pages that attract nearby buyers", icon: MapPin },
+  { task: "Create FAQ and trust pages", mode: "Automatic", detail: "Created for you", outcome: "Strengthens entity trust, schema, and buyer confidence", icon: ShieldCheck },
+  { task: "AI and schema optimization", mode: "Automatic", detail: "Optimized for you", outcome: "Adds structured signals AI engines can understand", icon: Code2 },
+  { task: "Local listings sync", mode: "Automatic", detail: "Synced for you", outcome: "Keeps NAP details consistent across directories", icon: Layers3 },
+  { task: "Google Business Profile", mode: "Automatic", detail: "Watched 24/7", outcome: "Tracks insights, posts, engagement, and changes", icon: Eye },
+  { task: "Review requests", mode: "Automatic", detail: "Sent for you", outcome: "Asks happy customers at the right moment", icon: Star },
+  { task: "AI search visibility", mode: "Automatic", detail: "Tracked for you", outcome: "Monitors your presence in answer engines", icon: Bot },
+  { task: "Publish and apply fixes", mode: "One approval", detail: "You approve, then we run it", outcome: "Keeps control in your hands where it matters", icon: Zap },
+];
+
+const comparisonRows = [
+  ["AI visibility monitoring", "Automatic", "Limited", "Limited", "Partial"],
+  ["Repair plan after scan", "Automatic", "Manual", "Manual", "Manual"],
+  ["Service and location page generation", "Automatic", "Limited", "Limited", "Partial"],
+  ["FAQ, trust pages, and schema assets", "Automatic", "Limited", "Manual", "Partial"],
+  ["Local listings sync", "Automatic", "Automatic", "Manual", "Partial"],
+  ["Google Business Profile monitoring", "Automatic", "Partial", "Manual", "Partial"],
+  ["Review request workflow", "Automatic", "Limited", "Partial", "Limited"],
+  ["Competitor monitoring", "Automatic", "Limited", "Partial", "Manual"],
+  ["Growth opportunity discovery", "Automatic", "Limited", "Partial", "Partial"],
+  ["Fix execution", "One approval", "Manual", "Manual", "Manual"],
+];
+
+const comparisonColumns = ["Geothority", "Yext", "BrightLocal", "Semrush Local"];
 
 const executionModes = [
   {
@@ -505,37 +538,45 @@ function AiEnginesMonitorBand() {
 
 function AutomationScorecardSection() {
   return (
-    <section className="px-4 py-14 sm:px-6 sm:py-20">
+    <section className="px-4 py-14 sm:px-6 sm:py-20" id="what-you-get">
       <div className="mx-auto max-w-7xl">
-        <div className="grid items-center gap-10 lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800">
-              <Zap className="h-3.5 w-3.5" /> Automation scorecard
+              <Zap className="h-3.5 w-3.5" /> What Geothority does for you
             </div>
             <h2 className="mt-5 text-3xl font-semibold tracking-[-0.055em] text-slate-950 sm:text-5xl">
-              Most visibility work should not be manual anymore.
+              More automation. Less work. Better results.
             </h2>
             <p className="mt-5 text-lg leading-8 text-slate-700">
-              Geothority turns a local visibility audit into a living repair system: scan the business, build the plan, generate the fixes, queue approvals, and keep monitoring what changes.
+              Geothority turns the product promise into proof fast: it scans, identifies, creates, syncs, requests, monitors, and queues the few actions that need approval.
             </p>
-            <div className="mt-7 grid gap-3 sm:grid-cols-3">
-              {automationStats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.4 }}
-                  transition={{ delay: index * 0.06, duration: 0.42 }}
-                  className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm"
-                >
-                  <div className="text-3xl font-semibold tracking-[-0.06em] text-slate-950"><AnimatedMetricValue value={stat.value} /></div>
-                  <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">{stat.label}</div>
-                  <p className="mt-2 text-xs leading-5 text-slate-600">{stat.detail}</p>
-                </motion.div>
-              ))}
+            <div className="mt-7 grid gap-3 sm:grid-cols-2">
+              {automationStats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.4 }}
+                    transition={{ delay: index * 0.06, duration: 0.42 }}
+                    className="group rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-950/7"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-3xl font-semibold tracking-[-0.06em] text-slate-950"><AnimatedMetricValue value={stat.value} /></div>
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 transition group-hover:bg-emerald-600 group-hover:text-white">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                    </div>
+                    <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">{stat.label}</div>
+                    <p className="mt-2 text-xs leading-5 text-slate-600">{stat.detail}</p>
+                  </motion.div>
+                );
+              })}
             </div>
             <p className="mt-5 text-sm leading-6 text-slate-600">
-              Framed carefully: Geothority finds more opportunities and moves more of the work forward. It does not need to promise instant rankings to be obviously better than passive SEO reports.
+              We do the work. You get the results. That is the simple operating promise behind the whole platform.
             </p>
           </div>
 
@@ -552,8 +593,8 @@ function AutomationScorecardSection() {
               <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#f8fbff,#eef7f4)] p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-700">Geothority automation score</div>
-                    <h3 className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-slate-950">Workload handled by the operating system</h3>
+                    <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-700">Autopilot engine</div>
+                    <h3 className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-slate-950">Your business visibility workflow, handled</h3>
                   </div>
                   <motion.div
                     animate={{ scale: [1, 1.04, 1] }}
@@ -564,66 +605,36 @@ function AutomationScorecardSection() {
                   </motion.div>
                 </div>
 
-                <div className="mt-6 grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
-                  <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="relative mx-auto flex h-44 w-44 items-center justify-center rounded-full bg-[conic-gradient(from_270deg,#34d399_0deg,#22d3ee_270deg,#cbd5e1_270deg)] p-3">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
-                        className="absolute inset-1 rounded-full border border-cyan-300/30 border-t-cyan-500"
-                      />
-                      <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-white">
-                        <div className="text-5xl font-semibold tracking-[-0.08em] text-slate-950">75%</div>
-                        <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">automatic</div>
-                        <div className="mt-2 text-center text-xs leading-5 text-slate-600">supported work moves without another spreadsheet</div>
-                      </div>
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      {automationLanes.map((lane, index) => (
-                        <div key={lane.label}>
-                          <div className="mb-1.5 flex items-center justify-between text-xs">
-                            <span className="font-semibold text-slate-800">{lane.label}</span>
-                            <span className="text-slate-500">{lane.value}%</span>
-                          </div>
-                          <div className="h-2 rounded-full bg-slate-100">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              whileInView={{ width: `${lane.value}%` }}
-                              viewport={{ once: true }}
-                              transition={{ delay: index * 0.1, duration: 0.75, ease: "easeOut" }}
-                              className={`h-full rounded-full bg-gradient-to-r ${lane.color}`}
-                            />
-                          </div>
-                          <div className="mt-1 text-[11px] text-slate-500">{lane.detail}</div>
-                        </div>
-                      ))}
-                    </div>
+                <div className="mt-6 max-h-[520px] overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+                  <div className="grid grid-cols-[1.05fr_0.82fr_1.13fr] bg-slate-950 text-[10px] font-bold uppercase tracking-[0.18em] !text-white">
+                    <div className="px-3 py-3 sm:px-4">Does for you</div>
+                    <div className="bg-emerald-700 px-3 py-3 sm:px-4">Geothority</div>
+                    <div className="px-3 py-3 sm:px-4">How it works</div>
                   </div>
-
-                  <div className="grid gap-3">
-                    {automationWorkflow.map((step, index) => {
-                      const Icon = step.icon;
+                  <div className="divide-y divide-slate-100">
+                    {whatGeothorityDoes.map((row, index) => {
+                      const Icon = row.icon;
                       return (
                         <motion.div
-                          key={step.title}
-                          initial={{ opacity: 0, x: 16 }}
-                          whileInView={{ opacity: 1, x: 0 }}
+                          key={row.task}
+                          initial={{ opacity: 0, y: 8 }}
+                          whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true, amount: 0.3 }}
-                          transition={{ delay: index * 0.07, duration: 0.38 }}
-                          className="rounded-[22px] border border-slate-200 bg-white px-4 py-3.5 shadow-sm"
+                          transition={{ delay: index * 0.025, duration: 0.28 }}
+                          className="grid grid-cols-[1.05fr_0.82fr_1.13fr] items-center text-xs sm:text-sm"
                         >
-                          <div className="flex items-start gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700">
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">0{index + 1}</span>
-                                <span className="text-sm font-semibold text-slate-950">{step.title}</span>
-                              </div>
-                              <p className="mt-1 text-sm leading-6 text-slate-600">{step.text}</p>
-                            </div>
+                          <div className="flex items-center gap-2 px-3 py-2.5 font-semibold text-slate-900 sm:px-4">
+                            <Icon className="h-4 w-4 shrink-0 text-indigo-600" />
+                            <span>{row.task}</span>
                           </div>
+                          <div className="px-3 py-2.5 sm:px-4">
+                            <div className="flex items-center gap-2 font-bold uppercase tracking-[0.12em] text-emerald-700">
+                              <CheckCircle2 className="h-4 w-4 shrink-0" />
+                              <span className="text-[10px]">{row.mode}</span>
+                            </div>
+                            <div className="mt-0.5 text-[11px] leading-4 text-slate-500">{row.detail}</div>
+                          </div>
+                          <div className="px-3 py-2.5 text-[11px] leading-5 text-slate-600 sm:px-4 sm:text-xs">{row.outcome}</div>
                         </motion.div>
                       );
                     })}
@@ -654,6 +665,148 @@ function AutomationScorecardSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+function ComparisonStatus({ value, featured = false }: { value: string; featured?: boolean }) {
+  const isStrong = value === "Automatic";
+  const isApproval = value === "One approval";
+  const tone = isStrong
+    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+    : isApproval
+      ? "border-amber-200 bg-amber-50 text-amber-800"
+      : value === "Limited"
+        ? "border-rose-200 bg-rose-50 text-rose-700"
+        : "border-slate-200 bg-slate-50 text-slate-600";
+
+  return (
+    <div className={`inline-flex min-w-[92px] items-center justify-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${tone} ${featured ? "shadow-sm" : ""}`}>
+      {isStrong ? <CheckCircle2 className="h-3.5 w-3.5" /> : isApproval ? <Zap className="h-3.5 w-3.5" /> : value === "Limited" ? <X className="h-3.5 w-3.5" /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
+      {value}
+    </div>
+  );
+}
+
+function StacksUpTeaserSection({ onOpen }: { onOpen: () => void }) {
+  const previewRows = comparisonRows.slice(0, 5);
+
+  return (
+    <section className="px-4 py-20 sm:px-6 sm:py-28">
+      <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.88fr_1.12fr]">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-indigo-800">
+            <BarChart3 className="h-3.5 w-3.5" /> How Geothority stacks up
+          </div>
+          <h2 className="mt-5 text-3xl font-semibold tracking-[-0.055em] text-slate-950 sm:text-5xl">
+            See why Geothority feels different from passive local SEO tools.
+          </h2>
+          <p className="mt-5 text-lg leading-8 text-slate-700">
+            Most tools make you interpret the work. Geothority is built to move more of the work forward automatically, then ask for approval where control matters.
+          </p>
+          <div className="mt-7 grid gap-3 sm:grid-cols-3">
+            {[
+              ["Automatic", "Included where supported"],
+              ["One approval", "Control where it matters"],
+              ["Manual", "What older workflows force"],
+            ].map(([label, text]) => (
+              <div key={label} className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
+                <ComparisonStatus value={label} featured={label === "Automatic"} />
+                <div className="mt-3 text-sm font-semibold text-slate-900">{text}</div>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={onOpen}
+            className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold !text-white shadow-xl shadow-slate-950/16 transition hover:-translate-y-0.5 hover:bg-indigo-950"
+          >
+            View full stack-up <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+
+        <motion.button
+          type="button"
+          onClick={onOpen}
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.5 }}
+          className="group relative overflow-hidden rounded-[36px] border border-slate-200 bg-white p-4 text-left shadow-2xl shadow-slate-950/10 transition hover:-translate-y-1 hover:shadow-slate-950/16"
+        >
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-cyan-400 to-indigo-500" />
+          <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#f8fbff,#edfdf6)] p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700">Competitive proof</div>
+                <h3 className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-slate-950">Geothority versus passive local SEO tools</h3>
+              </div>
+              <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Tap to expand</div>
+            </div>
+            <div className="mt-6 overflow-hidden rounded-[24px] border border-slate-200 bg-white">
+              <div className="grid grid-cols-[1.15fr_0.85fr_0.85fr] bg-slate-950 text-[10px] font-bold uppercase tracking-[0.16em] !text-white">
+                <div className="px-3 py-3">Capability</div>
+                <div className="bg-emerald-700 px-3 py-3 text-center">Geo</div>
+                <div className="px-3 py-3 text-center">Others</div>
+              </div>
+              {previewRows.map((row, index) => (
+                <motion.div
+                  key={row[0]}
+                  animate={{ backgroundColor: index === 1 ? ["#ffffff", "#ecfdf5", "#ffffff"] : "#ffffff" }}
+                  transition={{ repeat: Infinity, duration: 3.2, delay: index * 0.18 }}
+                  className="grid grid-cols-[1.15fr_0.85fr_0.85fr] items-center border-t border-slate-100"
+                >
+                  <div className="px-3 py-3 text-sm font-semibold text-slate-900">{row[0]}</div>
+                  <div className="px-2 py-3 text-center"><ComparisonStatus value={row[1]} featured /></div>
+                  <div className="px-2 py-3 text-center"><ComparisonStatus value={row.slice(2).includes("Manual") ? "Manual" : row.slice(2).includes("Limited") ? "Limited" : "Partial"} /></div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.button>
+      </div>
+    </section>
+  );
+}
+
+function ComparisonModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="How Geothority stacks up">
+      <button type="button" aria-label="Close comparison" className="absolute inset-0 cursor-default" onClick={onClose} />
+      <div className="relative max-h-[88vh] w-full max-w-6xl overflow-hidden rounded-[32px] border border-white/12 bg-white shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff,#f8fafc)] px-5 py-5 sm:px-7">
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700">Full comparison</div>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.045em] text-slate-950 sm:text-4xl">How Geothority stacks up</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Green means included or automated, amber means approval-driven, and red/gray means limited or manual.</p>
+          </div>
+          <button type="button" onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-950 hover:text-white" aria-label="Close">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="max-h-[68vh] overflow-auto p-4 sm:p-6">
+          <div className="min-w-[820px] overflow-hidden rounded-[24px] border border-slate-200">
+            <div className="grid grid-cols-[1.4fr_repeat(4,0.85fr)] bg-slate-950 text-[10px] font-bold uppercase tracking-[0.16em] !text-white">
+              <div className="px-4 py-3">Capability</div>
+              {comparisonColumns.map((column, index) => (
+                <div key={column} className={`px-3 py-3 text-center ${index === 0 ? "bg-emerald-700" : ""}`}>{column}</div>
+              ))}
+            </div>
+            {comparisonRows.map((row) => (
+              <div key={row[0]} className="grid grid-cols-[1.4fr_repeat(4,0.85fr)] items-center border-t border-slate-100 bg-white">
+                <div className="px-4 py-3 text-sm font-semibold text-slate-900">{row[0]}</div>
+                {row.slice(1).map((value, index) => (
+                  <div key={`${row[0]}-${index}`} className="px-3 py-3 text-center">
+                    <ComparisonStatus value={value} featured={index === 0} />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1020,6 +1173,7 @@ function ExecutionModeCard({ mode, index }: { mode: typeof executionModes[number
 export default function HomePage() {
   const [mobileNav, setMobileNav] = useState(false);
   const [activeTab, setActiveTab] = useState<WalkthroughTab>("scan");
+  const [comparisonOpen, setComparisonOpen] = useState(false);
   const active = tabs[activeTab];
 
   return (
@@ -1488,43 +1642,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="px-4 py-20 sm:px-6 sm:py-28">
-          <div className="mx-auto max-w-7xl">
-            <SectionIntro center eyebrow="Why teams switch" title="Most SEO tools stop at diagnosis. Geothority helps complete the work." />
-            <div className="mt-12 grid gap-5 lg:grid-cols-2">
-              <div className="rounded-[32px] border border-rose-100 bg-white p-7 shadow-sm">
-                <div className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-rose-600">Typical SEO tools</div>
-                <div className="mt-7 space-y-4">
-                  {["find issues but stop at reporting", "generic recommendations without execution", "scattered dashboards across too many surfaces", "manual follow-up after the insight"].map((item) => (
-                    <div key={item} className="flex items-center gap-3 text-slate-800"><span className="h-2 w-2 rounded-full bg-rose-500" /> {item}</div>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-[32px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff,#ecfdf5)] p-7 text-slate-950 shadow-sm">
-                <div className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Geothority</div>
-                <div className="mt-7 grid gap-3">
-                  {[
-                    ["Automatic", "Run safe fixes where supported"],
-                    ["Approval", "Queue content, campaigns, and response plans"],
-                    ["Guided", "Package the next step when full automation is not native"],
-                  ].map(([label, text], index) => (
-                    <motion.div key={label} initial={{ opacity: 0.6 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.12, duration: 0.4 }} className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 shadow-sm">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-700">{label}</div>
-                          <div className="mt-1 text-sm text-slate-800">{text}</div>
-                        </div>
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <p className="mt-8 text-center text-lg font-medium text-slate-700">Less reporting for its own sake. More clarity on what to do next.</p>
-            <p className="mt-3 text-center text-sm text-slate-700">That means fewer scattered dashboards, fewer vague priorities, and a more actionable visibility workflow for the team actually doing the work.</p>
-          </div>
-        </section>
+        <StacksUpTeaserSection onOpen={() => setComparisonOpen(true)} />
 
         <section id="platform" className="bg-white px-4 py-20 sm:px-6 sm:py-28">
           <div className="mx-auto max-w-7xl">
@@ -1683,6 +1801,8 @@ export default function HomePage() {
           <div className="mt-10 border-t border-slate-200 pt-6 text-sm text-slate-500">© 2026 Geothority. All rights reserved.</div>
         </div>
       </footer>
+
+      <ComparisonModal open={comparisonOpen} onClose={() => setComparisonOpen(false)} />
     </div>
   );
 }
