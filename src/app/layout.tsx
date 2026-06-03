@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     title: "Geothority",
   },
   icons: {
-    icon: ["/logo.svg", "/icons/icon-192x192.png"],
+    icon: ["/logo-mark.svg", "/icons/icon-192x192.png"],
     apple: "/apple-touch-icon.png",
   },
   alternates: {

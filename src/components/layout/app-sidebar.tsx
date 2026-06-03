@@ -123,7 +123,7 @@ export function AppSidebar() {
     <nav className="flex flex-col h-full">
       <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-          <Image src="/logo.svg" alt="Geothority" width={36} height={36} className="w-9 h-9 rounded-lg object-contain" />
+          <Image src="/logo-mark.svg" alt="Geothority" width={36} height={36} className="w-9 h-9 object-contain" />
           <span className="text-lg font-semibold text-[var(--foreground)]">
             Geothority
           </span>

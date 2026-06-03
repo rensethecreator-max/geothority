@@ -13,7 +13,7 @@ export function generateOrganizationSchema() {
     name: "Geothority",
     alternateName: "Geothority.io",
     url: BASE_URL,
-    logo: `${BASE_URL}/logo.png`,
+    logo: `${BASE_URL}/logo.svg`,
     description:
       "Geothority is the local SEO authority platform that scores, monitors, and improves your business visibility in Google Maps, AI overviews, and local search.",
     foundingDate: "2025",

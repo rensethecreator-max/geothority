@@ -9,27 +9,23 @@ interface LogoProps {
 }
 
 export function Logo({ href = "/", showText = true, size = 36, className = "" }: LogoProps) {
+  const width = showText ? Math.round(size * 4.3) : size;
   const img = (
     <Image
-      src="/logo.svg"
+      src={showText ? "/logo.svg" : "/logo-mark.svg"}
       alt="Geothority"
-      width={size}
+      width={width}
       height={size}
-      sizes={`${size}px`}
-      className="object-contain rounded-lg"
+      sizes={`${width}px`}
+      className="object-contain"
       priority
       quality={100}
     />
   );
 
   const inner = (
-    <span className={`inline-flex items-center gap-3 ${className}`}>
+    <span className={`inline-flex items-center ${className}`}>
       {img}
-      {showText && (
-        <span className="text-lg font-semibold tracking-tight text-[var(--foreground)]">
-          Geothority
-        </span>
-      )}
     </span>
   );
 

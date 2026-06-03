@@ -1,41 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 220" role="img" aria-labelledby="title desc">
+  <title id="title">Geothority logo</title>
+  <desc id="desc">GEOTHORITY wordmark with a dark blue map-pin G mark and green location accents.</desc>
   <defs>
-    <linearGradient id="bg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0F172A"/>
-      <stop offset="55%" stop-color="#0B2A2A"/>
-      <stop offset="100%" stop-color="#064E3B"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 180) rotate(90) scale(220)">
-      <stop offset="0%" stop-color="#5EEAD4" stop-opacity="0.55"/>
-      <stop offset="55%" stop-color="#34D399" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="#34D399" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="pin" x1="205" y1="140" x2="307" y2="357" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#F8FFFD"/>
-      <stop offset="100%" stop-color="#D1FAE5"/>
-    </linearGradient>
-    <linearGradient id="core" x1="236" y1="206" x2="276" y2="246" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#5EEAD4"/>
-      <stop offset="100%" stop-color="#10B981"/>
-    </linearGradient>
+    <style>
+      .navy { fill: #12385f; }
+      .green { fill: #56b848; }
+      .word { fill: #12385f; font-family: Arial, Helvetica, sans-serif; font-size: 94px; font-weight: 900; letter-spacing: 4px; }
+    </style>
   </defs>
 
-  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#bg)"/>
-  <rect x="24" y="24" width="464" height="464" rx="112" stroke="#FFFFFF" stroke-opacity="0.08"/>
-  <circle cx="256" cy="220" r="170" fill="url(#glow)"/>
+  <g transform="translate(18 14)">
+    <path class="navy" d="M96 4c51 0 92 40 92 90 0 69-92 170-92 170S4 163 4 94C4 44 45 4 96 4Z" transform="scale(.72)" />
+    <circle cx="69" cy="67" r="34" fill="#fff" />
+    <path class="navy" d="M70 29c25 0 43 16 49 36H91c-4-7-12-11-22-11-19 0-31 13-31 32s12 32 31 32c15 0 25-7 30-19H68V78h59c1 5 1 10 1 15 0 43-29 72-59 72-43 0-74-31-74-72s31-64 75-64Z" transform="translate(5 -10) scale(.78)" />
+    <rect class="green" x="60" y="73" width="76" height="18" rx="9" />
+  </g>
 
-  <circle cx="256" cy="256" r="150" stroke="#ECFDF5" stroke-opacity="0.10" stroke-width="16"/>
-  <circle cx="256" cy="256" r="104" stroke="#99F6E4" stroke-opacity="0.18" stroke-width="8"/>
-  <path d="M256 118V150" stroke="#ECFDF5" stroke-opacity="0.18" stroke-width="10" stroke-linecap="round"/>
-  <path d="M256 362V394" stroke="#ECFDF5" stroke-opacity="0.18" stroke-width="10" stroke-linecap="round"/>
-  <path d="M118 256H150" stroke="#ECFDF5" stroke-opacity="0.18" stroke-width="10" stroke-linecap="round"/>
-  <path d="M362 256H394" stroke="#ECFDF5" stroke-opacity="0.18" stroke-width="10" stroke-linecap="round"/>
-
-  <path d="M256 140C203.5 140 163 181.5 163 232.5C163 304.5 256 390 256 390C256 390 349 304.5 349 232.5C349 181.5 308.5 140 256 140Z" fill="url(#pin)"/>
-  <path d="M256 171C219.5 171 191 199 191 234.5C191 285.5 256 347 256 347C256 347 321 285.5 321 234.5C321 199 292.5 171 256 171Z" fill="#0B2A2A" fill-opacity="0.95"/>
-
-  <circle cx="256" cy="224" r="26" fill="url(#core)"/>
-  <circle cx="256" cy="224" r="50" stroke="#5EEAD4" stroke-opacity="0.45" stroke-width="6"/>
-
-  <path d="M221 286L245 262L256 273L286 243L303 260L256 307L221 286Z" fill="#A7F3D0"/>
+  <text class="word" x="170" y="143">GE</text>
+  <g transform="translate(318 48)">
+    <path class="green" d="M42 0c24 0 42 18 42 41 0 31-42 78-42 78S0 72 0 41C0 18 18 0 42 0Z" />
+    <circle cx="42" cy="39" r="18" fill="#fff" />
+  </g>
+  <text class="word" x="410" y="143">THORITY</text>
 </svg>

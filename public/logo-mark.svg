@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">Geothority mark</title>
+  <desc id="desc">Dark blue map-pin G mark with a green horizontal accent.</desc>
+  <path fill="#12385f" d="M110 10c57 0 102 45 102 100 0 76-102 190-102 190S8 186 8 110C8 55 53 10 110 10Z" transform="scale(.72)" />
+  <circle cx="80" cy="77" r="39" fill="#fff" />
+  <path fill="#12385f" d="M82 30c29 0 51 18 58 43h-34c-5-8-14-13-26-13-22 0-37 16-37 39s15 39 37 39c18 0 30-8 36-23H80V89h70c1 6 2 12 2 18 0 51-35 86-71 86-51 0-88-37-88-86S44 30 82 30Z" transform="translate(4 -8) scale(.82)" />
+  <rect fill="#56b848" x="67" y="84" width="88" height="20" rx="10" />
+</svg>
