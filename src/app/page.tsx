@@ -74,14 +74,21 @@ const outcomePillars = [
 ];
 
 const aiEngines = [
-  { name: "ChatGPT", signal: "Mention checks", tone: "from-emerald-400 to-teal-300" },
-  { name: "Gemini", signal: "AI Overviews", tone: "from-cyan-400 to-blue-300" },
-  { name: "Perplexity", signal: "Citation coverage", tone: "from-indigo-400 to-cyan-300" },
-  { name: "Claude", signal: "Entity clarity", tone: "from-violet-400 to-indigo-300" },
-  { name: "Copilot", signal: "Search answers", tone: "from-sky-400 to-cyan-300" },
-  { name: "Grok", signal: "Brand recall", tone: "from-slate-500 to-slate-300" },
-  { name: "DeepSeek", signal: "Structured facts", tone: "from-teal-400 to-emerald-300" },
-  { name: "Meta AI", signal: "Local context", tone: "from-blue-400 to-indigo-300" },
+  { id: "chatgpt", name: "ChatGPT", signal: "Mention checks", tone: "from-emerald-400 to-teal-300", color: "#10a37f" },
+  { id: "perplexity", name: "Perplexity", signal: "Citation coverage", tone: "from-cyan-300 to-sky-400", color: "#20b8cd" },
+  { id: "claude", name: "Claude", signal: "Entity clarity", tone: "from-orange-300 to-rose-300", color: "#d97757" },
+  { id: "gemini", name: "Gemini", signal: "AI answers", tone: "from-blue-400 to-indigo-300", color: "#4f7cff" },
+  { id: "copilot", name: "Copilot", signal: "Search answers", tone: "from-fuchsia-400 to-cyan-300", color: "#6d5dfc" },
+  { id: "grok", name: "Grok", signal: "Brand recall", tone: "from-slate-500 to-slate-300", color: "#0f172a" },
+  { id: "deepseek", name: "DeepSeek", signal: "Structured facts", tone: "from-blue-400 to-sky-300", color: "#3b82f6" },
+  { id: "meta", name: "Meta AI", signal: "Local context", tone: "from-blue-500 to-indigo-300", color: "#1c64f2" },
+  { id: "you", name: "You.com", signal: "Answer coverage", tone: "from-blue-400 to-cyan-300", color: "#2563eb" },
+  { id: "mistral", name: "Mistral", signal: "Model recall", tone: "from-amber-400 to-red-400", color: "#f59e0b" },
+  { id: "brave", name: "Brave", signal: "Search surface", tone: "from-orange-500 to-amber-300", color: "#fb542b" },
+  { id: "phind", name: "Phind", signal: "Technical queries", tone: "from-slate-700 to-slate-400", color: "#111827" },
+  { id: "iask", name: "iAsk", signal: "Intent checks", tone: "from-teal-400 to-emerald-300", color: "#0f9f8f" },
+  { id: "qwen", name: "Qwen", signal: "LLM recall", tone: "from-indigo-500 to-violet-300", color: "#635bff" },
+  { id: "cohere", name: "Cohere", signal: "Semantic match", tone: "from-indigo-500 to-blue-300", color: "#4f46e5" },
 ];
 
 const automationStats = [
@@ -312,14 +319,143 @@ function AnimatedMetricValue({ value }: { value: string }) {
   );
 }
 
+function EngineLogo({ id, color }: { id: string; color: string }) {
+  const shared = {
+    width: 34,
+    height: 34,
+    viewBox: "0 0 48 48",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg",
+    "aria-hidden": true,
+  };
+
+  switch (id) {
+    case "chatgpt":
+      return (
+        <svg {...shared} stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+          {[0, 60, 120, 180, 240, 300].map((rotation) => (
+            <path key={rotation} d="M24 10c6 0 9 5 6 10l-6 10-6-10c-3-5 0-10 6-10Z" transform={`rotate(${rotation} 24 24)`} />
+          ))}
+        </svg>
+      );
+    case "perplexity":
+      return (
+        <svg {...shared} stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 8v32M34 8v32M9 18h30M9 30h30M14 8l20 20M34 8 14 28M14 40l20-20M34 40 14 20" />
+        </svg>
+      );
+    case "claude":
+      return (
+        <svg {...shared} fill={color}>
+          {[0, 30, 60, 90, 120, 150].map((rotation) => (
+            <ellipse key={rotation} cx="24" cy="24" rx="5" ry="18" transform={`rotate(${rotation} 24 24)`} opacity="0.9" />
+          ))}
+        </svg>
+      );
+    case "gemini":
+      return (
+        <svg {...shared} fill={color}>
+          <path d="M24 4c2.8 10.6 8.4 16.2 20 20-11.6 3.8-17.2 9.4-20 20-2.8-10.6-8.4-16.2-20-20C15.6 20.2 21.2 14.6 24 4Z" />
+        </svg>
+      );
+    case "copilot":
+      return (
+        <svg {...shared}>
+          <defs>
+            <linearGradient id="copilotGradient" x1="8" x2="40" y1="8" y2="40">
+              <stop stopColor="#00c2ff" />
+              <stop offset="0.46" stopColor="#7c3aed" />
+              <stop offset="1" stopColor="#f43f5e" />
+            </linearGradient>
+          </defs>
+          <path d="M15 10h12c5.8 0 10.5 4.7 10.5 10.5v7c0 5.8-4.7 10.5-10.5 10.5H15c-2.8 0-5-2.2-5-5V15c0-2.8 2.2-5 5-5Z" fill="url(#copilotGradient)" />
+          <path d="M19 16h9c3.3 0 6 2.7 6 6v4c0 3.3-2.7 6-6 6h-9" stroke="white" strokeWidth="4" strokeLinecap="round" />
+        </svg>
+      );
+    case "grok":
+      return (
+        <svg {...shared} stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M37 11 11 37" />
+          <path d="M14 18c5.5-8 17.5-8 22 0" />
+          <path d="M34 30c-5.5 8-17.5 8-22 0" />
+        </svg>
+      );
+    case "deepseek":
+      return (
+        <svg {...shared} fill={color}>
+          <path d="M9 28c4-8 11-12 20-10 6 1.3 9.8 5.3 10.6 10.2 2.3.8 4.1 2.3 5.4 4.8-5.8.2-9.9-1.1-12.6-3.6-3.1 4.6-9 7.6-15.6 6.1C11.4 34.4 8.2 31.5 9 28Z" opacity="0.9" />
+          <circle cx="19" cy="24" r="2.2" fill="white" />
+          <path d="M29 17c-1.8-4.8 1-8.4 5.6-10.4.4 5-1.6 8.8-5.6 10.4Z" />
+        </svg>
+      );
+    case "meta":
+      return (
+        <svg {...shared} stroke={color} strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 31c3.1-13.2 8.1-19.4 14.7-8.2l2.6 4.4C31.9 38.4 36.9 32.2 40 19" />
+          <path d="M8 31c5.2-15.2 11.3-15.2 17.3-3.8C31.4 38.6 37.5 38.6 40 19" opacity="0.55" />
+        </svg>
+      );
+    case "you":
+      return (
+        <svg {...shared} fill={color}>
+          <path d="M24 5 40.5 14.5v19L24 43 7.5 33.5v-19L24 5Z" />
+          <path d="M17 20h14v8H17z" fill="white" opacity="0.9" />
+        </svg>
+      );
+    case "mistral":
+      return (
+        <svg {...shared} fill={color}>
+          <path d="M8 11h8v8H8zM16 19h8v8h-8zM24 11h8v8h-8zM32 19h8v8h-8zM8 27h8v10H8zM32 27h8v10h-8z" />
+          <path d="M16 27h16v10H16z" fill="#dc2626" />
+        </svg>
+      );
+    case "brave":
+      return (
+        <svg {...shared} fill={color}>
+          <path d="M24 5 38 10l4 11-5 16-13 6-13-6-5-16 4-11L24 5Z" />
+          <path d="M17 18h14l-3 6 3 6H17l3-6-3-6Z" fill="white" opacity="0.92" />
+        </svg>
+      );
+    case "phind":
+      return <span className="font-serif text-[40px] font-bold leading-none text-slate-950">p</span>;
+    case "iask":
+      return (
+        <svg {...shared} stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="10" y="9" width="28" height="30" rx="8" />
+          <path d="M17 22h.1M31 22h.1M18 29c3.8 3 8.2 3 12 0" />
+        </svg>
+      );
+    case "qwen":
+      return (
+        <svg {...shared} stroke={color} strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M24 6v36M6 24h36M11 11l26 26M37 11 11 37" />
+          <circle cx="24" cy="24" r="8" fill="white" />
+          <circle cx="24" cy="24" r="5" fill={color} stroke="none" />
+        </svg>
+      );
+    case "cohere":
+      return (
+        <svg {...shared} fill={color}>
+          <circle cx="17" cy="18" r="9" />
+          <circle cx="30" cy="28" r="11" opacity="0.72" />
+          <circle cx="17" cy="32" r="5" opacity="0.48" />
+        </svg>
+      );
+    default:
+      return <Bot className="h-8 w-8" style={{ color }} />;
+  }
+}
+
 function AiEnginesMonitorBand() {
+  const marqueeEngines = [...aiEngines, ...aiEngines];
+
   return (
     <section className="px-4 py-8 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-7xl overflow-hidden rounded-[34px] border border-slate-200 bg-slate-950 p-5 text-white shadow-2xl shadow-slate-950/14 sm:p-7">
         <div className="relative">
           <div className="pointer-events-none absolute -left-16 -top-20 h-44 w-44 rounded-full bg-cyan-400/20 blur-3xl" />
           <div className="pointer-events-none absolute -right-12 bottom-0 h-40 w-40 rounded-full bg-emerald-400/16 blur-3xl" />
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] !text-cyan-100">
                 <Bot className="h-3.5 w-3.5" /> AI engines Geothority monitors
@@ -331,32 +467,34 @@ function AiEnginesMonitorBand() {
                 Geothority tracks whether your business is understandable, citeable, and visible across the AI answer systems buyers already use.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 lg:w-[52%] lg:grid-cols-4">
-              {aiEngines.map((engine, index) => (
+            <div className="relative lg:w-[54%]">
+              <div className="mb-3 flex items-center justify-between gap-3 text-[10px] font-bold uppercase tracking-[0.2em] !text-slate-400">
+                <span>15 monitored AI engines</span>
+                <span>Live AEO watchlist</span>
+              </div>
+              <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.06] py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-slate-950 to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-slate-950 to-transparent" />
                 <motion.div
-                  key={engine.name}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.35 }}
-                  transition={{ delay: index * 0.04, duration: 0.38 }}
-                  className="relative overflow-hidden rounded-2xl border border-white/12 bg-white/[0.07] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:px-3.5 sm:py-3.5"
+                  className="flex w-max gap-3 px-4"
+                  animate={{ x: ["0%", "-50%"] }}
+                  transition={{ repeat: Infinity, duration: 28, ease: "linear" }}
                 >
-                  <motion.div
-                    className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${engine.tone}`}
-                    animate={{ opacity: [0.45, 1, 0.45] }}
-                    transition={{ repeat: Infinity, duration: 2.4, delay: index * 0.12 }}
-                  />
-                  <div className="flex items-center gap-2">
-                    <motion.span
-                      animate={{ scale: [1, 1.3, 1], opacity: [0.55, 1, 0.55] }}
-                      transition={{ repeat: Infinity, duration: 2, delay: index * 0.15 }}
-                      className={`h-2.5 w-2.5 rounded-full bg-gradient-to-r ${engine.tone}`}
-                    />
-                    <span className="text-sm font-semibold !text-white">{engine.name}</span>
-                  </div>
-                  <div className="mt-2 text-[11px] font-medium uppercase tracking-[0.14em] !text-slate-300">{engine.signal}</div>
+                  {marqueeEngines.map((engine, index) => (
+                    <div
+                      key={`${engine.id}-${index}`}
+                      className="relative flex h-[118px] w-[136px] shrink-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.08] px-3 text-center shadow-[0_18px_44px_rgba(0,0,0,0.18)]"
+                    >
+                      <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${engine.tone}`} />
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/14 bg-white shadow-sm">
+                        <EngineLogo id={engine.id} color={engine.color} />
+                      </div>
+                      <div className="mt-3 text-sm font-semibold leading-none !text-white">{engine.name}</div>
+                      <div className="mt-2 text-[9px] font-bold uppercase tracking-[0.16em] !text-slate-400">{engine.signal}</div>
+                    </div>
+                  ))}
                 </motion.div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
@@ -885,7 +1023,7 @@ export default function HomePage() {
   const active = tabs[activeTab];
 
   return (
-    <div className="min-h-screen bg-[#f7f8fc] text-slate-900">
+    <div className="min-h-screen overflow-hidden bg-[#f7f8fc] text-slate-900">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(99,102,241,0.12),transparent_30%),radial-gradient(circle_at_86%_10%,rgba(20,184,166,0.1),transparent_26%)]" />
 
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/90 bg-white/94 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/88">
