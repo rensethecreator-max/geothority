@@ -72,4 +72,43 @@ test.describe("first-users beta route smoke", () => {
       await cleanupUser(fixture.admin, fixture.userId);
     }
   });
+
+  test("fresh beta account can run a real first scan without a mocked response", async ({ page }) => {
+    const fixture = await createFreshUser();
+
+    try {
+      await markOnboardingComplete(fixture.admin, fixture.userId);
+
+      await page.goto("/login?mode=signin");
+      await page.getByPlaceholder("your@email.com").fill(fixture.email);
+      await page.getByPlaceholder("Password").fill(fixture.password);
+      await page.getByRole("button", { name: "Sign In" }).click();
+      await expect(page).toHaveURL(/\/dashboard|\/onboarding/);
+
+      const scan = await page.evaluate(async () => {
+        const response = await fetch("/api/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: "https://example.com",
+            businessName: "Acme Insurance Agency",
+            city: "Austin",
+            state: "TX",
+          }),
+        });
+        const payload = await response.json();
+        return { ok: response.ok, status: response.status, payload };
+      });
+
+      expect(scan.ok, JSON.stringify(scan.payload)).toBe(true);
+      expect(scan.payload.scan?.id).toBeTruthy();
+
+      const response = await page.goto(`/scan/${scan.payload.scan.id}`, { waitUntil: "domcontentloaded" });
+      expect(response?.ok()).toBeTruthy();
+      await expect(page.getByText("Trust Stack Score")).toBeVisible();
+      await expectNoRawFailure(page);
+    } finally {
+      await cleanupUser(fixture.admin, fixture.userId);
+    }
+  });
 });
