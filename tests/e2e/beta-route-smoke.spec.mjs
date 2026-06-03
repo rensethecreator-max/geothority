@@ -140,6 +140,30 @@ test.describe("first-users beta route smoke", () => {
     }
   });
 
+  test("authenticated beta user can open a support conversation", async ({ page }) => {
+    const fixture = await createFreshUser();
+
+    try {
+      await page.goto("/login?mode=signin");
+      await page.getByPlaceholder("your@email.com").fill(fixture.email);
+      await page.getByPlaceholder("Password").fill(fixture.password);
+      await page.getByRole("button", { name: "Sign In" }).click();
+      await expect(page).toHaveURL(/\/dashboard|\/onboarding/);
+
+      const support = await page.evaluate(async () => {
+        const response = await fetch("/api/support/conversations", { method: "POST" });
+        const payload = await response.json();
+        return { ok: response.ok, status: response.status, payload };
+      });
+
+      expect(support.ok, JSON.stringify(support.payload)).toBe(true);
+      expect(support.status).toBe(201);
+      expect(support.payload.id).toBeTruthy();
+    } finally {
+      await cleanupUser(fixture.admin, fixture.userId);
+    }
+  });
+
   test("authenticated beta user can delete their own account with email confirmation", async ({ page }) => {
     const fixture = await createFreshUser();
     let deletedViaApi = false;
