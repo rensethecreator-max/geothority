@@ -8,15 +8,15 @@ import { generateOrganizationSchema, generateWebSiteSchema, generateSoftwareAppS
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Geothority - Automated Local SEO, AEO/GEO & Google Review Growth",
+  title: "Geothority - Automated Local SEO, AEO & Google Review Growth",
   description:
-    "Automated Local SEO, AEO, generative engine optimization, AI engine optimization, and Google review growth for local businesses.",
+    "Automated Local SEO, AEO, AI engine optimization, and Google review growth for local businesses.",
   manifest: "/manifest.json",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io"),
   openGraph: {
-    title: "Geothority - Local SEO, AEO/GEO & Google Review Growth",
+    title: "Geothority - Local SEO, AEO & Google Review Growth",
     description:
-      "The platform that helps local businesses improve Google visibility, AI engine readiness, generative search trust, citations, and 5-star Google review momentum.",
+      "The platform that helps local businesses improve Google visibility, AI engine readiness, citations, and 5-star Google review momentum.",
     url: process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io",
     siteName: "Geothority",
     type: "website",
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Geothority - Local SEO, AEO/GEO & Review Growth",
+    title: "Geothority - Local SEO, AEO & Review Growth",
     description:
-      "Free 90-second audit for Local SEO, AEO/GEO, AI visibility, citations, and Google review growth.",
+      "Free 90-second audit for Local SEO, AEO, AI visibility, citations, and Google review growth.",
     images: ["/og-image.png"],
   },
   appleWebApp: {

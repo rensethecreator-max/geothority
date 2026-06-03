@@ -56,9 +56,9 @@ const outcomePillars = [
     accent: "from-indigo-500 to-cyan-400",
   },
   {
-    title: "AEO + GEO",
+    title: "AEO",
     eyebrow: "AI engine optimization",
-    text: "Make your business easier for ChatGPT, Gemini, Perplexity, AI Overviews, and generative search systems to understand, trust, and mention.",
+    text: "Make your business easier for ChatGPT, Gemini, Perplexity, AI Overviews, and other AI answer engines to understand, trust, and mention.",
     proof: ["Entity clarity", "Schema + FAQ structure", "AI visibility checks"],
     icon: Bot,
     accent: "from-cyan-500 to-emerald-400",
@@ -125,9 +125,9 @@ const capabilities = [
     accent: "from-indigo-500 to-violet-500",
   },
   {
-    title: "AEO / GEO Monitoring",
+    title: "AEO Monitoring",
     icon: Bot,
-    text: "Track whether AI engines mention your business and what needs to improve for answer-engine and generative-engine visibility.",
+    text: "Track whether AI engines mention your business and what needs to improve for AI answer-engine visibility.",
     accent: "from-cyan-500 to-blue-500",
   },
   {
@@ -704,7 +704,7 @@ export default function HomePage() {
                 Geothority helps local businesses get found on Google, become easier for AI engines to understand and recommend, and procure fresh Google reviews from happy customers.
               </p>
               <p className="mt-3 max-w-lg text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-                AEO means AI Engine Optimization. GEO means Generative Engine Optimization. Together with Local SEO and reputation growth, they make your business clearer, more trusted, and easier to choose.
+                AEO means AI Engine Optimization: making your business easier for AI answer engines to understand, trust, and recommend. Together with Local SEO and reputation growth, it makes your business clearer, more visible, and easier to choose.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -859,7 +859,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl">
             <SectionIntro
               eyebrow="Core capabilities"
-              title="Local SEO, AEO/GEO, and reputation growth in one platform."
+              title="Local SEO, AEO, and reputation growth in one platform."
               text="Geothority helps serious operators improve Google visibility, answer-engine readiness, citation consistency, competitor response, and review momentum from one operating system."
             />
             <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -902,7 +902,7 @@ export default function HomePage() {
                           ))}
                         </div>
                       )}
-                      {feature.title === "AEO / GEO Monitoring" && (
+                      {feature.title === "AEO Monitoring" && (
                         <div className="flex h-full items-center justify-between px-1">
                           {["ChatGPT", "Gemini", "Perplexity"].map((label, index) => (
                             <div key={label} className="flex flex-col items-center gap-2">
@@ -988,7 +988,7 @@ export default function HomePage() {
                           ))}
                         </div>
                       )}
-                      {! ["Local SEO System", "AEO / GEO Monitoring", "Google Review Growth", "Citation & Listing Review", "Schema Generation", "Competitor Monitoring"].includes(feature.title) && (
+                      {! ["Local SEO System", "AEO Monitoring", "Google Review Growth", "Citation & Listing Review", "Schema Generation", "Competitor Monitoring"].includes(feature.title) && (
                         <div className="flex h-full items-end gap-1.5">
                           {[24, 38, 30, 52, 46, 62, 58].map((height, index) => (
                             <motion.div
@@ -1030,7 +1030,7 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="relative z-10">
               <div className="text-[13px] font-bold uppercase tracking-[0.2em] !text-cyan-50">Signature framework</div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] !text-white [text-shadow:0_18px_48px_rgba(2,6,23,0.92)] sm:text-5xl">The Trust Stack powers your Local SEO, AEO, GEO, and review-growth plan.</h2>
+              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] !text-white [text-shadow:0_18px_48px_rgba(2,6,23,0.92)] sm:text-5xl">The Trust Stack powers your Local SEO, AEO, and review-growth plan.</h2>
               <p className="mt-6 text-lg leading-8 !text-slate-50">
                 Instead of scattered reports and disconnected tasks, Geothority shows what is helping, what is holding back Google visibility, what weakens AI engine trust, what can be fixed now, and where review momentum needs attention.
               </p>
