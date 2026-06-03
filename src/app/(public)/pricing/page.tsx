@@ -141,7 +141,7 @@ const plans: Plan[] = [
     id: "authority",
     name: "Authority",
     monthlyPrice: 297,
-    description: "For serious operators and multi-location visibility",
+    description: "For serious operators who want deeper visibility coverage",
     cta: "Start 14-Day Trial",
     ctaHref: "/signup",
     popular: false,
@@ -584,7 +584,7 @@ export default function PricingPage() {
         </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════
-            SECTION 3 - Enterprise / Agency
+            SECTION 3 - Beta Expansion
         ════════════════════════════════════════════════════ */}
         <ScrollReveal delay={100}>
           <div className="relative mb-20 rounded-2xl overflow-hidden border border-white/10 bg-[#0f1117]">
@@ -594,13 +594,15 @@ export default function PricingPage() {
               <div>
                 <div className="inline-flex items-center gap-2 text-emerald-400 text-sm font-semibold mb-4">
                   <Building2 className="w-4 h-4" />
-                  Enterprise & Multi-Location
+                  Beta expansion
                 </div>
               <h2 className="text-3xl font-bold text-white mb-3">
-                  Need multi-location or agency support?
+                  Need more than one company or location?
                 </h2>
                 <p className="text-gray-400 text-lg leading-relaxed">
-                  Agency support starts at <span className="text-white font-semibold">$997/mo</span> for larger teams that need custom volume, white-label reporting, dedicated support, and deeper operational help.
+                  The controlled beta is built for one company per account. If you want multiple companies,
+                  locations, team seats, white-label reporting, or API access, contact us so we can
+                  place you in the right rollout instead of overpromising inside the standard beta.
                 </p>
               </div>
               <div className="flex sm:justify-end">

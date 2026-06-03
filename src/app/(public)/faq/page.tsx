@@ -107,7 +107,7 @@ const faqSchema = {
       name: "Can I use Geothority for multiple locations?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. Starter and Growth plans include 1 location scan. The Authority plan ($297/month) supports multiple locations with a consolidated dashboard. The Agency plan ($997/month) includes 10 agent seats and is designed for IMOs, insurance agencies, and multi-location businesses that need team dashboards, white-label PDF reports, and API access. Additional locations can be added to any plan as an add-on.",
+        text: "The standard beta is designed for one company per account so every tester gets a clean setup, clear scan history, and focused support. If you need multiple companies, multiple locations, team seats, white-label reports, or API access, contact us first. Those workflows are handled as a private rollout instead of the normal beta signup path.",
       },
     },
     {

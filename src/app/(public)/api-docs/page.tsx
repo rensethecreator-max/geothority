@@ -12,7 +12,7 @@ const ENDPOINTS = [
         method: "GET",
         path: "/api/public/business/{slug}",
         description: "Get public business profile data including Trust Stack score, citations, and trust signal status",
-        auth: "API Key (Authority plan)",
+        auth: "Private beta API key",
         params: [
           { name: "slug", type: "string", desc: "Business profile slug" },
         ],
@@ -102,7 +102,7 @@ const ENDPOINTS = [
         method: "POST",
         path: "/api/settings/api-keys",
         description: "Generate a new API key for programmatic access",
-        auth: "Bearer token (Authority plan required)",
+        auth: "Bearer token (private beta approval required)",
         params: [
           { name: "name", type: "string", desc: "Friendly name for the key" },
           { name: "permissions", type: "string[]", desc: "Array of permission scopes: read, write" },
@@ -177,7 +177,8 @@ export default function ApiDocsPage() {
         <div className="mb-10">
           <h2 className="text-3xl font-bold mb-3">API Reference</h2>
           <p className="text-white/60 text-lg max-w-2xl">
-            Programmatic access to your local SEO data. Available on the Authority plan.
+            Programmatic access to your local SEO data. API access is available by private beta approval,
+            not as part of the standard company signup flow.
             Authenticate with your API key via the <code className="px-1.5 py-0.5 bg-white/5 rounded text-sm text-emerald-400">Authorization</code> header.
           </p>
         </div>
@@ -315,7 +316,7 @@ export default function ApiDocsPage() {
         {/* CTA */}
         <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-8 text-center">
           <h3 className="text-xl font-bold mb-2">Ready to integrate?</h3>
-          <p className="text-white/60 mb-4">API access is available on the Authority plan. Upgrade to get your API key.</p>
+          <p className="text-white/60 mb-4">API access is available by private beta approval. Contact us before building against it.</p>
           <Link
             href="/pricing"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 font-semibold text-[#071019] hover:opacity-90 transition-opacity"

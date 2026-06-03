@@ -40,8 +40,8 @@ const PLAN_LABELS: Record<string, { name: string; color: string; summary: string
   starter: { name: "Starter", color: "bg-electric-500/20 text-electric-400", summary: "Built for individual operators who need recurring local authority visibility." },
   pro: { name: "Pro", color: "bg-purple-500/20 text-purple-300", summary: "Unlimited audits, stronger monitoring, and faster action loops." },
   growth: { name: "Growth", color: "bg-electric-500/20 text-electric-400", summary: "Broader monitoring, execution support, and premium reporting depth." },
-  authority: { name: "Authority", color: "bg-indigo-500/20 text-indigo-300", summary: "Multi-location visibility, white-label reporting, and stronger operational control." },
-  agency: { name: "Agency", color: "bg-emerald-500/20 text-emerald-300", summary: "Highest-tier coverage for client portfolios and multi-market operations." },
+  authority: { name: "Authority", color: "bg-indigo-500/20 text-indigo-300", summary: "Deeper visibility coverage, premium reporting, and stronger operational control." },
+  agency: { name: "Agency", color: "bg-emerald-500/20 text-emerald-300", summary: "Private rollout support for larger beta deployments and multi-company planning." },
 };
 
 export default function BillingPortalPage() {
@@ -179,7 +179,7 @@ export default function BillingPortalPage() {
                   ) : plan === "pro" || plan === "growth" ? (
                     "Growth-grade monitoring, stronger reporting, and faster local visibility loops."
                   ) : plan === "agency" || plan === "authority" ? (
-                    "Multi-location readiness with premium reporting and broader operational coverage."
+                    "Premium coverage for deeper visibility work. Larger beta rollouts are coordinated directly with support."
                   ) : (
                     "Your active plan is ready for ongoing work."
                   )}
