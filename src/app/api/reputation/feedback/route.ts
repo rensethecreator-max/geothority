@@ -13,7 +13,10 @@ const FEEDBACK_TRANSITIONS: Record<string, Set<string>> = {
 };
 
 function isMissingTableError(error: any) {
-  return error?.code === "42P01" || /relation .* does not exist/i.test(error?.message || "");
+  return error?.code === "42P01"
+    || error?.code === "PGRST205"
+    || /relation .* does not exist/i.test(error?.message || "")
+    || /Could not find the table .* in the schema cache/i.test(error?.message || "");
 }
 
 function canTransitionFeedbackStatus(fromStatus: string, toStatus: string) {
