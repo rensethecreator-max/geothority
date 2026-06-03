@@ -164,6 +164,30 @@ test.describe("first-users beta route smoke", () => {
     }
   });
 
+  test("beta users cannot open another company's scan", async ({ page }) => {
+    const owner = await createFreshUser();
+    const outsider = await createFreshUser();
+
+    try {
+      await markOnboardingComplete(owner.admin, owner.userId);
+      const ownerScan = await seedScan(owner.admin, owner.userId);
+
+      await page.goto("/login?mode=signin");
+      await page.getByPlaceholder("your@email.com").fill(outsider.email);
+      await page.getByPlaceholder("Password").fill(outsider.password);
+      await page.getByRole("button", { name: "Sign In" }).click();
+      await expect(page).toHaveURL(/\/dashboard|\/onboarding/);
+
+      const response = await page.goto(`/scan/${ownerScan.id}`, { waitUntil: "domcontentloaded" });
+      expect(response?.ok(), "cross-company scan shell should load without a server failure").toBeTruthy();
+      await expect(page.locator("body")).not.toContainText("Acme Insurance Agency");
+      await expectNoRawFailure(page);
+    } finally {
+      await cleanupUser(owner.admin, owner.userId);
+      await cleanupUser(outsider.admin, outsider.userId);
+    }
+  });
+
   test("authenticated beta user can delete their own account with email confirmation", async ({ page }) => {
     const fixture = await createFreshUser();
     let deletedViaApi = false;
