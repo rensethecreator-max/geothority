@@ -3,6 +3,20 @@ import { getAuthUser } from "@/lib/auth-helpers";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ACTIVE_LLM_PROVIDER, DEFAULT_LLM_MODEL } from "@/lib/openai";
 
+const EMAIL_SUPPORT_FALLBACK_ID = "email-support";
+
+function fallbackMessages() {
+  return NextResponse.json([
+    {
+      id: "email-support-message",
+      conversation_id: EMAIL_SUPPORT_FALLBACK_ID,
+      role: "assistant",
+      content: "Support chat is being configured for beta. Please email hello@geothority.io and we will help you directly.",
+      created_at: new Date().toISOString(),
+    },
+  ]);
+}
+
 async function getAIReply(
   messages: Array<{ role: string; content: string }>
 ): Promise<string> {
@@ -74,6 +88,10 @@ export async function GET(
   const { user } = auth;
 
   const convId = params.id;
+  if (convId === EMAIL_SUPPORT_FALLBACK_ID) {
+    return fallbackMessages();
+  }
+
   const supabase = createServiceClient();
 
   // Verify ownership
@@ -110,6 +128,19 @@ export async function POST(
   const { user } = auth;
 
   const convId = params.id;
+  if (convId === EMAIL_SUPPORT_FALLBACK_ID) {
+    return NextResponse.json(
+      {
+        id: "email-support-reply",
+        conversation_id: EMAIL_SUPPORT_FALLBACK_ID,
+        role: "assistant",
+        content: "Please email hello@geothority.io for beta support. Your message was not stored in chat because persistent chat setup is still being configured.",
+        created_at: new Date().toISOString(),
+      },
+      { status: 201 }
+    );
+  }
+
   const { content } = await req.json();
 
   if (!content?.trim()) {

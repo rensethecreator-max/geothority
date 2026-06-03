@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-helpers";
 import { createServiceClient } from "@/lib/supabase/server";
 
+function emailSupportFallback(status = 201) {
+  return NextResponse.json(
+    {
+      id: "email-support",
+      status: "email_fallback",
+      setupRequired: true,
+      message: "Support chat is being configured for beta. Please email hello@geothority.io for help.",
+    },
+    { status }
+  );
+}
+
 export async function POST(req: NextRequest) {
   const auth = await getAuthUser(req);
   if ("error" in auth) return auth.error;
@@ -20,6 +32,9 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error("[support] create conversation error:", error);
+    if (error.code === "PGRST204" || error.code === "22P02") {
+      return emailSupportFallback();
+    }
     return NextResponse.json({ error: "Failed to create conversation" }, { status: 500 });
   }
 
