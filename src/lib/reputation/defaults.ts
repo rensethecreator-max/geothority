@@ -5,6 +5,10 @@ export interface ReputationSettings {
   smsDelayMinutes: number;
   positiveThreshold: number;
   smsTemplate: string;
+  enabledChannels: "sms" | "email" | "sms_email";
+  primaryChannel: "sms" | "email";
+  emailSubject: string;
+  emailTemplate: string;
   active: boolean;
 }
 
@@ -23,7 +27,12 @@ export const DEFAULT_REPUTATION_SETTINGS: ReputationSettings = {
   smsDelayMinutes: 60,
   positiveThreshold: 4,
   smsTemplate:
-    "Hi {customer_name}! Thanks for choosing {business_name}. How was your experience? Reply 1-5 and we'll take it from there. (Reply STOP to opt out)",
+    "Hi {customer_name}! Thanks for choosing {business_name}. How was your experience? Reply 1-5 or use {review_link}. (Reply STOP to opt out)",
+  enabledChannels: "sms",
+  primaryChannel: "sms",
+  emailSubject: "Quick question about your experience with {business_name}",
+  emailTemplate:
+    "Thanks for choosing {business_name}. How was your experience? Use this private link to leave quick feedback: {review_link}",
   active: false,
 };
 

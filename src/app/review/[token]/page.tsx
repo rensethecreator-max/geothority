@@ -10,7 +10,7 @@ export default async function ReviewTokenPage({ params }: { params: { token: str
 
   const { data: requestRow, error: requestError } = await supabase
     .from("reputation_requests")
-    .select("id, user_id, business_id, status, template_used")
+    .select("id, user_id, business_id, business_key, status, template_used")
     .eq("review_token", params.token)
     .maybeSingle();
 
@@ -18,11 +18,11 @@ export default async function ReviewTokenPage({ params }: { params: { token: str
     notFound();
   }
 
-  if (!requestRow || requestRow.status !== "public_review_ready") {
+  if (!requestRow || !["pending", "sent", "public_review_ready", "feedback_received"].includes(requestRow.status)) {
     notFound();
   }
 
-  const [{ data: settings }, { data: templates }] = await Promise.all([
+  const [{ data: settings }, { data: templates }, { data: brandProfile }] = await Promise.all([
     supabase
       .from("reputation_settings")
       .select("google_review_link")
@@ -33,6 +33,12 @@ export default async function ReviewTokenPage({ params }: { params: { token: str
       .select("id, category, category_label, icon, template_text, usage_count")
       .eq("user_id", requestRow.user_id)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("business_brand_profiles")
+      .select("logo_url, primary_color, accent_color, motif, tone")
+      .eq("user_id", requestRow.user_id)
+      .eq("business_key", requestRow.business_key || "business")
+      .maybeSingle(),
   ]);
 
   const generated = generateReputationTemplates(
@@ -59,6 +65,18 @@ export default async function ReviewTokenPage({ params }: { params: { token: str
         filledText: template.filledText,
       }))}
       alreadyUsed={Boolean(requestRow.template_used)}
+      initialStatus={requestRow.status}
+      brand={
+        brandProfile
+          ? {
+              logoUrl: brandProfile.logo_url,
+              primaryColor: brandProfile.primary_color,
+              accentColor: brandProfile.accent_color,
+              motif: brandProfile.motif,
+              tone: brandProfile.tone,
+            }
+          : null
+      }
     />
   );
 }

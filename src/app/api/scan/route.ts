@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { scanWebsite } from "@/lib/scanner";
 import { scanRatelimit, checkRateLimit } from "@/lib/ratelimit";
 import { recordJourneyMilestone } from "@/lib/journey-events";
+import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
 
 // Input validation constants
 const MAX_URL_LENGTH = 500;
@@ -142,6 +143,37 @@ export async function POST(req: NextRequest) {
       state: resolvedState,
       website_url: resolvedUrl,
     });
+
+    const brandCapture = result.rawScanData.brandCapture;
+    if (brandCapture) {
+      const businessIdentity = getReputationBusinessIdentity(resolvedBusinessName);
+      await supabase
+        .from("business_brand_profiles")
+        .upsert(
+          {
+            user_id: user.id,
+            business_key: businessIdentity.businessKey,
+            business_name: resolvedBusinessName,
+            website_url: brandCapture.websiteUrl,
+            logo_url: brandCapture.logoUrl,
+            logo_source: brandCapture.logoSource,
+            primary_color: brandCapture.primaryColor,
+            secondary_color: brandCapture.secondaryColor,
+            accent_color: brandCapture.accentColor,
+            font_family_hint: brandCapture.fontFamilyHint,
+            hero_image_url: brandCapture.heroImageUrl,
+            service_image_urls: brandCapture.serviceImageUrls,
+            business_category: brandCapture.businessCategory,
+            motif: brandCapture.motif,
+            tone: brandCapture.tone,
+            confidence_score: brandCapture.confidenceScore,
+            extraction_notes: brandCapture.extractionNotes,
+            source_scan_id: scan.id,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,business_key" },
+        );
+    }
 
     await recordJourneyMilestone(user.id, "first_scan_completed");
 

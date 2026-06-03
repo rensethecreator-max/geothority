@@ -2,8 +2,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
-import { getReputationTransport } from "@/lib/reputation/transport";
+import { getReputationChannelTransport } from "@/lib/reputation/transport";
 import { buildRequestReference } from "@/lib/reputation/twilio";
+import type { ReputationMessageChannel } from "@/lib/reputation/transport";
 import type { ReputationAnalyticsSummary, ReputationProofSummary, ReputationSourcePerformance } from "@/lib/reputation/types";
 
 const MAX_REPUTATION_SEND_ATTEMPTS = 3;
@@ -13,8 +14,16 @@ export function isMissingTableError(error: any) {
   return error?.code === "42P01" || /relation .* does not exist/i.test(error?.message || "") || /could not find the table/i.test(error?.message || "");
 }
 
+function isMissingColumnError(error: any) {
+  return error?.code === "PGRST204" || /column .* does not exist/i.test(error?.message || "") || /Could not find .* column/i.test(error?.message || "");
+}
+
 export function normalizePhoneNumber(phone: string) {
   return phone.replace(/[^\d+]/g, "").trim();
+}
+
+export function normalizeEmailAddress(email: string) {
+  return email.trim().toLowerCase();
 }
 
 function buildRetryDate(delaySeconds: number) {
@@ -61,17 +70,23 @@ async function bestEffortLogSendAttempt(params: {
   supabase: any;
   requestId: string;
   body: string;
+  channel?: ReputationMessageChannel;
+  recipient?: string | null;
+  provider?: string | null;
   attemptNumber: number;
   deliveryState: string;
   providerSid?: string | null;
   errorDetail?: string | null;
   simulated?: boolean;
 }) {
-  const { supabase, requestId, body, attemptNumber, deliveryState, providerSid = null, errorDetail = null, simulated = true } = params;
+  const { supabase, requestId, body, channel = "sms", recipient = null, provider = null, attemptNumber, deliveryState, providerSid = null, errorDetail = null, simulated = true } = params;
 
   try {
     await supabase.from("reputation_message_log").insert({
       request_id: requestId,
+      channel,
+      recipient,
+      provider,
       direction: "out",
       body,
       provider_sid: providerSid,
@@ -85,10 +100,75 @@ async function bestEffortLogSendAttempt(params: {
   }
 }
 
+function buildReviewLink(reviewToken: string) {
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://geothority.io").replace(/\/$/, "");
+  return `${appUrl}/review/${reviewToken}`;
+}
+
+function fillReputationMessageTemplate(template: string, customerName: string, businessName: string, reviewToken: string) {
+  const reviewLink = buildReviewLink(reviewToken);
+  return template
+    .replace(/\{customer_name\}/g, customerName || "there")
+    .replace(/\{business_name\}/g, businessName)
+    .replace(/\{review_link\}/g, reviewLink)
+    .trim();
+}
+
 function buildReputationMessageBody(template: string, customerName: string, businessName: string, reviewToken: string) {
-  const baseMessage = template.replace("{customer_name}", customerName || "there").replace("{business_name}", businessName).trim();
+  const baseMessage = fillReputationMessageTemplate(template, customerName, businessName, reviewToken);
   const reference = buildRequestReference(reviewToken);
   return reference ? `${baseMessage} Ref ${reference}` : baseMessage;
+}
+
+function buildReputationEmailHtml(params: {
+  body: string;
+  businessName: string;
+  customerName: string;
+  reviewToken: string;
+}) {
+  const reviewLink = buildReviewLink(params.reviewToken);
+  const escapedBusinessName = params.businessName.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char));
+  const escapedBody = params.body.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char)).replace(/\n/g, "<br />");
+
+  return `
+    <div style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:620px;margin:0 auto;background:#fff;color:#172033;border:1px solid #e5e7eb;border-radius:18px;overflow:hidden">
+      <div style="padding:28px 32px;border-bottom:1px solid #edf0f4">
+        <div style="font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#16a34a">Private feedback request</div>
+        <h1 style="font-size:24px;line-height:1.2;margin:10px 0 0;color:#111827">How was your experience with ${escapedBusinessName}?</h1>
+      </div>
+      <div style="padding:28px 32px">
+        <p style="font-size:15px;line-height:1.7;color:#334155;margin:0 0 22px">${escapedBody}</p>
+        <a href="${reviewLink}" style="display:inline-block;background:#16c784;color:#fff;text-decoration:none;border-radius:999px;padding:13px 20px;font-weight:800;font-size:14px">Leave quick feedback</a>
+        <p style="font-size:12px;line-height:1.6;color:#64748b;margin:24px 0 0">This private page helps ${escapedBusinessName} understand your experience. You can still choose whether to post publicly after sharing feedback.</p>
+      </div>
+    </div>
+  `;
+}
+
+function normalizeRequestedChannels(params: {
+  requestedChannels?: ReputationMessageChannel[];
+  preferredChannel?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  settingsChannels?: string | null;
+}) {
+  const available = new Set<ReputationMessageChannel>();
+  if (params.phone) available.add("sms");
+  if (params.email) available.add("email");
+
+  let requested = params.requestedChannels?.filter((channel): channel is ReputationMessageChannel => channel === "sms" || channel === "email") ?? [];
+  if (!requested.length) {
+    const preferred = params.preferredChannel === "email" || params.preferredChannel === "sms" ? params.preferredChannel : null;
+    const settingsChannels = params.settingsChannels || DEFAULT_REPUTATION_SETTINGS.enabledChannels;
+    if (preferred) requested = [preferred];
+    else if (settingsChannels === "sms_email") requested = ["sms", "email"];
+    else if (settingsChannels === "email") requested = ["email"];
+    else requested = ["sms"];
+  }
+
+  const filtered = Array.from(new Set(requested)).filter((channel) => available.has(channel));
+  if (filtered.length) return filtered;
+  return Array.from(available);
 }
 
 export async function getPreferredBusinessName(supabase: any, userId: string) {
@@ -106,20 +186,67 @@ export async function upsertReputationContact(params: {
   userId: string;
   businessId: string;
   customerName: string;
-  phone: string;
+  phone?: string | null;
+  email?: string | null;
+  preferredChannel?: ReputationMessageChannel | null;
   source: string;
 }) {
-  const { supabase, userId, businessId, customerName, phone, source } = params;
-  const normalizedPhone = normalizePhoneNumber(phone);
+  const { supabase, userId, businessId, customerName, phone, email, preferredChannel, source } = params;
+  const normalizedPhone = phone ? normalizePhoneNumber(phone) : "";
+  const normalizedEmail = email ? normalizeEmailAddress(email) : "";
   const businessIdentity = getReputationBusinessIdentity(businessId);
 
-  let { data: contact } = await supabase
+  if (!normalizedPhone && !normalizedEmail) {
+    throw new Error("A phone number or email address is required");
+  }
+
+  const contactQuery = supabase
     .from("reputation_contacts")
-    .select("id, name, phone, opt_out")
+    .select("id, name, phone, email, opt_out, sms_opt_out, email_opt_out, preferred_channel")
     .eq("user_id", userId)
-    .eq("business_key", businessIdentity.businessKey)
-    .eq("phone", normalizedPhone)
-    .maybeSingle();
+    .eq("business_key", businessIdentity.businessKey);
+
+  let { data: contactByPhone, error: contactByPhoneError } = normalizedPhone
+    ? await contactQuery.eq("phone", normalizedPhone).maybeSingle()
+    : { data: null, error: null };
+
+  if (contactByPhoneError && isMissingColumnError(contactByPhoneError)) {
+    const legacyResult = normalizedPhone
+      ? await supabase
+          .from("reputation_contacts")
+          .select("id, name, phone, email, opt_out")
+          .eq("user_id", userId)
+          .eq("business_key", businessIdentity.businessKey)
+          .eq("phone", normalizedPhone)
+          .maybeSingle()
+      : { data: null };
+    contactByPhone = legacyResult.data;
+  }
+
+  let { data: contactByEmail, error: contactByEmailError } = !contactByPhone && normalizedEmail
+    ? await supabase
+        .from("reputation_contacts")
+        .select("id, name, phone, email, opt_out, sms_opt_out, email_opt_out, preferred_channel")
+        .eq("user_id", userId)
+        .eq("business_key", businessIdentity.businessKey)
+        .eq("email", normalizedEmail)
+        .maybeSingle()
+    : { data: null, error: null };
+
+  if (contactByEmailError && isMissingColumnError(contactByEmailError)) {
+    const legacyResult = !contactByPhone && normalizedEmail
+      ? await supabase
+          .from("reputation_contacts")
+          .select("id, name, phone, email, opt_out")
+          .eq("user_id", userId)
+          .eq("business_key", businessIdentity.businessKey)
+          .eq("email", normalizedEmail)
+          .maybeSingle()
+      : { data: null };
+    contactByEmail = legacyResult.data;
+  }
+
+  let contact = contactByPhone || contactByEmail;
 
   if (!contact) {
     const { data: createdContact, error: contactError } = await supabase
@@ -128,30 +255,60 @@ export async function upsertReputationContact(params: {
         user_id: userId,
         business_id: businessIdentity.displayName,
         business_key: businessIdentity.businessKey,
-        phone: normalizedPhone,
+        phone: normalizedPhone || null,
+        email: normalizedEmail || null,
         name: customerName,
         source,
+        preferred_channel: preferredChannel || null,
       })
-      .select("id, name, phone, opt_out")
+      .select("id, name, phone, email, opt_out, sms_opt_out, email_opt_out, preferred_channel")
       .single();
+
+    if (contactError && isMissingColumnError(contactError)) {
+      const legacyResult = await supabase
+        .from("reputation_contacts")
+        .insert({
+          user_id: userId,
+          business_id: businessIdentity.displayName,
+          business_key: businessIdentity.businessKey,
+          phone: normalizedPhone || null,
+          email: normalizedEmail || null,
+          name: customerName,
+          source,
+        })
+        .select("id, name, phone, email, opt_out")
+        .single();
+      if (legacyResult.error || !legacyResult.data) {
+        throw new Error(legacyResult.error?.message || "Failed to create contact");
+      }
+      return legacyResult.data;
+    }
 
     if (contactError || !createdContact) {
       throw new Error(contactError?.message || "Failed to create contact");
     }
 
     contact = createdContact;
-  } else if ((customerName && contact.name !== customerName) || contact.phone !== normalizedPhone) {
+  } else if ((customerName && contact.name !== customerName) || (normalizedPhone && contact.phone !== normalizedPhone) || (normalizedEmail && contact.email !== normalizedEmail) || (preferredChannel && contact.preferred_channel !== preferredChannel)) {
     await supabase
       .from("reputation_contacts")
       .update({
         business_id: businessIdentity.displayName,
         business_key: businessIdentity.businessKey,
         name: customerName || contact.name,
-        phone: normalizedPhone,
+        phone: normalizedPhone || contact.phone || null,
+        email: normalizedEmail || contact.email || null,
+        preferred_channel: preferredChannel || contact.preferred_channel || null,
         source,
       })
       .eq("id", contact.id);
-    contact = { ...contact, name: customerName || contact.name, phone: normalizedPhone };
+    contact = {
+      ...contact,
+      name: customerName || contact.name,
+      phone: normalizedPhone || contact.phone || null,
+      email: normalizedEmail || contact.email || null,
+      preferred_channel: preferredChannel || contact.preferred_channel || null,
+    };
   }
 
   return contact;
@@ -162,12 +319,21 @@ export async function createAndSendReputationRequest(params: {
   userId: string;
   businessName: string;
   customerName: string;
-  phone: string;
+  phone?: string | null;
+  email?: string | null;
+  preferredChannel?: ReputationMessageChannel | null;
+  requestedChannels?: ReputationMessageChannel[];
   triggerSource: string;
   externalEventId?: string | null;
 }) {
-  const { supabase, userId, businessName, customerName, phone, triggerSource, externalEventId } = params;
+  const { supabase, userId, businessName, customerName, phone, email, preferredChannel, requestedChannels, triggerSource, externalEventId } = params;
   const businessIdentity = getReputationBusinessIdentity(businessName);
+  const normalizedPhone = phone ? normalizePhoneNumber(phone) : "";
+  const normalizedEmail = email ? normalizeEmailAddress(email) : "";
+
+  if (!normalizedPhone && !normalizedEmail) {
+    return { success: false as const, error: "A phone number or email address is required", status: 400 };
+  }
 
   if (externalEventId) {
     const { data: existingRequest, error: existingRequestError } = await supabase
@@ -203,7 +369,9 @@ export async function createAndSendReputationRequest(params: {
     userId,
     businessId: businessIdentity.displayName,
     customerName,
-    phone,
+    phone: normalizedPhone,
+    email: normalizedEmail,
+    preferredChannel,
     source: triggerSource,
   });
 
@@ -211,7 +379,25 @@ export async function createAndSendReputationRequest(params: {
     return { success: false as const, error: "This contact has opted out of reputation requests", status: 409 };
   }
 
-  const { data: createdRequest, error: requestError } = await supabase
+  const { data: settings } = await supabase
+    .from("reputation_settings")
+    .select("enabled_channels, primary_channel")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const channels = normalizeRequestedChannels({
+    requestedChannels,
+    preferredChannel: preferredChannel || contact.preferred_channel,
+    phone: contact.sms_opt_out ? "" : contact.phone,
+    email: contact.email_opt_out ? "" : contact.email,
+    settingsChannels: settings?.enabled_channels,
+  });
+
+  if (!channels.length) {
+    return { success: false as const, error: "This contact has no usable reputation request channel", status: 409 };
+  }
+
+  let { data: createdRequest, error: requestError } = await supabase
     .from("reputation_requests")
     .insert({
       user_id: userId,
@@ -222,6 +408,8 @@ export async function createAndSendReputationRequest(params: {
       external_event_id: externalEventId || null,
       status: "pending",
       review_token: crypto.randomUUID().replace(/-/g, ""),
+      channel: channels[0],
+      requested_channels: channels,
       delivery_state: "pending",
       send_attempt_count: 0,
       last_send_error: null,
@@ -230,6 +418,30 @@ export async function createAndSendReputationRequest(params: {
     })
     .select("id")
     .single();
+
+  if (requestError && isMissingColumnError(requestError)) {
+    const legacyResult = await supabase
+      .from("reputation_requests")
+      .insert({
+        user_id: userId,
+        business_id: businessIdentity.displayName,
+        business_key: businessIdentity.businessKey,
+        contact_id: contact.id,
+        trigger_source: triggerSource,
+        external_event_id: externalEventId || null,
+        status: "pending",
+        review_token: crypto.randomUUID().replace(/-/g, ""),
+        delivery_state: "pending",
+        send_attempt_count: 0,
+        last_send_error: null,
+        next_retry_at: null,
+        dead_lettered_at: null,
+      })
+      .select("id")
+      .single();
+    createdRequest = legacyResult.data;
+    requestError = legacyResult.error;
+  }
 
   if (requestError || !createdRequest) {
     if (isMissingTableError(requestError)) {
@@ -271,7 +483,7 @@ export async function createAndSendReputationRequest(params: {
     actorType: externalEventId ? "webhook" : "user",
     eventType: "request.created",
     toStatus: "pending",
-    channel: "sms",
+    channel: channels[0],
     summary: "Created a reputation request record.",
     metadata: {
       businessName: businessIdentity.displayName,
@@ -279,6 +491,8 @@ export async function createAndSendReputationRequest(params: {
       triggerSource,
       externalEventId: externalEventId || null,
       normalizedPhone: contact.phone,
+      normalizedEmail: contact.email,
+      requestedChannels: channels,
     },
   });
 
@@ -293,13 +507,25 @@ export async function sendReputationRequestNow(requestId: string) {
     throw new Error("Supabase service client unavailable");
   }
 
-  const { data: requestRow, error: requestError } = await supabase
+  let { data: requestRow, error: requestError } = await supabase
     .from("reputation_requests")
     .select(
-      "id, user_id, business_id, contact_id, status, sent_at, review_token, send_attempt_count, last_send_attempt_at, last_send_error, next_retry_at, dead_lettered_at, delivery_state",
+      "id, user_id, business_id, contact_id, status, sent_at, review_token, channel, requested_channels, send_attempt_count, last_send_attempt_at, last_send_error, next_retry_at, dead_lettered_at, delivery_state",
     )
     .eq("id", requestId)
     .single();
+
+  if (requestError && isMissingColumnError(requestError)) {
+    const legacyResult = await supabase
+      .from("reputation_requests")
+      .select(
+        "id, user_id, business_id, contact_id, status, sent_at, review_token, send_attempt_count, last_send_attempt_at, last_send_error, next_retry_at, dead_lettered_at, delivery_state",
+      )
+      .eq("id", requestId)
+      .single();
+    requestRow = legacyResult.data ? { ...legacyResult.data, channel: "sms", requested_channels: ["sms"] } : null;
+    requestError = legacyResult.error;
+  }
 
   if (requestError || !requestRow) {
     throw new Error(requestError?.message || "Request not found");
@@ -337,17 +563,28 @@ export async function sendReputationRequestNow(requestId: string) {
   let currentRequestStatus = requestRow.status;
 
   try {
-    const [{ data: settings }, { data: contact, error: contactError }] = await Promise.all([
-      supabase.from("reputation_settings").select("sms_template").eq("user_id", requestRow.user_id).maybeSingle(),
-      supabase.from("reputation_contacts").select("name, phone, opt_out").eq("id", requestRow.contact_id).single(),
+    let [{ data: settings, error: settingsError }, { data: contact, error: contactError }] = await Promise.all([
+      supabase
+        .from("reputation_settings")
+        .select("sms_template, email_subject, email_template, enabled_channels, primary_channel")
+        .eq("user_id", requestRow.user_id)
+        .maybeSingle(),
+      supabase.from("reputation_contacts").select("name, phone, email, opt_out, sms_opt_out, email_opt_out, preferred_channel").eq("id", requestRow.contact_id).single(),
     ]);
+
+    if (settingsError && isMissingColumnError(settingsError)) {
+      const legacySettings = await supabase.from("reputation_settings").select("sms_template").eq("user_id", requestRow.user_id).maybeSingle();
+      settings = legacySettings.data;
+    }
+
+    if (contactError && isMissingColumnError(contactError)) {
+      const legacyContact = await supabase.from("reputation_contacts").select("name, phone, email, opt_out").eq("id", requestRow.contact_id).single();
+      contact = legacyContact.data;
+      contactError = legacyContact.error;
+    }
 
     if (contactError || !contact) {
       throw new Error(contactError?.message || "Contact not found");
-    }
-
-    if (!contact.phone) {
-      throw new Error("Contact phone is missing");
     }
 
     if (contact.opt_out) {
@@ -442,26 +679,82 @@ export async function sendReputationRequestNow(requestId: string) {
     currentRequestStatus = claimedRequest.status || requestRow.status;
 
     const reviewToken = requestRow.review_token || crypto.randomUUID().replace(/-/g, "");
-    body = buildReputationMessageBody(settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate, contact.name || "there", requestRow.business_id, reviewToken);
-    const configuredMode = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
-    const transport = getReputationTransport();
-    transportName = transport.name;
-    transportSimulated = transport.simulated;
+    const requestedChannels = Array.isArray(requestRow.requested_channels)
+      ? requestRow.requested_channels
+      : requestRow.channel
+        ? [requestRow.channel]
+        : [];
+    const channels = normalizeRequestedChannels({
+      requestedChannels,
+      preferredChannel: contact.preferred_channel || settings?.primary_channel,
+      phone: contact.sms_opt_out ? "" : contact.phone,
+      email: contact.email_opt_out ? "" : contact.email,
+      settingsChannels: settings?.enabled_channels,
+    });
 
-    if (process.env.NODE_ENV === "production" && configuredMode !== "simulated" && transport.simulated) {
-      throw new Error("Live reputation transport is not configured for production sends");
+    if (!channels.length) {
+      throw new Error("Contact has no usable reputation request channel");
     }
 
-    const delivery = await transport.deliver({
-      requestId: requestRow.id,
-      userId: requestRow.user_id,
-      businessName: requestRow.business_id,
-      customerName: contact.name || "there",
-      phone: contact.phone,
-      body,
-      attemptNumber: attemptCount,
-      reviewToken,
-    });
+    const configuredMode = (process.env.GEOTHORITY_REPUTATION_TRANSPORT || "auto").trim().toLowerCase();
+    const deliveries = [];
+    for (const channel of channels) {
+      const reviewLink = buildReviewLink(reviewToken);
+      const channelBody =
+        channel === "email"
+          ? fillReputationMessageTemplate(settings?.email_template || DEFAULT_REPUTATION_SETTINGS.emailTemplate, contact.name || "there", requestRow.business_id, reviewToken)
+          : buildReputationMessageBody(settings?.sms_template || DEFAULT_REPUTATION_SETTINGS.smsTemplate, contact.name || "there", requestRow.business_id, reviewToken);
+      const subject =
+        channel === "email"
+          ? fillReputationMessageTemplate(settings?.email_subject || DEFAULT_REPUTATION_SETTINGS.emailSubject, contact.name || "there", requestRow.business_id, reviewToken)
+          : null;
+      const transport = getReputationChannelTransport(channel);
+      transportName = transport.name;
+      transportSimulated = transport.simulated;
+
+      if (process.env.NODE_ENV === "production" && channel === "sms" && configuredMode !== "simulated" && transport.simulated) {
+        throw new Error("Live SMS reputation transport is not configured for production sends");
+      }
+
+      const delivery = await transport.deliver({
+        requestId: requestRow.id,
+        userId: requestRow.user_id,
+        businessName: requestRow.business_id,
+        customerName: contact.name || "there",
+        channel,
+        phone: contact.phone,
+        email: contact.email,
+        subject,
+        body: channelBody,
+        html:
+          channel === "email"
+            ? buildReputationEmailHtml({
+                body: channelBody,
+                businessName: requestRow.business_id,
+                customerName: contact.name || "there",
+                reviewToken,
+              })
+            : null,
+        attemptNumber: attemptCount,
+        reviewToken,
+        reviewLink,
+      });
+      body = channelBody;
+      deliveries.push({ channel, body: channelBody, delivery });
+
+      await bestEffortLogSendAttempt({
+        supabase,
+        requestId: requestRow.id,
+        body: channelBody,
+        channel,
+        recipient: channel === "email" ? contact.email : contact.phone,
+        provider: delivery.provider,
+        attemptNumber: attemptCount,
+        deliveryState: delivery.deliveryState,
+        providerSid: delivery.providerSid,
+        simulated: delivery.simulated,
+      });
+    }
 
     await appendReputationLedgerEvent(supabase, {
       userId: requestRow.user_id,
@@ -470,43 +763,55 @@ export async function sendReputationRequestNow(requestId: string) {
       eventType: "message.outbound_queued",
       fromStatus: currentRequestStatus,
       toStatus: "sent",
-      channel: "sms",
+      channel: channels[0],
       summary: "Queued the outbound reputation request message.",
       metadata: {
         attemptCount,
+        channels,
         bodyPreview: body.slice(0, 160),
-        templateSource: settings?.sms_template ? "custom" : "default",
-        transport: delivery.provider,
-        providerSid: delivery.providerSid,
-        simulated: delivery.simulated,
-        transportMetadata: delivery.metadata || null,
+        smsTemplateSource: settings?.sms_template ? "custom" : "default",
+        emailTemplateSource: settings?.email_template ? "custom" : "default",
+        deliveries: deliveries.map((item) => ({
+          channel: item.channel,
+          transport: item.delivery.provider,
+          providerSid: item.delivery.providerSid,
+          simulated: item.delivery.simulated,
+          transportMetadata: item.delivery.metadata || null,
+        })),
       },
-    });
-
-    await bestEffortLogSendAttempt({
-      supabase,
-      requestId: requestRow.id,
-      body,
-      attemptNumber: attemptCount,
-      deliveryState: delivery.deliveryState,
-      providerSid: delivery.providerSid,
-      simulated: delivery.simulated,
     });
 
     const sentAt = new Date().toISOString();
 
-    await supabase
+    const { error: sentUpdateError } = await supabase
       .from("reputation_requests")
       .update({
         status: "sent",
         sent_at: sentAt,
         review_token: reviewToken,
-        delivery_state: delivery.deliveryState,
+        channel: channels[0],
+        requested_channels: channels,
+        delivery_state: deliveries.some((item) => item.delivery.deliveryState === "failed") ? "failed" : "sent",
         last_send_error: null,
         next_retry_at: null,
         dead_lettered_at: null,
       })
       .eq("id", requestRow.id);
+
+    if (sentUpdateError && isMissingColumnError(sentUpdateError)) {
+      await supabase
+        .from("reputation_requests")
+        .update({
+          status: "sent",
+          sent_at: sentAt,
+          review_token: reviewToken,
+          delivery_state: deliveries.some((item) => item.delivery.deliveryState === "failed") ? "failed" : "sent",
+          last_send_error: null,
+          next_retry_at: null,
+          dead_lettered_at: null,
+        })
+        .eq("id", requestRow.id);
+    }
 
     await appendReputationLedgerEvent(supabase, {
       userId: requestRow.user_id,
@@ -515,27 +820,31 @@ export async function sendReputationRequestNow(requestId: string) {
       eventType: "request.sent",
       fromStatus: currentRequestStatus,
       toStatus: "sent",
-      channel: "sms",
+      channel: channels[0],
       summary: "Marked the reputation request as sent.",
       metadata: {
         attemptCount,
         sentAt,
-        transport: delivery.provider,
-        providerSid: delivery.providerSid,
-        simulated: delivery.simulated,
-        transportMetadata: delivery.metadata || null,
+        channels,
+        deliveries: deliveries.map((item) => ({
+          channel: item.channel,
+          transport: item.delivery.provider,
+          providerSid: item.delivery.providerSid,
+          simulated: item.delivery.simulated,
+          transportMetadata: item.delivery.metadata || null,
+        })),
         reviewTokenPresent: Boolean(reviewToken),
       },
     });
 
     return {
       success: true,
-      simulated: delivery.simulated,
+      simulated: deliveries.every((item) => item.delivery.simulated),
       alreadySent: false,
       attemptCount,
-      deliveryState: delivery.deliveryState,
-      transport: delivery.provider,
-      providerSid: delivery.providerSid,
+      deliveryState: "sent",
+      transport: deliveries.map((item) => item.delivery.provider).join("+"),
+      channels,
       retryScheduled: false,
     };
   } catch (error: any) {

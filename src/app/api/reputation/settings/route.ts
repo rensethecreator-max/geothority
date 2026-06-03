@@ -10,6 +10,10 @@ function isMissingTableError(error: any) {
     || /Could not find the table .* in the schema cache/i.test(error?.message || "");
 }
 
+function isMissingColumnError(error: any) {
+  return error?.code === "PGRST204" || /column .* does not exist/i.test(error?.message || "") || /Could not find .* column/i.test(error?.message || "");
+}
+
 export async function GET() {
   try {
     const supabase = await createServerSupabase();
@@ -21,11 +25,21 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("reputation_settings")
-      .select("google_review_link, sms_delay_minutes, positive_threshold, sms_template, active")
+      .select("google_review_link, sms_delay_minutes, positive_threshold, sms_template, enabled_channels, primary_channel, email_subject, email_template, active")
       .eq("user_id", session.user.id)
       .maybeSingle();
+
+    if (error && isMissingColumnError(error)) {
+      const legacyResult = await supabase
+        .from("reputation_settings")
+        .select("google_review_link, sms_delay_minutes, positive_threshold, sms_template, active")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      data = legacyResult.data;
+      error = legacyResult.error;
+    }
 
     if (error) {
       if (isMissingTableError(error)) {
@@ -41,6 +55,10 @@ export async function GET() {
             smsDelayMinutes: data.sms_delay_minutes ?? DEFAULT_REPUTATION_SETTINGS.smsDelayMinutes,
             positiveThreshold: data.positive_threshold ?? DEFAULT_REPUTATION_SETTINGS.positiveThreshold,
             smsTemplate: data.sms_template ?? DEFAULT_REPUTATION_SETTINGS.smsTemplate,
+            enabledChannels: data.enabled_channels ?? DEFAULT_REPUTATION_SETTINGS.enabledChannels,
+            primaryChannel: data.primary_channel ?? DEFAULT_REPUTATION_SETTINGS.primaryChannel,
+            emailSubject: data.email_subject ?? DEFAULT_REPUTATION_SETTINGS.emailSubject,
+            emailTemplate: data.email_template ?? DEFAULT_REPUTATION_SETTINGS.emailTemplate,
             active: data.active ?? false,
           }
         : DEFAULT_REPUTATION_SETTINGS,
@@ -69,11 +87,29 @@ export async function POST(req: NextRequest) {
       sms_delay_minutes: Number(body.smsDelayMinutes ?? DEFAULT_REPUTATION_SETTINGS.smsDelayMinutes),
       positive_threshold: Number(body.positiveThreshold ?? DEFAULT_REPUTATION_SETTINGS.positiveThreshold),
       sms_template: body.smsTemplate ?? DEFAULT_REPUTATION_SETTINGS.smsTemplate,
+      enabled_channels: ["sms", "email", "sms_email"].includes(body.enabledChannels) ? body.enabledChannels : DEFAULT_REPUTATION_SETTINGS.enabledChannels,
+      primary_channel: body.primaryChannel === "email" || body.primaryChannel === "sms" ? body.primaryChannel : DEFAULT_REPUTATION_SETTINGS.primaryChannel,
+      email_subject: body.emailSubject ?? DEFAULT_REPUTATION_SETTINGS.emailSubject,
+      email_template: body.emailTemplate ?? DEFAULT_REPUTATION_SETTINGS.emailTemplate,
       active: Boolean(body.active),
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from("reputation_settings").upsert(payload, { onConflict: "user_id" });
+    let { error } = await supabase.from("reputation_settings").upsert(payload, { onConflict: "user_id" });
+
+    if (error && isMissingColumnError(error)) {
+      const legacyPayload = {
+        user_id: payload.user_id,
+        google_review_link: payload.google_review_link,
+        sms_delay_minutes: payload.sms_delay_minutes,
+        positive_threshold: payload.positive_threshold,
+        sms_template: payload.sms_template,
+        active: payload.active,
+        updated_at: payload.updated_at,
+      };
+      const legacyResult = await supabase.from("reputation_settings").upsert(legacyPayload, { onConflict: "user_id" });
+      error = legacyResult.error;
+    }
 
     if (error) {
       if (isMissingTableError(error)) {

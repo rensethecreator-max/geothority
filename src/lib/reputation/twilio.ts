@@ -135,6 +135,9 @@ export class TwilioReputationTransport implements ReputationTransport {
     if (!fromNumber && !messagingServiceSid) {
       throw new Error("TWILIO_FROM_NUMBER or TWILIO_MESSAGING_SERVICE_SID must be configured");
     }
+    if (!message.phone) {
+      throw new Error("Phone number is required for SMS reputation sends");
+    }
 
     const form = new URLSearchParams({
       To: message.phone,

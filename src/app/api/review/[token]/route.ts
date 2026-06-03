@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { isMissingTableError } from "@/lib/reputation/request-service";
+import { recordReputationReply } from "@/lib/reputation/intake-service";
 
 export async function POST(req: NextRequest, { params }: { params: { token: string } }) {
   try {
@@ -18,12 +19,49 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
     const action = String(body.action || "").trim();
     const templateId = typeof body.templateId === "string" ? body.templateId.trim() : "";
 
-    if (action !== "open_google" && action !== "use_template") {
+    if (action !== "open_google" && action !== "use_template" && action !== "submit_feedback") {
       return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
     }
 
     if (action === "use_template" && !templateId) {
       return NextResponse.json({ error: "templateId is required" }, { status: 400 });
+    }
+
+    if (action === "submit_feedback") {
+      const score = Number(body.score);
+      const feedbackText = typeof body.feedbackText === "string" ? body.feedbackText.trim() : "";
+
+      if (!Number.isInteger(score) || score < 1 || score > 5) {
+        return NextResponse.json({ error: "A 1-5 score is required" }, { status: 400 });
+      }
+
+      const { data: requestRow, error: requestError } = await supabase
+        .from("reputation_requests")
+        .select("id, status")
+        .eq("review_token", token)
+        .maybeSingle();
+
+      if (requestError) {
+        if (isMissingTableError(requestError)) {
+          return NextResponse.json({ error: "Invalid or unavailable review link" }, { status: 404 });
+        }
+        return NextResponse.json({ error: requestError.message }, { status: 500 });
+      }
+
+      if (!requestRow?.id || !["pending", "sent", "public_review_ready"].includes(requestRow.status)) {
+        return NextResponse.json({ error: "Invalid or unavailable review link" }, { status: 404 });
+      }
+
+      const result = await recordReputationReply({
+        supabase,
+        requestId: requestRow.id,
+        score,
+        feedbackText,
+        providerSid: null,
+        channel: "review_link",
+      });
+
+      return NextResponse.json({ success: true, status: result.status, positiveThreshold: result.positiveThreshold });
     }
 
     const { data: requestRow, error: requestError } = await supabase
@@ -39,8 +77,12 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
       return NextResponse.json({ error: requestError.message }, { status: 500 });
     }
 
-    if (!requestRow || requestRow.status !== "public_review_ready") {
+    if (!requestRow || !["public_review_ready", "feedback_received"].includes(requestRow.status)) {
       return NextResponse.json({ error: "Invalid or unavailable review link" }, { status: 404 });
+    }
+
+    if (action === "use_template" && requestRow.status !== "public_review_ready") {
+      return NextResponse.json({ error: "Templates are only available after positive feedback" }, { status: 400 });
     }
 
     if (!requestRow.google_link_sent) {
@@ -48,7 +90,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
         .from("reputation_requests")
         .update({ google_link_sent: true })
         .eq("id", requestRow.id)
-        .eq("status", "public_review_ready");
+        .in("status", ["public_review_ready", "feedback_received"]);
 
       if (updateError) {
         return NextResponse.json({ error: updateError.message }, { status: 500 });

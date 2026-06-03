@@ -69,6 +69,25 @@ interface RawScanData {
   imagesWithAlt: number;
   imagesMissingAlt: number;
   hasGBPLink: boolean;
+  brandCapture: BrandCaptureData;
+}
+
+export interface BrandCaptureData {
+  businessName: string;
+  websiteUrl: string;
+  logoUrl: string | null;
+  logoSource: string | null;
+  primaryColor: string | null;
+  secondaryColor: string | null;
+  accentColor: string | null;
+  fontFamilyHint: string | null;
+  heroImageUrl: string | null;
+  serviceImageUrls: string[];
+  businessCategory: string | null;
+  motif: string;
+  tone: string;
+  confidenceScore: number;
+  extractionNotes: string[];
 }
 
 export async function scanWebsite(
@@ -143,7 +162,7 @@ export async function scanWebsite(
   }
 
   const $ = fetchError ? null : cheerio.load(html);
-  const rawScanData = $ ? analyzeHTML($, url, { sslValid, sslIssuer, pageLoadTimeMs, hasRobotsTxt, hasSitemapXml }) : getEmptyRawScan();
+  const rawScanData = $ ? analyzeHTML($, normalizedUrl, businessName, { sslValid, sslIssuer, pageLoadTimeMs, hasRobotsTxt, hasSitemapXml }) : getEmptyRawScan(normalizedUrl, businessName);
 
   const layerScores = calculateLayerScores(rawScanData, businessName, city);
   const localAuthorityScore = Math.round(
@@ -178,7 +197,7 @@ interface EnhancedMeta {
   hasSitemapXml: boolean;
 }
 
-function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, meta: EnhancedMeta): RawScanData {
+function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, businessName: string, meta: EnhancedMeta): RawScanData {
   const bodyText = $("body").text().toLowerCase();
   const title = $("title").text() || "";
   const description = $('meta[name="description"]').attr("content") || "";
@@ -252,6 +271,7 @@ function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, meta: EnhancedMeta)
   const hasGBPLink = externalLinks.some(
     (l) => l.includes("google.com/maps") || l.includes("g.page") || l.includes("business.google.com")
   );
+  const brandCapture = extractBrandCapture($, baseUrl, businessName, bodyText);
 
   return {
     title,
@@ -288,10 +308,11 @@ function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, meta: EnhancedMeta)
     imagesWithAlt,
     imagesMissingAlt,
     hasGBPLink,
+    brandCapture,
   };
 }
 
-function getEmptyRawScan(): RawScanData {
+function getEmptyRawScan(url = "", businessName = ""): RawScanData {
   return {
     title: "",
     description: "",
@@ -327,6 +348,167 @@ function getEmptyRawScan(): RawScanData {
     imagesWithAlt: 0,
     imagesMissingAlt: 0,
     hasGBPLink: false,
+    brandCapture: getFallbackBrandCapture(url, businessName),
+  };
+}
+
+function toAbsoluteAssetUrl(value: string | undefined, baseUrl: string): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.startsWith("data:") || trimmed.startsWith("javascript:")) return null;
+
+  try {
+    const url = new URL(trimmed, baseUrl);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function firstPresent<T>(values: Array<T | null | undefined>): T | null {
+  for (const value of values) {
+    if (value) return value;
+  }
+  return null;
+}
+
+function extractColorCandidate($: cheerio.CheerioAPI): string | null {
+  const themeColor = $("meta[name='theme-color']").attr("content");
+  if (themeColor && /^#?[0-9a-f]{3,8}$/i.test(themeColor.trim())) {
+    return themeColor.startsWith("#") ? themeColor : `#${themeColor}`;
+  }
+
+  const inlineColors = $("header, nav, body, .navbar, .site-header, .header")
+    .map((_, el) => $(el).attr("style") || "")
+    .get()
+    .join(" ");
+  const match = inlineColors.match(/(?:background|color|border-color)\s*:\s*(#[0-9a-f]{3,8})/i);
+  return match?.[1] || null;
+}
+
+function inferBusinessCategory(text: string): string | null {
+  const categories = [
+    { value: "insurance", terms: ["insurance", "policy", "coverage", "agent"] },
+    { value: "home services", terms: ["roof", "hvac", "plumbing", "electrician", "contractor", "repair"] },
+    { value: "medical", terms: ["doctor", "clinic", "dental", "dentist", "health", "medical", "patient"] },
+    { value: "med spa", terms: ["med spa", "aesthetic", "botox", "facial", "laser"] },
+    { value: "law firm", terms: ["attorney", "law firm", "lawyer", "legal"] },
+    { value: "restaurant", terms: ["restaurant", "menu", "dining", "food", "catering"] },
+  ];
+
+  const normalized = text.toLowerCase();
+  return categories.find((category) => category.terms.some((term) => normalized.includes(term)))?.value || null;
+}
+
+function themeForCategory(category: string | null) {
+  switch (category) {
+    case "insurance":
+      return { motif: "clean professional trust", tone: "calm, credible, reassuring", color: "#2563eb" };
+    case "home services":
+      return { motif: "bold local service", tone: "practical, direct, dependable", color: "#f97316" };
+    case "medical":
+      return { motif: "clinical trust", tone: "clean, reassuring, professional", color: "#0f766e" };
+    case "med spa":
+      return { motif: "soft premium wellness", tone: "polished, warm, elevated", color: "#c084fc" };
+    case "law firm":
+      return { motif: "formal authority", tone: "restrained, confident, high-trust", color: "#1e3a8a" };
+    case "restaurant":
+      return { motif: "warm hospitality", tone: "inviting, local, visual", color: "#dc2626" };
+    default:
+      return { motif: "local business trust", tone: "clear, helpful, professional", color: "#4f46e5" };
+  }
+}
+
+function extractBrandCapture($: cheerio.CheerioAPI, baseUrl: string, businessName: string, bodyText: string): BrandCaptureData {
+  const notes: string[] = [];
+  const logoFromHeader = $("header img, nav img, .logo img, [class*='logo'] img")
+    .map((_, el) => {
+      const src = $(el).attr("src") || $(el).attr("data-src");
+      const alt = ($(el).attr("alt") || "").toLowerCase();
+      const resolved = toAbsoluteAssetUrl(src, baseUrl);
+      if (!resolved) return "";
+      if (alt.includes("logo") || resolved.toLowerCase().includes("logo") || alt.includes(businessName.toLowerCase().split(" ")[0] || "")) return resolved;
+      return "";
+    })
+    .get()
+    .find(Boolean);
+  const logoUrl = firstPresent([
+    logoFromHeader,
+    toAbsoluteAssetUrl($("link[rel='apple-touch-icon']").attr("href"), baseUrl),
+    toAbsoluteAssetUrl($("link[rel='icon']").attr("href"), baseUrl),
+    toAbsoluteAssetUrl($("meta[property='og:image']").attr("content"), baseUrl),
+  ]);
+
+  if (logoUrl) notes.push("Detected logo/brand image candidate from site assets.");
+
+  const heroImageUrl = firstPresent([
+    toAbsoluteAssetUrl($("meta[property='og:image']").attr("content"), baseUrl),
+    toAbsoluteAssetUrl($("main img, section img, [class*='hero'] img").first().attr("src"), baseUrl),
+  ]);
+  if (heroImageUrl) notes.push("Detected hero or social preview image candidate.");
+
+  const serviceImageUrls = $("main img, section img")
+    .map((_, el) => toAbsoluteAssetUrl($(el).attr("src") || $(el).attr("data-src"), baseUrl) || "")
+    .get()
+    .filter((src) => src && src !== logoUrl && src !== heroImageUrl)
+    .slice(0, 4);
+
+  const category = inferBusinessCategory(`${$("title").text()} ${$("meta[name='description']").attr("content") || ""} ${$("h1").first().text()} ${bodyText.slice(0, 4000)}`);
+  const categoryTheme = themeForCategory(category);
+  const primaryColor = extractColorCandidate($) || categoryTheme.color;
+  const fontFamilyHint = firstPresent([
+    $("body").attr("style")?.match(/font-family\s*:\s*([^;]+)/i)?.[1]?.trim(),
+    $("html").attr("style")?.match(/font-family\s*:\s*([^;]+)/i)?.[1]?.trim(),
+  ]);
+
+  let confidenceScore = 20;
+  if (logoUrl) confidenceScore += 25;
+  if (primaryColor) confidenceScore += 15;
+  if (heroImageUrl) confidenceScore += 15;
+  if (category) confidenceScore += 15;
+  if (fontFamilyHint) confidenceScore += 5;
+
+  if (category) notes.push(`Inferred business category: ${category}.`);
+  if (!logoUrl) notes.push("No high-confidence logo found; use fallback or manual upload.");
+
+  return {
+    businessName,
+    websiteUrl: baseUrl,
+    logoUrl,
+    logoSource: logoUrl ? "website_scan" : null,
+    primaryColor,
+    secondaryColor: null,
+    accentColor: categoryTheme.color,
+    fontFamilyHint,
+    heroImageUrl,
+    serviceImageUrls,
+    businessCategory: category,
+    motif: categoryTheme.motif,
+    tone: categoryTheme.tone,
+    confidenceScore: Math.min(confidenceScore, 95),
+    extractionNotes: notes,
+  };
+}
+
+function getFallbackBrandCapture(url: string, businessName: string): BrandCaptureData {
+  const fallback = themeForCategory(null);
+  return {
+    businessName,
+    websiteUrl: url,
+    logoUrl: null,
+    logoSource: null,
+    primaryColor: fallback.color,
+    secondaryColor: null,
+    accentColor: fallback.color,
+    fontFamilyHint: null,
+    heroImageUrl: null,
+    serviceImageUrls: [],
+    businessCategory: null,
+    motif: fallback.motif,
+    tone: fallback.tone,
+    confidenceScore: 10,
+    extractionNotes: ["Fallback brand profile used because the scan did not capture page assets."],
   };
 }
 

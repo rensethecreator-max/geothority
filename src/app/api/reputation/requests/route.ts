@@ -3,6 +3,10 @@ import { createServerSupabase, createServiceClient } from "@/lib/supabase/server
 import { recordJourneyMilestone } from "@/lib/journey-events";
 import { createAndSendReputationRequest, getPreferredBusinessName, getReputationProofSummary, isMissingTableError } from "@/lib/reputation/request-service";
 
+function isMissingColumnError(error: any) {
+  return error?.code === "PGRST204" || /column .* does not exist/i.test(error?.message || "") || /Could not find .* column/i.test(error?.message || "");
+}
+
 async function getSessionUser() {
   const supabase = await createServerSupabase();
   const {
@@ -26,11 +30,11 @@ export async function GET() {
     const nowIso = new Date().toISOString();
     const sendingStaleBeforeIso = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-    const [requestsResult, feedbackResult, proofSummary, businessName, queuedCountResult, retryScheduledCountResult, stuckSendingCountResult, deadLetterCountResult, overdueRetryCountResult, latestFailureResult] = await Promise.all([
+    let [requestsResult, feedbackResult, proofSummary, businessName, queuedCountResult, retryScheduledCountResult, stuckSendingCountResult, deadLetterCountResult, overdueRetryCountResult, latestFailureResult] = await Promise.all([
       supabase
         .from("reputation_requests")
         .select(
-          "id, business_id, trigger_source, status, delivery_state, send_attempt_count, last_send_attempt_at, last_send_error, next_retry_at, dead_lettered_at, score, feedback_text, review_token, google_link_sent, template_used, sent_at, replied_at, created_at, contact:reputation_contacts(name, phone)",
+          "id, business_id, trigger_source, status, channel, requested_channels, delivery_state, send_attempt_count, last_send_attempt_at, last_send_error, next_retry_at, dead_lettered_at, score, feedback_text, review_token, google_link_sent, template_used, sent_at, replied_at, created_at, contact:reputation_contacts(name, phone, email)",
         )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
@@ -72,12 +76,23 @@ export async function GET() {
         .lt("next_retry_at", nowIso),
       supabase
         .from("reputation_requests")
-        .select("id, business_id, delivery_state, send_attempt_count, last_send_error, next_retry_at, dead_lettered_at, created_at, contact:reputation_contacts(name, phone)")
+        .select("id, business_id, delivery_state, send_attempt_count, last_send_error, next_retry_at, dead_lettered_at, created_at, contact:reputation_contacts(name, phone, email)")
         .eq("user_id", user.id)
         .or("delivery_state.in.(retry_scheduled,failed),dead_lettered_at.not.is.null")
         .order("created_at", { ascending: false })
         .limit(1),
     ]);
+
+    if (requestsResult.error && isMissingColumnError(requestsResult.error)) {
+      requestsResult = await supabase
+        .from("reputation_requests")
+        .select(
+          "id, business_id, trigger_source, status, delivery_state, send_attempt_count, last_send_attempt_at, last_send_error, next_retry_at, dead_lettered_at, score, feedback_text, review_token, google_link_sent, template_used, sent_at, replied_at, created_at, contact:reputation_contacts(name, phone)",
+        )
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(12);
+    }
 
     if (requestsResult.error) {
       if (isMissingTableError(requestsResult.error)) {
@@ -140,10 +155,17 @@ export async function POST(req: NextRequest) {
     const businessName = String(body.businessName || "").trim();
     const customerName = String(body.customerName || "").trim();
     const phone = String(body.phone || "").trim();
+    const email = String(body.email || "").trim();
+    const preferredChannel = body.preferredChannel === "email" || body.preferredChannel === "sms" ? body.preferredChannel : null;
+    const requestedChannels = Array.isArray(body.requestedChannels)
+      ? body.requestedChannels.filter((channel: string) => channel === "sms" || channel === "email")
+      : preferredChannel
+        ? [preferredChannel]
+        : [];
     const triggerSource = String(body.triggerSource || "manual").trim() || "manual";
 
-    if (!businessName || !customerName || !phone) {
-      return NextResponse.json({ error: "businessName, customerName, and phone are required" }, { status: 400 });
+    if (!businessName || !customerName || (!phone && !email)) {
+      return NextResponse.json({ error: "businessName, customerName, and phone or email are required" }, { status: 400 });
     }
 
     const result = await createAndSendReputationRequest({
@@ -152,6 +174,9 @@ export async function POST(req: NextRequest) {
       businessName,
       customerName,
       phone,
+      email,
+      preferredChannel,
+      requestedChannels,
       triggerSource,
     });
 

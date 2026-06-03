@@ -1,22 +1,29 @@
 import { TwilioReputationTransport } from "@/lib/reputation/twilio";
+import { EmailReputationTransport } from "@/lib/reputation/email";
 
-export type ReputationTransportName = "simulated" | "twilio";
+export type ReputationMessageChannel = "sms" | "email";
+export type ReputationTransportName = "simulated" | "twilio" | "resend";
 
 export interface ReputationOutboundMessage {
   requestId: string;
   userId: string;
   businessName: string;
   customerName: string;
-  phone: string;
+  channel: ReputationMessageChannel;
+  phone?: string | null;
+  email?: string | null;
+  subject?: string | null;
   body: string;
+  html?: string | null;
   attemptNumber: number;
   reviewToken: string;
+  reviewLink?: string | null;
 }
 
 export interface ReputationDeliveryResult {
   provider: ReputationTransportName;
   providerSid: string | null;
-  deliveryState: "accepted" | "scheduled" | "queued" | "sending" | "sent" | "delivered" | "undelivered" | "failed";
+  deliveryState: "accepted" | "scheduled" | "queued" | "sending" | "sent" | "delivered" | "undelivered" | "failed" | "receiving" | "received" | "read";
   simulated: boolean;
   metadata?: Record<string, unknown>;
 }
@@ -46,6 +53,7 @@ class SimulatedReputationTransport implements ReputationTransport {
 
 const simulatedTransport = new SimulatedReputationTransport();
 const twilioTransport = new TwilioReputationTransport();
+const emailTransport = new EmailReputationTransport();
 
 function isTwilioConfigured() {
   const hasCoreCredentials = Boolean(process.env.TWILIO_ACCOUNT_SID?.trim() && process.env.TWILIO_AUTH_TOKEN?.trim());
@@ -66,4 +74,15 @@ export function getReputationTransport(): ReputationTransport {
     default:
       throw new Error(`Unsupported reputation transport: ${configuredTransport}`);
   }
+}
+
+export function getReputationChannelTransport(channel: ReputationMessageChannel): ReputationTransport {
+  if (channel === "email") {
+    return isEmailConfigured() ? emailTransport : simulatedTransport;
+  }
+  return getReputationTransport();
+}
+
+export function isEmailConfigured() {
+  return Boolean(process.env.RESEND_API_KEY?.trim());
 }

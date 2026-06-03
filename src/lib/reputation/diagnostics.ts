@@ -9,6 +9,7 @@ export interface ReputationTransportChecks {
   hasQstashToken: boolean;
   hasJobSecret: boolean;
   hasWebhookSecret: boolean;
+  hasResendApiKey: boolean;
 }
 
 export interface ReputationTransportDiagnostics {
@@ -20,6 +21,7 @@ export interface ReputationTransportDiagnostics {
   callbacksReady: boolean;
   automationReady: boolean;
   activeTransport: "simulated" | "twilio";
+  emailReady: boolean;
   missing: string[];
   checks: ReputationTransportChecks;
 }
@@ -36,6 +38,7 @@ export function getReputationTransportDiagnostics(): ReputationTransportDiagnost
   const hasQstashToken = Boolean(process.env.UPSTASH_QSTASH_TOKEN?.trim());
   const hasJobSecret = Boolean(process.env.GEOTHORITY_REPUTATION_JOB_SECRET?.trim());
   const hasWebhookSecret = Boolean(process.env.GEOTHORITY_REPUTATION_WEBHOOK_SECRET?.trim());
+  const hasResendApiKey = Boolean(process.env.RESEND_API_KEY?.trim());
   const hasSender = hasFromNumber || hasMessagingServiceSid;
   const twilioRequested = mode === "twilio" || mode === "auto";
   const callbacksReady = hasAuthToken && hasBaseUrl;
@@ -64,6 +67,7 @@ export function getReputationTransportDiagnostics(): ReputationTransportDiagnost
     callbacksReady,
     automationReady: queueReady && hasWebhookSecret,
     activeTransport: mode === "simulated" ? "simulated" : liveTransportReady ? "twilio" : "simulated",
+    emailReady: hasResendApiKey,
     missing,
     checks: {
       hasAccountSid,
@@ -76,6 +80,7 @@ export function getReputationTransportDiagnostics(): ReputationTransportDiagnost
       hasQstashToken,
       hasJobSecret,
       hasWebhookSecret,
+      hasResendApiKey,
     },
   };
 }

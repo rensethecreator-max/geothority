@@ -31,6 +31,7 @@ interface ReputationTransportDiagnostics {
   ready: boolean;
   twilioRequested: boolean;
   activeTransport: "simulated" | "twilio";
+  emailReady?: boolean;
   missing: string[];
   checks: {
     hasAccountSid: boolean;
@@ -39,6 +40,7 @@ interface ReputationTransportDiagnostics {
     hasMessagingServiceSid: boolean;
     hasSender: boolean;
     hasBaseUrl: boolean;
+    hasResendApiKey?: boolean;
   };
 }
 
@@ -69,6 +71,8 @@ interface RecentRequest {
   business_id: string;
   trigger_source: string;
   status: string;
+  channel?: string | null;
+  requested_channels?: string[] | null;
   delivery_state?: string | null;
   send_attempt_count?: number | null;
   last_send_attempt_at?: string | null;
@@ -83,7 +87,7 @@ interface RecentRequest {
   sent_at: string | null;
   replied_at: string | null;
   created_at: string;
-  contact?: { name?: string | null; phone?: string | null } | { name?: string | null; phone?: string | null }[] | null;
+  contact?: { name?: string | null; phone?: string | null; email?: string | null } | { name?: string | null; phone?: string | null; email?: string | null }[] | null;
 }
 
 interface ReputationOpsSummary {
@@ -121,6 +125,18 @@ const EMPTY_METRICS: ReputationMetrics = {
   approvedProofCount: 0,
   pendingProofCount: 0,
 };
+
+interface BrandProfileForm {
+  businessName: string;
+  websiteUrl: string;
+  logoUrl: string;
+  primaryColor: string;
+  accentColor: string;
+  businessCategory: string;
+  motif: string;
+  tone: string;
+  confidenceScore?: number;
+}
 
 const TRIGGER_SOURCE_OPTIONS = [
   { value: "manual", label: "Manual send" },
@@ -179,6 +195,7 @@ export function ReputationEngine() {
   const [loading, setLoading] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingTemplates, setSavingTemplates] = useState(false);
+  const [savingBrandProfile, setSavingBrandProfile] = useState(false);
   const [creatingRequest, setCreatingRequest] = useState(false);
   const [submittingIntake, setSubmittingIntake] = useState(false);
   const [creatingEventRequest, setCreatingEventRequest] = useState(false);
@@ -200,12 +217,25 @@ export function ReputationEngine() {
   const [ops, setOps] = useState<ReputationOpsSummary>({ queued: 0, retryScheduled: 0, stuckSending: 0, deadLettered: 0, overdueRetry: 0, latestFailure: null });
   const [transportDiagnostics, setTransportDiagnostics] = useState<ReputationTransportDiagnostics | null>(null);
   const [suggestedBusinessName, setSuggestedBusinessName] = useState("Your Business");
+  const [brandProfile, setBrandProfile] = useState<BrandProfileForm>({
+    businessName: "",
+    websiteUrl: "",
+    logoUrl: "",
+    primaryColor: "#16c784",
+    accentColor: "#4f46e5",
+    businessCategory: "",
+    motif: "",
+    tone: "",
+    confidenceScore: 0,
+  });
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [manualForm, setManualForm] = useState({
     businessName: "",
     customerName: "",
     phone: "",
+    email: "",
+    preferredChannel: "sms",
     triggerSource: "manual",
   });
   const [demoIntakeForm, setDemoIntakeForm] = useState({
@@ -217,6 +247,8 @@ export function ReputationEngine() {
     businessName: "",
     customerName: "",
     phone: "",
+    email: "",
+    preferredChannel: "sms",
     eventType: "appointment_completed",
     externalEventId: "",
   });
@@ -247,6 +279,26 @@ export function ReputationEngine() {
     } catch {
       setTransportDiagnostics(null);
     }
+  }
+
+  async function loadBrandProfile() {
+    const res = await fetch("/api/reputation/brand-profile", { cache: "no-store" });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || "Failed to load brand profile");
+    const profile = json.profile ?? {};
+    setBrandProfile((current) => ({
+      ...current,
+      businessName: profile.businessName || json.suggestedBusinessName || current.businessName,
+      websiteUrl: profile.websiteUrl || current.websiteUrl,
+      logoUrl: profile.logoUrl || current.logoUrl,
+      primaryColor: profile.primaryColor || current.primaryColor,
+      accentColor: profile.accentColor || current.accentColor,
+      businessCategory: profile.businessCategory || current.businessCategory,
+      motif: profile.motif || current.motif,
+      tone: profile.tone || current.tone,
+      confidenceScore: profile.confidenceScore ?? current.confidenceScore,
+    }));
+    return { setupRequired: Boolean(json.setupRequired) };
   }
 
   async function loadReputationActivity() {
@@ -297,6 +349,7 @@ export function ReputationEngine() {
           fetch("/api/reputation/settings", { cache: "no-store" }),
           fetch("/api/reputation/templates", { cache: "no-store" }),
           loadReputationActivity(),
+          loadBrandProfile().catch(() => ({ setupRequired: false })),
         ]);
 
         const settingsJson = await settingsRes.json();
@@ -314,6 +367,7 @@ export function ReputationEngine() {
             activitySetupRequired: activityState.activitySetupRequired,
             settingsSetupRequired: settingsJson.setupRequired,
             templatesSetupRequired: templatesJson.setupRequired,
+            // Brand profile setup is additive; reputation remains usable without it.
           }),
         );
         await diagnosticsPromise;
@@ -332,8 +386,13 @@ export function ReputationEngine() {
   }, []);
 
   const previewSms = useMemo(
-    () => `${settings.smsTemplate.replace("{customer_name}", "Alex").replace("{business_name}", manualForm.businessName || suggestedBusinessName || "Your Business")} Ref ABC12345`,
+    () => `${settings.smsTemplate.replace("{customer_name}", "Alex").replace("{business_name}", manualForm.businessName || suggestedBusinessName || "Your Business").replace("{review_link}", "https://geothority.io/review/ABC12345")} Ref ABC12345`,
     [manualForm.businessName, settings.smsTemplate, suggestedBusinessName],
+  );
+
+  const previewEmail = useMemo(
+    () => settings.emailTemplate.replace("{customer_name}", "Alex").replace("{business_name}", manualForm.businessName || suggestedBusinessName || "Your Business").replace("{review_link}", "https://geothority.io/review/ABC12345"),
+    [manualForm.businessName, settings.emailTemplate, suggestedBusinessName],
   );
 
   const pendingReplyRequests = useMemo(
@@ -384,6 +443,7 @@ export function ReputationEngine() {
         fetch("/api/reputation/settings", { cache: "no-store" }),
         fetch("/api/reputation/templates", { cache: "no-store" }),
         loadReputationActivity(),
+        loadBrandProfile().catch(() => ({ setupRequired: false })),
       ]);
 
       const settingsJson = await settingsRes.json();
@@ -430,6 +490,26 @@ export function ReputationEngine() {
     }
   }
 
+  async function saveBrandProfile() {
+    setSavingBrandProfile(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/reputation/brand-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(brandProfile),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to save brand profile");
+      setMessage("Brand profile saved. Review pages and email headers can use this identity.");
+    } catch (err: any) {
+      setError(err.message || "Failed to save brand profile");
+    } finally {
+      setSavingBrandProfile(false);
+    }
+  }
+
   async function saveTemplates() {
     setSavingTemplates(true);
     setMessage(null);
@@ -462,7 +542,7 @@ export function ReputationEngine() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to create request");
-      setManualForm((current) => ({ ...current, customerName: "", phone: "" }));
+      setManualForm((current) => ({ ...current, customerName: "", phone: "", email: "" }));
       await refreshActivity();
       setMessage("Review request created and sent.");
     } catch (err: any) {
@@ -512,7 +592,7 @@ export function ReputationEngine() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to create event-driven request");
-      setEventForm((current) => ({ ...current, customerName: "", phone: "", externalEventId: "" }));
+      setEventForm((current) => ({ ...current, customerName: "", phone: "", email: "", externalEventId: "" }));
       await refreshActivity();
       setMessage(json.deduplicated ? `Event ${json.externalEventId || "request"} already existed — showing the existing request.` : `Event-triggered request queued from ${json.triggerSourceLabel || formatTriggerSource(json.triggerSource)}.`);
     } catch (err: any) {
@@ -858,6 +938,21 @@ export function ReputationEngine() {
                       <Input value={manualForm.phone} onChange={(event) => setManualForm((current) => ({ ...current, phone: event.target.value }))} placeholder="(555) 123-4567" />
                     </Field>
                   </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="Email">
+                      <Input type="email" value={manualForm.email} onChange={(event) => setManualForm((current) => ({ ...current, email: event.target.value }))} placeholder="alex@example.com" />
+                    </Field>
+                    <Field label="Preferred channel">
+                      <select
+                        value={manualForm.preferredChannel}
+                        onChange={(event) => setManualForm((current) => ({ ...current, preferredChannel: event.target.value }))}
+                        className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                      >
+                        <option value="sms">SMS first</option>
+                        <option value="email">Email first</option>
+                      </select>
+                    </Field>
+                  </div>
                   <Field label="Trigger source">
                     <select
                       value={manualForm.triggerSource}
@@ -869,7 +964,16 @@ export function ReputationEngine() {
                       ))}
                     </select>
                   </Field>
-                  <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm leading-6 text-[var(--foreground)]">{previewSms}</div>
+                  <div className="space-y-3">
+                    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm leading-6 text-[var(--foreground)]">
+                      <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-300">SMS preview</div>
+                      {previewSms}
+                    </div>
+                    <div className="rounded-2xl border border-sky-500/20 bg-sky-500/5 p-4 text-sm leading-6 text-[var(--foreground)]">
+                      <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-sky-300">Email preview</div>
+                      {previewEmail}
+                    </div>
+                  </div>
                   <div className="flex justify-end">
                     <Button onClick={createManualRequest} disabled={creatingRequest}>
                       {creatingRequest ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
@@ -909,12 +1013,27 @@ export function ReputationEngine() {
                       <Input value={eventForm.phone} onChange={(event) => setEventForm((current) => ({ ...current, phone: event.target.value }))} placeholder="(555) 555-0112" />
                     </Field>
                   </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="Email">
+                      <Input type="email" value={eventForm.email} onChange={(event) => setEventForm((current) => ({ ...current, email: event.target.value }))} placeholder="jamie@example.com" />
+                    </Field>
+                    <Field label="Preferred channel">
+                      <select
+                        value={eventForm.preferredChannel}
+                        onChange={(event) => setEventForm((current) => ({ ...current, preferredChannel: event.target.value }))}
+                        className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                      >
+                        <option value="sms">SMS first</option>
+                        <option value="email">Email first</option>
+                      </select>
+                    </Field>
+                  </div>
                   <Field label="External event ID" hint="Use the same value again to prove idempotent replay safety.">
                     <Input value={eventForm.externalEventId} onChange={(event) => setEventForm((current) => ({ ...current, externalEventId: event.target.value }))} placeholder="appt_10492" />
                   </Field>
                   <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-xs leading-6 text-[var(--muted-foreground)]">
-                    POST /api/reputation/events → {`{ businessName, customerName, phone, eventType, externalEventId }`}<br />
-                    POST /api/reputation/webhook + x-geothority-webhook-secret → {`{ userId, businessName, customerName, phone, eventType, externalEventId }`}
+                    POST /api/reputation/events → {`{ businessName, customerName, phone, email, preferredChannel, eventType, externalEventId }`}<br />
+                    POST /api/reputation/webhook + x-geothority-webhook-secret → {`{ userId, businessName, customerName, phone, email, preferredChannel, eventType, externalEventId }`}
                   </div>
                   <div className="flex justify-end">
                     <Button variant="outline" onClick={createEventTriggeredRequest} disabled={creatingEventRequest}>
@@ -1359,8 +1478,37 @@ export function ReputationEngine() {
                     <Input type="number" min={1} max={5} value={settings.positiveThreshold} onChange={(event) => setSettings((current) => ({ ...current, positiveThreshold: Number(event.target.value || 4) }))} />
                   </Field>
                 </div>
-                <Field label="SMS template" hint="Merge fields: {customer_name}, {business_name}">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Enabled channels">
+                    <select
+                      value={settings.enabledChannels}
+                      onChange={(event) => setSettings((current) => ({ ...current, enabledChannels: event.target.value as ReputationSettings["enabledChannels"] }))}
+                      className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                    >
+                      <option value="sms">SMS only</option>
+                      <option value="email">Email only</option>
+                      <option value="sms_email">SMS + email</option>
+                    </select>
+                  </Field>
+                  <Field label="Primary channel">
+                    <select
+                      value={settings.primaryChannel}
+                      onChange={(event) => setSettings((current) => ({ ...current, primaryChannel: event.target.value as ReputationSettings["primaryChannel"] }))}
+                      className="flex h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring"
+                    >
+                      <option value="sms">SMS first</option>
+                      <option value="email">Email first</option>
+                    </select>
+                  </Field>
+                </div>
+                <Field label="SMS template" hint="Merge fields: {customer_name}, {business_name}, {review_link}">
                   <Textarea value={settings.smsTemplate} onChange={(event) => setSettings((current) => ({ ...current, smsTemplate: event.target.value }))} className="min-h-32" />
+                </Field>
+                <Field label="Email subject" hint="Merge fields: {customer_name}, {business_name}">
+                  <Input value={settings.emailSubject} onChange={(event) => setSettings((current) => ({ ...current, emailSubject: event.target.value }))} />
+                </Field>
+                <Field label="Email template" hint="Merge fields: {customer_name}, {business_name}, {review_link}">
+                  <Textarea value={settings.emailTemplate} onChange={(event) => setSettings((current) => ({ ...current, emailTemplate: event.target.value }))} className="min-h-28" />
                 </Field>
                 <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[var(--muted)]/20 px-4 py-3">
                   <div>
@@ -1374,13 +1522,75 @@ export function ReputationEngine() {
               <div className="space-y-4">
                 <Card className="rounded-2xl border-white/10 bg-[var(--muted)]/20 py-0">
                   <CardHeader className="border-b border-white/10 py-4">
+                    <CardTitle className="text-sm">Brand profile</CardTitle>
+                    <CardDescription>Scanner-captured identity for branded review pages and email headers. Edit anything that looks off.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4 py-4">
+                    <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-background/40 p-4">
+                      {brandProfile.logoUrl ? (
+                        <img src={brandProfile.logoUrl} alt={`${brandProfile.businessName || suggestedBusinessName} logo`} className="h-12 max-w-[140px] object-contain" />
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold text-white" style={{ background: brandProfile.primaryColor || "#16c784" }}>
+                          {(brandProfile.businessName || suggestedBusinessName || "G").slice(0, 1)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-[var(--foreground)]">{brandProfile.businessName || suggestedBusinessName}</div>
+                        <div className="text-xs text-[var(--muted-foreground)]">{brandProfile.businessCategory || "Category not detected yet"} · {brandProfile.confidenceScore || 0}% confidence</div>
+                      </div>
+                      <div className="ml-auto flex gap-1.5">
+                        <span className="h-5 w-5 rounded-full border border-white/20" style={{ background: brandProfile.primaryColor || "#16c784" }} />
+                        <span className="h-5 w-5 rounded-full border border-white/20" style={{ background: brandProfile.accentColor || "#4f46e5" }} />
+                      </div>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Business name">
+                        <Input value={brandProfile.businessName} onChange={(event) => setBrandProfile((current) => ({ ...current, businessName: event.target.value }))} placeholder={suggestedBusinessName} />
+                      </Field>
+                      <Field label="Website">
+                        <Input value={brandProfile.websiteUrl} onChange={(event) => setBrandProfile((current) => ({ ...current, websiteUrl: event.target.value }))} placeholder="https://example.com" />
+                      </Field>
+                    </div>
+                    <Field label="Logo URL">
+                      <Input value={brandProfile.logoUrl} onChange={(event) => setBrandProfile((current) => ({ ...current, logoUrl: event.target.value }))} placeholder="https://example.com/logo.png" />
+                    </Field>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Primary color">
+                        <Input value={brandProfile.primaryColor} onChange={(event) => setBrandProfile((current) => ({ ...current, primaryColor: event.target.value }))} placeholder="#16c784" />
+                      </Field>
+                      <Field label="Accent color">
+                        <Input value={brandProfile.accentColor} onChange={(event) => setBrandProfile((current) => ({ ...current, accentColor: event.target.value }))} placeholder="#4f46e5" />
+                      </Field>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <Field label="Category">
+                        <Input value={brandProfile.businessCategory} onChange={(event) => setBrandProfile((current) => ({ ...current, businessCategory: event.target.value }))} placeholder="insurance" />
+                      </Field>
+                      <Field label="Motif">
+                        <Input value={brandProfile.motif} onChange={(event) => setBrandProfile((current) => ({ ...current, motif: event.target.value }))} placeholder="professional" />
+                      </Field>
+                      <Field label="Tone">
+                        <Input value={brandProfile.tone} onChange={(event) => setBrandProfile((current) => ({ ...current, tone: event.target.value }))} placeholder="trustworthy" />
+                      </Field>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button variant="outline" onClick={saveBrandProfile} disabled={savingBrandProfile}>
+                        {savingBrandProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Save brand profile
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-2xl border-white/10 bg-[var(--muted)]/20 py-0">
+                  <CardHeader className="border-b border-white/10 py-4">
                     <CardTitle className="text-sm">Preview flow</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 py-4 text-sm">
                     <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-[var(--foreground)]">{previewSms}</div>
+                    <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3 text-[var(--foreground)]">{previewEmail}</div>
                     <div className="rounded-xl border border-white/10 bg-background/40 p-3 text-[var(--muted-foreground)]">
-                      Scores {settings.positiveThreshold}-5 → public review page + proof approval queue<br />
-                      Scores 1-{Math.max(1, settings.positiveThreshold - 1)} → private feedback inbox
+                      Scores {settings.positiveThreshold}-5 → Google review CTA + proof approval queue<br />
+                      Scores 1-{Math.max(1, settings.positiveThreshold - 1)} → private recovery first, with public review option still available
                     </div>
                   </CardContent>
                 </Card>
@@ -1393,6 +1603,10 @@ export function ReputationEngine() {
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Low-score replies create private feedback items</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Positive written replies create proof snippets</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Approved proof assets can surface on the public profile and dashboard</div>
+                    <div className="flex items-center gap-2">
+                      {transportDiagnostics?.emailReady ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <AlertTriangle className="h-4 w-4 text-amber-400" />}
+                      {transportDiagnostics?.emailReady ? "Resend email delivery is configured" : "Email sends will simulate until RESEND_API_KEY is configured"}
+                    </div>
                     <div className="flex items-center gap-2">
                       {liveDeliveryEnabled ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <AlertTriangle className="h-4 w-4 text-amber-400" />}
                       {liveDeliveryEnabled
