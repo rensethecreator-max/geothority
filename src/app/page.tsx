@@ -73,6 +73,36 @@ const outcomePillars = [
   },
 ];
 
+const aiEngines = [
+  { name: "ChatGPT", signal: "Mention checks", tone: "from-emerald-400 to-teal-300" },
+  { name: "Gemini", signal: "AI Overviews", tone: "from-cyan-400 to-blue-300" },
+  { name: "Perplexity", signal: "Citation coverage", tone: "from-indigo-400 to-cyan-300" },
+  { name: "Claude", signal: "Entity clarity", tone: "from-violet-400 to-indigo-300" },
+  { name: "Copilot", signal: "Search answers", tone: "from-sky-400 to-cyan-300" },
+  { name: "Grok", signal: "Brand recall", tone: "from-slate-500 to-slate-300" },
+  { name: "DeepSeek", signal: "Structured facts", tone: "from-teal-400 to-emerald-300" },
+  { name: "Meta AI", signal: "Local context", tone: "from-blue-400 to-indigo-300" },
+];
+
+const automationStats = [
+  { value: "90s", label: "first scan", detail: "Build the visibility baseline without waiting on a manual audit." },
+  { value: "100+", label: "data points", detail: "Review local SEO, AEO, listings, competitors, content, and reputation signals." },
+  { value: "24/7", label: "monitoring", detail: "Keep watching the surfaces that can change while the business is busy." },
+];
+
+const automationLanes = [
+  { value: 75, label: "Automatic", detail: "safe fixes and monitoring actions", color: "from-emerald-400 to-teal-300" },
+  { value: 20, label: "One approval", detail: "content, review, and response packages", color: "from-cyan-400 to-indigo-300" },
+  { value: 5, label: "Guided", detail: "operator steps where human control matters", color: "from-amber-300 to-orange-300" },
+];
+
+const automationWorkflow = [
+  { title: "Audit", text: "Scan Google, AI engines, listings, competitors, reviews, content, and schema.", icon: Search },
+  { title: "Repair plan", text: "Rank what can raise visibility fastest without drowning the team in noise.", icon: Compass },
+  { title: "Generate fixes", text: "Prepare schema, content drafts, review campaigns, and listing actions.", icon: Sparkles },
+  { title: "Execute + monitor", text: "Run supported work, queue approvals, and keep tracking momentum.", icon: Radar },
+];
+
 const executionModes = [
   {
     title: "Automatic fixes",
@@ -279,6 +309,213 @@ function AnimatedMetricValue({ value }: { value: string }) {
         {suffix}
       </motion.span>
     </motion.span>
+  );
+}
+
+function AiEnginesMonitorBand() {
+  return (
+    <section className="px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-7xl overflow-hidden rounded-[34px] border border-slate-200 bg-slate-950 p-5 text-white shadow-2xl shadow-slate-950/14 sm:p-7">
+        <div className="relative">
+          <div className="pointer-events-none absolute -left-16 -top-20 h-44 w-44 rounded-full bg-cyan-400/20 blur-3xl" />
+          <div className="pointer-events-none absolute -right-12 bottom-0 h-40 w-40 rounded-full bg-emerald-400/16 blur-3xl" />
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] !text-cyan-100">
+                <Bot className="h-3.5 w-3.5" /> AI engines Geothority monitors
+              </div>
+              <h2 className="mt-4 text-2xl font-semibold tracking-[-0.045em] !text-white sm:text-4xl">
+                AEO becomes real when you can see the engines being watched.
+              </h2>
+              <p className="mt-4 text-sm leading-6 !text-slate-200 sm:text-base sm:leading-7">
+                Geothority tracks whether your business is understandable, citeable, and visible across the AI answer systems buyers already use.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 lg:w-[52%] lg:grid-cols-4">
+              {aiEngines.map((engine, index) => (
+                <motion.div
+                  key={engine.name}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.35 }}
+                  transition={{ delay: index * 0.04, duration: 0.38 }}
+                  className="relative overflow-hidden rounded-2xl border border-white/12 bg-white/[0.07] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:px-3.5 sm:py-3.5"
+                >
+                  <motion.div
+                    className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${engine.tone}`}
+                    animate={{ opacity: [0.45, 1, 0.45] }}
+                    transition={{ repeat: Infinity, duration: 2.4, delay: index * 0.12 }}
+                  />
+                  <div className="flex items-center gap-2">
+                    <motion.span
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.55, 1, 0.55] }}
+                      transition={{ repeat: Infinity, duration: 2, delay: index * 0.15 }}
+                      className={`h-2.5 w-2.5 rounded-full bg-gradient-to-r ${engine.tone}`}
+                    />
+                    <span className="text-sm font-semibold !text-white">{engine.name}</span>
+                  </div>
+                  <div className="mt-2 text-[11px] font-medium uppercase tracking-[0.14em] !text-slate-300">{engine.signal}</div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AutomationScorecardSection() {
+  return (
+    <section className="px-4 py-14 sm:px-6 sm:py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid items-center gap-10 lg:grid-cols-[0.92fr_1.08fr]">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800">
+              <Zap className="h-3.5 w-3.5" /> Automation scorecard
+            </div>
+            <h2 className="mt-5 text-3xl font-semibold tracking-[-0.055em] text-slate-950 sm:text-5xl">
+              Most visibility work should not be manual anymore.
+            </h2>
+            <p className="mt-5 text-lg leading-8 text-slate-700">
+              Geothority turns a local visibility audit into a living repair system: scan the business, build the plan, generate the fixes, queue approvals, and keep monitoring what changes.
+            </p>
+            <div className="mt-7 grid gap-3 sm:grid-cols-3">
+              {automationStats.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.4 }}
+                  transition={{ delay: index * 0.06, duration: 0.42 }}
+                  className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm"
+                >
+                  <div className="text-3xl font-semibold tracking-[-0.06em] text-slate-950"><AnimatedMetricValue value={stat.value} /></div>
+                  <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">{stat.label}</div>
+                  <p className="mt-2 text-xs leading-5 text-slate-600">{stat.detail}</p>
+                </motion.div>
+              ))}
+            </div>
+            <p className="mt-5 text-sm leading-6 text-slate-600">
+              Framed carefully: Geothority finds more opportunities and moves more of the work forward. It does not need to promise instant rankings to be obviously better than passive SEO reports.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute -inset-5 rounded-[42px] bg-[linear-gradient(135deg,rgba(79,70,229,0.16),rgba(20,184,166,0.12),rgba(16,185,129,0.1))] blur-3xl" />
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.55 }}
+              className="relative overflow-hidden rounded-[36px] border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-950/12 sm:p-5"
+            >
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-cyan-400 to-emerald-400" />
+              <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#f8fbff,#eef7f4)] p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-700">Geothority automation score</div>
+                    <h3 className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-slate-950">Workload handled by the operating system</h3>
+                  </div>
+                  <motion.div
+                    animate={{ scale: [1, 1.04, 1] }}
+                    transition={{ repeat: Infinity, duration: 2.4 }}
+                    className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700"
+                  >
+                    Live monitor
+                  </motion.div>
+                </div>
+
+                <div className="mt-6 grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
+                  <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="relative mx-auto flex h-44 w-44 items-center justify-center rounded-full bg-[conic-gradient(from_270deg,#34d399_0deg,#22d3ee_270deg,#cbd5e1_270deg)] p-3">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                        className="absolute inset-1 rounded-full border border-cyan-300/30 border-t-cyan-500"
+                      />
+                      <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-white">
+                        <div className="text-5xl font-semibold tracking-[-0.08em] text-slate-950">75%</div>
+                        <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">automatic</div>
+                        <div className="mt-2 text-center text-xs leading-5 text-slate-600">supported work moves without another spreadsheet</div>
+                      </div>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {automationLanes.map((lane, index) => (
+                        <div key={lane.label}>
+                          <div className="mb-1.5 flex items-center justify-between text-xs">
+                            <span className="font-semibold text-slate-800">{lane.label}</span>
+                            <span className="text-slate-500">{lane.value}%</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-slate-100">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              whileInView={{ width: `${lane.value}%` }}
+                              viewport={{ once: true }}
+                              transition={{ delay: index * 0.1, duration: 0.75, ease: "easeOut" }}
+                              className={`h-full rounded-full bg-gradient-to-r ${lane.color}`}
+                            />
+                          </div>
+                          <div className="mt-1 text-[11px] text-slate-500">{lane.detail}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3">
+                    {automationWorkflow.map((step, index) => {
+                      const Icon = step.icon;
+                      return (
+                        <motion.div
+                          key={step.title}
+                          initial={{ opacity: 0, x: 16 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true, amount: 0.3 }}
+                          transition={{ delay: index * 0.07, duration: 0.38 }}
+                          className="rounded-[22px] border border-slate-200 bg-white px-4 py-3.5 shadow-sm"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700">
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">0{index + 1}</span>
+                                <span className="text-sm font-semibold text-slate-950">{step.title}</span>
+                              </div>
+                              <p className="mt-1 text-sm leading-6 text-slate-600">{step.text}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="mt-5 rounded-[24px] border border-slate-200 bg-slate-950 p-4 text-white">
+                  <div className="mb-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em] !text-slate-300">
+                    <span>Opportunity map</span>
+                    <span>Google + AI + Reviews</span>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {["Schema", "Trust pages", "Listings", "Competitors", "Reviews", "Local content"].map((item, index) => (
+                      <motion.div
+                        key={item}
+                        animate={{ opacity: [0.72, 1, 0.72] }}
+                        transition={{ repeat: Infinity, duration: 2.8, delay: index * 0.12 }}
+                        className="rounded-2xl border border-white/10 bg-white/8 px-3 py-2 text-xs font-medium !text-slate-100"
+                      >
+                        {item}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -775,6 +1012,10 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <AiEnginesMonitorBand />
+
+        <AutomationScorecardSection />
 
         <section className="px-4 sm:px-6">
           <div className="mx-auto grid max-w-7xl gap-3 rounded-[30px] border border-slate-200 bg-white p-3 shadow-xl shadow-slate-950/5 sm:grid-cols-2 lg:grid-cols-4">
