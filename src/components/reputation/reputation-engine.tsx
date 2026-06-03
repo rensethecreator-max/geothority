@@ -510,6 +510,20 @@ export function ReputationEngine() {
     }
   }
 
+  async function resetBrandProfileToDetected() {
+    setSavingBrandProfile(true);
+    setMessage(null);
+    setError(null);
+    try {
+      await loadBrandProfile();
+      setMessage("Brand profile reset to the latest detected identity.");
+    } catch (err: any) {
+      setError(err.message || "Failed to reset brand profile");
+    } finally {
+      setSavingBrandProfile(false);
+    }
+  }
+
   async function saveTemplates() {
     setSavingTemplates(true);
     setMessage(null);
@@ -1501,6 +1515,16 @@ export function ReputationEngine() {
                     </select>
                   </Field>
                 </div>
+                {settings.enabledChannels === "sms_email" ? (
+                  <Field label="Secondary channel delay" hint="Keeps SMS + email from feeling like a blast. Minimum 15 minutes.">
+                    <Input
+                      type="number"
+                      min={15}
+                      value={settings.sendBothDelayMinutes}
+                      onChange={(event) => setSettings((current) => ({ ...current, sendBothDelayMinutes: Math.max(15, Number(event.target.value || 15)) }))}
+                    />
+                  </Field>
+                ) : null}
                 <Field label="SMS template" hint="Merge fields: {customer_name}, {business_name}, {review_link}">
                   <Textarea value={settings.smsTemplate} onChange={(event) => setSettings((current) => ({ ...current, smsTemplate: event.target.value }))} className="min-h-32" />
                 </Field>
@@ -1556,10 +1580,26 @@ export function ReputationEngine() {
                     </Field>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Field label="Primary color">
-                        <Input value={brandProfile.primaryColor} onChange={(event) => setBrandProfile((current) => ({ ...current, primaryColor: event.target.value }))} placeholder="#16c784" />
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={brandProfile.primaryColor || "#16c784"}
+                            onChange={(event) => setBrandProfile((current) => ({ ...current, primaryColor: event.target.value }))}
+                            className="h-10 w-14 shrink-0 p-1"
+                          />
+                          <Input value={brandProfile.primaryColor} onChange={(event) => setBrandProfile((current) => ({ ...current, primaryColor: event.target.value }))} placeholder="#16c784" />
+                        </div>
                       </Field>
                       <Field label="Accent color">
-                        <Input value={brandProfile.accentColor} onChange={(event) => setBrandProfile((current) => ({ ...current, accentColor: event.target.value }))} placeholder="#4f46e5" />
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={brandProfile.accentColor || "#4f46e5"}
+                            onChange={(event) => setBrandProfile((current) => ({ ...current, accentColor: event.target.value }))}
+                            className="h-10 w-14 shrink-0 p-1"
+                          />
+                          <Input value={brandProfile.accentColor} onChange={(event) => setBrandProfile((current) => ({ ...current, accentColor: event.target.value }))} placeholder="#4f46e5" />
+                        </div>
                       </Field>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-3">
@@ -1573,7 +1613,11 @@ export function ReputationEngine() {
                         <Input value={brandProfile.tone} onChange={(event) => setBrandProfile((current) => ({ ...current, tone: event.target.value }))} placeholder="trustworthy" />
                       </Field>
                     </div>
-                    <div className="flex justify-end">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                      <Button variant="ghost" onClick={resetBrandProfileToDetected} disabled={savingBrandProfile}>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Reset to detected
+                      </Button>
                       <Button variant="outline" onClick={saveBrandProfile} disabled={savingBrandProfile}>
                         {savingBrandProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         Save brand profile
@@ -1586,6 +1630,38 @@ export function ReputationEngine() {
                     <CardTitle className="text-sm">Preview flow</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 py-4 text-sm">
+                    <div
+                      className="overflow-hidden rounded-xl border border-white/10 bg-white text-slate-900"
+                      style={{ borderColor: `${brandProfile.primaryColor || "#16c784"}33` }}
+                    >
+                      <div
+                        className="px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white"
+                        style={{ background: brandProfile.primaryColor || "#16c784" }}
+                      >
+                        Private feedback
+                      </div>
+                      <div className="space-y-3 p-4">
+                        <div className="flex items-center gap-3">
+                          {brandProfile.logoUrl ? (
+                            <img src={brandProfile.logoUrl} alt="" className="h-10 max-w-[120px] object-contain" />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold text-white" style={{ background: brandProfile.accentColor || "#4f46e5" }}>
+                              {(brandProfile.businessName || suggestedBusinessName || "G").slice(0, 1)}
+                            </div>
+                          )}
+                          <div>
+                            <div className="font-semibold">Review your experience with {brandProfile.businessName || suggestedBusinessName}</div>
+                            <div className="text-xs text-slate-500">{brandProfile.tone || "Trusted"} customer feedback page</div>
+                          </div>
+                        </div>
+                        <div className="rounded-lg bg-slate-50 p-3 text-slate-600">How was your experience? Choose 1-5 stars, then Geothority routes the customer to the right next step.</div>
+                        <div className="flex gap-1 text-amber-400">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star key={star} className="h-5 w-5 fill-current" />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                     <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-[var(--foreground)]">{previewSms}</div>
                     <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3 text-[var(--foreground)]">{previewEmail}</div>
                     <div className="rounded-xl border border-white/10 bg-background/40 p-3 text-[var(--muted-foreground)]">

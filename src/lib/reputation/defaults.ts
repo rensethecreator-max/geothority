@@ -9,6 +9,7 @@ export interface ReputationSettings {
   primaryChannel: "sms" | "email";
   emailSubject: string;
   emailTemplate: string;
+  sendBothDelayMinutes: number;
   active: boolean;
 }
 
@@ -33,6 +34,7 @@ export const DEFAULT_REPUTATION_SETTINGS: ReputationSettings = {
   emailSubject: "Quick question about your experience with {business_name}",
   emailTemplate:
     "Thanks for choosing {business_name}. How was your experience? Use this private link to leave quick feedback: {review_link}",
+  sendBothDelayMinutes: 240,
   active: false,
 };
 

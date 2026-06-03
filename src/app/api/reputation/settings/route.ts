@@ -27,7 +27,7 @@ export async function GET() {
 
     let { data, error } = await supabase
       .from("reputation_settings")
-      .select("google_review_link, sms_delay_minutes, positive_threshold, sms_template, enabled_channels, primary_channel, email_subject, email_template, active")
+      .select("google_review_link, sms_delay_minutes, positive_threshold, sms_template, enabled_channels, primary_channel, email_subject, email_template, send_both_delay_minutes, active")
       .eq("user_id", session.user.id)
       .maybeSingle();
 
@@ -59,6 +59,7 @@ export async function GET() {
             primaryChannel: data.primary_channel ?? DEFAULT_REPUTATION_SETTINGS.primaryChannel,
             emailSubject: data.email_subject ?? DEFAULT_REPUTATION_SETTINGS.emailSubject,
             emailTemplate: data.email_template ?? DEFAULT_REPUTATION_SETTINGS.emailTemplate,
+            sendBothDelayMinutes: data.send_both_delay_minutes ?? DEFAULT_REPUTATION_SETTINGS.sendBothDelayMinutes,
             active: data.active ?? false,
           }
         : DEFAULT_REPUTATION_SETTINGS,
@@ -91,6 +92,7 @@ export async function POST(req: NextRequest) {
       primary_channel: body.primaryChannel === "email" || body.primaryChannel === "sms" ? body.primaryChannel : DEFAULT_REPUTATION_SETTINGS.primaryChannel,
       email_subject: body.emailSubject ?? DEFAULT_REPUTATION_SETTINGS.emailSubject,
       email_template: body.emailTemplate ?? DEFAULT_REPUTATION_SETTINGS.emailTemplate,
+      send_both_delay_minutes: Math.max(15, Number(body.sendBothDelayMinutes ?? DEFAULT_REPUTATION_SETTINGS.sendBothDelayMinutes)),
       active: Boolean(body.active),
       updated_at: new Date().toISOString(),
     };

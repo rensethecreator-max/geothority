@@ -16,6 +16,8 @@ function escapeHtml(value: string) {
 
 function buildFallbackHtml(message: ReputationOutboundMessage) {
   const reviewLink = message.reviewLink || "";
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://geothority.io").replace(/\/$/, "");
+  const optOutLink = `${appUrl}/reputation/opt-out/${message.reviewToken}`;
   const body = escapeHtml(message.body).replace(/\n/g, "<br />");
   const accent = "#16c784";
 
@@ -29,6 +31,7 @@ function buildFallbackHtml(message: ReputationOutboundMessage) {
         <p style="font-size:15px;line-height:1.7;color:#334155;margin:0 0 22px">${body}</p>
         ${reviewLink ? `<a href="${escapeHtml(reviewLink)}" style="display:inline-block;background:${accent};color:#fff;text-decoration:none;border-radius:999px;padding:13px 20px;font-weight:700;font-size:14px">Leave quick feedback</a>` : ""}
         <p style="font-size:12px;line-height:1.6;color:#64748b;margin:24px 0 0">This private page helps the business understand your experience before any public review decision.</p>
+        <p style="font-size:11px;line-height:1.6;color:#94a3b8;margin:18px 0 0">No longer want these email feedback requests? <a href="${escapeHtml(optOutLink)}" style="color:#64748b">Opt out here</a>.</p>
       </div>
     </div>
   `;

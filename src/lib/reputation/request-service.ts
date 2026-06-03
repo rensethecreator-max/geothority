@@ -105,6 +105,11 @@ function buildReviewLink(reviewToken: string) {
   return `${appUrl}/review/${reviewToken}`;
 }
 
+function buildOptOutLink(reviewToken: string) {
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://geothority.io").replace(/\/$/, "");
+  return `${appUrl}/reputation/opt-out/${reviewToken}`;
+}
+
 function fillReputationMessageTemplate(template: string, customerName: string, businessName: string, reviewToken: string) {
   const reviewLink = buildReviewLink(reviewToken);
   return template
@@ -127,6 +132,7 @@ function buildReputationEmailHtml(params: {
   reviewToken: string;
 }) {
   const reviewLink = buildReviewLink(params.reviewToken);
+  const optOutLink = buildOptOutLink(params.reviewToken);
   const escapedBusinessName = params.businessName.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char));
   const escapedBody = params.body.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char)).replace(/\n/g, "<br />");
 
@@ -140,6 +146,7 @@ function buildReputationEmailHtml(params: {
         <p style="font-size:15px;line-height:1.7;color:#334155;margin:0 0 22px">${escapedBody}</p>
         <a href="${reviewLink}" style="display:inline-block;background:#16c784;color:#fff;text-decoration:none;border-radius:999px;padding:13px 20px;font-weight:800;font-size:14px">Leave quick feedback</a>
         <p style="font-size:12px;line-height:1.6;color:#64748b;margin:24px 0 0">This private page helps ${escapedBusinessName} understand your experience. You can still choose whether to post publicly after sharing feedback.</p>
+        <p style="font-size:11px;line-height:1.6;color:#94a3b8;margin:18px 0 0">No longer want email feedback requests from ${escapedBusinessName}? <a href="${optOutLink}" style="color:#64748b">Opt out here</a>.</p>
       </div>
     </div>
   `;
@@ -169,6 +176,16 @@ function normalizeRequestedChannels(params: {
   const filtered = Array.from(new Set(requested)).filter((channel) => available.has(channel));
   if (filtered.length) return filtered;
   return Array.from(available);
+}
+
+function orderChannelsForSettings(channels: ReputationMessageChannel[], primaryChannel?: string | null) {
+  if (channels.length < 2) return channels;
+  if (primaryChannel !== "email" && primaryChannel !== "sms") return channels;
+  return [...channels].sort((a, b) => {
+    if (a === primaryChannel) return -1;
+    if (b === primaryChannel) return 1;
+    return 0;
+  });
 }
 
 export async function getPreferredBusinessName(supabase: any, userId: string) {
@@ -381,22 +398,25 @@ export async function createAndSendReputationRequest(params: {
 
   const { data: settings } = await supabase
     .from("reputation_settings")
-    .select("enabled_channels, primary_channel")
+    .select("enabled_channels, primary_channel, send_both_delay_minutes")
     .eq("user_id", userId)
     .maybeSingle();
 
-  const channels = normalizeRequestedChannels({
+  const channels = orderChannelsForSettings(normalizeRequestedChannels({
     requestedChannels,
     preferredChannel: preferredChannel || contact.preferred_channel,
     phone: contact.sms_opt_out ? "" : contact.phone,
     email: contact.email_opt_out ? "" : contact.email,
     settingsChannels: settings?.enabled_channels,
-  });
+  }), settings?.primary_channel);
 
   if (!channels.length) {
     return { success: false as const, error: "This contact has no usable reputation request channel", status: 409 };
   }
 
+  const primaryChannels = channels.slice(0, 1);
+  const secondaryChannels = channels.slice(1);
+  const reviewToken = crypto.randomUUID().replace(/-/g, "");
   let { data: createdRequest, error: requestError } = await supabase
     .from("reputation_requests")
     .insert({
@@ -407,9 +427,9 @@ export async function createAndSendReputationRequest(params: {
       trigger_source: triggerSource,
       external_event_id: externalEventId || null,
       status: "pending",
-      review_token: crypto.randomUUID().replace(/-/g, ""),
-      channel: channels[0],
-      requested_channels: channels,
+      review_token: reviewToken,
+      channel: primaryChannels[0],
+      requested_channels: primaryChannels,
       delivery_state: "pending",
       send_attempt_count: 0,
       last_send_error: null,
@@ -430,7 +450,7 @@ export async function createAndSendReputationRequest(params: {
         trigger_source: triggerSource,
         external_event_id: externalEventId || null,
         status: "pending",
-        review_token: crypto.randomUUID().replace(/-/g, ""),
+        review_token: reviewToken,
         delivery_state: "pending",
         send_attempt_count: 0,
         last_send_error: null,
@@ -492,13 +512,73 @@ export async function createAndSendReputationRequest(params: {
       externalEventId: externalEventId || null,
       normalizedPhone: contact.phone,
       normalizedEmail: contact.email,
-      requestedChannels: channels,
+      requestedChannels: primaryChannels,
+      delayedSecondaryChannels: secondaryChannels,
     },
   });
 
   const sendOutcome = await sendReputationRequestNow(createdRequest.id);
 
-  return { success: true as const, requestId: createdRequest.id, deduplicated: false, sendOutcome };
+  const followUpRequests = [];
+  const delayMinutes = Math.max(15, Number(settings?.send_both_delay_minutes || DEFAULT_REPUTATION_SETTINGS.sendBothDelayMinutes || 240));
+  const nextRetryAt = new Date(Date.now() + delayMinutes * 60 * 1000).toISOString();
+
+  for (const channel of secondaryChannels) {
+    const { data: followUpRequest, error: followUpError } = await supabase
+      .from("reputation_requests")
+      .insert({
+        user_id: userId,
+        business_id: businessIdentity.displayName,
+        business_key: businessIdentity.businessKey,
+        contact_id: contact.id,
+        trigger_source: `${triggerSource}_secondary_${channel}`,
+        external_event_id: null,
+        status: "pending",
+        review_token: crypto.randomUUID().replace(/-/g, ""),
+        channel,
+        requested_channels: [channel],
+        delivery_state: "retry_scheduled",
+        send_attempt_count: 0,
+        last_send_error: null,
+        next_retry_at: nextRetryAt,
+        dead_lettered_at: null,
+      })
+      .select("id")
+      .single();
+
+    if (!followUpError && followUpRequest?.id) {
+      const queueResult = await enqueueReputationSendAttempt({ requestId: followUpRequest.id, delaySeconds: delayMinutes * 60 }).catch((error) => ({
+        scheduled: false as const,
+        reason: error?.message || "queue_error",
+      }));
+
+      await appendReputationLedgerEvent(supabase, {
+        userId,
+        requestId: followUpRequest.id,
+        actorType: "system",
+        eventType: queueResult.scheduled ? "request.secondary_channel_scheduled" : "request.secondary_channel_pending",
+        toStatus: "pending",
+        channel,
+        summary: queueResult.scheduled ? "Scheduled a delayed secondary reputation channel." : "Created a delayed secondary channel request; queue service is not configured.",
+        metadata: {
+          primaryRequestId: createdRequest.id,
+          channel,
+          delayMinutes,
+          nextRetryAt,
+          queueResult,
+        },
+      });
+
+      followUpRequests.push({
+        requestId: followUpRequest.id,
+        channel,
+        scheduled: queueResult.scheduled,
+        nextRetryAt,
+      });
+    }
+  }
+
+  return { success: true as const, requestId: createdRequest.id, deduplicated: false, sendOutcome, followUpRequests };
 }
 
 export async function sendReputationRequestNow(requestId: string) {
