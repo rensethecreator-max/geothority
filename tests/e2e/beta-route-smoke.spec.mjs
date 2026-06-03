@@ -43,6 +43,9 @@ async function expectNoRawFailure(page) {
 
 test.describe("first-users beta route smoke", () => {
   test("signup form accepts a new beta user", async ({ page }) => {
+    const betaCode = process.env.GEOTHORITY_BETA_SIGNUP_CODE;
+    test.skip(!betaCode, "GEOTHORITY_BETA_SIGNUP_CODE is required for controlled beta signup smoke.");
+
     const stamp = createFreshUserPayload();
     const creds = {
       email: `beta-test+${Date.now()}_${Math.random().toString(36).slice(2, 8)}@geothority.io`,
@@ -54,13 +57,10 @@ test.describe("first-users beta route smoke", () => {
       await expect(page).toHaveURL(/\/login\?mode=signup/);
       await page.getByPlaceholder("your@email.com").fill(creds.email);
       await page.getByPlaceholder("Password").fill(creds.password);
+      await page.getByPlaceholder("Beta access code").fill(betaCode);
       await page.getByRole("button", { name: /Create Account|Sign Up|Start/i }).click();
 
-      await expect(async () => {
-        const url = page.url();
-        const bodyText = await page.locator("body").innerText();
-        expect(url.includes("/dashboard") || url.includes("/onboarding") || /check your email/i.test(bodyText)).toBe(true);
-      }).toPass({ timeout: 15_000 });
+      await expect(page).toHaveURL(/\/dashboard|\/onboarding/);
 
       await expectNoRawFailure(page);
     } finally {
@@ -137,6 +137,37 @@ test.describe("first-users beta route smoke", () => {
       await expectNoRawFailure(page);
     } finally {
       await cleanupUser(fixture.admin, fixture.userId);
+    }
+  });
+
+  test("authenticated beta user can delete their own account with email confirmation", async ({ page }) => {
+    const fixture = await createFreshUser();
+    let deletedViaApi = false;
+
+    try {
+      await page.goto("/login?mode=signin");
+      await page.getByPlaceholder("your@email.com").fill(fixture.email);
+      await page.getByPlaceholder("Password").fill(fixture.password);
+      await page.getByRole("button", { name: "Sign In" }).click();
+      await expect(page).toHaveURL(/\/dashboard|\/onboarding/);
+
+      const deletion = await page.evaluate(async (email) => {
+        const response = await fetch("/api/user/account", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmEmail: email }),
+        });
+        const payload = await response.json();
+        return { ok: response.ok, status: response.status, payload };
+      }, fixture.email);
+
+      expect(deletion.ok, JSON.stringify(deletion.payload)).toBe(true);
+      expect(deletion.payload.ok).toBe(true);
+      deletedViaApi = true;
+    } finally {
+      if (!deletedViaApi) {
+        await cleanupUser(fixture.admin, fixture.userId);
+      }
     }
   });
 });

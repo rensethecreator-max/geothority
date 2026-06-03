@@ -25,6 +25,7 @@ function LoginForm() {
   }, [initialMode]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [betaCode, setBetaCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
@@ -98,6 +99,29 @@ function LoginForm() {
         trackEvent("signin_completed");
         completeSignInRedirect();
       }
+    } else if (betaCode.trim()) {
+      const betaResponse = await fetch("/api/auth/beta-signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, betaCode }),
+      });
+      const betaPayload = await betaResponse.json().catch(() => ({}));
+
+      if (!betaResponse.ok) {
+        setMessage({ type: "error", text: betaPayload.error || "Unable to create beta account." });
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setMessage({ type: "error", text: error.message });
+        setLoading(false);
+        return;
+      }
+
+      trackEvent("signup_completed", { method: "controlled_beta" });
+      completeSignInRedirect();
     } else {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -200,6 +224,21 @@ function LoginForm() {
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
+
+          {mode === "signup" && (
+            <div>
+              <input
+                type="text"
+                placeholder="Beta access code (optional)"
+                value={betaCode}
+                onChange={e => setBetaCode(e.target.value)}
+                className="w-full px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+              />
+              <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+                Invited beta testers can use their access code to start immediately without waiting for email confirmation.
+              </p>
+            </div>
+          )}
 
           <button
             type="submit"
