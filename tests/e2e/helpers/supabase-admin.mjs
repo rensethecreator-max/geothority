@@ -8,7 +8,7 @@ function requiredEnv(name) {
   return value;
 }
 
-function createAdminClient() {
+export function createAdminClient() {
   return createClient(
     requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
     requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
@@ -248,5 +248,19 @@ export async function cleanupUser(admin, userId) {
   const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
   if (deleteError) {
     console.warn(`Auth cleanup warning: ${deleteError.message}`);
+  }
+}
+
+export async function cleanupUserByEmail(email) {
+  const admin = createAdminClient();
+  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (error) {
+    console.warn(`Auth lookup cleanup warning: ${error.message}`);
+    return;
+  }
+
+  const user = data.users.find((candidate) => candidate.email?.toLowerCase() === email.toLowerCase());
+  if (user) {
+    await cleanupUser(admin, user.id);
   }
 }

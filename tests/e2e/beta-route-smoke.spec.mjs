@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import {
+  cleanupUserByEmail,
   cleanupUser,
+  createFreshUserPayload,
   createFreshUser,
   markOnboardingComplete,
   seedScan,
@@ -40,6 +42,32 @@ async function expectNoRawFailure(page) {
 }
 
 test.describe("first-users beta route smoke", () => {
+  test("signup form accepts a new beta user", async ({ page }) => {
+    const stamp = createFreshUserPayload();
+    const creds = {
+      email: `beta-test+${Date.now()}_${Math.random().toString(36).slice(2, 8)}@geothority.io`,
+      password: stamp.password,
+    };
+
+    try {
+      await page.goto("/signup");
+      await expect(page).toHaveURL(/\/login\?mode=signup/);
+      await page.getByPlaceholder("your@email.com").fill(creds.email);
+      await page.getByPlaceholder("Password").fill(creds.password);
+      await page.getByRole("button", { name: /Create Account|Sign Up|Start/i }).click();
+
+      await expect(async () => {
+        const url = page.url();
+        const bodyText = await page.locator("body").innerText();
+        expect(url.includes("/dashboard") || url.includes("/onboarding") || /check your email/i.test(bodyText)).toBe(true);
+      }).toPass({ timeout: 15_000 });
+
+      await expectNoRawFailure(page);
+    } finally {
+      await cleanupUserByEmail(creds.email);
+    }
+  });
+
   test("public launch pages load without broken-page failures", async ({ page }) => {
     for (const route of publicRoutes) {
       const response = await page.goto(route, { waitUntil: "domcontentloaded" });
