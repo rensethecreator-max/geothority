@@ -221,117 +221,230 @@ function SectionIntro({ eyebrow, title, text, center = false }: { eyebrow: strin
   );
 }
 
-function HeroVisual() {
-  return (
-    <div className="relative mx-auto max-w-2xl lg:max-w-none">
-      <div className="absolute -inset-8 rounded-[44px] bg-[radial-gradient(circle_at_30%_20%,rgba(129,140,248,0.38),transparent_38%),radial-gradient(circle_at_78%_70%,rgba(45,212,191,0.28),transparent_32%)] blur-3xl" />
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.75, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-[34px] border border-slate-200 bg-white p-3 shadow-[0_30px_90px_rgba(15,23,42,0.12)]"
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(129,140,248,0.16),transparent_34%),radial-gradient(circle_at_80%_18%,rgba(45,212,191,0.14),transparent_24%)]" />
-        <div className="relative overflow-hidden rounded-[26px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#eef4ff)] p-5 text-slate-950">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-700">Executive visibility view</div>
-              <div className="mt-2 text-xl font-semibold tracking-[-0.03em]">Trust Stack Score</div>
-              <div className="mt-1 text-sm text-slate-800">Find what is suppressing visibility, then move the right fix forward.</div>
-            </div>
-            <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Live</div>
-          </div>
+function AnimatedMetricValue({ value }: { value: string }) {
+  const numeric = Number.parseInt(value, 10);
+  const suffix = value.replace(String(Number.isNaN(numeric) ? "" : numeric), "");
 
-          <div className="mt-7 grid gap-4 sm:grid-cols-[0.78fr_1fr]">
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="relative mx-auto flex h-44 w-44 items-center justify-center rounded-full bg-[conic-gradient(from_220deg,#60a5fa_0deg,#34d399_210deg,rgba(255,255,255,0.1)_210deg)] p-3">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
-                  className="absolute inset-2 rounded-full border border-emerald-300/12 border-t-emerald-300/40"
-                />
-                <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-slate-50 text-slate-950">
+  if (Number.isNaN(numeric)) {
+    return (
+      <motion.span
+        animate={{ opacity: [0.72, 1, 0.72] }}
+        transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}
+      >
+        {value}
+      </motion.span>
+    );
+  }
+
+  return (
+    <motion.span
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+    >
+      {numeric}
+      <motion.span
+        animate={{ opacity: [0.55, 1, 0.55] }}
+        transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
+      >
+        {suffix}
+      </motion.span>
+    </motion.span>
+  );
+}
+
+function HeroVisual() {
+  const trustCards = [
+    { label: "AI visibility", text: "Mention coverage improving after entity scan", badge: "+12", tone: "emerald", delay: 0.1 },
+    { label: "Listings", text: "3 directories ready to sync, 1 mismatch flagged", badge: "3 synced", tone: "cyan", delay: 0.22 },
+    { label: "Trust pages", text: "Priority page and schema package ready", badge: "Ready", tone: "amber", delay: 0.34 },
+  ];
+
+  return (
+    <div className="relative mx-auto max-w-2xl lg:max-w-none" aria-label="Animated Geothority Trust Stack dashboard preview">
+      <div className="absolute -inset-x-7 bottom-4 top-10 rounded-[42px] bg-[linear-gradient(135deg,rgba(79,70,229,0.18),rgba(20,184,166,0.14)_46%,rgba(15,23,42,0.08))] blur-3xl" />
+      <motion.div
+        initial={{ opacity: 0, y: 18, rotateX: 4 }}
+        animate={{ opacity: 1, y: 0, rotateX: 0 }}
+        transition={{ duration: 0.75, ease: "easeOut" }}
+        className="relative rounded-[34px] border border-slate-200 bg-white/88 p-3 shadow-[0_36px_110px_rgba(15,23,42,0.16)] backdrop-blur-xl"
+      >
+        <div className="absolute inset-0 rounded-[34px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(255,255,255,0.22)_36%,rgba(20,184,166,0.08))]" />
+        <motion.div
+          animate={{ y: [0, -8, 0], rotate: [-0.25, 0.25, -0.25] }}
+          transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+          className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff,#eef4ff_58%,#e6f7f4)] p-4 text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] sm:p-5"
+        >
+          <motion.div
+            className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(20,184,166,0.16),transparent)]"
+            animate={{ opacity: [0.45, 0.85, 0.45] }}
+            transition={{ repeat: Infinity, duration: 3.8, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="pointer-events-none absolute -left-10 top-0 h-full w-24 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.72),transparent)]"
+            animate={{ x: ["-20%", "760%"] }}
+            transition={{ repeat: Infinity, duration: 5.8, ease: "easeInOut", repeatDelay: 1.2 }}
+          />
+
+          <div className="relative grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
+            <div className="mx-auto w-full max-w-[310px] rounded-[30px] border border-slate-300 bg-slate-950 p-2 shadow-[0_28px_80px_rgba(15,23,42,0.22)]">
+              <div className="relative overflow-hidden rounded-[24px] bg-[#f8fbff] p-4">
+                <div className="mx-auto mb-3 h-1.5 w-16 rounded-full bg-slate-300" />
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">Dashboard</div>
+                    <h3 className="mt-1 text-lg font-semibold tracking-[-0.04em] text-slate-950">Trust Stack Score</h3>
+                  </div>
                   <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.25, duration: 0.55 }}
-                    className="text-5xl font-semibold tracking-[-0.07em]"
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ repeat: Infinity, duration: 2.2 }}
+                    className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700"
                   >
-                    78
-                  </motion.div>
-                  <div className="mt-1 text-[13px] font-medium uppercase tracking-[0.18em] text-slate-900">out of 100</div>
-                  <motion.div
-                    animate={{ opacity: [0.4, 1, 0.4] }}
-                    transition={{ repeat: Infinity, duration: 2.4 }}
-                    className="mt-2 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-emerald-700"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" /> scanning live
+                    Live
                   </motion.div>
                 </div>
-              </div>
-              <div className="mt-5 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-[15px] font-semibold text-emerald-950 shadow-sm">
-                +14 points available from safe fixes and queued actions
+
+                <div className="mt-5 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="relative mx-auto flex h-40 w-40 items-center justify-center rounded-full bg-[conic-gradient(from_225deg,#4f46e5_0deg,#0ea5e9_108deg,#34d399_238deg,#e2e8f0_238deg)] p-2.5">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 7.5, ease: "linear" }}
+                      className="absolute inset-1 rounded-full border border-emerald-300/20 border-t-emerald-400"
+                    />
+                    <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-slate-50">
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.18, duration: 0.5 }}
+                        className="text-5xl font-semibold tracking-[-0.07em] text-slate-950"
+                      >
+                        78
+                      </motion.div>
+                      <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-slate-600">out of 100</div>
+                      <motion.div
+                        animate={{ opacity: [0.4, 1, 0.4] }}
+                        transition={{ repeat: Infinity, duration: 2.2 }}
+                        className="mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-700"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> scanning live
+                      </motion.div>
+                    </div>
+                  </div>
+                  <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-center text-sm font-semibold text-emerald-950">
+                    +14 points available
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {["AI Visibility", "Listings", "Trust Pages", "Brief"].map((label, index) => (
+                    <motion.div
+                      key={label}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.45 + index * 0.08, duration: 0.42 }}
+                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm"
+                    >
+                      <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-500">{label}</div>
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                        <motion.div
+                          initial={{ width: "18%" }}
+                          animate={{ width: `${index === 0 ? 82 : index === 1 ? 68 : index === 2 ? 74 : 88}%` }}
+                          transition={{ delay: 0.65 + index * 0.1, duration: 0.8, ease: "easeOut" }}
+                          className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-400"
+                        />
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="space-y-3">
-              {[
-                ["AI visibility", "Ahead of 2 local competitors after new entity coverage", "+12", "emerald"],
-                ["Listings", "3 directories ready to sync. 1 mismatch still needs review.", "3 synced", "cyan"],
-                ["Trust pages", "Priority gap detected this week. Draft and schema package ready.", "Ready", "amber"],
-              ].map(([label, text, badge, color], index) => (
+            <div className="relative flex flex-col justify-center gap-3">
+              <div className="rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur">
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-indigo-700">Executive visibility view</div>
+                    <div className="mt-1 text-xl font-semibold tracking-[-0.04em]">Scanning the signals buyers trust</div>
+                  </div>
+                  <Radar className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div className="grid gap-2">
+                  {["Google profile", "Directory citations", "Review authority", "AI answer coverage"].map((signal, index) => (
+                    <div key={signal} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                      <motion.span
+                        animate={{ scale: [1, 1.35, 1], opacity: [0.55, 1, 0.55] }}
+                        transition={{ repeat: Infinity, duration: 1.8, delay: index * 0.25 }}
+                        className="h-2 w-2 rounded-full bg-emerald-400"
+                      />
+                      <span className="text-sm font-medium text-slate-800">{signal}</span>
+                      <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">checked</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {trustCards.map((card, index) => (
                 <motion.div
-                  key={label}
+                  key={card.label}
                   initial={{ opacity: 0, x: 18 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.18 + index * 0.12, duration: 0.5 }}
-                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                  transition={{ delay: card.delay, duration: 0.5 }}
+                  className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-slate-800">{label}</div>
-                      <div className="mt-1 text-sm leading-6 text-slate-800">{text}</div>
+                      <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-slate-800">{card.label}</div>
+                      <div className="mt-1 text-sm leading-6 text-slate-800">{card.text}</div>
                     </div>
                     <motion.div
                       animate={{ scale: [1, 1.04, 1] }}
                       transition={{ repeat: Infinity, duration: 2.3, delay: index * 0.25 }}
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${color === "emerald" ? "bg-emerald-50 text-emerald-700" : color === "cyan" ? "bg-cyan-50 text-cyan-700" : "bg-amber-50 text-amber-700"}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${card.tone === "emerald" ? "bg-emerald-50 text-emerald-700" : card.tone === "cyan" ? "bg-cyan-50 text-cyan-700" : "bg-amber-50 text-amber-700"}`}
                     >
-                      {badge}
+                      {card.badge}
                     </motion.div>
                   </div>
                 </motion.div>
               ))}
-              <div className="rounded-2xl border border-amber-300 bg-[linear-gradient(135deg,rgba(254,243,199,0.98),rgba(255,255,255,1))] p-4 shadow-sm">
+
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55, duration: 0.5 }}
+                className="rounded-2xl border border-amber-300 bg-[linear-gradient(135deg,rgba(254,243,199,0.98),rgba(255,255,255,1))] p-4 shadow-sm"
+              >
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-amber-900">Operator brief</div>
                     <div className="mt-2 text-sm leading-6 text-slate-800">3 high-leverage moves queued for review</div>
                   </div>
-                  <Sparkles className="h-5 w-5 text-amber-600" />
+                  <motion.div animate={{ rotate: [-8, 8, -8], scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 2.8 }}>
+                    <Sparkles className="h-5 w-5 text-amber-600" />
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-slate-600">
+                  <span>Fix momentum</span>
+                  <span>Last 30 days</span>
+                </div>
+                <div className="flex h-12 items-end gap-2">
+                  {[34, 46, 38, 58, 52, 68, 61, 78, 72, 84, 79, 91].map((height, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ height: 8 }}
+                      animate={{ height }}
+                      transition={{ delay: 0.2 + index * 0.03, duration: 0.65 }}
+                      className="flex-1 rounded-t-md bg-gradient-to-t from-indigo-600 to-emerald-400 shadow-[0_0_0_1px_rgba(255,255,255,0.28)]"
+                    />
+                  ))}
                 </div>
               </div>
             </div>
           </div>
-
-          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-slate-600">
-              <span>Fix momentum</span>
-              <span>Last 30 days</span>
-            </div>
-            <div className="flex h-12 items-end gap-2">
-              {[34, 46, 38, 58, 52, 68, 61, 78, 72, 84, 79, 91].map((height, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ height: 8 }}
-                  animate={{ height }}
-                  transition={{ delay: 0.2 + index * 0.03, duration: 0.65 }}
-                  className="flex-1 rounded-t-md bg-gradient-to-t from-indigo-600 to-emerald-400 shadow-[0_0_0_1px_rgba(255,255,255,0.28)]"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );
@@ -360,15 +473,26 @@ function MiniProductPanel({ active }: { active: WalkthroughTab }) {
 
         <div className="mt-8 grid gap-3">
           {tab.bullets.map((bullet, index) => (
-            <div key={bullet} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <motion.div
+              key={bullet}
+              initial={{ opacity: 0, x: 14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.08, duration: 0.34 }}
+              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+            >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-sm font-semibold text-slate-700">{index + 1}</span>
                   <span className="text-sm font-medium capitalize text-slate-800">{bullet}</span>
                 </div>
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <motion.div
+                  animate={{ scale: [1, 1.12, 1] }}
+                  transition={{ repeat: Infinity, duration: 2, delay: index * 0.18 }}
+                >
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
@@ -379,7 +503,13 @@ function MiniProductPanel({ active }: { active: WalkthroughTab }) {
           </div>
           <div className="flex h-24 items-end gap-2">
             {[28, 44, 37, 59, 53, 70, 64, 86].map((height, index) => (
-              <div key={index} style={{ height }} className="flex-1 rounded-t-lg bg-gradient-to-t from-indigo-500 to-cyan-300" />
+              <motion.div
+                key={index}
+                initial={{ height: 8 }}
+                animate={{ height }}
+                transition={{ delay: 0.08 + index * 0.05, duration: 0.55, ease: "easeOut" }}
+                className="flex-1 rounded-t-lg bg-gradient-to-t from-indigo-500 to-cyan-300"
+              />
             ))}
           </div>
         </div>
@@ -580,12 +710,21 @@ export default function HomePage() {
 
         <section className="px-4 sm:px-6">
           <div className="mx-auto grid max-w-7xl gap-3 rounded-[30px] border border-slate-200 bg-white p-3 shadow-xl shadow-slate-950/5 sm:grid-cols-2 lg:grid-cols-4">
-            {trustMetrics.map((metric) => (
-              <div key={metric.label} className="rounded-3xl bg-slate-50 px-5 py-5">
-                <div className="text-3xl font-semibold tracking-[-0.06em] text-slate-950">{metric.value}</div>
+            {trustMetrics.map((metric, index) => (
+              <motion.div
+                key={metric.label}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.45 }}
+                transition={{ delay: index * 0.06, duration: 0.42 }}
+                className="rounded-3xl bg-slate-50 px-5 py-5"
+              >
+                <div className="text-3xl font-semibold tracking-[-0.06em] text-slate-950">
+                  <AnimatedMetricValue value={metric.value} />
+                </div>
                 <div className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-600">{metric.label}</div>
                 <div className="mt-2 text-sm leading-6 text-slate-700">{metric.detail}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </section>
@@ -659,19 +798,37 @@ export default function HomePage() {
               {capabilities.map((feature) => {
                 const Icon = feature.icon;
                 return (
-                  <div key={feature.title} className="group overflow-hidden rounded-[30px] border border-slate-300 bg-white p-6 shadow-md shadow-slate-200/70 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-950/8">
+                  <motion.div
+                    key={feature.title}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.25 }}
+                    transition={{ duration: 0.45 }}
+                    className="group overflow-hidden rounded-[30px] border border-slate-300 bg-white p-6 shadow-md shadow-slate-200/70 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-950/8"
+                  >
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.accent} text-white shadow-lg shadow-slate-950/12`}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <h3 className="mt-7 text-xl font-semibold tracking-[-0.035em] text-slate-950">{feature.title}</h3>
                     <p className="mt-3 text-[15px] leading-6 text-slate-700">{feature.text}</p>
-                    <div className="mt-7 h-16 overflow-hidden rounded-2xl bg-slate-50 p-3">
+                    <div className="relative mt-7 h-16 overflow-hidden rounded-2xl bg-slate-50 p-3">
+                      <motion.div
+                        className="pointer-events-none absolute inset-y-0 -left-8 w-14 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.82),transparent)]"
+                        animate={{ x: ["0%", "680%"] }}
+                        transition={{ repeat: Infinity, duration: 4.8, ease: "easeInOut", repeatDelay: 1.4 }}
+                      />
                       {feature.title === "Trust Stack Scoring" && (
                         <div className="flex h-full items-center gap-2">
                           {[74, 68, 82, 57].map((score, index) => (
                             <div key={index} className="flex-1">
                               <div className="mb-1 h-2 rounded-full bg-slate-200">
-                                <div style={{ width: `${score}%` }} className={`h-full rounded-full bg-gradient-to-r ${feature.accent}`} />
+                                <motion.div
+                                  initial={{ width: "12%" }}
+                                  whileInView={{ width: `${score}%` }}
+                                  viewport={{ once: true }}
+                                  transition={{ delay: index * 0.08, duration: 0.7, ease: "easeOut" }}
+                                  className={`h-full rounded-full bg-gradient-to-r ${feature.accent}`}
+                                />
                               </div>
                             </div>
                           ))}
@@ -681,7 +838,11 @@ export default function HomePage() {
                         <div className="flex h-full items-center justify-between px-1">
                           {["ChatGPT", "Gemini", "Perplexity"].map((label, index) => (
                             <div key={label} className="flex flex-col items-center gap-2">
-                              <div className={`h-3 w-3 rounded-full bg-gradient-to-r ${feature.accent} ${index === 1 ? "scale-125" : "opacity-70"}`} />
+                              <motion.div
+                                animate={{ scale: index === 1 ? [1.1, 1.35, 1.1] : [1, 1.18, 1], opacity: [0.55, 1, 0.55] }}
+                                transition={{ repeat: Infinity, duration: 2, delay: index * 0.28 }}
+                                className={`h-3 w-3 rounded-full bg-gradient-to-r ${feature.accent}`}
+                              />
                               <div className="text-[10px] font-medium text-slate-600">{label}</div>
                             </div>
                           ))}
@@ -691,9 +852,19 @@ export default function HomePage() {
                         <div className="space-y-2">
                           {[true, false, true].map((matched, index) => (
                             <div key={index} className="flex items-center gap-2 rounded-xl bg-white px-2 py-1.5">
-                              <span className={`h-2.5 w-2.5 rounded-full ${matched ? "bg-emerald-400" : "bg-rose-400"}`} />
+                              <motion.span
+                                animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                                transition={{ repeat: Infinity, duration: 1.7, delay: index * 0.2 }}
+                                className={`h-2.5 w-2.5 rounded-full ${matched ? "bg-emerald-400" : "bg-rose-400"}`}
+                              />
                               <div className="h-1.5 flex-1 rounded-full bg-slate-200">
-                                <div className={`h-full rounded-full ${matched ? "bg-emerald-400 w-full" : "bg-rose-400 w-2/3"}`} />
+                                <motion.div
+                                  initial={{ width: "16%" }}
+                                  whileInView={{ width: matched ? "100%" : "66%" }}
+                                  viewport={{ once: true }}
+                                  transition={{ duration: 0.65, delay: index * 0.12 }}
+                                  className={`h-full rounded-full ${matched ? "bg-emerald-400" : "bg-rose-400"}`}
+                                />
                               </div>
                             </div>
                           ))}
@@ -701,16 +872,34 @@ export default function HomePage() {
                       )}
                       {feature.title === "Schema Generation" && (
                         <div className="space-y-2 rounded-2xl bg-slate-950 px-3 py-2 text-[10px] text-emerald-300">
-                          <div>{'{'}&quot;@type&quot;: &quot;LocalBusiness&quot;{'}'}</div>
-                          <div>{'{'}&quot;areaServed&quot;: &quot;Tampa&quot;{'}'}</div>
-                          <div>{'{'}&quot;sameAs&quot;: [ ... ]{'}'}</div>
+                          {[
+                            `${'{'}"@type": "LocalBusiness"${'}'}`,
+                            `${'{'}"areaServed": "Tampa"${'}'}`,
+                            `${'{'}"sameAs": [ ... ]${'}'}`,
+                          ].map((line, index) => (
+                            <motion.div
+                              key={line}
+                              initial={{ opacity: 0, x: -8 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ delay: index * 0.16, duration: 0.35 }}
+                            >
+                              {line}
+                            </motion.div>
+                          ))}
                         </div>
                       )}
                       {feature.title === "Local Content Drafting" && (
                         <div className="space-y-2">
                           {["Tampa homeowners insurance", "Coverage options", "Why local trust matters"].map((line, index) => (
                             <div key={line} className="rounded-xl bg-white px-3 py-2 text-[10px] text-slate-600">
-                              <div className={`h-1.5 rounded-full ${index === 0 ? "w-4/5 bg-rose-400" : index === 1 ? "w-3/5 bg-pink-400" : "w-2/3 bg-slate-300"}`} />
+                              <motion.div
+                                initial={{ width: "12%" }}
+                                whileInView={{ width: index === 0 ? "80%" : index === 1 ? "60%" : "66%" }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.1, duration: 0.65 }}
+                                className={`h-1.5 rounded-full ${index === 0 ? "bg-rose-400" : index === 1 ? "bg-pink-400" : "bg-slate-300"}`}
+                              />
                             </div>
                           ))}
                         </div>
@@ -718,19 +907,33 @@ export default function HomePage() {
                       {feature.title === "Competitor Monitoring" && (
                         <div className="flex h-full items-end gap-1.5">
                           {[18, 24, 20, 42, 36, 58, 52].map((height, index) => (
-                            <div key={index} style={{ height }} className={`flex-1 rounded-t bg-gradient-to-t ${feature.accent} ${index > 4 ? "opacity-100" : "opacity-60"}`} />
+                            <motion.div
+                              key={index}
+                              initial={{ height: 7 }}
+                              whileInView={{ height }}
+                              viewport={{ once: true }}
+                              transition={{ delay: index * 0.06, duration: 0.55, ease: "easeOut" }}
+                              className={`flex-1 rounded-t bg-gradient-to-t ${feature.accent} ${index > 4 ? "opacity-100" : "opacity-60"}`}
+                            />
                           ))}
                         </div>
                       )}
                       {! ["Trust Stack Scoring", "AI Visibility Monitoring", "Citation & Listing Review", "Schema Generation", "Local Content Drafting", "Competitor Monitoring"].includes(feature.title) && (
                         <div className="flex h-full items-end gap-1.5">
                           {[24, 38, 30, 52, 46, 62, 58].map((height, index) => (
-                            <div key={index} style={{ height }} className={`flex-1 rounded-t bg-gradient-to-t ${feature.accent} opacity-70 transition group-hover:opacity-100`} />
+                            <motion.div
+                              key={index}
+                              initial={{ height: 7 }}
+                              whileInView={{ height }}
+                              viewport={{ once: true }}
+                              transition={{ delay: index * 0.05, duration: 0.55 }}
+                              className={`flex-1 rounded-t bg-gradient-to-t ${feature.accent} opacity-70 transition group-hover:opacity-100`}
+                            />
                           ))}
                         </div>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
