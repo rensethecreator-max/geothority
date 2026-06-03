@@ -62,7 +62,7 @@ export async function GET(req: Request) {
       description: "All profile pages include JSON-LD structured data for LocalBusiness, WebPage, BreadcrumbList, FAQPage, and AggregateRating. The homepage includes Organization and WebSite schemas with SearchAction.",
       types: ["LocalBusiness", "WebPage", "BreadcrumbList", "FAQPage", "AggregateRating", "Organization", "WebSite", "SoftwareApplication"],
     },
-    rateLimit: { requests: "Reasonable use — no hard limits currently, but abuse will be throttled." },
+    rateLimit: { requests: "Reasonable use only. Abuse, scraping, or abnormal traffic may be throttled or blocked during beta." },
     cors: { allowedOrigins: ["https://geothority.io"], methods: ["GET", "OPTIONS"] },
     links: { website: BASE_URL, signup: `${BASE_URL}/signup`, profiles: `${BASE_URL}/profiles` },
   };
