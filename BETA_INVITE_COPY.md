@@ -33,7 +33,7 @@ Important beta expectations:
 
 Beta access code:
 
-GeoBeta-Launch-2026
+Provided privately to invited beta companies. Do not publish the access code on the public website or in the public repository.
 
 Thanks,
 Geothority
