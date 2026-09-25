@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { ExpansionManager } from "@/lib/smart-expansion";
 
 /**
@@ -14,7 +14,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = await createServerSupabase();
+  const supabase = createServiceClient();
+  if (!supabase) {
+    return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 503 });
+  }
   const manager = new ExpansionManager(supabase);
 
   // Get distinct users with expansion targets
