@@ -163,9 +163,7 @@ export async function updateSession(request: NextRequest) {
   // Preserve a safe relative redirect when one is explicitly requested.
   if ((pathname === "/login" || pathname === "/signup") && user) {
     const nextPath = getSafeRedirect(request.nextUrl.searchParams.get("redirect"));
-    const url = request.nextUrl.clone();
-    url.pathname = nextPath;
-    url.search = "";
+    const url = new URL(nextPath, request.nextUrl.origin);
     return NextResponse.redirect(url);
   }
 

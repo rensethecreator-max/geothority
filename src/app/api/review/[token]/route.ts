@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { isMissingTableError } from "@/lib/reputation/request-service";
 import { recordReputationReply } from "@/lib/reputation/intake-service";
 
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       return NextResponse.json({ error: "Review link is invalid" }, { status: 400 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ error: "Review service is temporarily unavailable" }, { status: 503 });
     }

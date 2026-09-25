@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { hashPublicApiKey, hostMatchesAllowedOrigin, normalizeAllowedOrigin } from "@/lib/api-keys";
 
 export async function GET(req: NextRequest) {
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) {
     return NextResponse.json({ error: "Embed service is not configured" }, { status: 503 });
   }

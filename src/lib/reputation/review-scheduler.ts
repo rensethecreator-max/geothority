@@ -1,6 +1,6 @@
 import { enqueueReputationSendAttempt, normalizePhoneNumber } from "@/lib/reputation/request-service";
 import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 
 interface ScheduleReviewRequestParams {
   userId: string;
@@ -12,7 +12,7 @@ interface ScheduleReviewRequestParams {
 }
 
 export async function scheduleReviewRequest(params: ScheduleReviewRequestParams) {
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) throw new Error("Supabase service client unavailable");
 
   const { userId, businessId, phone, customerName, paymentId, paymentSource } = params;

@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { slugify, isEligibleForPublicProfile } from "@/lib/data-layer/profile-service";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
@@ -13,7 +13,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) {
     return new NextResponse(renderKML([]), {
       headers: { "Content-Type": "application/vnd.google-earth.kml+xml; charset=utf-8" },

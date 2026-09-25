@@ -58,6 +58,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    if (!openai) {
+      return NextResponse.json(
+        { error: "Chat is temporarily unavailable. Please try again later." },
+        { status: 503 }
+      );
+    }
+
     const completion = await openai.chat.completions.create({
       model: DEFAULT_LLM_MODEL,
       messages: [

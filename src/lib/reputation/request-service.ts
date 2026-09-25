@@ -1,4 +1,4 @@
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
@@ -582,7 +582,7 @@ export async function createAndSendReputationRequest(params: {
 }
 
 export async function sendReputationRequestNow(requestId: string) {
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) {
     throw new Error("Supabase service client unavailable");
   }
@@ -654,12 +654,16 @@ export async function sendReputationRequestNow(requestId: string) {
 
     if (settingsError && isMissingColumnError(settingsError)) {
       const legacySettings = await supabase.from("reputation_settings").select("sms_template").eq("user_id", requestRow.user_id).maybeSingle();
-      settings = legacySettings.data;
+      settings = legacySettings.data
+        ? { ...legacySettings.data, email_subject: null, email_template: null, enabled_channels: null, primary_channel: null }
+        : null;
     }
 
     if (contactError && isMissingColumnError(contactError)) {
       const legacyContact = await supabase.from("reputation_contacts").select("name, phone, email, opt_out").eq("id", requestRow.contact_id).single();
-      contact = legacyContact.data;
+      contact = legacyContact.data
+        ? { ...legacyContact.data, sms_opt_out: null, email_opt_out: null, preferred_channel: null }
+        : null;
       contactError = legacyContact.error;
     }
 

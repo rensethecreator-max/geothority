@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { ExpansionManager } from "@/lib/smart-expansion";
 
 /**
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 503 });
   }

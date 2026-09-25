@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
+import { createServerSupabase, createOptionalServiceClient } from "@/lib/supabase/server";
 import { recordReputationReply } from "@/lib/reputation/intake-service";
 
 export async function POST(req: NextRequest) {
@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }

@@ -28,7 +28,7 @@ interface OnboardingWizardProps {
   steps: WizardStep[];
   initialStepIndex?: number;
   onStepComplete?: (stepId: string) => void;
-  onFinish?: () => void;
+  onFinish?: () => void | Promise<void>;
 }
 
 export default function OnboardingWizard({
@@ -42,9 +42,11 @@ export default function OnboardingWizard({
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(initialStepIndex);
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentIndex(initialStepIndex);
+    setActionError(null);
   }, [initialStepIndex, open]);
 
   const currentStep = steps[currentIndex];
@@ -52,7 +54,9 @@ export default function OnboardingWizard({
   const progressPct = ((currentIndex + 1) / steps.length) * 100;
 
   const handleAction = async () => {
+    if (busy) return;
     setBusy(true);
+    setActionError(null);
     try {
       const result = await currentStep.onAction?.();
       if (result?.preventAdvance) return;
@@ -69,23 +73,25 @@ export default function OnboardingWizard({
       }
 
       if (isLast) {
-        onFinish?.();
+        await onFinish?.();
         onClose();
         return;
       }
 
       setCurrentIndex((i) => i + 1);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Unable to complete this step. Please try again.");
     } finally {
       setBusy(false);
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     if (busy) return;
     if (isLast) {
-      onFinish?.();
-      onClose();
+      await handleAction();
     } else {
+      setActionError(null);
       setCurrentIndex((i) => i + 1);
     }
   };
@@ -119,6 +125,12 @@ export default function OnboardingWizard({
         </DialogHeader>
 
         <div className="py-4">{currentStep.content}</div>
+
+        {actionError && (
+          <p role="alert" className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
+            {actionError}
+          </p>
+        )}
 
         <DialogFooter className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">

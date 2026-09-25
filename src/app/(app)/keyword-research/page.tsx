@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { PostgrestSingleResponse, UserResponse } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import type { UserProfile } from "@/lib/types";
 
@@ -97,14 +98,14 @@ export default function KeywordResearchPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: UserResponse) => {
       if (data.user) {
         supabase
           .from("user_profiles")
           .select("*")
           .eq("id", data.user.id)
           .single()
-          .then(({ data: p }) => setProfile(p as UserProfile));
+          .then(({ data: p }: PostgrestSingleResponse<UserProfile>) => setProfile(p));
       }
     });
   }, []);

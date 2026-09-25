@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 import { findPlanByPriceId, getBillingCycleFromPrice, requireStripe } from "@/lib/stripe";
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) {
     return NextResponse.json({ error: "Billing service is temporarily unavailable" }, { status: 503 });
   }

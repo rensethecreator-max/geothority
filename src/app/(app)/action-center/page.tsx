@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
+import type { Scan } from "@/lib/types";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
   getLayerScores,
@@ -120,8 +121,8 @@ interface LatestScanSummary {
   state: string | null;
   created_at: string;
   geothority_score: number | null;
-  layer_scores: Record<string, number> | null;
-  quick_wins: Array<{ title?: string | null }> | null;
+  layer_scores: Scan["layer_scores"];
+  quick_wins: Scan["quick_wins"];
 }
 
 interface LaunchStateSummary {

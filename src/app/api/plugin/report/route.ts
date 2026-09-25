@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { hashPublicApiKey, normalizeAllowedOrigin } from "@/lib/api-keys";
 
 export async function POST(req: NextRequest) {
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Missing key" }, { status: 400 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ ok: false, error: "Embed service is not configured" }, { status: 503 });
     }

@@ -5,7 +5,7 @@
  */
 
 import { Metadata } from "next";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { slugify, isEligibleForPublicProfile } from "@/lib/data-layer/profile-service";
 import Link from "next/link";
 
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilesDirectoryPage() {
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) {
     return (
       <main className="min-h-screen bg-gray-950 px-4 py-16 text-white">

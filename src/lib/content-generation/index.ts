@@ -25,6 +25,10 @@ export async function generateBrief(params: {
   industry?: string;
   competitorContext?: string;
 }): Promise<ContentBrief> {
+  if (!openai) {
+    throw new Error("Content generation is temporarily unavailable. Please try again later.");
+  }
+
   const prompt = buildBriefPrompt(params);
 
   const response = await openai.chat.completions.create({
@@ -53,6 +57,10 @@ export async function generateContent(params: ContentGenerationRequest): Promise
   output: GeneratedContentOutput;
   brief: ContentBrief;
 }> {
+  if (!openai) {
+    throw new Error("Content generation is temporarily unavailable. Please try again later.");
+  }
+
   // Use provided brief or generate one
   const brief: ContentBrief = params.brief || await generateBrief({
     contentType: params.contentType,
@@ -118,6 +126,11 @@ export async function* streamContentGeneration(params: ContentGenerationRequest)
   | { type: "error"; error: string }
 > {
   try {
+    if (!openai) {
+      yield { type: "error", error: "Content generation is temporarily unavailable. Please try again later." };
+      return;
+    }
+
     // Generate brief first (non-streaming)
     const brief: ContentBrief = params.brief || await generateBrief({
       contentType: params.contentType,

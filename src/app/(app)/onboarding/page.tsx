@@ -234,21 +234,6 @@ export default function OnboardingPage() {
           .limit(1),
       ]);
 
-      const { error: profileError } = await supabase
-        .from("user_profiles")
-        .update({
-          business_name: businessName,
-          city,
-          state,
-          website_url: website || null,
-        })
-        .eq("id", user.id);
-
-      if (profileError) {
-        setBusinessError(profileError.message);
-        return { preventAdvance: true };
-      }
-
       const businessProfileRes = await fetch("/api/business-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -304,26 +289,29 @@ export default function OnboardingPage() {
         seededReputationDefaults: true,
       });
       return;
+    } catch (error) {
+      setBusinessError(error instanceof Error ? error.message : "Unable to save your business details. Please try again.");
+      return { preventAdvance: true };
     } finally {
       setSavingBusiness(false);
     }
   }, [profileForm, supabase]);
 
   const handleFinish = async () => {
+    const response = await fetch("/api/activation/milestone", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventName: "onboarding_completed" }),
+    });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null);
+      throw new Error(typeof payload?.error === "string" ? payload.error : "Unable to finish setup. Please try again.");
+    }
+
     const allIds = steps.map((step) => step.id);
     markOnboardingComplete(allIds);
     trackEvent("onboarding_completed");
-
-    try {
-      await fetch("/api/activation/milestone", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventName: "onboarding_completed" }),
-      });
-    } catch {
-      // localStorage fallback still prevents repeated redirect
-    }
-
+    router.refresh();
     router.push("/dashboard");
   };
 

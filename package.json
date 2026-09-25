@@ -15,7 +15,9 @@
     "ops:deployment-truth": "node scripts/check-deployment-truth.mjs",
     "ops:cron:smoke": "node scripts/cron-smoke.mjs",
     "ops:cron:dispatch:test": "node --test scripts/cron-schedule.test.mjs",
-    "proof:readiness": "node scripts/proof-readiness.mjs"
+    "proof:readiness": "node scripts/proof-readiness.mjs",
+    "typecheck": "tsc --noEmit",
+    "test:runtime": "node --import tsx --test tests/unit/*.test.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

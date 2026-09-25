@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { formatTriggerSource } from "@/lib/reputation/format";
 import { ingestReputationEvent, normalizeReputationEventPayload } from "@/lib/reputation/event-ingest";
 import { constantTimeEquals } from "@/lib/security/request-auth";
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: secretState.error }, { status: secretState.status });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }

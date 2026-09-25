@@ -9,6 +9,7 @@ import {
 import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
 import { planMeetsMin, type PlanTier } from "@/lib/plan-gate";
 import { createServerSupabase } from "@/lib/supabase/server";
+import type { GeneratedContent } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,14 @@ type OperatorLaunchResponse = {
 };
 
 const LAYER2_CONTENT_SEQUENCE: ContentType[] = ["trust_page", "localized_faq", "about"];
+
+type RecentGbpPost = {
+  id: string;
+  status: string | null;
+  created_at: string | null;
+  published_at: string | null;
+  title: string | null;
+};
 
 async function callInternalJson(
   request: NextRequest,
@@ -232,7 +241,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const gbpConnected = Boolean(authSession.data.session?.provider_token || gbpProfile);
+    const gbpConnected = Boolean(authSession.session?.provider_token || gbpProfile);
     const reputationActivated = Boolean(
       reputationSettings?.active || reputationSettings?.google_review_link
     );
@@ -360,9 +369,10 @@ export async function POST(request: NextRequest) {
         console.error("Operator GBP posts query error:", recentGbpPostsError);
       }
 
+      const recentPosts: RecentGbpPost[] = recentGbpPosts ?? [];
       const reusableGbpPost =
-        recentGbpPosts?.find((post) =>
-          ["draft", "approved", "pending_approval"].includes(post.status)
+        recentPosts.find((post) =>
+          ["draft", "approved", "pending_approval"].includes(post.status ?? "")
         ) ?? null;
 
       if (reusableGbpPost) {
@@ -397,8 +407,8 @@ export async function POST(request: NextRequest) {
       }
 
       const recentlyPublishedGbpPost =
-        recentGbpPosts?.find((post) =>
-          ["published", "published_local"].includes(post.status)
+        recentPosts.find((post) =>
+          post.status === "published"
         ) ?? null;
 
       if (recentlyPublishedGbpPost) {
@@ -785,7 +795,8 @@ export async function POST(request: NextRequest) {
         console.error("Operator layer2 content query error:", existingLayer2ContentError);
       }
 
-      const pendingLayer2Draft = existingLayer2Content?.find((item) => item.status === "draft") ?? null;
+      const existingContent: Pick<GeneratedContent, "id" | "type" | "status" | "created_at">[] = existingLayer2Content ?? [];
+      const pendingLayer2Draft = existingContent.find((item) => item.status === "draft") ?? null;
       if (pendingLayer2Draft) {
         if (runId) {
           await appendOperatorRunEvent({
@@ -819,7 +830,7 @@ export async function POST(request: NextRequest) {
 
       const nextLayer2ContentType =
         LAYER2_CONTENT_SEQUENCE.find(
-          (type) => !existingLayer2Content?.some((item) => item.type === type)
+          (type) => !existingContent.some((item) => item.type === type)
         ) ?? null;
 
       if (!nextLayer2ContentType) {

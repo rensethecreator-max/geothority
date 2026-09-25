@@ -1,6 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { createHash } from "crypto";
+
+type CitationDirectoryRow = {
+  id: string;
+  name: string;
+  icon: string | null;
+  tier: "major" | "core" | "regional" | "niche";
+  sync_mode: "direct" | "distribution" | "guided" | "unknown";
+  distribution_source: string | null;
+  check_method: "api" | "scrape" | "manual" | "none";
+  claim_url: string | null;
+};
+
+type CitationSyncStateRow = {
+  id: string;
+  directory_id: string;
+  sync_status: "unchecked" | "found" | "mismatch" | "not_found" | "syncing" | "synced" | "failed" | "claim_needed";
+  listing_found: boolean | null;
+  name_match: boolean | null;
+  address_match: boolean | null;
+  phone_match: boolean | null;
+  consistency_score: number | null;
+  listing_url: string | null;
+  last_checked: string | null;
+  last_synced: string | null;
+  nap_hash_at_check: string | null;
+  drift_detected: boolean | null;
+  drift_details: Record<string, unknown> | null;
+  claim_url: string | null;
+  fix_steps: string[] | null;
+};
+
+type ExistingCitationState = Pick<CitationSyncStateRow,
+  "id" | "directory_id" | "nap_hash_at_check" | "consistency_score" |
+  "listing_found" | "name_match" | "address_match" | "phone_match">;
 
 /**
  * GET /api/citations/truth — Get citation truth model: sync states per directory with honest coverage
@@ -33,7 +66,8 @@ export async function GET(req: NextRequest) {
       .select("*")
       .eq("user_id", user.id);
 
-    const syncMap = new Map((syncStates ?? []).map(s => [s.directory_id, s]));
+    const states: CitationSyncStateRow[] = syncStates ?? [];
+    const syncMap = new Map(states.map(s => [s.directory_id, s]));
 
     // Get drift log entries (last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -45,7 +79,8 @@ export async function GET(req: NextRequest) {
       .order("detected_at", { ascending: false });
 
     // Build response
-    const directoryStates = (directories ?? []).map(dir => {
+    const directoryRows: CitationDirectoryRow[] = directories ?? [];
+    const directoryStates = directoryRows.map(dir => {
       const state = syncMap.get(dir.id);
       return {
         id: dir.id,
@@ -161,7 +196,8 @@ export async function POST(req: NextRequest) {
       .select("id, directory_id, nap_hash_at_check, consistency_score, listing_found, name_match, address_match, phone_match")
       .eq("user_id", user.id);
 
-    const existingMap = new Map((existingStates ?? []).map(s => [s.directory_id, s]));
+    const previousStates: ExistingCitationState[] = existingStates ?? [];
+    const existingMap = new Map(previousStates.map(s => [s.directory_id, s]));
 
     const rows = [];
     const driftEntries = [];
@@ -181,7 +217,7 @@ export async function POST(req: NextRequest) {
       const driftDetected = existing && currentNapHash && previousNapHash && currentNapHash !== previousNapHash;
 
       // Detect specific field drift
-      const driftDetails: Record<string, any> = {};
+      const driftDetails: Record<string, boolean | { before: number; after: number }> = {};
       if (existing) {
         if (existing.listing_found && !citation.found) {
           driftDetails.listing_lost = true;
@@ -262,6 +298,7 @@ export async function POST(req: NextRequest) {
 
       if (upsertError) {
         console.error("Failed to upsert citation sync states:", upsertError);
+        return NextResponse.json({ error: "Failed to save citation states" }, { status: 500 });
       }
     }
 
@@ -273,6 +310,7 @@ export async function POST(req: NextRequest) {
 
       if (driftError) {
         console.error("Failed to insert drift log entries:", driftError);
+        return NextResponse.json({ error: "Citation states saved, but drift history could not be saved", synced: rows.length }, { status: 500 });
       }
     }
 

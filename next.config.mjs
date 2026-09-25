@@ -19,9 +19,6 @@ const nextConfig = {
     },
     optimizePackageImports: ["lucide-react", "framer-motion", "date-fns"],
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   eslint: {
     ignoreDuringBuilds: true,
   },

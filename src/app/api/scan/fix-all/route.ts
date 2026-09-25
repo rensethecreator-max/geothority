@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type OpenAI from "openai";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { DEFAULT_LLM_MODEL, openai } from "@/lib/openai";
 
@@ -20,7 +21,7 @@ interface FixPackage {
   autoAppliedCount: number;
 }
 
-async function generateSchema(businessName: string, businessType: string, url: string, address?: string): Promise<string> {
+async function generateSchema(client: OpenAI, businessName: string, businessType: string, url: string, address?: string): Promise<string> {
   const prompt = `Generate a complete LocalBusiness JSON-LD schema for:
 Business Name: ${businessName}
 Business Type: ${businessType}
@@ -29,7 +30,7 @@ ${address ? `Address: ${address}` : ""}
 
 Return ONLY the raw JSON-LD object (no markdown, no explanation). Include @context, @type, name, url, description, and any relevant service schema properties.`;
 
-  const res = await openai.chat.completions.create({
+  const res = await client.chat.completions.create({
     model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.3,
@@ -38,7 +39,7 @@ Return ONLY the raw JSON-LD object (no markdown, no explanation). Include @conte
   return res.choices[0].message.content?.trim() ?? "{}";
 }
 
-async function generateFAQ(businessName: string, businessType: string, location: string): Promise<string> {
+async function generateFAQ(client: OpenAI, businessName: string, businessType: string, location: string): Promise<string> {
   const prompt = `Generate 10 FAQ questions and answers for a ${businessType} business called "${businessName}" in ${location || "their area"}.
 
 Format as HTML with this structure for each item:
@@ -49,7 +50,7 @@ Format as HTML with this structure for each item:
 
 Make the questions specific, locally-relevant, and SEO-optimized. Include questions about services, pricing, location, hours, and what makes them unique. Return ONLY the HTML.`;
 
-  const res = await openai.chat.completions.create({
+  const res = await client.chat.completions.create({
     model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
@@ -58,7 +59,7 @@ Make the questions specific, locally-relevant, and SEO-optimized. Include questi
   return res.choices[0].message.content?.trim() ?? "";
 }
 
-async function generateAboutPage(businessName: string, businessType: string, location: string): Promise<string> {
+async function generateAboutPage(client: OpenAI, businessName: string, businessType: string, location: string): Promise<string> {
   const prompt = `Write a compelling "About Us" page for a ${businessType} business called "${businessName}" in ${location || "their area"}.
 
 Format as HTML sections:
@@ -70,7 +71,7 @@ Format as HTML sections:
 
 Make it warm, professional, locally-specific, and SEO-optimized. Return ONLY the HTML.`;
 
-  const res = await openai.chat.completions.create({
+  const res = await client.chat.completions.create({
     model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
@@ -79,7 +80,7 @@ Make it warm, professional, locally-specific, and SEO-optimized. Return ONLY the
   return res.choices[0].message.content?.trim() ?? "";
 }
 
-async function generateLandingPage(businessName: string, businessType: string, city: string): Promise<string> {
+async function generateLandingPage(client: OpenAI, businessName: string, businessType: string, city: string): Promise<string> {
   const prompt = `Write a city-specific landing page for a ${businessType} business called "${businessName}" targeting "${city}".
 
 Format as HTML:
@@ -92,7 +93,7 @@ Format as HTML:
 
 Make it highly localized and SEO-optimized for "${businessType} in ${city}". Return ONLY the HTML.`;
 
-  const res = await openai.chat.completions.create({
+  const res = await client.chat.completions.create({
     model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
@@ -101,7 +102,7 @@ Make it highly localized and SEO-optimized for "${businessType} in ${city}". Ret
   return res.choices[0].message.content?.trim() ?? "";
 }
 
-async function generateAIOptimizationPackage(businessName: string, businessType: string, location: string, url: string, citations: string[]): Promise<string> {
+async function generateAIOptimizationPackage(client: OpenAI, businessName: string, businessType: string, location: string, url: string, citations: string[]): Promise<string> {
   const sameAsLinks = citations.length > 0
     ? citations.map((c) => `"${c}"`).join(",\n      ")
     : `"https://www.google.com/maps", "https://www.yelp.com"` ;
@@ -118,7 +119,7 @@ Return a JSON object with exactly these keys:
 
 Ensure the content naturally mentions "${businessName}", "${businessType}", and "${location}" multiple times. Return ONLY valid JSON.`;
 
-  const res = await openai.chat.completions.create({
+  const res = await client.chat.completions.create({
     model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.4,
@@ -128,7 +129,7 @@ Ensure the content naturally mentions "${businessName}", "${businessType}", and 
   return res.choices[0].message.content?.trim() ?? "{}";
 }
 
-async function generateMetaTags(businessName: string, businessType: string, location: string, url: string): Promise<string> {
+async function generateMetaTags(client: OpenAI, businessName: string, businessType: string, location: string, url: string): Promise<string> {
   const prompt = `Generate optimized meta title and description for a ${businessType} business called "${businessName}" in ${location || "their area"}.
 
 Requirements:
@@ -141,7 +142,7 @@ Return ONLY this format:
 <meta property="og:title" content="YOUR TITLE HERE" />
 <meta property="og:description" content="YOUR DESCRIPTION HERE" />`;
 
-  const res = await openai.chat.completions.create({
+  const res = await client.chat.completions.create({
     model: DEFAULT_LLM_MODEL,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.4,
@@ -193,6 +194,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Scan not found" }, { status: 404 });
     }
 
+    const client = openai;
+    if (!client) {
+      return NextResponse.json(
+        { error: "Fix generation is temporarily unavailable. Please try again later." },
+        { status: 503 }
+      );
+    }
+
     const layerScores = scan.layer_scores ?? {};
     const quickWins = scan.quick_wins ?? [];
     const rawData = scan.raw_scan_data ?? {};
@@ -200,20 +209,24 @@ export async function POST(request: NextRequest) {
     // Extract business info
     const businessName = rawData.businessName || rawData.business_name || scan.business_name || "Your Business";
     const businessType = rawData.businessType || rawData.business_type || scan.business_type || "local business";
-    const location = rawData.location || rawData.city || scan.location || "";
+    const location = rawData.location || rawData.city || scan.location || [scan.city, scan.state].filter(Boolean).join(", ");
     const url = scan.url || rawData.url || "";
     const address = rawData.address || "";
 
     // Determine what's missing based on scores
-    const schemaScore = layerScores.schema ?? layerScores.structured_data ?? 0;
-    const citationScore = layerScores.citations ?? layerScores.listing ?? 0;
-    const contentScore = layerScores.content ?? layerScores.pages ?? 0;
-    const metaScore = layerScores.meta ?? layerScores.onpage ?? 0;
+    const schemaScore = layerScores.schema ?? layerScores.structured_data ?? layerScores.layer5 ?? 0;
+    const citationScore = layerScores.citations ?? layerScores.listing ?? layerScores.layer1 ?? 0;
+    const contentScore = layerScores.content ?? layerScores.pages ?? layerScores.layer2 ?? 0;
+    const metaScore = layerScores.meta ?? layerScores.onpage ?? layerScores.layer5 ?? 0;
 
-    const needsSchema = schemaScore < 70;
+    const needsSchema = typeof rawData.hasLocalBusinessSchema === "boolean"
+      ? !rawData.hasLocalBusinessSchema
+      : schemaScore < 70;
     const needsCitations = citationScore < 60;
     const needsContent = contentScore < 60;
-    const needsMeta = metaScore < 70;
+    const needsMeta = typeof rawData.title === "string" && typeof rawData.description === "string"
+      ? rawData.title.trim().length <= 10 || rawData.title.trim().length >= 70 || rawData.description.trim().length <= 50
+      : metaScore < 70;
 
     // Check quick wins for specific content gaps
     const quickWinTexts = quickWins.map((w: { title?: string; description?: string }) =>
@@ -250,7 +263,7 @@ export async function POST(request: NextRequest) {
 
     if (needsSchema) {
       generationTasks.push(
-        generateSchema(businessName, businessType, url, address).then((content) => ({
+        generateSchema(client, businessName, businessType, url, address).then((content) => ({
           type: "schema" as const,
           title: "LocalBusiness JSON-LD Schema",
           content,
@@ -263,7 +276,7 @@ export async function POST(request: NextRequest) {
 
     if (needsMeta) {
       generationTasks.push(
-        generateMetaTags(businessName, businessType, location, url).then((content) => ({
+        generateMetaTags(client, businessName, businessType, location, url).then((content) => ({
           type: "meta_tags" as const,
           title: "Optimized Meta Title & Description",
           content,
@@ -276,7 +289,7 @@ export async function POST(request: NextRequest) {
 
     if (needsFAQ || needsContent) {
       generationTasks.push(
-        generateFAQ(businessName, businessType, location).then((content) => ({
+        generateFAQ(client, businessName, businessType, location).then((content) => ({
           type: "faq" as const,
           title: "FAQ Page Content (10 Q&As)",
           content,
@@ -289,7 +302,7 @@ export async function POST(request: NextRequest) {
 
     if (needsAbout || needsContent) {
       generationTasks.push(
-        generateAboutPage(businessName, businessType, location).then((content) => ({
+        generateAboutPage(client, businessName, businessType, location).then((content) => ({
           type: "about" as const,
           title: "About Us Page Copy",
           content,
@@ -302,7 +315,7 @@ export async function POST(request: NextRequest) {
 
     if (needsLandingPage && location) {
       generationTasks.push(
-        generateLandingPage(businessName, businessType, location).then((content) => ({
+        generateLandingPage(client, businessName, businessType, location).then((content) => ({
           type: "landing_page" as const,
           title: `Service Area Page — ${location}`,
           content,
@@ -315,7 +328,7 @@ export async function POST(request: NextRequest) {
 
     if (needsAIOptimization) {
       generationTasks.push(
-        generateAIOptimizationPackage(businessName, businessType, location, url, citationUrls).then((content) => ({
+        generateAIOptimizationPackage(client, businessName, businessType, location, url, citationUrls).then((content) => ({
           type: "ai_optimization" as const,
           title: "AI Optimization Package",
           content,
@@ -335,16 +348,15 @@ export async function POST(request: NextRequest) {
       generationTasks.push(
         Promise.resolve({
           type: "listing_sync" as const,
-          title: "Citation & Listing Sync",
+          title: "Citation & Listing Review",
           content: JSON.stringify({
-            message: "Your business listings have been queued for sync across 50+ directories.",
+            message: "Review your business listings and submit corrections through each directory or a connected listing provider.",
             directories: ["Google Business Profile", "Bing Places", "Apple Maps", "Yelp", "Facebook", "Foursquare", "YellowPages", "BBB", "Angi", "HomeAdvisor"],
-            status: "queued",
-            estimatedTime: "24-48 hours",
+            status: "review_required",
           }, null, 2),
-          instructions: "Your listings are being synced automatically. You'll receive a confirmation email within 24-48 hours.",
+          instructions: "Open Listing Sync to check connected providers and review discrepancies. Changes must be submitted before they can appear in directories.",
           impact: "high" as const,
-          autoApplied: true,
+          autoApplied: false,
         })
       );
     }
@@ -364,7 +376,10 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error("Error storing fix package:", insertError);
-      // Continue anyway — return the data even if we couldn't store it
+      return NextResponse.json(
+        { error: "The fixes were generated but could not be saved. Please try again." },
+        { status: 500 }
+      );
     }
 
     const pkg: FixPackage = {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { isMissingTableError } from "@/lib/reputation/request-service";
 
 function maskEmail(email: string | null | undefined) {
@@ -11,7 +11,7 @@ function maskEmail(email: string | null | undefined) {
 
 export default async function ReputationEmailOptOutPage(props: { params: Promise<{ token: string }> }) {
   const params = await props.params;
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) notFound();
 
   const { data: requestRow, error } = await supabase

@@ -1,7 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
+import { createServerSupabase, createOptionalServiceClient } from "@/lib/supabase/server";
 import { recordJourneyMilestone } from "@/lib/journey-events";
 import { createAndSendReputationRequest, getPreferredBusinessName, getReputationProofSummary, isMissingTableError } from "@/lib/reputation/request-service";
+
+interface RecentReputationRequest {
+  id: string;
+  business_id: string;
+  trigger_source: string | null;
+  status: string;
+  channel?: string | null;
+  requested_channels?: string[] | null;
+  delivery_state: string | null;
+  send_attempt_count: number | null;
+  last_send_attempt_at: string | null;
+  last_send_error: string | null;
+  next_retry_at: string | null;
+  dead_lettered_at: string | null;
+  score: number | null;
+  feedback_text: string | null;
+  review_token: string | null;
+  google_link_sent: boolean;
+  template_used: string | null;
+  sent_at: string | null;
+  replied_at: string | null;
+  created_at: string;
+  contact: { name: string | null; phone: string | null; email?: string | null } | null;
+}
 
 function isMissingColumnError(error: any) {
   return error?.code === "PGRST204" || /column .* does not exist/i.test(error?.message || "") || /Could not find .* column/i.test(error?.message || "");
@@ -22,7 +46,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }
@@ -38,7 +62,8 @@ export async function GET() {
         )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(12),
+        .limit(12)
+        .returns<RecentReputationRequest[]>(),
       supabase
         .from("reputation_feedback_items")
         .select("id, follow_up_status", { count: "exact", head: false })
@@ -91,7 +116,8 @@ export async function GET() {
         )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(12);
+        .limit(12)
+        .returns<RecentReputationRequest[]>();
     }
 
     if (requestsResult.error) {
@@ -146,7 +172,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { scanWebsite } from "@/lib/scanner";
+import { scanWebsite, WebsiteScanError } from "@/lib/scanner";
 import { scanRatelimit, checkRateLimit } from "@/lib/ratelimit";
 import { recordJourneyMilestone } from "@/lib/journey-events";
 import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
@@ -52,11 +52,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { url, businessName, city, state, sourceScanId } = await req.json();
+    const body: unknown = await req.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "A valid scan request is required" }, { status: 400 });
+    }
+    const { url, businessName, city, state, sourceScanId } = body as Record<string, unknown>;
+    if ([url, businessName, city, state, sourceScanId].some(value => value != null && typeof value !== "string")) {
+      return NextResponse.json({ error: "Scan fields must be text" }, { status: 400 });
+    }
+    const inputUrl = typeof url === "string" ? url.trim() : "";
+    const inputBusinessName = typeof businessName === "string" ? businessName.trim() : "";
+    const inputCity = typeof city === "string" ? city.trim() : "";
+    const inputState = typeof state === "string" ? state.trim() : "";
 
     // Input length validation (prevents prompt injection + cost abuse)
-    if (url?.length > MAX_URL_LENGTH || businessName?.length > MAX_NAME_LENGTH ||
-        city?.length > MAX_CITY_LENGTH || state?.length > MAX_STATE_LENGTH) {
+    if (inputUrl.length > MAX_URL_LENGTH || inputBusinessName.length > MAX_NAME_LENGTH ||
+        inputCity.length > MAX_CITY_LENGTH || inputState.length > MAX_STATE_LENGTH) {
       return NextResponse.json({ error: "Input too long" }, { status: 400 });
     }
 
@@ -69,10 +80,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let resolvedUrl = url;
-    let resolvedBusinessName = businessName;
-    let resolvedCity = city;
-    let resolvedState = state;
+    let resolvedUrl = inputUrl;
+    let resolvedBusinessName = inputBusinessName;
+    let resolvedCity = inputCity;
+    let resolvedState = inputState;
 
     if (sourceScanId && (!resolvedUrl || !resolvedBusinessName || !resolvedCity || !resolvedState)) {
       const { data: sourceScan } = await supabase
@@ -148,7 +159,7 @@ export async function POST(req: NextRequest) {
       business_name: resolvedBusinessName,
       city: resolvedCity,
       state: resolvedState,
-      website_url: resolvedUrl,
+      website_url: result.url,
     });
     if (profileError) {
       console.error("Business profile could not be updated after scan", profileError);
@@ -200,6 +211,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ scan, warnings });
   } catch (error) {
     console.error("Scan API error:", error);
+    if (error instanceof WebsiteScanError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json(
       { error: "Failed to perform scan" },
       { status: 500 }

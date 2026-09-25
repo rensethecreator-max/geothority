@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { PublicReviewFlow } from "@/components/reputation/public-review-flow";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { isMissingTableError } from "@/lib/reputation/request-service";
 import { buildGoogleReviewUrl } from "@/lib/reputation/template-utils";
 
 export default async function ReviewTokenPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) notFound();
 
   const { data: requestRow, error: requestError } = await supabase

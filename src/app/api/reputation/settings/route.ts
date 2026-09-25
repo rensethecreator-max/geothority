@@ -38,7 +38,16 @@ export async function GET() {
         .select("google_review_link, sms_delay_minutes, positive_threshold, sms_template, active")
         .eq("user_id", session.user.id)
         .maybeSingle();
-      data = legacyResult.data;
+      data = legacyResult.data
+        ? {
+            ...legacyResult.data,
+            enabled_channels: null,
+            primary_channel: null,
+            email_subject: null,
+            email_template: null,
+            send_both_delay_minutes: null,
+          }
+        : null;
       error = legacyResult.error;
     }
 

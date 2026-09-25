@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import { fetchPublicText } from "@/lib/security/safe-url-fetch";
+import { normalizePublicHttpUrl } from "@/lib/security/public-url";
 
 export interface ScanResult {
   url: string;
@@ -91,41 +92,52 @@ export interface BrandCaptureData {
   extractionNotes: string[];
 }
 
+export class WebsiteScanError extends Error {
+  constructor(message: string, public readonly status: 400 | 422, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "WebsiteScanError";
+  }
+}
+
 export async function scanWebsite(
   url: string,
   businessName: string,
   city: string,
   state: string
 ): Promise<ScanResult> {
-  let html = "";
-  let fetchError = false;
-  let pageLoadTimeMs = 0;
-  let sslValid = false;
-  let sslIssuer = "";
-
-  let normalizedUrl = url.trim();
-
-  // SSRF protection — block internal/metadata URLs
+  let normalizedUrl: string;
   try {
-    const parsed = new URL(/^https?:\/\//i.test(normalizedUrl) ? normalizedUrl : `https://${normalizedUrl}`);
-    const safeUrl = parsed.toString();
-
-    // SSL check — if URL is https, attempt to verify
-    sslValid = parsed.protocol === 'https:';
-    if (sslValid) {
-      sslIssuer = 'Valid (HTTPS)';
-    }
-
-    const fetchStart = Date.now();
-    const res = await fetchPublicText(safeUrl, { timeoutMs: 15_000, maxBytes: 2 * 1024 * 1024 });
-    pageLoadTimeMs = Date.now() - fetchStart;
-    html = res.text;
-    normalizedUrl = res.finalUrl;
-    sslValid = new URL(normalizedUrl).protocol === "https:";
-    sslIssuer = sslValid ? "Valid (HTTPS)" : "";
-  } catch {
-    fetchError = true;
+    normalizedUrl = normalizePublicHttpUrl(url).toString();
+  } catch (error) {
+    throw new WebsiteScanError(
+      error instanceof Error ? error.message : "Enter a valid public website URL.",
+      400,
+      { cause: error },
+    );
   }
+
+  // A failed or blocked fetch is not evidence about the website's quality.
+  // Stop before scoring or persisting a report when the main page cannot be read.
+  const fetchStart = Date.now();
+  let page: Awaited<ReturnType<typeof fetchPublicText>>;
+  try {
+    page = await fetchPublicText(normalizedUrl, { timeoutMs: 15_000, maxBytes: 2 * 1024 * 1024 });
+  } catch (error) {
+    throw new WebsiteScanError(
+      "We couldn't read this website. Check the URL and that the website allows automated scans, then try again.",
+      422,
+      { cause: error },
+    );
+  }
+  if (!page.text.trim()) {
+    throw new WebsiteScanError("This website returned an empty page. Please try again later.", 422);
+  }
+
+  const pageLoadTimeMs = Date.now() - fetchStart;
+  const html = page.text;
+  normalizedUrl = page.finalUrl;
+  const sslValid = new URL(normalizedUrl).protocol === "https:";
+  const sslIssuer = sslValid ? "Valid (HTTPS)" : "";
 
   // Check robots.txt and sitemap.xml in parallel
   let hasRobotsTxt = false;
@@ -148,8 +160,8 @@ export async function scanWebsite(
     // ignore
   }
 
-  const $ = fetchError ? null : cheerio.load(html);
-  const rawScanData = $ ? analyzeHTML($, normalizedUrl, businessName, { sslValid, sslIssuer, pageLoadTimeMs, hasRobotsTxt, hasSitemapXml }) : getEmptyRawScan(normalizedUrl, businessName);
+  const $ = cheerio.load(html);
+  const rawScanData = analyzeHTML($, normalizedUrl, businessName, { sslValid, sslIssuer, pageLoadTimeMs, hasRobotsTxt, hasSitemapXml });
 
   const layerScores = calculateLayerScores(rawScanData, businessName, city);
   const localAuthorityScore = Math.round(
@@ -161,10 +173,12 @@ export async function scanWebsite(
   );
 
   const quickWins = generateQuickWins(rawScanData, layerScores, businessName, city, state);
-  const competitorGaps = await findRealCompetitors(businessName, city, state);
+  // Maps discovery alone does not verify a competitor website or measure its
+  // authority score. Leave comparisons empty until a competitor audit exists.
+  const competitorGaps: CompetitorGap[] = [];
 
   return {
-    url,
+    url: normalizedUrl,
     businessName,
     city,
     state,
@@ -296,46 +310,6 @@ function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, businessName: strin
     imagesMissingAlt,
     hasGBPLink,
     brandCapture,
-  };
-}
-
-function getEmptyRawScan(url = "", businessName = ""): RawScanData {
-  return {
-    title: "",
-    description: "",
-    hasNAP: false,
-    hasPhone: false,
-    hasAddress: false,
-    hasAboutPage: false,
-    hasServiceAreaPage: false,
-    hasFAQPage: false,
-    hasLicensing: false,
-    cityPages: [],
-    hasReviewsMentioned: false,
-    hasGoogleReviewsLink: false,
-    hasSchema: false,
-    hasFAQSchema: false,
-    hasLocalBusinessSchema: false,
-    pageCount: 0,
-    internalLinks: [],
-    externalLinks: [],
-    sslValid: false,
-    sslIssuer: "",
-    pageLoadTimeMs: 0,
-    hasRobotsTxt: false,
-    hasSitemapXml: false,
-    hasH1: false,
-    h1Text: "",
-    hasViewportMeta: false,
-    hasOgTitle: false,
-    hasOgDescription: false,
-    hasOgImage: false,
-    hasTwitterCard: false,
-    imagesTotal: 0,
-    imagesWithAlt: 0,
-    imagesMissingAlt: 0,
-    hasGBPLink: false,
-    brandCapture: getFallbackBrandCapture(url, businessName),
   };
 }
 
@@ -475,27 +449,6 @@ function extractBrandCapture($: cheerio.CheerioAPI, baseUrl: string, businessNam
     tone: categoryTheme.tone,
     confidenceScore: Math.min(confidenceScore, 95),
     extractionNotes: notes,
-  };
-}
-
-function getFallbackBrandCapture(url: string, businessName: string): BrandCaptureData {
-  const fallback = themeForCategory(null);
-  return {
-    businessName,
-    websiteUrl: url,
-    logoUrl: null,
-    logoSource: null,
-    primaryColor: fallback.color,
-    secondaryColor: null,
-    accentColor: fallback.color,
-    fontFamilyHint: null,
-    heroImageUrl: null,
-    serviceImageUrls: [],
-    businessCategory: null,
-    motif: fallback.motif,
-    tone: fallback.tone,
-    confidenceScore: 10,
-    extractionNotes: ["Fallback brand profile used because the scan did not capture page assets."],
   };
 }
 
@@ -661,57 +614,4 @@ function generateQuickWins(
   wins.sort((a, b) => impactOrder[a.impact] - impactOrder[b.impact]);
 
   return wins.slice(0, 5);
-}
-
-async function findRealCompetitors(businessName: string, city: string, state: string): Promise<CompetitorGap[]> {
-  const mapsKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (mapsKey && mapsKey !== 'YOUR_MAPS_API_KEY_HERE') {
-    try {
-      // Use Places API (New) text search to find competing insurance agents
-      const query = `insurance agent ${city} ${state}`;
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${mapsKey}`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-      const data = await res.json();
-      const places = (data.results || [])
-        .filter((p: any) => p.name?.toLowerCase() !== businessName.toLowerCase())
-        .slice(0, 3);
-
-      if (places.length > 0) {
-        return places.map((p: any) => ({
-          domain: p.website || `${p.name?.toLowerCase().replace(/\s+/g, '')}.com`,
-          businessName: p.name,
-          advantage: `${p.rating ? p.rating + '★ rating, ' : ''}${p.user_ratings_total || 0} reviews on Google Maps`,
-          score: Math.min(90, 50 + (p.user_ratings_total || 0) / 10),
-        }));
-      }
-    } catch {
-      // Fall through to mock
-    }
-  }
-  return generateMockCompetitors(city, state);
-}
-
-function generateMockCompetitors(city: string, state: string): CompetitorGap[] {
-  return [
-    {
-      domain: `${city.toLowerCase().replace(/\s+/g, "")}insurance.com`,
-      businessName: `${city} Insurance Group`,
-      advantage: "12 city-specific landing pages, FAQ schema on every page",
-      score: 78,
-    },
-    {
-      domain: `trusted${state.toLowerCase()}agent.com`,
-      businessName: `Trusted ${state} Insurance`,
-      advantage: "142 Google reviews (4.9★), active review response",
-      score: 72,
-    },
-    {
-      domain: `${city.toLowerCase().replace(/\s+/g, "-")}-coverage.com`,
-      businessName: `${city} Coverage Experts`,
-      advantage: "Complete LocalBusiness schema, About page with credentials",
-      score: 65,
-    },
-  ];
 }

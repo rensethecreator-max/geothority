@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import { buildTwilioWebhookUrl, mapTwilioMessageStatus, verifyTwilioSignature } from "@/lib/reputation/twilio";
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "MessageSid is required" }, { status: 400 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }

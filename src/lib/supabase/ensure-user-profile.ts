@@ -40,40 +40,39 @@ export async function ensureUserProfileExists(
     };
   }
 
-  const profileSeed = {
-    id: user.id,
-    onboarding_completed: false,
-  };
+  const usedFallback = isMissingOnboardingColumnError(existingProfileResult.error);
+  const profileSeed = usedFallback
+    ? { id: user.id }
+    : { id: user.id, onboarding_completed: false };
 
-  const { error } = await supabase.from("user_profiles").upsert(profileSeed, {
+  // Concurrent signup/callback requests must never reset an existing account's
+  // onboarding state, billing plan, or other profile fields.
+  const insertion = await supabase.from("user_profiles").upsert(profileSeed, {
     onConflict: "id",
     ignoreDuplicates: true,
-  });
+  }).select("id").maybeSingle();
 
-  if (!isMissingOnboardingColumnError(error)) {
-    return { error, usedFallback: false, created: !error, onboardingCompleted: false };
+  if (insertion.error) {
+    return { error: insertion.error, usedFallback, created: false, onboardingCompleted: false };
   }
 
-  console.warn(
-    "user_profiles.onboarding_completed is missing in the live schema; falling back to minimal profile seed",
-    { userId: user.id }
-  );
+  const confirmation = usedFallback
+    ? await supabase.from("user_profiles").select("id").eq("id", user.id).maybeSingle()
+    : await supabase.from("user_profiles").select("id, onboarding_completed").eq("id", user.id).maybeSingle();
 
-  const fallback = await supabase.from("user_profiles").upsert(
-    {
-      id: user.id,
-    },
-    {
-      onConflict: "id",
-      ignoreDuplicates: true,
-    }
-  );
+  if (confirmation.error || !confirmation.data) {
+    return {
+      error: confirmation.error ?? { code: "PROFILE_NOT_SAVED", message: "User profile could not be created or verified." },
+      usedFallback,
+      created: false,
+      onboardingCompleted: false,
+    };
+  }
 
   return {
-    error: fallback.error,
-    usedFallback: true,
-    created: !fallback.error,
-    onboardingCompleted: false,
-    drift: "missing_onboarding_completed_column",
+    error: null,
+    usedFallback,
+    created: Boolean(insertion.data),
+    onboardingCompleted: "onboarding_completed" in confirmation.data && confirmation.data.onboarding_completed === true,
   };
 }
