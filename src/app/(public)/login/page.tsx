@@ -7,12 +7,12 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Eye, EyeOff, ArrowRight, Mail } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { Logo } from "@/components/ui/logo";
+import { getSafeRedirect } from "@/lib/auth/safe-redirect";
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const redirect = searchParams.get("redirect") || "/dashboard";
-  const safeRedirect = redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/dashboard";
+  const safeRedirect = getSafeRedirect(searchParams.get("redirect"));
   const error = searchParams.get("error");
   const resetSuccess = searchParams.get("reset") === "success";
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";

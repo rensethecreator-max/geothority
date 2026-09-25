@@ -3,8 +3,15 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { isEligibleForPublicProfile, slugify } from "@/lib/data-layer/profile-service";
 import { generateProfileSitemapEntries, renderSitemapXml } from "@/lib/data-layer/sitemap-generator";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const supabase = createServiceClient();
+  if (!supabase) {
+    return new NextResponse(renderSitemapXml([]), {
+      headers: { "Content-Type": "application/xml; charset=utf-8" },
+    });
+  }
 
   const { data: scans } = await supabase
     .from("scans")

@@ -6,6 +6,7 @@ import { requirePlan } from "@/lib/plan-gate";
 
 interface GoogleAiOverviewResult {
   source: "google";
+  status: "checked" | "demo_mode" | "error";
   found: boolean;
   mentionedText: string | null;
   confidence: "high" | "medium" | "low" | "none";
@@ -19,7 +20,10 @@ export interface AiOverviewResponse {
   googleResult: GoogleAiOverviewResult;
   aiResults: AICheckResult[];
   realApiCount: number;
-  overallVisibility: "high" | "medium" | "low" | "none";
+  liveCheckedCount: number;
+  liveFoundCount: number;
+  estimatedCount: number;
+  overallVisibility: "high" | "medium" | "low" | "none" | null;
   topRecommendations: string[];
 }
 
@@ -56,18 +60,18 @@ export async function POST(req: NextRequest) {
 
     const { results: aiResults, realApiCount } = aiScanData;
 
-    const foundCount =
-      (googleResult.found ? 1 : 0) + aiResults.filter((r) => r.found).length;
-    const totalChecked = 1 + aiResults.filter((r) => r.status !== "skipped").length;
-
-    const overallVisibility: "high" | "medium" | "low" | "none" =
-      foundCount >= 3
+    const liveAiResults = aiResults.filter((result) => result.status === "checked" && result.isReal);
+    const liveCheckedCount = liveAiResults.length + (googleResult.status === "checked" ? 1 : 0);
+    const liveFoundCount = liveAiResults.filter((result) => result.found).length + (googleResult.status === "checked" && googleResult.found ? 1 : 0);
+    const estimatedCount = aiResults.filter((result) => result.status === "simulated").length;
+    const liveRate = liveCheckedCount ? liveFoundCount / liveCheckedCount : null;
+    const overallVisibility: AiOverviewResponse["overallVisibility"] = liveRate === null
+      ? null
+      : liveRate >= 0.5
         ? "high"
-        : foundCount === 2
-        ? "medium"
-        : foundCount === 1
-        ? "low"
-        : "none";
+        : liveRate > 0
+          ? "medium"
+          : "none";
 
     // Build top recommendations from AI results
     const recMap: Record<string, string[]> = {
@@ -120,6 +124,9 @@ export async function POST(req: NextRequest) {
       googleResult,
       aiResults,
       realApiCount,
+      liveCheckedCount,
+      liveFoundCount,
+      estimatedCount,
       overallVisibility,
       topRecommendations,
     };
@@ -127,7 +134,7 @@ export async function POST(req: NextRequest) {
     // Persist results to ai_visibility_checks for scorecard tracking
     try {
       const checkRows = [
-        {
+        ...(googleResult.status === "checked" ? [{
           user_id: user.id,
           query,
           city,
@@ -138,11 +145,11 @@ export async function POST(req: NextRequest) {
           mentioned_text: googleResult.mentionedText,
           snippet: googleResult.snippet?.slice(0, 2000),
           confidence: googleResult.confidence,
-          is_real: false,
+          is_real: true,
           competitors: [],
           check_source: "manual",
           checked_at: new Date().toISOString(),
-        },
+        }] : []),
         ...aiResults
           .filter((r) => r.status !== "skipped")
           .map((r) => ({
@@ -184,10 +191,11 @@ async function checkGoogleAiOverview(
   if (!serpApiKey) {
     return {
       source: "google",
+      status: "demo_mode",
       found: false,
       mentionedText: null,
       confidence: "none",
-      snippet: "__DEMO_MODE__",
+      snippet: "Live Google AI Overview checking is not configured. This result is unavailable, not a confirmed absence.",
       recommendations: [
         "Optimize your Google Business Profile with complete, accurate information",
         "Build local citations across authoritative directories (Yelp, BBB, Bing Places)",
@@ -201,14 +209,39 @@ async function checkGoogleAiOverview(
       `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${serpApiKey}&hl=en&gl=us`,
       { signal: AbortSignal.timeout(10000) }
     );
+    if (!res.ok) {
+      return {
+        source: "google",
+        status: "error",
+        found: false,
+        mentionedText: null,
+        confidence: "none",
+        snippet: "The live Google results provider returned an error. This is not a confirmed absence.",
+        recommendations: ["Check the SerpAPI configuration and try again."],
+      };
+    }
     const data = (await res.json()) as {
       ai_overview?: { snippets?: { snippet?: string }[] };
+      error?: string;
     };
+
+    if (data.error) {
+      return {
+        source: "google",
+        status: "error",
+        found: false,
+        mentionedText: null,
+        confidence: "none",
+        snippet: "The live Google results provider could not complete this query. This is not a confirmed absence.",
+        recommendations: ["Check the SerpAPI configuration and try again."],
+      };
+    }
 
     const aiOverview = data.ai_overview;
     if (!aiOverview) {
       return {
         source: "google",
+        status: "checked",
         found: false,
         mentionedText: null,
         confidence: "none",
@@ -228,6 +261,7 @@ async function checkGoogleAiOverview(
 
     return {
       source: "google",
+      status: "checked",
       found,
       mentionedText: found ? snippetText.slice(0, 300) : null,
       confidence: found ? "high" : "none",
@@ -244,6 +278,7 @@ async function checkGoogleAiOverview(
   } catch {
     return {
       source: "google",
+      status: "error",
       found: false,
       mentionedText: null,
       confidence: "none",

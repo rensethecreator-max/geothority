@@ -6,21 +6,16 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { initializeJourney } from "@/lib/email-journey-service";
 import { initializePushJourney } from "@/lib/push-notification-service";
 import type { EmailOtpType } from "@supabase/supabase-js";
+import { getSafeRedirect } from "@/lib/auth/safe-redirect";
 
 const EMAIL_OTP_TYPES: EmailOtpType[] = ["signup", "magiclink", "invite", "recovery", "email_change", "email"];
-
-function getSafeRedirect(rawRedirect?: string | null) {
-  return rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
-    ? rawRedirect
-    : "/dashboard";
-}
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const tokenHash = requestUrl.searchParams.get("token_hash");
   const otpType = requestUrl.searchParams.get("type");
-  const redirect = getSafeRedirect(requestUrl.searchParams.get("redirect") || "/dashboard");
+  const redirect = getSafeRedirect(requestUrl.searchParams.get("redirect"));
 
   const cookieStore = await cookies();
   const supabase = createServerClient(

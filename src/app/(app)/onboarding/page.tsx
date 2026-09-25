@@ -343,7 +343,7 @@ export default function OnboardingPage() {
               { icon: "🔍", title: "90-Second Audit", desc: "See where visibility and trust are breaking down" },
               { icon: "📊", title: "Trust Stack™ Score", desc: "5-layer authority measurement" },
               { icon: "🤖", title: "AEO Readiness", desc: "See how AI assistants perceive your business" },
-              { icon: "⭐", title: "Reputation Engine", desc: "Turn happy customers into review momentum" },
+              { icon: "⭐", title: "Reputation Engine", desc: "Invite honest reviews equally and track private feedback" },
             ].map((item) => (
               <div key={item.title} className="flex items-start gap-3 rounded-lg border border-border p-3">
                 <span className="text-xl">{item.icon}</span>
@@ -517,7 +517,7 @@ export default function OnboardingPage() {
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Geothority now has your default reputation settings and starter templates in place. The next move is to add your Google review link, turn automation on, and test the first request.
+            Add your Google review link, review the neutral request message, then send a test request. Every customer will see the same public review option.
           </p>
           <div className="rounded-lg border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
             {reputationActivated

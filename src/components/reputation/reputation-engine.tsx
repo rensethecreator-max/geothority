@@ -11,9 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
   DEFAULT_REPUTATION_SETTINGS,
-  DEFAULT_REPUTATION_TEMPLATES,
   type ReputationSettings,
-  type ReputationTemplate,
 } from "@/lib/reputation/defaults";
 import { formatTriggerSource } from "@/lib/reputation/format";
 import { ProofShowcase } from "@/components/reputation/proof-showcase";
@@ -23,7 +21,6 @@ interface ApiState {
   setupRequired: boolean;
   activitySetupRequired: boolean;
   settingsSetupRequired: boolean;
-  templatesSetupRequired: boolean;
 }
 
 interface ReputationTransportDiagnostics {
@@ -106,6 +103,7 @@ interface ProofAsset {
   created_at: string;
   topic?: string | null;
   published_to?: string[] | null;
+  customer_permission_at?: string | null;
 }
 
 interface ReputationMetrics {
@@ -191,10 +189,8 @@ function formatTransportMode(mode: string | null | undefined) {
 
 export function ReputationEngine() {
   const [settings, setSettings] = useState<ReputationSettings>(DEFAULT_REPUTATION_SETTINGS);
-  const [templates, setTemplates] = useState<ReputationTemplate[]>(DEFAULT_REPUTATION_TEMPLATES);
   const [loading, setLoading] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
-  const [savingTemplates, setSavingTemplates] = useState(false);
   const [savingBrandProfile, setSavingBrandProfile] = useState(false);
   const [creatingRequest, setCreatingRequest] = useState(false);
   const [submittingIntake, setSubmittingIntake] = useState(false);
@@ -206,7 +202,6 @@ export function ReputationEngine() {
     setupRequired: false,
     activitySetupRequired: false,
     settingsSetupRequired: false,
-    templatesSetupRequired: false,
   });
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<string, FeedbackDraft>>({});
@@ -256,17 +251,14 @@ export function ReputationEngine() {
   function buildApiState(state: {
     activitySetupRequired?: boolean;
     settingsSetupRequired?: boolean;
-    templatesSetupRequired?: boolean;
   }): ApiState {
     const activitySetupRequired = Boolean(state.activitySetupRequired);
     const settingsSetupRequired = Boolean(state.settingsSetupRequired);
-    const templatesSetupRequired = Boolean(state.templatesSetupRequired);
 
     return {
       activitySetupRequired,
       settingsSetupRequired,
-      templatesSetupRequired,
-      setupRequired: activitySetupRequired || settingsSetupRequired || templatesSetupRequired,
+      setupRequired: activitySetupRequired || settingsSetupRequired,
     };
   }
 
@@ -345,28 +337,23 @@ export function ReputationEngine() {
     async function load() {
       try {
         const diagnosticsPromise = loadTransportDiagnostics();
-        const [settingsRes, templatesRes, activityState] = await Promise.all([
+        const [settingsRes, activityState] = await Promise.all([
           fetch("/api/reputation/settings", { cache: "no-store" }),
-          fetch("/api/reputation/templates", { cache: "no-store" }),
           loadReputationActivity(),
           loadBrandProfile().catch(() => ({ setupRequired: false })),
         ]);
 
         const settingsJson = await settingsRes.json();
-        const templatesJson = await templatesRes.json();
 
         if (!mounted) return;
 
         if (!settingsRes.ok) throw new Error(settingsJson.error || "Failed to load reputation settings");
-        if (!templatesRes.ok) throw new Error(templatesJson.error || "Failed to load reputation templates");
 
         setSettings(settingsJson.settings ?? DEFAULT_REPUTATION_SETTINGS);
-        setTemplates(templatesJson.templates ?? DEFAULT_REPUTATION_TEMPLATES);
         setApiState(
           buildApiState({
             activitySetupRequired: activityState.activitySetupRequired,
             settingsSetupRequired: settingsJson.setupRequired,
-            templatesSetupRequired: templatesJson.setupRequired,
             // Brand profile setup is additive; reputation remains usable without it.
           }),
         );
@@ -439,26 +426,21 @@ export function ReputationEngine() {
     setError(null);
     try {
       const diagnosticsPromise = loadTransportDiagnostics();
-      const [settingsRes, templatesRes, activityState] = await Promise.all([
+      const [settingsRes, activityState] = await Promise.all([
         fetch("/api/reputation/settings", { cache: "no-store" }),
-        fetch("/api/reputation/templates", { cache: "no-store" }),
         loadReputationActivity(),
         loadBrandProfile().catch(() => ({ setupRequired: false })),
       ]);
 
       const settingsJson = await settingsRes.json();
-      const templatesJson = await templatesRes.json();
 
       if (!settingsRes.ok) throw new Error(settingsJson.error || "Failed to load reputation settings");
-      if (!templatesRes.ok) throw new Error(templatesJson.error || "Failed to load reputation templates");
 
       setSettings(settingsJson.settings ?? DEFAULT_REPUTATION_SETTINGS);
-      setTemplates(templatesJson.templates ?? DEFAULT_REPUTATION_TEMPLATES);
       setApiState(
         buildApiState({
           activitySetupRequired: activityState.activitySetupRequired,
           settingsSetupRequired: settingsJson.setupRequired,
-          templatesSetupRequired: templatesJson.setupRequired,
         }),
       );
       await diagnosticsPromise;
@@ -521,26 +503,6 @@ export function ReputationEngine() {
       setError(err.message || "Failed to reset brand profile");
     } finally {
       setSavingBrandProfile(false);
-    }
-  }
-
-  async function saveTemplates() {
-    setSavingTemplates(true);
-    setMessage(null);
-    setError(null);
-    try {
-      const res = await fetch("/api/reputation/templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templates }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to save templates");
-      setMessage("Review templates saved.");
-    } catch (err: any) {
-      setError(err.message || "Failed to save templates");
-    } finally {
-      setSavingTemplates(false);
     }
   }
 
@@ -655,7 +617,13 @@ export function ReputationEngine() {
     }
   }
 
-  async function updateProofApproval(assetId: string, approved: boolean) {
+  async function updateProofApproval(asset: ProofAsset, approved: boolean) {
+    const assetId = asset.id;
+    const publishedTo = approved
+      ? asset.customer_permission_at
+        ? ["public_profile", "dashboard"]
+        : ["dashboard"]
+      : [];
     setProofMutationId(assetId);
     setMessage(null);
     setError(null);
@@ -663,12 +631,16 @@ export function ReputationEngine() {
       const res = await fetch(`/api/reputation/proof-assets/${assetId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ approved, publishedTo: approved ? ["public_profile", "dashboard"] : [] }),
+        body: JSON.stringify({ approved, publishedTo }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to update proof asset");
       await refreshActivity();
-      setMessage(approved ? "Proof asset approved and marked for your public profile + dashboard trust surfaces." : "Proof asset moved back to pending approval.");
+      setMessage(approved
+        ? asset.customer_permission_at
+          ? "Customer-authorized quote approved for your public profile and dashboard."
+          : "Approved for private dashboard use. Customer permission is required before public profile publishing."
+        : "Proof asset moved back to pending approval.");
     } catch (err: any) {
       setError(err.message || "Failed to update proof asset");
     } finally {
@@ -692,16 +664,16 @@ export function ReputationEngine() {
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
             <ShieldCheck className="h-3.5 w-3.5" /> Reputation Engine
           </div>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">Review momentum, private feedback, and trust proof — in one place.</h1>
+          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">Review requests, customer feedback, and follow-up in one place.</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">
-            Native request sending is live now: operators can launch requests manually, capture low-score feedback privately, and move positive proof through a lightweight approval workflow.
+            Invite every customer to leave an honest public review. Private feedback is optional, stays private, and can be assigned for follow-up.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="grid grid-cols-3 gap-3 text-xs sm:text-sm">
             <StatCard label="Automation" value={settings.active ? "Active" : "Idle"} tone={settings.active ? "emerald" : "slate"} />
             <StatCard label="Awaiting reply" value={`${metrics.awaitingReply}`} tone="blue" />
-            <StatCard label="Public threshold" value={`${settings.positiveThreshold}+★`} tone="amber" />
+            <StatCard label="Follow-up threshold" value={`${settings.positiveThreshold}+★`} tone="amber" />
           </div>
           <Button variant="outline" onClick={() => void refreshActivity(true)} disabled={refreshingActivity}>
             {refreshingActivity ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
@@ -755,7 +727,7 @@ export function ReputationEngine() {
               <p className="mt-2 text-xs leading-relaxed text-electric-50/80">
                 {settings.googleReviewLink?.trim()
                   ? "Google review link is present."
-                  : "Paste your public Google review link in Settings so positive customers have a one-tap destination."}
+                  : "Paste your public Google review link in Settings. Every customer receives the same optional public review link."}
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -780,7 +752,6 @@ export function ReputationEngine() {
         <TabsList variant="line" className="flex w-full flex-wrap gap-2 rounded-2xl bg-transparent p-0">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
           <TabsTrigger value="feedback">Feedback</TabsTrigger>
           <TabsTrigger value="proof">Proof</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -791,11 +762,11 @@ export function ReputationEngine() {
             <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
               <CardHeader className="border-b border-white/10 py-5">
                 <CardTitle>Review Health snapshot</CardTitle>
-                <CardDescription>Native review automation becomes another trust lever, not a separate product detour.</CardDescription>
+                <CardDescription>Invite customers consistently and keep private feedback separate from public reviews.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 py-5 sm:grid-cols-2 xl:grid-cols-4">
                 <Metric label="Automation" value={settings.active ? "On" : "Off"} detail={settings.active ? "Requests can be scheduled" : "No requests will be sent"} icon={ShieldCheck} />
-                <Metric label="Review route" value={`${settings.positiveThreshold}+ stars`} detail="Lower scores stay private" icon={Star} />
+                <Metric label="Private follow-up priority" value={`Below ${settings.positiveThreshold} stars`} detail="Internal triage only; public link is shared equally" icon={Star} />
                 <Metric label="Awaiting reply" value={`${metrics.awaitingReply}`} detail="Requests already sent" icon={MessageSquare} />
                 <Metric label="Proof mode" value={`${metrics.approvedProofCount}/${metrics.approvedProofCount + metrics.pendingProofCount}`} detail="Approved vs total proof assets" icon={Sparkles} />
               </CardContent>
@@ -808,8 +779,8 @@ export function ReputationEngine() {
               <CardContent className="space-y-3 py-5 text-sm text-[var(--muted-foreground)]">
                 <ChecklistItem checked>Manual review request creation + immediate send execution</ChecklistItem>
                 <ChecklistItem checked>Operator demo intake for recent requests</ChecklistItem>
-                <ChecklistItem checked>Low-rating intake with private feedback capture</ChecklistItem>
-                <ChecklistItem checked>Positive snippet proof asset creation + approval-ready workflow</ChecklistItem>
+                <ChecklistItem checked>Optional private feedback is stored for staff follow-up</ChecklistItem>
+                <ChecklistItem checked>Customer feedback is never republished as proof automatically</ChecklistItem>
                 <ChecklistItem checked>Webhook-compatible event ingest with idempotency key support</ChecklistItem>
                 <ChecklistItem checked={liveDeliveryEnabled}>{liveDeliveryEnabled ? "Live SMS provider delivery is active" : "Live SMS provider delivery is not ready yet"}</ChecklistItem>
               </CardContent>
@@ -880,14 +851,14 @@ export function ReputationEngine() {
               <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
                 <CardHeader className="border-b border-white/10 py-5">
                   <CardTitle>Pipeline analytics</CardTitle>
-                  <CardDescription>Reply, sentiment, proof, and trigger-source momentum from the reputation request stream.</CardDescription>
+                  <CardDescription>Replies, private follow-up signals, quote opt-ins, and trigger-source activity from the request stream.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 py-5">
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <Metric label="Requests sent" value={`${analytics.requestsSent}`} detail={`${analytics.repliedCount} replied`} icon={Send} />
                     <Metric label="Reply rate" value={formatPercent(analytics.replyRate)} detail="Replies ÷ sent" icon={MessageSquare} />
-                    <Metric label="Positive rate" value={formatPercent(analytics.positiveRate)} detail={`${analytics.positiveCount} public-ready wins`} icon={Star} />
-                    <Metric label="Proof generation" value={formatPercent(analytics.proofGenerationRate)} detail={`${analytics.proofGeneratedCount} snippets created`} icon={Sparkles} />
+                    <Metric label="Above-threshold reply rate" value={formatPercent(analytics.positiveRate)} detail={`${analytics.positiveCount} replies above the internal follow-up threshold`} icon={Star} />
+                    <Metric label="Quote opt-in rate" value={formatPercent(analytics.proofGenerationRate)} detail={`${analytics.proofGeneratedCount} customer-authorized quotes`} icon={Sparkles} />
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
                     <div className="flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
@@ -905,8 +876,8 @@ export function ReputationEngine() {
                               <div className="text-xs text-[var(--muted-foreground)]">{source.requestsSent} sent · {source.repliedCount} replied</div>
                             </div>
                             <MiniStat label="Reply" value={formatPercent(source.replyRate)} />
-                            <MiniStat label="Positive" value={formatPercent(source.positiveRate)} />
-                            <MiniStat label="Proof" value={`${source.proofCount}`} />
+                            <MiniStat label="Above threshold" value={formatPercent(source.positiveRate)} />
+                            <MiniStat label="Quote opt-ins" value={`${source.proofCount}`} />
                             <MiniStat label="Recovery" value={`${source.feedbackCount}`} />
                           </div>
                         ))}
@@ -1170,7 +1141,7 @@ export function ReputationEngine() {
                   </Field>
                   {selectedDemoRequest ? (
                     <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">
-                      Routing <span className="text-[var(--foreground)]">{(Array.isArray(selectedDemoRequest.contact) ? selectedDemoRequest.contact[0] : selectedDemoRequest.contact)?.name || "Customer"}</span> through the intake route for <span className="text-[var(--foreground)]">{selectedDemoRequest.business_id}</span>. Scores below {settings.positiveThreshold} stay private; higher scores can move into approval-ready proof.
+                      Recording a private response for <span className="text-[var(--foreground)]">{(Array.isArray(selectedDemoRequest.contact) ? selectedDemoRequest.contact[0] : selectedDemoRequest.contact)?.name || "Customer"}</span>. Scores below {settings.positiveThreshold} receive higher internal follow-up priority. This never changes the public review option.
                     </div>
                   ) : null}
                   <div className="grid gap-4 sm:grid-cols-[140px_1fr]">
@@ -1201,44 +1172,11 @@ export function ReputationEngine() {
           </div>
         </TabsContent>
 
-        <TabsContent value="templates" className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-2">
-            {templates.map((template, index) => (
-              <Card key={template.id} className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
-                <CardHeader className="border-b border-white/10 py-5">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <span>{template.icon}</span>
-                    {template.categoryLabel}
-                  </CardTitle>
-                  <CardDescription>{template.category} template</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 py-5">
-                  <Textarea
-                    value={template.templateText}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setTemplates((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, templateText: value } : item)));
-                    }}
-                    className="min-h-32"
-                  />
-                  <p className="text-xs text-[var(--muted-foreground)]">Use {"{BUSINESS}"} as the merge field for the business name.</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="flex justify-end">
-            <Button onClick={saveTemplates} disabled={savingTemplates}>
-              {savingTemplates ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Save templates
-            </Button>
-          </div>
-        </TabsContent>
-
         <TabsContent value="feedback" className="space-y-4">
           <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
             <CardHeader className="border-b border-white/10 py-5">
               <CardTitle className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-electric-500" /> Private Feedback Inbox</CardTitle>
-              <CardDescription>Low-score replies stay actionable here before they become public trust damage.</CardDescription>
+              <CardDescription>Private notes appear here for follow-up, regardless of rating. They are not published as reviews or proof.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 py-5">
               {feedbackItems.length === 0 ? (
@@ -1368,7 +1306,7 @@ export function ReputationEngine() {
               },
             }}
             title="Trust Proof Pipeline"
-            description="Positive replies now create proof candidates you can approve before they surface across your public profile and dashboard trust surfaces."
+            description="Private feedback stays private by default. A quote reaches your public profile only after the customer opts in and your team approves it."
           />
 
           <Card className="rounded-3xl border-white/10 bg-[var(--card)]/95 py-0">
@@ -1379,9 +1317,9 @@ export function ReputationEngine() {
             <CardContent className="space-y-4 py-5">
               <div className="grid gap-3 lg:grid-cols-3">
                 {[
-                  { label: "Capture", detail: "Positive written replies create proof candidates automatically." },
-                  { label: "Review", detail: "Pending snippets stay separate until the wording feels client-safe." },
-                  { label: "Publish", detail: "Approved snippets now feed the public profile and dashboard surfaces." },
+                  { label: "Capture", detail: "Customer feedback stays private unless the customer explicitly opts in to being quoted." },
+                  { label: "Review", detail: "Your team reviews each opted-in quote before it can appear publicly." },
+                  { label: "Publish", detail: "Only customer-authorized, team-approved quotes appear on the public profile." },
                 ].map((step) => (
                   <div key={step.label} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-electric-300">{step.label}</div>
@@ -1391,7 +1329,7 @@ export function ReputationEngine() {
               </div>
 
               {proofAssets.length === 0 ? (
-                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No proof assets yet. Capture a positive written reply from the intake flow to populate this queue.</div>
+                <div className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4 text-sm text-[var(--muted-foreground)]">No quote snippets yet. They are created only when a customer opts in to being quoted.</div>
               ) : (
                 <div className="grid gap-4 xl:grid-cols-2">
                   <div className="space-y-3 rounded-2xl border border-white/10 bg-[var(--muted)]/10 p-4">
@@ -1403,7 +1341,7 @@ export function ReputationEngine() {
                       <span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">{pendingProofAssets.length}</span>
                     </div>
                     {pendingProofAssets.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-background/20 p-4 text-sm text-[var(--muted-foreground)]">Nothing waiting right now. New positive replies will land here first.</div>
+                      <div className="rounded-2xl border border-dashed border-white/10 bg-background/20 p-4 text-sm text-[var(--muted-foreground)]">Nothing waiting right now. New customer-authorized quotes will land here for review.</div>
                     ) : pendingProofAssets.map((asset) => (
                       <div key={asset.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -1419,10 +1357,10 @@ export function ReputationEngine() {
                             <Button
                               size="sm"
                               disabled={proofMutationId === asset.id}
-                              onClick={() => updateProofApproval(asset.id, true)}
+                              onClick={() => updateProofApproval(asset, true)}
                             >
                               {proofMutationId === asset.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                              Approve for trust surfaces
+                              {asset.customer_permission_at ? "Approve for public profile" : "Approve for dashboard only"}
                             </Button>
                           </div>
                         </div>
@@ -1433,13 +1371,13 @@ export function ReputationEngine() {
                   <div className="space-y-3 rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.03] p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="text-sm font-semibold text-[var(--foreground)]">Approved + live-ready</div>
-                        <p className="mt-1 text-xs text-[var(--muted-foreground)]">These assets are ready to reinforce trust anywhere Geothority shows proof.</p>
+                        <div className="text-sm font-semibold text-[var(--foreground)]">Approved quotes</div>
+                        <p className="mt-1 text-xs text-[var(--muted-foreground)]">Quotes appear on the public profile only when customer permission is recorded.</p>
                       </div>
                       <span className="rounded-full border border-emerald-500/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-300">{approvedProofAssets.length}</span>
                     </div>
                     {approvedProofAssets.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-background/20 p-4 text-sm text-[var(--muted-foreground)]">Approve your first proof snippet to start populating the live trust surfaces.</div>
+                      <div className="rounded-2xl border border-dashed border-white/10 bg-background/20 p-4 text-sm text-[var(--muted-foreground)]">Approved quotes will appear here. Public profile publishing requires customer permission.</div>
                     ) : approvedProofAssets.map((asset) => (
                       <div key={asset.id} className="rounded-2xl border border-white/10 bg-[var(--muted)]/20 p-4">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -1447,7 +1385,7 @@ export function ReputationEngine() {
                             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
                               <span>{asset.topic || "Proof snippet"}</span>
                               <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px]">Approved</span>
-                              <span className="rounded-full border border-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-300">{asset.published_to?.length ? asset.published_to.map(formatTriggerSource).join(", ") : "Ready to publish"}</span>
+                              <span className="rounded-full border border-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-300">{asset.published_to?.includes("public_profile") && asset.customer_permission_at ? "Customer-authorized · public profile" : "Private dashboard only"}</span>
                             </div>
                             <p className="text-sm leading-6 text-[var(--foreground)]">“{asset.snippet}”</p>
                             <p className="text-xs text-[var(--muted-foreground)]">Created {new Date(asset.created_at).toLocaleString()}</p>
@@ -1457,7 +1395,7 @@ export function ReputationEngine() {
                               variant="outline"
                               size="sm"
                               disabled={proofMutationId === asset.id}
-                              onClick={() => updateProofApproval(asset.id, false)}
+                              onClick={() => updateProofApproval(asset, false)}
                             >
                               {proofMutationId === asset.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                               Move to pending
@@ -1488,7 +1426,7 @@ export function ReputationEngine() {
                   <Field label="Delay (minutes)">
                     <Input type="number" min={5} value={settings.smsDelayMinutes} onChange={(event) => setSettings((current) => ({ ...current, smsDelayMinutes: Number(event.target.value || 60) }))} />
                   </Field>
-                  <Field label="Positive threshold">
+                  <Field label="Private feedback follow-up threshold" hint="Changes internal follow-up priority only. Every customer keeps the same public review option.">
                     <Input type="number" min={1} max={5} value={settings.positiveThreshold} onChange={(event) => setSettings((current) => ({ ...current, positiveThreshold: Number(event.target.value || 4) }))} />
                   </Field>
                 </div>
@@ -1654,7 +1592,7 @@ export function ReputationEngine() {
                             <div className="text-xs text-slate-500">{brandProfile.tone || "Trusted"} customer feedback page</div>
                           </div>
                         </div>
-                        <div className="rounded-lg bg-slate-50 p-3 text-slate-600">How was your experience? Choose 1-5 stars, then Geothority routes the customer to the right next step.</div>
+                    <div className="rounded-lg bg-slate-50 p-3 text-slate-600">Share private feedback, write an honest public review, do both, or skip either. Every customer sees the same choices.</div>
                         <div className="flex gap-1 text-amber-400">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star key={star} className="h-5 w-5 fill-current" />
@@ -1664,10 +1602,9 @@ export function ReputationEngine() {
                     </div>
                     <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-[var(--foreground)]">{previewSms}</div>
                     <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3 text-[var(--foreground)]">{previewEmail}</div>
-                    <div className="rounded-xl border border-white/10 bg-background/40 p-3 text-[var(--muted-foreground)]">
-                      Scores {settings.positiveThreshold}-5 → Google review CTA + proof approval queue<br />
-                      Scores 1-{Math.max(1, settings.positiveThreshold - 1)} → private recovery first, with public review option still available
-                    </div>
+                <div className="rounded-xl border border-white/10 bg-background/40 p-3 text-[var(--muted-foreground)]">
+                  Every customer sees the same optional Google review link. Private feedback stays private and is never converted into public proof automatically.
+                </div>
                   </CardContent>
                 </Card>
                 <Card className="rounded-2xl border-white/10 bg-[var(--muted)]/20 py-0">
@@ -1676,8 +1613,8 @@ export function ReputationEngine() {
                   </CardHeader>
                   <CardContent className="space-y-2 py-4 text-sm text-[var(--muted-foreground)]">
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Send job route is wired and executes the current delivery path</div>
-                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Low-score replies create private feedback items</div>
-                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Positive written replies create proof snippets</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Optional private notes are stored for staff follow-up</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Private feedback is never automatically published as proof</div>
                     <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Approved proof assets can surface on the public profile and dashboard</div>
                     <div className="flex items-center gap-2">
                       {transportDiagnostics?.emailReady ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <AlertTriangle className="h-4 w-4 text-amber-400" />}

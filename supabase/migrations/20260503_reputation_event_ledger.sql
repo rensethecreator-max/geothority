@@ -30,6 +30,7 @@ create index if not exists reputation_event_ledger_event_type_idx
 create or replace function public.prevent_reputation_event_ledger_mutation()
 returns trigger
 language plpgsql
+set search_path = pg_catalog
 as $$
 begin
   raise exception 'reputation_event_ledger is append-only';
@@ -50,6 +51,7 @@ create trigger reputation_event_ledger_no_delete
 
 alter table public.reputation_event_ledger enable row level security;
 
-create policy if not exists "reputation_event_ledger_select_own"
+drop policy if exists "reputation_event_ledger_select_own" on public.reputation_event_ledger;
+create policy "reputation_event_ledger_select_own"
   on public.reputation_event_ledger
   for select using (auth.uid() = user_id);

@@ -63,6 +63,10 @@ export default async function Image() {
         {/* Headline */}
         <div
           style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            columnGap: "12px",
             fontSize: "56px",
             fontWeight: "800",
             color: "white",
@@ -72,7 +76,7 @@ export default async function Image() {
             marginBottom: "20px",
           }}
         >
-          Dominate Local Search{" "}
+          <span>Dominate Local Search</span>
           <span style={{ color: "#3B82F6" }}>&amp; AI</span>
         </div>
 
@@ -86,15 +90,15 @@ export default async function Image() {
             marginBottom: "40px",
           }}
         >
-          The local SEO platform built for insurance agents. Free 90-second audit.
+          Local SEO and AI visibility tools for insurance agents. Start with a free scan.
         </div>
 
         {/* Stats row */}
         <div style={{ display: "flex", gap: "48px" }}>
           {[
-            { value: "500+", label: "Agents" },
-            { value: "90s", label: "Scan Time" },
-            { value: "18", label: "Directories" },
+            { value: "5-layer", label: "Trust Stack" },
+            { value: "Local", label: "Visibility" },
+            { value: "AI", label: "Readiness" },
             { value: "Free", label: "To Start" },
           ].map((stat) => (
             <div

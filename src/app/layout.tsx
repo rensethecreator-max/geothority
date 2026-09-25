@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Geothority - Local SEO, AEO & Google Review Growth",
     description:
-      "The platform that helps local businesses improve Google visibility, AI engine readiness, citations, and 5-star Google review momentum.",
+      "The platform that helps local businesses improve Google visibility, AI readiness, citations, and honest customer reviews.",
     url: process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io",
     siteName: "Geothority",
     type: "website",

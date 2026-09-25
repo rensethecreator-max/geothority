@@ -304,6 +304,7 @@ end $$;
 create or replace function public.prevent_reputation_event_ledger_mutation()
 returns trigger
 language plpgsql
+set search_path = pg_catalog
 as $$
 begin
   raise exception 'reputation_event_ledger is append-only';
@@ -321,3 +322,99 @@ create trigger reputation_event_ledger_no_delete
   before delete on public.reputation_event_ledger
   for each row
   execute function public.prevent_reputation_event_ledger_mutation();
+
+-- Install tenant isolation in this same catch-up migration as the sensitive
+-- tables, so none of them are ever committed with public access.
+alter table public.reputation_settings enable row level security;
+alter table public.reputation_templates enable row level security;
+alter table public.reputation_contacts enable row level security;
+alter table public.reputation_requests enable row level security;
+alter table public.reputation_message_log enable row level security;
+alter table public.reputation_feedback_items enable row level security;
+alter table public.reputation_proof_assets enable row level security;
+alter table public.reputation_event_ledger enable row level security;
+alter table public.business_brand_profiles enable row level security;
+
+alter table public.reputation_proof_assets
+  add column if not exists customer_permission_at timestamptz;
+
+update public.reputation_proof_assets
+set approved = false, published_to = '{}'
+where request_id is not null and customer_permission_at is null;
+
+revoke all on table
+  public.reputation_settings,
+  public.reputation_templates,
+  public.reputation_contacts,
+  public.reputation_requests,
+  public.reputation_message_log,
+  public.reputation_feedback_items,
+  public.reputation_proof_assets,
+  public.reputation_event_ledger,
+  public.business_brand_profiles
+from anon, authenticated, public;
+
+grant select, insert, update, delete on table
+  public.reputation_settings,
+  public.reputation_templates,
+  public.reputation_contacts,
+  public.reputation_requests,
+  public.reputation_feedback_items,
+  public.reputation_proof_assets,
+  public.business_brand_profiles
+to authenticated;
+grant select, insert on table public.reputation_message_log to authenticated;
+grant select on table public.reputation_event_ledger to authenticated;
+
+do $$
+declare
+  existing_policy record;
+begin
+  for existing_policy in
+    select schemaname, tablename, policyname
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = any(array[
+        'reputation_settings', 'reputation_templates', 'reputation_contacts',
+        'reputation_requests', 'reputation_message_log', 'reputation_feedback_items',
+        'reputation_proof_assets', 'reputation_event_ledger', 'business_brand_profiles'
+      ])
+  loop
+    execute format('drop policy %I on %I.%I', existing_policy.policyname, existing_policy.schemaname, existing_policy.tablename);
+  end loop;
+end;
+$$;
+
+create policy reputation_settings_owner_all on public.reputation_settings
+  for all to authenticated using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+create policy reputation_templates_owner_all on public.reputation_templates
+  for all to authenticated using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+create policy reputation_contacts_owner_all on public.reputation_contacts
+  for all to authenticated using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+create policy reputation_requests_owner_all on public.reputation_requests
+  for all to authenticated using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+create policy reputation_message_log_owner_read on public.reputation_message_log
+  for select to authenticated using (exists (
+    select 1 from public.reputation_requests r
+    where r.id = request_id and r.user_id = (select auth.uid())
+  ));
+create policy reputation_message_log_owner_insert on public.reputation_message_log
+  for insert to authenticated with check (exists (
+    select 1 from public.reputation_requests r
+    where r.id = request_id and r.user_id = (select auth.uid())
+  ));
+create policy reputation_feedback_items_owner_all on public.reputation_feedback_items
+  for all to authenticated using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+create policy reputation_proof_assets_owner_all on public.reputation_proof_assets
+  for all to authenticated using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+create policy reputation_event_ledger_select_own on public.reputation_event_ledger
+  for select to authenticated using ((select auth.uid()) = user_id);
+create policy business_brand_profiles_owner_all on public.business_brand_profiles
+  for all to authenticated using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);

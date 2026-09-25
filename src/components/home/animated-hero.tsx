@@ -548,8 +548,8 @@ function SceneReviews() {
           <Star className="h-3.5 w-3.5 text-amber-400" />
           <span className="text-[10px] uppercase tracking-[0.18em] text-amber-400/80">Review Momentum</span>
         </div>
-        <div className="text-sm font-medium text-white">A 5-star review arrives and the follow-up engine stays active</div>
-        <div className="mt-1 text-xs text-white/50">We help you turn new reviews into follow-up actions and stronger trust signals.</div>
+        <div className="text-sm font-medium text-white">A customer shares an honest review or private feedback</div>
+        <div className="mt-1 text-xs text-white/50">Every customer sees the same optional public review link; your team can track follow-up here.</div>
       </motion.div>
 
       <motion.div

@@ -19,9 +19,9 @@ export async function POST(req: NextRequest) {
 
   // Check user's auto-exec preference
   const { data: settings } = await supabase
-    .from("user_settings")
+    .from("user_profiles")
     .select("auto_exec_enabled, auto_exec_dry_run")
-    .eq("user_id", userId)
+    .eq("id", userId)
     .single();
 
   const autoExecEnabled = settings?.auto_exec_enabled ?? false;

@@ -1099,7 +1099,7 @@ function buildAnalyticsSummary(requests: any[], proofAssetRows: any[], feedbackI
     proofGeneratedCount,
     replyRate: buildRate(repliedCount, requestsSent),
     positiveRate: buildRate(positiveCount, repliedCount),
-    proofGenerationRate: buildRate(proofGeneratedCount, positiveCount),
+    proofGenerationRate: buildRate(proofGeneratedCount, repliedCount),
     recovery: {
       totalFeedback: feedbackItems.length,
       unresolved,
@@ -1121,13 +1121,14 @@ export async function getReputationProofSummary(
 
   const proofAssetsQuery = supabase
     .from("reputation_proof_assets")
-    .select("id, snippet, approved, created_at, topic, published_to")
+    .select("id, snippet, approved, created_at, topic, published_to, customer_permission_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
 
   if (approvedOnly) {
     proofAssetsQuery.eq("approved", true);
+    proofAssetsQuery.not("customer_permission_at", "is", null);
   }
 
   const [requestsResult, proofResult, approvedCountResult, pendingCountResult, proofAssetRowsResult, feedbackItemsResult] = await Promise.all([
@@ -1141,7 +1142,8 @@ export async function getReputationProofSummary(
       .from("reputation_proof_assets")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
-      .eq("approved", true),
+      .eq("approved", true)
+      .not("customer_permission_at", "is", null),
     approvedOnly
       ? Promise.resolve({ count: 0, error: null })
       : supabase
@@ -1152,7 +1154,8 @@ export async function getReputationProofSummary(
     supabase
       .from("reputation_proof_assets")
       .select("request_id")
-      .eq("user_id", userId),
+      .eq("user_id", userId)
+      .not("customer_permission_at", "is", null),
     supabase
       .from("reputation_feedback_items")
       .select("follow_up_status, severity")

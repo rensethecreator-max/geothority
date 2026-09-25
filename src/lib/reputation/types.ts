@@ -5,6 +5,7 @@ export interface ReputationProofAssetPreview {
   created_at: string;
   topic?: string | null;
   published_to?: string[] | null;
+  customer_permission_at?: string | null;
 }
 
 export interface ReputationRecoverySummary {

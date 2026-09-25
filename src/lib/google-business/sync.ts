@@ -452,7 +452,7 @@ async function runGBPAudit(
     });
   }
 
-  // Upsert audit result
+  // Keep each sync's audit in the same history table used by the GBP dashboard.
   const auditRow = {
     gbp_profile_id: profileId,
     user_id: userId,
@@ -480,5 +480,8 @@ async function runGBPAudit(
     created_at: new Date().toISOString(),
   };
 
-  await supabase.from("gbp_audit_results").upsert(auditRow, { onConflict: "gbp_profile_id" });
+  const { error: auditError } = await supabase.from("gbp_audits").insert(auditRow);
+  if (auditError) {
+    console.error("Failed to save GBP audit", auditError);
+  }
 }

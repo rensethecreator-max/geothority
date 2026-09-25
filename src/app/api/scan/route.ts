@@ -126,28 +126,39 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Insert score_history entry for chart tracking
-    await supabase.from("score_history").insert({
+    const warnings: string[] = [];
+
+    // These secondary records improve the dashboard but must not hide a
+    // successfully saved scan when one optional write fails.
+    const { error: historyError } = await supabase.from("score_history").insert({
       user_id: user.id,
       scan_id: scan.id,
       overall_score: result.localAuthorityScore,
       layer_scores: result.layerScores,
       scanned_at: new Date().toISOString(),
     });
+    if (historyError) {
+      console.error("Scan history could not be saved", historyError);
+      warnings.push("The scan was saved, but its history chart could not be updated.");
+    }
 
     // Update user profile with business info
-    await supabase.from("user_profiles").upsert({
+    const { error: profileError } = await supabase.from("user_profiles").upsert({
       id: user.id,
       business_name: resolvedBusinessName,
       city: resolvedCity,
       state: resolvedState,
       website_url: resolvedUrl,
     });
+    if (profileError) {
+      console.error("Business profile could not be updated after scan", profileError);
+      warnings.push("The scan was saved, but your business profile could not be updated.");
+    }
 
     const brandCapture = result.rawScanData.brandCapture;
     if (brandCapture) {
       const businessIdentity = getReputationBusinessIdentity(resolvedBusinessName);
-      await supabase
+      const { error: brandError } = await supabase
         .from("business_brand_profiles")
         .upsert(
           {
@@ -173,11 +184,20 @@ export async function POST(req: NextRequest) {
           },
           { onConflict: "user_id,business_key" },
         );
+      if (brandError) {
+        console.error("Brand profile could not be updated after scan", brandError);
+        warnings.push("The scan was saved, but automatic brand styling could not be updated.");
+      }
     }
 
-    await recordJourneyMilestone(user.id, "first_scan_completed");
+    try {
+      await recordJourneyMilestone(user.id, "first_scan_completed");
+    } catch (milestoneError) {
+      console.error("First scan milestone could not be recorded", milestoneError);
+      warnings.push("The scan was saved, but onboarding progress could not be updated.");
+    }
 
-    return NextResponse.json({ scan });
+    return NextResponse.json({ scan, warnings });
   } catch (error) {
     console.error("Scan API error:", error);
     return NextResponse.json(

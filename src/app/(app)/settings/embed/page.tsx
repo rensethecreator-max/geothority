@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Copy,
@@ -18,6 +18,9 @@ import {
 
 interface EmbedData {
   embed_api_key: string | null;
+  key_id: string | null;
+  has_key: boolean;
+  allowed_origin: string;
   embed_installed: boolean;
   embed_domain: string | null;
   embed_last_seen: string | null;
@@ -395,34 +398,67 @@ function PlatformMockup({ id, snippet }: { id: string; snippet: string }) {
 export default function EmbedSettingsPage() {
   const [embedData, setEmbedData] = useState<EmbedData>({
     embed_api_key: null,
+    key_id: null,
+    has_key: false,
+    allowed_origin: "",
     embed_installed: false,
     embed_domain: null,
     embed_last_seen: null,
   });
+  const [keyError, setKeyError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [checking, setChecking] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const loadEmbedData = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("embed_api_key, embed_installed, embed_domain, embed_last_seen")
-      .eq("id", user.id)
-      .single();
-    if (profile) {
-      setEmbedData({
-        embed_api_key: profile.embed_api_key,
-        embed_installed: profile.embed_installed ?? false,
-        embed_domain: profile.embed_domain,
-        embed_last_seen: profile.embed_last_seen,
-      });
+    if (!supabase) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const [{ data: profile }, { data: businessProfile }, keysResponse] = await Promise.all([
+        supabase
+          .from("user_profiles")
+          .select("website_url")
+          .eq("id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("business_profiles")
+          .select("website")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        fetch("/api/settings/api-keys", { cache: "no-store" }),
+      ]);
+      const keysJson = keysResponse.ok ? await keysResponse.json() : { keys: [] };
+      const embedKey = (keysJson.keys || []).find((item: any) => item.name === "Website embed" && item.active);
+      let profileHost = "";
+      const websiteUrl = profile?.website_url || businessProfile?.website;
+      if (websiteUrl) {
+        try {
+          profileHost = new URL(websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`).hostname.replace(/^www\./i, "");
+        } catch {
+          profileHost = "";
+        }
+      }
+      setEmbedData((current) => ({
+        ...current,
+        key_id: embedKey?.id ?? null,
+        has_key: Boolean(embedKey),
+        allowed_origin: embedKey?.allowed_origin || current.allowed_origin || profileHost,
+        embed_installed: embedKey?.embed_installed ?? false,
+        embed_domain: embedKey?.allowed_origin ?? null,
+        embed_last_seen: embedKey?.embed_last_seen ?? null,
+      }));
+    } catch {
+      setKeyError("Could not load your embed settings. Refresh and try again.");
+    } finally {
+      setLoading(false);
+    }
   }, [supabase]);
 
   useEffect(() => {
@@ -430,13 +466,44 @@ export default function EmbedSettingsPage() {
   }, [loadEmbedData]);
 
   async function generateKey() {
+    setKeyError(null);
+    if (!embedData.allowed_origin.trim()) {
+      setKeyError("Enter the domain where you will install the snippet.");
+      return;
+    }
     setGenerating(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setGenerating(false); return; }
-    const key = "geo_" + crypto.randomUUID().replace(/-/g, "").slice(0, 24);
-    await supabase.from("user_profiles").update({ embed_api_key: key }).eq("id", user.id);
-    setEmbedData((prev) => ({ ...prev, embed_api_key: key }));
-    setGenerating(false);
+    try {
+      const response = await fetch("/api/settings/api-keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Website embed", permissions: ["read"], allowedOrigin: embedData.allowed_origin }),
+      });
+      const json = await response.json();
+      if (!response.ok) throw new Error(json.error || "Could not create the embed key.");
+
+      if (embedData.key_id) {
+        const revokeResponse = await fetch("/api/settings/api-keys", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ keyId: embedData.key_id }),
+        });
+        if (!revokeResponse.ok) setKeyError("New key created, but the previous key could not be revoked. Revoke it from API key settings.");
+      }
+      setEmbedData((prev) => ({
+        ...prev,
+        embed_api_key: json.key,
+        key_id: json.id,
+        has_key: true,
+        allowed_origin: json.allowedOrigin || prev.allowed_origin,
+        embed_installed: false,
+        embed_domain: null,
+        embed_last_seen: null,
+      }));
+    } catch (error: any) {
+      setKeyError(error.message || "Could not create the embed key.");
+    } finally {
+      setGenerating(false);
+    }
   }
 
   async function checkInstallation() {
@@ -486,12 +553,24 @@ export default function EmbedSettingsPage() {
             <h2 className="text-xl font-bold">Get your personal snippet</h2>
           </div>
           <p className="text-[var(--muted-foreground)] text-sm ml-11">
-            This is your unique code. It only works for your account.
+          The key is stored as a hash and shown only once. It is restricted to the website domain you enter.
           </p>
         </div>
 
         <div className="p-6 space-y-4">
-          {!embedData.embed_api_key ? (
+          <label className="block space-y-2">
+            <span className="text-sm font-medium">Website domain</span>
+            <input
+              value={embedData.allowed_origin}
+              onChange={(event) => setEmbedData((current) => ({ ...current, allowed_origin: event.target.value }))}
+              placeholder="example.com"
+              autoComplete="url"
+              className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm"
+            />
+            <span className="block text-xs text-[var(--muted-foreground)]">Enter the domain where this snippet will run. Subdomains are allowed.</span>
+          </label>
+          {keyError && <p role="alert" className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-sm text-rose-300">{keyError}</p>}
+          {!embedData.has_key ? (
             /* No key yet - show generate button */
             <div className="text-center py-6 space-y-4">
               <div className="w-16 h-16 rounded-2xl bg-electric-500/10 flex items-center justify-center mx-auto">
@@ -516,7 +595,7 @@ export default function EmbedSettingsPage() {
                 )}
               </button>
             </div>
-          ) : (
+          ) : embedData.embed_api_key ? (
             /* Key exists - show snippet + big copy button */
             <div className="space-y-4">
               {/* Code block */}
@@ -557,6 +636,14 @@ export default function EmbedSettingsPage() {
                   Generate a new key (old one stops working)
                 </button>
               </div>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-[var(--muted-foreground)]">
+              For security, the existing key cannot be viewed again. Generate a replacement to get a new copyable snippet; the old key will be revoked.
+              <button onClick={generateKey} disabled={generating} className="mt-4 flex items-center gap-2 rounded-lg bg-electric-500 px-4 py-2 font-semibold text-white disabled:opacity-60">
+                {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                Generate replacement key
+              </button>
             </div>
           )}
         </div>
@@ -639,7 +726,7 @@ export default function EmbedSettingsPage() {
       )}
 
       {/* ── Step 3: Installation status ── */}
-      {embedData.embed_api_key && (
+      {embedData.has_key && (
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden">
           <div className="p-6 border-b border-[var(--border)]">
             <div className="flex items-center gap-3 mb-1">
@@ -668,7 +755,7 @@ export default function EmbedSettingsPage() {
                       ✅ Installed &amp; working!
                     </p>
                     <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-                      Detected on <span className="font-mono font-semibold text-[var(--foreground)]">{embedData.embed_domain}</span>
+                      Registered for <span className="font-mono font-semibold text-[var(--foreground)]">{embedData.embed_domain}</span>
                       {embedData.embed_last_seen && (
                         <> · Last seen {new Date(embedData.embed_last_seen).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
                       )}

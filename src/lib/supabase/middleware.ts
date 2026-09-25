@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isMissingOnboardingColumnError } from "@/lib/supabase/ensure-user-profile";
+import { getSafeRedirect } from "@/lib/auth/safe-redirect";
 
 // All paths that require authentication
 const PROTECTED_PATHS = [
@@ -17,6 +18,19 @@ const PROTECTED_PATHS = [
   "/gbp-monitor",
   "/schema-generator",
   "/ai-overview",
+  "/action-center",
+  "/ai-visibility",
+  "/citations",
+  "/deep-citations",
+  "/expansion",
+  "/gbp-health",
+  "/gbp-posts",
+  "/keyword-research",
+  "/nap-push",
+  "/reports",
+  "/reputation",
+  "/serp-features",
+  "/trust-score",
 ];
 
 // Admin-only paths (require ADMIN_EMAILS match)
@@ -80,6 +94,16 @@ async function inferOnboardingCompletion(supabase: ReturnType<typeof createServe
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
+
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (!pathMatches(pathname, PROTECTED_PATHS)) return supabaseResponse;
+
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("redirect", `${pathname}${request.nextUrl.search}`);
+    return NextResponse.redirect(url);
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -102,11 +126,13 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
+  let user = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (!error) user = data.user;
+  } catch {
+    // Treat auth-service failures as unauthenticated and protect app routes below.
+  }
 
   // Check if path is protected
   const isProtected = pathMatches(pathname, PROTECTED_PATHS);
@@ -136,10 +162,7 @@ export async function updateSession(request: NextRequest) {
   // Redirect logged-in users away from /login or /signup.
   // Preserve a safe relative redirect when one is explicitly requested.
   if ((pathname === "/login" || pathname === "/signup") && user) {
-    const requestedRedirect = request.nextUrl.searchParams.get("redirect");
-    const nextPath = requestedRedirect && requestedRedirect.startsWith("/") && !requestedRedirect.startsWith("//")
-      ? requestedRedirect
-      : "/dashboard";
+    const nextPath = getSafeRedirect(request.nextUrl.searchParams.get("redirect"));
     const url = request.nextUrl.clone();
     url.pathname = nextPath;
     url.search = "";

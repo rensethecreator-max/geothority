@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
 import { recordJourneyMilestone } from "@/lib/journey-events";
+import { isSafeGoogleReviewUrl } from "@/lib/reputation/template-utils";
 
 function isMissingTableError(error: any) {
   return error?.code === "42P01"
@@ -81,19 +82,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "Request body must be an object" }, { status: 400 });
+    }
+    const googleReviewLink = typeof body.googleReviewLink === "string" ? body.googleReviewLink.trim() : "";
+    const positiveThreshold = Number(body.positiveThreshold ?? DEFAULT_REPUTATION_SETTINGS.positiveThreshold);
+    const smsDelayMinutes = Number(body.smsDelayMinutes ?? DEFAULT_REPUTATION_SETTINGS.smsDelayMinutes);
+    const sendBothDelayMinutes = Number(body.sendBothDelayMinutes ?? DEFAULT_REPUTATION_SETTINGS.sendBothDelayMinutes);
+    const smsTemplate = typeof body.smsTemplate === "string" ? body.smsTemplate : DEFAULT_REPUTATION_SETTINGS.smsTemplate;
+    const emailSubject = typeof body.emailSubject === "string" ? body.emailSubject : DEFAULT_REPUTATION_SETTINGS.emailSubject;
+    const emailTemplate = typeof body.emailTemplate === "string" ? body.emailTemplate : DEFAULT_REPUTATION_SETTINGS.emailTemplate;
+
+    if (googleReviewLink.length > 2000 || (googleReviewLink && !isSafeGoogleReviewUrl(googleReviewLink))) {
+      return NextResponse.json({ error: "Use a valid HTTPS Google review link." }, { status: 400 });
+    }
+    if (!Number.isInteger(positiveThreshold) || positiveThreshold < 1 || positiveThreshold > 5
+      || !Number.isFinite(smsDelayMinutes) || smsDelayMinutes < 5 || smsDelayMinutes > 10080
+      || !Number.isFinite(sendBothDelayMinutes) || sendBothDelayMinutes < 15 || sendBothDelayMinutes > 10080) {
+      return NextResponse.json({ error: "Check the review threshold and delivery delays." }, { status: 400 });
+    }
+    if (smsTemplate.length > 2000 || emailSubject.length > 200 || emailTemplate.length > 10000) {
+      return NextResponse.json({ error: "Message templates are too long." }, { status: 400 });
+    }
+
     const payload = {
       user_id: session.user.id,
-      google_review_link: body.googleReviewLink ?? "",
-      sms_delay_minutes: Number(body.smsDelayMinutes ?? DEFAULT_REPUTATION_SETTINGS.smsDelayMinutes),
-      positive_threshold: Number(body.positiveThreshold ?? DEFAULT_REPUTATION_SETTINGS.positiveThreshold),
-      sms_template: body.smsTemplate ?? DEFAULT_REPUTATION_SETTINGS.smsTemplate,
+      google_review_link: googleReviewLink,
+      sms_delay_minutes: smsDelayMinutes,
+      positive_threshold: positiveThreshold,
+      sms_template: smsTemplate,
       enabled_channels: ["sms", "email", "sms_email"].includes(body.enabledChannels) ? body.enabledChannels : DEFAULT_REPUTATION_SETTINGS.enabledChannels,
       primary_channel: body.primaryChannel === "email" || body.primaryChannel === "sms" ? body.primaryChannel : DEFAULT_REPUTATION_SETTINGS.primaryChannel,
-      email_subject: body.emailSubject ?? DEFAULT_REPUTATION_SETTINGS.emailSubject,
-      email_template: body.emailTemplate ?? DEFAULT_REPUTATION_SETTINGS.emailTemplate,
-      send_both_delay_minutes: Math.max(15, Number(body.sendBothDelayMinutes ?? DEFAULT_REPUTATION_SETTINGS.sendBothDelayMinutes)),
-      active: Boolean(body.active),
+      email_subject: emailSubject,
+      email_template: emailTemplate,
+      send_both_delay_minutes: sendBothDelayMinutes,
+      active: body.active === true,
       updated_at: new Date().toISOString(),
     };
 

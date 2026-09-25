@@ -3,8 +3,15 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { isEligibleForPublicProfile, slugify } from "@/lib/data-layer/profile-service";
 import { generateProfileFeed, renderRSSXml } from "@/lib/data-layer/rss-generator";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const supabase = createServiceClient();
+  if (!supabase) {
+    return new NextResponse(renderRSSXml(generateProfileFeed([])), {
+      headers: { "Content-Type": "application/xml; charset=utf-8" },
+    });
+  }
 
   const { data: scans } = await supabase
     .from("scans")

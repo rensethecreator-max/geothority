@@ -166,7 +166,7 @@ export default function TrustScorePage() {
               <ProofShowcase
                 summary={proofSummary}
                 title="Proof assets ready to reinforce your Trust Score"
-                description="Every positive reply can become a reusable proof snippet. Keep the trust story tight by routing happy customers into public-ready wins."
+                description="Customer-submitted feedback can become a proof snippet only after your team reviews and approves it. Public review invitations are offered equally to every customer."
                 ctaHref="/reputation"
                 ctaLabel="Open Reputation Engine"
               />
@@ -207,8 +207,8 @@ function ReputationMomentumCard({ analytics }: { analytics: ReputationAnalyticsS
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-4">
         <MomentumStat label="Reply rate" value={`${analytics.replyRate}%`} detail={`${analytics.repliedCount}/${analytics.requestsSent} replied`} />
-        <MomentumStat label="Positive rate" value={`${analytics.positiveRate}%`} detail={`${analytics.positiveCount} public-ready`} />
-        <MomentumStat label="Proof gen" value={`${analytics.proofGenerationRate}%`} detail={`${analytics.proofGeneratedCount} snippets`} />
+        <MomentumStat label="Above-threshold replies" value={`${analytics.positiveRate}%`} detail={`${analytics.positiveCount} for internal follow-up`} />
+        <MomentumStat label="Quote opt-in rate" value={`${analytics.proofGenerationRate}%`} detail={`${analytics.proofGeneratedCount} customer-authorized quotes`} />
         <MomentumStat label="Open recovery" value={`${analytics.recovery.unresolved}`} detail={`${analytics.recovery.resolved} resolved`} />
       </div>
     </div>

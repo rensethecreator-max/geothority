@@ -65,10 +65,10 @@ const outcomePillars = [
     accent: "from-cyan-500 to-emerald-400",
   },
   {
-    title: "Grow 5-star review proof",
+    title: "Build a steady review process",
     eyebrow: "Google reputation",
-    text: "Ask happy customers for reviews and catch unhappy feedback privately before it becomes reputation damage.",
-    proof: ["Send branded review requests", "Route happy customers to Google", "Route unhappy customers to recovery"],
+    text: "Invite every customer to share an honest review, offer private feedback as an option, and keep follow-up organized.",
+    proof: ["Send branded review requests", "Give every customer the same public review option", "Track private feedback and follow-up"],
     icon: Star,
     accent: "from-amber-400 to-rose-400",
   },
@@ -123,7 +123,7 @@ const whatGeothorityDoes = [
   { task: "AI and schema optimization", mode: "Automatic", detail: "Optimized for you", outcome: "Adds structured signals AI engines can understand", icon: Code2 },
   { task: "Local listings sync", mode: "Automatic", detail: "Synced for you", outcome: "Keeps NAP details consistent across directories", icon: Layers3 },
   { task: "Google Business Profile", mode: "Automatic", detail: "Watched 24/7", outcome: "Tracks insights, posts, engagement, and changes", icon: Eye },
-  { task: "Review requests", mode: "Automatic", detail: "Sent for you", outcome: "Asks happy customers at the right moment", icon: Star },
+  { task: "Review requests", mode: "Automatic", detail: "Sent for you", outcome: "Invites every customer to share an honest review", icon: Star },
   { task: "AI search visibility", mode: "Automatic", detail: "Tracked for you", outcome: "Monitors your presence in answer engines", icon: Bot },
   { task: "Publish and apply fixes", mode: "One approval", detail: "You approve, then we run it", outcome: "Keeps control in your hands where it matters", icon: Zap },
 ];
@@ -203,7 +203,7 @@ const capabilities = [
   {
     title: "Google Review Growth",
     icon: Star,
-    text: "Procure more fresh 5-star Google reviews, capture private feedback, and strengthen the proof buyers and algorithms rely on.",
+    text: "Invite honest reviews from every customer, collect optional private feedback, and organize follow-up in one place.",
     accent: "from-amber-500 to-rose-500",
   },
   {
@@ -626,9 +626,9 @@ function FeatureBandsSection() {
     },
     {
       eyebrow: "Review growth engine",
-      title: "Turn happy customers into reviews without sending unhappy ones straight to Google.",
-      text: "The review flow asks for private feedback first, routes happy customers to Google, and sends unhappy customers into recovery.",
-      bullets: ["Branded pre-review page", "Private recovery for low scores", "Google handoff for happy customers"],
+      title: "Make it easy for every customer to share an honest review.",
+      text: "The same optional Google review link is shown to every customer. Private feedback and follow-up are separate choices.",
+      bullets: ["Branded feedback page", "Equal public review option for every rating", "Private feedback and follow-up tracking"],
       cta: "Explore review growth",
       icon: Star,
       accent: "from-amber-400 to-rose-400",
@@ -1259,7 +1259,7 @@ export default function HomePage() {
                 <Sparkles className="h-3.5 w-3.5" /> Visibility + reviews, handled
               </div>
               <h1 className="mt-7 max-w-4xl text-[2.28rem] font-semibold leading-[1.03] tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-[3.75rem] xl:text-[4.2rem]">
-                Get found on Google. Get trusted by AI. Get more 5-star reviews.
+                Get found on Google. Get understood by AI. Build trust with honest reviews.
               </h1>
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-800 sm:text-lg sm:leading-8">
                 Geothority scans your business, finds what is holding back visibility, and helps you fix the problems that keep local customers from choosing you.

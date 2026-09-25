@@ -1,64 +1,31 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { getKeysSummary } from "@/lib/api-key-check";
-import { getReputationTransportDiagnostics } from "@/lib/reputation/diagnostics";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-/**
- * GET /api/health
- * Liveness-first health check: report dependency degradation in the body
- * without blocking the platform from considering the app online.
- */
+/** Readiness check. It never returns configuration values or provider errors. */
 export async function GET() {
-  const checks: Record<string, string | object> = {
-    status: "ok",
-    version: process.env.npm_package_version || "0.1.0",
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "unknown",
-  };
+  let database = "unavailable";
 
-  // Check Supabase DB connectivity
   try {
     const supabase = createServiceClient();
-    const { error } = await supabase.from("scans").select("id").limit(1);
-    checks.database = error ? `error: ${error.message}` : "connected";
-    if (error) {
-      checks.status = "degraded";
+    if (supabase) {
+      const { error } = await supabase.from("scans").select("id").limit(1);
+      if (!error) database = "connected";
     }
-  } catch (e: any) {
-    checks.database = `error: ${e.message}`;
-    checks.status = "degraded";
+  } catch (error) {
+    console.error("Readiness database check failed", error);
   }
 
-  // API key status summary
-  const keySummary = getKeysSummary();
-  checks.apiKeys = {
-    configured: `${keySummary.configured}/${keySummary.total}`,
-    criticalMissing: keySummary.criticalMissing,
-    recommendedMissing: keySummary.recommendedMissing,
-  };
-
-  if (keySummary.criticalMissing.length > 0) {
-    checks.status = "degraded";
-  }
-
-  const reputation = getReputationTransportDiagnostics();
-  checks.reputation = {
-    mode: reputation.mode,
-    validMode: reputation.validMode,
-    ready: reputation.ready,
-    activeTransport: reputation.activeTransport,
-    callbacksReady: reputation.callbacksReady,
-    queueReady: reputation.queueReady,
-    automationReady: reputation.automationReady,
-    missing: reputation.missing,
-  };
-
-  if (!reputation.validMode || (reputation.mode === "twilio" && !reputation.ready)) {
-    checks.status = "degraded";
-  }
-
-  return NextResponse.json(checks, { status: 200 });
+  const ready = database === "connected";
+  return NextResponse.json(
+    {
+      status: ready ? "ready" : "not_ready",
+      database,
+      version: process.env.npm_package_version || "0.1.0",
+      timestamp: new Date().toISOString(),
+    },
+    { status: ready ? 200 : 503 },
+  );
 }

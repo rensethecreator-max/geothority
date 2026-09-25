@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { fetchPublicText } from "@/lib/security/safe-url-fetch";
 
 export interface ScanResult {
   url: string;
@@ -102,23 +103,12 @@ export async function scanWebsite(
   let sslValid = false;
   let sslIssuer = "";
 
-  const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
+  let normalizedUrl = url.trim();
 
   // SSRF protection — block internal/metadata URLs
   try {
-    const parsed = new URL(normalizedUrl);
-    const blockedHosts = [
-      'localhost', '127.0.0.1', '0.0.0.0', '::1',
-      '169.254.169.254', '169.254.0.0',
-      'metadata.google.internal',
-    ];
-    const isPrivateIP = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/.test(parsed.hostname);
-    if (blockedHosts.includes(parsed.hostname) || isPrivateIP || parsed.hostname.endsWith('.internal') || parsed.hostname.endsWith('.local')) {
-      throw new Error('URL not allowed');
-    }
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      throw new Error('Invalid URL protocol');
-    }
+    const parsed = new URL(/^https?:\/\//i.test(normalizedUrl) ? normalizedUrl : `https://${normalizedUrl}`);
+    const safeUrl = parsed.toString();
 
     // SSL check — if URL is https, attempt to verify
     sslValid = parsed.protocol === 'https:';
@@ -127,15 +117,12 @@ export async function scanWebsite(
     }
 
     const fetchStart = Date.now();
-    const res = await fetch(normalizedUrl, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; Geothority/1.0; +https://geothority.ai)",
-      },
-      signal: AbortSignal.timeout(15000),
-    });
+    const res = await fetchPublicText(safeUrl, { timeoutMs: 15_000, maxBytes: 2 * 1024 * 1024 });
     pageLoadTimeMs = Date.now() - fetchStart;
-    html = await res.text();
+    html = res.text;
+    normalizedUrl = res.finalUrl;
+    sslValid = new URL(normalizedUrl).protocol === "https:";
+    sslIssuer = sslValid ? "Valid (HTTPS)" : "";
   } catch {
     fetchError = true;
   }
@@ -146,15 +133,15 @@ export async function scanWebsite(
   try {
     const baseOrigin = new URL(normalizedUrl).origin;
     const [robotsRes, sitemapRes] = await Promise.allSettled([
-      fetch(`${baseOrigin}/robots.txt`, { signal: AbortSignal.timeout(5000) }),
-      fetch(`${baseOrigin}/sitemap.xml`, { signal: AbortSignal.timeout(5000) }),
+      fetchPublicText(`${baseOrigin}/robots.txt`, { timeoutMs: 5000, maxBytes: 256 * 1024 }),
+      fetchPublicText(`${baseOrigin}/sitemap.xml`, { timeoutMs: 5000, maxBytes: 1024 * 1024 }),
     ]);
-    if (robotsRes.status === 'fulfilled' && robotsRes.value.ok) {
-      const robotsText = await robotsRes.value.text();
+    if (robotsRes.status === 'fulfilled') {
+      const robotsText = robotsRes.value.text;
       hasRobotsTxt = robotsText.toLowerCase().includes('user-agent');
     }
-    if (sitemapRes.status === 'fulfilled' && sitemapRes.value.ok) {
-      const sitemapText = await sitemapRes.value.text();
+    if (sitemapRes.status === 'fulfilled') {
+      const sitemapText = sitemapRes.value.text;
       hasSitemapXml = sitemapText.includes('<urlset') || sitemapText.includes('<sitemapindex');
     }
   } catch {
@@ -629,7 +616,7 @@ function generateQuickWins(
   if (!data.hasGoogleReviewsLink) {
     wins.push({
       title: "Link to Your Google Reviews",
-      description: `Your website doesn't link to your Google Business Profile. Adding a direct link to your reviews builds trust and encourages more reviews from happy customers.`,
+      description: `Your website doesn't link to your Google Business Profile. Adding a direct review link makes it easier for every customer to share an honest review.`,
       copyText: `<a href="https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID" target="_blank" rel="noopener">Leave us a review on Google ⭐</a>`,
       impact: "medium",
       layer: 4,

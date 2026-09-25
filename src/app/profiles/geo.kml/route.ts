@@ -10,8 +10,15 @@ import { slugify, isEligibleForPublicProfile } from "@/lib/data-layer/profile-se
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://geothority.io";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const supabase = createServiceClient();
+  if (!supabase) {
+    return new NextResponse(renderKML([]), {
+      headers: { "Content-Type": "application/vnd.google-earth.kml+xml; charset=utf-8" },
+    });
+  }
 
   const { data: scans } = await supabase
     .from("scans")
