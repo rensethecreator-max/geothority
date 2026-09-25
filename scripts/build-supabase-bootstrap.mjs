@@ -31,6 +31,7 @@ const ordered = [
   'supabase/migrations/20260503_reputation_intake_idempotency.sql',
   'supabase/migrations/20260503_reputation_send_runtime.sql',
   'supabase/migrations/20260503_reputation_event_ledger.sql',
+  'supabase/migrations/20260603_brand_capture_reputation_channels.sql',
 ];
 
 const missing = ordered.filter(f => !fs.existsSync(path.join(root, f)));

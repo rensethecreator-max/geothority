@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, isAdminUser } from "@/lib/auth-helpers";
 import { createServiceClient } from "@/lib/supabase/server";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ userId: string }> }) {
+  const params = await props.params;
   const auth = await getAuthUser(req);
   if ("error" in auth) return auth.error;
   const { user } = auth;

@@ -270,7 +270,8 @@ export function generateStaticParams() {
   return Object.keys(industries).map(slug => ({ slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const data = industries[params.slug];
   if (!data) return {};
   return {
@@ -280,7 +281,8 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-export default function IndustryPage({ params }: { params: { slug: string } }) {
+export default async function IndustryPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const data = industries[params.slug];
   if (!data) notFound();
 

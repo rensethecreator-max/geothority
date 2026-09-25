@@ -9,7 +9,8 @@ function maskEmail(email: string | null | undefined) {
   return `${name.slice(0, 2)}***@${domain}`;
 }
 
-export default async function ReputationEmailOptOutPage({ params }: { params: { token: string } }) {
+export default async function ReputationEmailOptOutPage(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const supabase = createServiceClient();
   if (!supabase) notFound();
 

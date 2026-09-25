@@ -237,7 +237,8 @@ export function generateStaticParams() {
   return Object.keys(cities).map(city => ({ city }));
 }
 
-export function generateMetadata({ params }: { params: { city: string } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ city: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const data = cities[params.city];
   if (!data) return {};
   return {
@@ -247,7 +248,8 @@ export function generateMetadata({ params }: { params: { city: string } }): Meta
   };
 }
 
-export default function CityPage({ params }: { params: { city: string } }) {
+export default async function CityPage(props: { params: Promise<{ city: string }> }) {
+  const params = await props.params;
   const data = cities[params.city];
   if (!data) notFound();
 
