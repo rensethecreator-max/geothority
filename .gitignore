@@ -45,3 +45,6 @@ next-env.d.ts
 .env.vercel.pulled
 .env.railway
 .env.railway.*
+
+# Supabase CLI local state
+/supabase/.temp/

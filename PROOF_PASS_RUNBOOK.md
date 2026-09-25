@@ -1,6 +1,6 @@
 # Geothority proof-pass runbook
 
-Use this when Railway access is unavailable and you need to shorten the final post-deploy proof pass.
+Use this to verify configuration, database readiness, and customer journeys after a deployment.
 
 ## 1) Preflight config audit
 
@@ -12,7 +12,7 @@ What it checks safely:
 - critical env coverage (Supabase, OpenAI, Maps, Foursquare)
 - recommended proof-pass env coverage (Stripe, Resend, Google runtime OAuth, reputation queue/webhook secrets, cron secret)
 - app URL / auth callback expectations
-- optional live HTTP checks when a base URL is provided, including `/api/health` reputation readiness signals
+- optional live HTTP checks when a base URL is provided, including database readiness at `/api/health`
 
 Useful variants:
 
@@ -26,6 +26,10 @@ npm run proof:readiness -- --json > tmp/geothority-proof-readiness.json
 ## 2) Build gate
 
 ```bash
+npm run typecheck
+npm run test:security
+npm run test:runtime
+npm run ops:cron:dispatch:test
 npm run build:proof
 ```
 
@@ -46,12 +50,13 @@ npm run proof:readiness -- --base-url=http://localhost:3010
 ```
 
 Minimum expected live results:
-- `/api/health` responds successfully
-- `/api/gbp/status` responds successfully for an anonymous session
-- `/api/health` includes the expected reputation transport mode/readiness summary
+- `/api/healthz` returns 200 for process liveness.
+- `/api/health` returns 200 with `status: ready` and `database: connected`; a 503 blocks the authenticated proof pass.
+- Protected APIs reject anonymous requests with 401.
+- Check integration readiness through the signed-in integration screens.
 - output shows the expected `/api/auth/callback` URL
 
-## 4) Operator proof checklist for Vercel/live pass
+## 4) Operator proof checklist for staging/live pass
 
 ### Anonymous checks
 - Home page loads without console-breaking errors.
@@ -101,3 +106,25 @@ Minimum expected live results:
 - **GBP connected but flaky** → runtime Google client pair + reconnect flow.
 - **Billing UI/runtime errors** → missing Stripe publishable key or price IDs.
 - **Cron 401s** → wrong/missing `CRON_SECRET` bearer value.
+
+## Staging repair verification — 2026-09-25
+
+- App: https://geothority-e2e-staging-access.up.railway.app
+- Railway environment/service: `Access` / `geothority-e2e-staging`.
+- Supabase branch: `geothority-e2e-staging` (`dmuxqebcktqnmgprlymm`).
+- Repair branch: `codex/geothority-e2e-repair`.
+- `npm run typecheck` and the production build pass with TypeScript checking enforced.
+- Security, cron, and runtime regression suites pass, including failed scans, profile persistence, tenant-scoped templates, publishing failures, and billing writes.
+- Browser: login, signup form, password recovery, and sign-in navigation render; protected routes redirect to login.
+- The deployed process passes `/api/healthz`. `/api/health` returns 503 while the staging service-role key is blank.
+- Existing AI provider variables from the same Access environment are referenced privately by the staging service; provider calls still require an authenticated proof pass.
+- Rollback-only staging SQL verifies profile bootstrap, canonical business upsert, onboarding completion, repeat-save behavior, and tenant isolation. Fixture counts returned to zero.
+- No production deployment or production data changes were made.
+
+### Remaining configuration and proof
+
+1. Configure a server key belonging to **dmuxqebcktqnmgprlymm** as `SUPABASE_SERVICE_ROLE_KEY` on the isolated staging service. Never reuse the production project's key.
+2. Confirm Supabase Auth allows the staging origin and `/api/auth/callback`, then use a disposable staging account.
+3. Verify saved business details survive reload, onboarding completion reaches the dashboard, a real public website scan is persisted, and Action Center reads that scan.
+4. Verify AI calls using the existing Access provider references. Maps/Foursquare, billing, and delivery integrations require their respective staging credentials before testing their live actions.
+5. Complete the customer journey before promoting any repair to production.

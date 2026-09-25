@@ -2619,3 +2619,156 @@ create index if not exists reputation_message_log_channel_idx
 -- ==================================================================
 -- END 20260603_brand_capture_reputation_channels.sql
 -- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260925004447_operator_runs.sql
+-- ==================================================================
+-- Durable operator run log for coordinated launch decisions and execution history.
+
+CREATE TABLE IF NOT EXISTS operator_runs (
+  id TEXT PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  scan_id UUID,
+  status TEXT NOT NULL CHECK (status IN ('blocked', 'ready', 'launched', 'resumed', 'failed')),
+  operator_action TEXT NOT NULL,
+  message TEXT NOT NULL,
+  redirect_to TEXT,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_operator_runs_user_created
+  ON operator_runs(user_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_operator_runs_scan
+  ON operator_runs(scan_id);
+
+ALTER TABLE operator_runs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users see own operator runs"
+  ON operator_runs FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users create own operator runs"
+  ON operator_runs FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users update own operator runs"
+  ON operator_runs FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- ==================================================================
+-- END 20260925004447_operator_runs.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260925004453_operator_run_events.sql
+-- ==================================================================
+ALTER TABLE operator_runs
+  ADD COLUMN IF NOT EXISTS current_stage TEXT NOT NULL DEFAULT 'intake',
+  ADD COLUMN IF NOT EXISTS stage_status TEXT NOT NULL DEFAULT 'started',
+  ADD COLUMN IF NOT EXISTS plan_id TEXT,
+  ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS operator_run_events (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES operator_runs(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  stage TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('started', 'completed', 'blocked', 'redirected', 'failed', 'info')),
+  title TEXT NOT NULL,
+  detail TEXT NOT NULL,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_operator_run_events_run_created
+  ON operator_run_events(run_id, created_at ASC);
+
+CREATE INDEX IF NOT EXISTS idx_operator_run_events_user_created
+  ON operator_run_events(user_id, created_at DESC);
+
+ALTER TABLE operator_run_events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users see own operator run events"
+  ON operator_run_events FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users create own operator run events"
+  ON operator_run_events FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- ==================================================================
+-- END 20260925004453_operator_run_events.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260925033817_restrict_user_profile_billing_writes.sql
+-- ==================================================================
+-- Billing entitlements come from the server's Stripe integration. RLS limits
+-- owners to their own rows; column grants separately prevent self-upgrades.
+revoke insert, update on table public.user_profiles from public, anon, authenticated;
+
+do $profile_column_access$
+declare
+  all_columns text;
+  editable_columns text;
+begin
+  select string_agg(quote_ident(column_name), ', ' order by ordinal_position)
+    into all_columns
+    from information_schema.columns
+    where table_schema = 'public' and table_name = 'user_profiles';
+
+  -- Remove any pre-existing column grants as well as table grants. Otherwise a
+  -- prior grant on a protected column would remain effective after the revoke.
+  execute format(
+    'revoke insert (%1$s), update (%1$s) on table public.user_profiles from public, anon, authenticated',
+    all_columns
+  );
+
+  -- Some legacy bootstraps do not yet have the automation execution flags.
+  -- Grant only named, present columns; new billing/admin columns stay denied.
+  select string_agg(quote_ident(column_name), ', ' order by ordinal_position)
+    into editable_columns
+    from information_schema.columns
+    where table_schema = 'public' and table_name = 'user_profiles'
+      and column_name = any(array[
+        'id', 'business_name', 'city', 'state', 'website_url',
+        'onboarding_completed', 'cms_type', 'cms_credentials',
+        'automation_policies', 'auto_exec_enabled', 'auto_exec_dry_run'
+      ]);
+
+  execute format(
+    'grant insert (%1$s), update (%1$s) on table public.user_profiles to authenticated',
+    editable_columns
+  );
+end
+$profile_column_access$;
+
+-- Existing owner RLS still controls which rows can be read or changed.
+-- Table SELECT remains so profile screens may read their own plan/status.
+grant select on table public.user_profiles to authenticated;
+grant select, insert, update, delete on table public.user_profiles to service_role;
+
+-- ==================================================================
+-- END 20260925033817_restrict_user_profile_billing_writes.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260925034242_grant_operator_service_access.sql
+-- ==================================================================
+-- Server readiness reads scans; operator coordination records run progress.
+-- Keep these grants limited to the tables and operations used by those paths.
+grant select on table public.scans to service_role;
+grant select, insert, update on table public.operator_runs to service_role;
+grant select, insert on table public.operator_run_events to service_role;
+
+-- ==================================================================
+-- END 20260925034242_grant_operator_service_access.sql
+-- ==================================================================
