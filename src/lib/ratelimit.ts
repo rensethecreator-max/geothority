@@ -1,5 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 
 // Only initialize if Upstash env vars are present
 const getRedis = () => {
@@ -14,53 +15,78 @@ const getRedis = () => {
 
 const redis = getRedis();
 
-// Free plan: 3 scans per day per user
-// Paid plan: 20 scans per day (enforced at app logic level)
-export const scanRatelimit = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(3, "1 d"),
-      analytics: true,
-      prefix: "geo:scan",
-    })
-  : null;
+type RateLimitConfig = {
+  redis: Ratelimit | null;
+  limit: number;
+  windowSeconds: number;
+};
 
-// Content generation: 10 per day per user
-export const contentRatelimit = redis
-  ? new Ratelimit({
+function config(limit: number, windowSeconds: number, prefix: string): RateLimitConfig {
+  return {
+    limit,
+    windowSeconds,
+    redis: redis ? new Ratelimit({
       redis,
-      limiter: Ratelimit.slidingWindow(10, "1 d"),
+      limiter: Ratelimit.slidingWindow(limit, `${windowSeconds} s`),
       analytics: true,
-      prefix: "geo:content",
-    })
-  : null;
+      prefix,
+    }) : null,
+  };
+}
 
-// Chat: 30 messages per hour
-export const chatRatelimit = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(30, "1 h"),
-      analytics: true,
-      prefix: "geo:chat",
-    })
-  : null;
+export const scanRatelimit = config(3, 86400, "geo:scan");
+export const contentRatelimit = config(10, 86400, "geo:content");
+export const chatRatelimit = config(30, 3600, "geo:chat");
+
+type RateLimitResult = {
+  allowed: boolean;
+  remaining: number;
+  reset: number;
+  unavailable?: true;
+};
+
+function unavailable(): RateLimitResult {
+  return { allowed: false, remaining: 0, reset: 0, unavailable: true };
+}
 
 export async function checkRateLimit(
-  limiter: Ratelimit | null,
+  limiter: RateLimitConfig,
   identifier: string
-): Promise<{ allowed: boolean; remaining: number; reset: number }> {
-  if (!limiter) {
-    // No Redis configured — fail closed in production, allow in development
-    if (process.env.VERCEL || process.env.NODE_ENV === "production") {
-      console.error("Rate limiter not configured (missing UPSTASH_REDIS_REST_URL/TOKEN). Blocking request in production.");
-      return { allowed: false, remaining: 0, reset: 0 };
+): Promise<RateLimitResult> {
+  try {
+    if (limiter.redis) {
+      const result = await limiter.redis.limit(identifier);
+      return { allowed: result.success, remaining: result.remaining, reset: result.reset };
     }
-    return { allowed: true, remaining: 999, reset: 0 };
+
+    // A server-only, atomic database counter preserves quotas on deployments
+    // without Redis. Never switch stores after a Redis error: that would give
+    // the same caller a second quota during an outage.
+    const supabase = createOptionalServiceClient();
+    if (!supabase) {
+      if (!process.env.VERCEL && process.env.NODE_ENV !== "production") {
+        return { allowed: true, remaining: 999, reset: 0 };
+      }
+      console.error("Rate limiting requires Redis or the Supabase service client.");
+      return unavailable();
+    }
+
+    const { data, error } = await supabase.rpc("consume_rate_limit", {
+      p_identifier: identifier,
+      p_limit: limiter.limit,
+      p_window_seconds: limiter.windowSeconds,
+    });
+    const row = Array.isArray(data) && data.length === 1 ? data[0] : null;
+    const reset = typeof row?.reset_at === "string" ? Date.parse(row.reset_at) : NaN;
+    if (error || typeof row?.allowed !== "boolean"
+      || !Number.isInteger(row?.remaining) || row.remaining < 0 || row.remaining >= limiter.limit
+      || (!row.allowed && row.remaining !== 0) || !Number.isFinite(reset) || reset <= 0) {
+      console.error("Database rate-limit check failed.");
+      return unavailable();
+    }
+    return { allowed: row.allowed, remaining: row.remaining, reset };
+  } catch {
+    console.error("Rate-limit service is unavailable.");
+    return unavailable();
   }
-  const result = await limiter.limit(identifier);
-  return {
-    allowed: result.success,
-    remaining: result.remaining,
-    reset: result.reset,
-  };
 }

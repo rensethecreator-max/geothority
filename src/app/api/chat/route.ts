@@ -37,6 +37,12 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     const identifier = user?.id || (req.headers.get('x-forwarded-for') || 'anon');
     const rl = await checkRateLimit(chatRatelimit, `chat:${identifier}`);
+    if (rl.unavailable) {
+      return NextResponse.json(
+        { error: "Chat is temporarily unavailable. Please try again shortly." },
+        { status: 503 }
+      );
+    }
     if (!rl.allowed) {
       return NextResponse.json({ error: "Too many messages. Please wait before sending more." }, { status: 429 });
     }

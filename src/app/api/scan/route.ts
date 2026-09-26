@@ -73,9 +73,15 @@ export async function POST(req: NextRequest) {
 
     // Rate limiting — 3 scans/day per user on free plan
     const rl = await checkRateLimit(scanRatelimit, `scan:${user.id}`);
+    if (rl.unavailable) {
+      return NextResponse.json(
+        { error: "Scans are temporarily unavailable. Please try again shortly." },
+        { status: 503 }
+      );
+    }
     if (!rl.allowed) {
       return NextResponse.json(
-        { error: "Rate limit exceeded", message: "You've reached your daily scan limit. Upgrade to Pro for unlimited scans.", reset: rl.reset },
+        { error: "Rate limit exceeded", message: "You've reached your daily scan limit. Try again after it resets.", reset: rl.reset },
         { status: 429 }
       );
     }

@@ -36,6 +36,7 @@ const ordered = [
   'supabase/migrations/20260925004453_operator_run_events.sql',
   'supabase/migrations/20260925033817_restrict_user_profile_billing_writes.sql',
   'supabase/migrations/20260925034242_grant_operator_service_access.sql',
+  'supabase/migrations/20260926002809_add_atomic_rate_limiter.sql',
 ];
 
 const missing = ordered.filter(f => !fs.existsSync(path.join(root, f)));
