@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { ExpansionManager } from "@/lib/smart-expansion";
 
 /**
@@ -14,7 +14,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = await createServerSupabase();
+  const supabase = createOptionalServiceClient();
+  if (!supabase) {
+    return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 503 });
+  }
   const manager = new ExpansionManager(supabase);
 
   // Get distinct users with expansion targets
@@ -27,7 +30,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ refreshed: 0, message: "No active targets" });
   }
 
-  const distinctUsers = Array.from(new Set(users.map((u: any) => u.user_id)));
+  const userIds: string[] = [];
+  for (const row of users as Array<{ user_id?: unknown }>) {
+    if (typeof row.user_id === "string" && row.user_id.length > 0) userIds.push(row.user_id);
+  }
+  const distinctUsers = Array.from(new Set(userIds));
   let totalRefreshed = 0;
 
   for (const userId of distinctUsers) {

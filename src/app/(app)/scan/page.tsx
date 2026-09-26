@@ -79,9 +79,12 @@ function ScanPageContent() {
         throw new Error(data.error || "Scan failed");
       }
 
-      const { scan } = await res.json();
+      const { scan, warnings = [] } = await res.json();
       trackEvent("scan_completed", { scanId: scan.id, url, city });
-      router.push(`/scan/${scan.id}`);
+      const params = new URLSearchParams();
+      for (const warning of warnings) params.append("warning", warning);
+      const warningQuery = params.toString();
+      router.push(`/scan/${scan.id}${warningQuery ? `?${warningQuery}` : ""}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setScanning(false);

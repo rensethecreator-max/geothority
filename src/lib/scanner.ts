@@ -1,4 +1,6 @@
 import * as cheerio from "cheerio";
+import { fetchPublicText } from "@/lib/security/safe-url-fetch";
+import { normalizePublicHttpUrl } from "@/lib/security/public-url";
 
 export interface ScanResult {
   url: string;
@@ -90,55 +92,52 @@ export interface BrandCaptureData {
   extractionNotes: string[];
 }
 
+export class WebsiteScanError extends Error {
+  constructor(message: string, public readonly status: 400 | 422, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "WebsiteScanError";
+  }
+}
+
 export async function scanWebsite(
   url: string,
   businessName: string,
   city: string,
   state: string
 ): Promise<ScanResult> {
-  let html = "";
-  let fetchError = false;
-  let pageLoadTimeMs = 0;
-  let sslValid = false;
-  let sslIssuer = "";
-
-  const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
-
-  // SSRF protection — block internal/metadata URLs
+  let normalizedUrl: string;
   try {
-    const parsed = new URL(normalizedUrl);
-    const blockedHosts = [
-      'localhost', '127.0.0.1', '0.0.0.0', '::1',
-      '169.254.169.254', '169.254.0.0',
-      'metadata.google.internal',
-    ];
-    const isPrivateIP = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/.test(parsed.hostname);
-    if (blockedHosts.includes(parsed.hostname) || isPrivateIP || parsed.hostname.endsWith('.internal') || parsed.hostname.endsWith('.local')) {
-      throw new Error('URL not allowed');
-    }
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      throw new Error('Invalid URL protocol');
-    }
-
-    // SSL check — if URL is https, attempt to verify
-    sslValid = parsed.protocol === 'https:';
-    if (sslValid) {
-      sslIssuer = 'Valid (HTTPS)';
-    }
-
-    const fetchStart = Date.now();
-    const res = await fetch(normalizedUrl, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; Geothority/1.0; +https://geothority.ai)",
-      },
-      signal: AbortSignal.timeout(15000),
-    });
-    pageLoadTimeMs = Date.now() - fetchStart;
-    html = await res.text();
-  } catch {
-    fetchError = true;
+    normalizedUrl = normalizePublicHttpUrl(url).toString();
+  } catch (error) {
+    throw new WebsiteScanError(
+      error instanceof Error ? error.message : "Enter a valid public website URL.",
+      400,
+      { cause: error },
+    );
   }
+
+  // A failed or blocked fetch is not evidence about the website's quality.
+  // Stop before scoring or persisting a report when the main page cannot be read.
+  const fetchStart = Date.now();
+  let page: Awaited<ReturnType<typeof fetchPublicText>>;
+  try {
+    page = await fetchPublicText(normalizedUrl, { timeoutMs: 15_000, maxBytes: 2 * 1024 * 1024 });
+  } catch (error) {
+    throw new WebsiteScanError(
+      "We couldn't read this website. Check the URL and that the website allows automated scans, then try again.",
+      422,
+      { cause: error },
+    );
+  }
+  if (!page.text.trim()) {
+    throw new WebsiteScanError("This website returned an empty page. Please try again later.", 422);
+  }
+
+  const pageLoadTimeMs = Date.now() - fetchStart;
+  const html = page.text;
+  normalizedUrl = page.finalUrl;
+  const sslValid = new URL(normalizedUrl).protocol === "https:";
+  const sslIssuer = sslValid ? "Valid (HTTPS)" : "";
 
   // Check robots.txt and sitemap.xml in parallel
   let hasRobotsTxt = false;
@@ -146,23 +145,23 @@ export async function scanWebsite(
   try {
     const baseOrigin = new URL(normalizedUrl).origin;
     const [robotsRes, sitemapRes] = await Promise.allSettled([
-      fetch(`${baseOrigin}/robots.txt`, { signal: AbortSignal.timeout(5000) }),
-      fetch(`${baseOrigin}/sitemap.xml`, { signal: AbortSignal.timeout(5000) }),
+      fetchPublicText(`${baseOrigin}/robots.txt`, { timeoutMs: 5000, maxBytes: 256 * 1024 }),
+      fetchPublicText(`${baseOrigin}/sitemap.xml`, { timeoutMs: 5000, maxBytes: 1024 * 1024 }),
     ]);
-    if (robotsRes.status === 'fulfilled' && robotsRes.value.ok) {
-      const robotsText = await robotsRes.value.text();
+    if (robotsRes.status === 'fulfilled') {
+      const robotsText = robotsRes.value.text;
       hasRobotsTxt = robotsText.toLowerCase().includes('user-agent');
     }
-    if (sitemapRes.status === 'fulfilled' && sitemapRes.value.ok) {
-      const sitemapText = await sitemapRes.value.text();
+    if (sitemapRes.status === 'fulfilled') {
+      const sitemapText = sitemapRes.value.text;
       hasSitemapXml = sitemapText.includes('<urlset') || sitemapText.includes('<sitemapindex');
     }
   } catch {
     // ignore
   }
 
-  const $ = fetchError ? null : cheerio.load(html);
-  const rawScanData = $ ? analyzeHTML($, normalizedUrl, businessName, { sslValid, sslIssuer, pageLoadTimeMs, hasRobotsTxt, hasSitemapXml }) : getEmptyRawScan(normalizedUrl, businessName);
+  const $ = cheerio.load(html);
+  const rawScanData = analyzeHTML($, normalizedUrl, businessName, { sslValid, sslIssuer, pageLoadTimeMs, hasRobotsTxt, hasSitemapXml });
 
   const layerScores = calculateLayerScores(rawScanData, businessName, city);
   const localAuthorityScore = Math.round(
@@ -174,10 +173,12 @@ export async function scanWebsite(
   );
 
   const quickWins = generateQuickWins(rawScanData, layerScores, businessName, city, state);
-  const competitorGaps = await findRealCompetitors(businessName, city, state);
+  // Maps discovery alone does not verify a competitor website or measure its
+  // authority score. Leave comparisons empty until a competitor audit exists.
+  const competitorGaps: CompetitorGap[] = [];
 
   return {
-    url,
+    url: normalizedUrl,
     businessName,
     city,
     state,
@@ -195,6 +196,38 @@ interface EnhancedMeta {
   pageLoadTimeMs: number;
   hasRobotsTxt: boolean;
   hasSitemapXml: boolean;
+}
+
+const LOCAL_BUSINESS_SCHEMA_TYPES = new Set([
+  "localbusiness", "insuranceagency", "financialservice", "accountingservice",
+  "legalservice", "attorney", "professionalservice", "homeandconstructionbusiness",
+  "plumber", "electrician", "generalcontractor", "hvacbusiness", "roofingcontractor",
+  "housepainter", "locksmith", "movingcompany", "medicalbusiness", "medicalclinic",
+  "dentist", "physician", "optician", "pharmacy", "healthandbeautybusiness",
+  "beautysalon", "hairsalon", "dayspa", "nailsalon", "automotivebusiness",
+  "autorepair", "autobodyshop", "autodealer", "store", "foodestablishment",
+  "restaurant", "cafeorcoffeeshop", "realestateagent", "travelagency",
+  "veterinarycare", "childcare", "drycleaningorlaundry", "employmentagency",
+]);
+
+/** Read actual JSON-LD types, including @graph and type arrays, without
+ * mistaking an ordinary text mention for business structured data. */
+export function hasLocalBusinessStructuredData(scripts: string[]): boolean {
+  function containsBusinessType(value: unknown): boolean {
+    if (Array.isArray(value)) return value.some(containsBusinessType);
+    if (!value || typeof value !== "object") return false;
+    const record = value as Record<string, unknown>;
+    const types = Array.isArray(record["@type"]) ? record["@type"] : [record["@type"]];
+    if (types.some(type => typeof type === "string" && LOCAL_BUSINESS_SCHEMA_TYPES.has(
+      type.replace(/^https?:\/\/schema\.org\//i, "").toLowerCase(),
+    ))) return true;
+    return Object.values(record).some(containsBusinessType);
+  }
+
+  return scripts.some(script => {
+    try { return containsBusinessType(JSON.parse(script)); }
+    catch { return false; }
+  });
 }
 
 function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, businessName: string, meta: EnhancedMeta): RawScanData {
@@ -240,7 +273,7 @@ function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, businessName: strin
     .get();
   const schemaText = scripts.join(" ").toLowerCase();
   const hasSchema = scripts.length > 0;
-  const hasLocalBusinessSchema = schemaText.includes("localbusiness") || schemaText.includes("insuranceagency");
+  const hasLocalBusinessSchema = hasLocalBusinessStructuredData(scripts);
   const hasFAQSchema = schemaText.includes("faqpage");
 
   // H1 tag check
@@ -309,46 +342,6 @@ function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, businessName: strin
     imagesMissingAlt,
     hasGBPLink,
     brandCapture,
-  };
-}
-
-function getEmptyRawScan(url = "", businessName = ""): RawScanData {
-  return {
-    title: "",
-    description: "",
-    hasNAP: false,
-    hasPhone: false,
-    hasAddress: false,
-    hasAboutPage: false,
-    hasServiceAreaPage: false,
-    hasFAQPage: false,
-    hasLicensing: false,
-    cityPages: [],
-    hasReviewsMentioned: false,
-    hasGoogleReviewsLink: false,
-    hasSchema: false,
-    hasFAQSchema: false,
-    hasLocalBusinessSchema: false,
-    pageCount: 0,
-    internalLinks: [],
-    externalLinks: [],
-    sslValid: false,
-    sslIssuer: "",
-    pageLoadTimeMs: 0,
-    hasRobotsTxt: false,
-    hasSitemapXml: false,
-    hasH1: false,
-    h1Text: "",
-    hasViewportMeta: false,
-    hasOgTitle: false,
-    hasOgDescription: false,
-    hasOgImage: false,
-    hasTwitterCard: false,
-    imagesTotal: 0,
-    imagesWithAlt: 0,
-    imagesMissingAlt: 0,
-    hasGBPLink: false,
-    brandCapture: getFallbackBrandCapture(url, businessName),
   };
 }
 
@@ -491,27 +484,6 @@ function extractBrandCapture($: cheerio.CheerioAPI, baseUrl: string, businessNam
   };
 }
 
-function getFallbackBrandCapture(url: string, businessName: string): BrandCaptureData {
-  const fallback = themeForCategory(null);
-  return {
-    businessName,
-    websiteUrl: url,
-    logoUrl: null,
-    logoSource: null,
-    primaryColor: fallback.color,
-    secondaryColor: null,
-    accentColor: fallback.color,
-    fontFamilyHint: null,
-    heroImageUrl: null,
-    serviceImageUrls: [],
-    businessCategory: null,
-    motif: fallback.motif,
-    tone: fallback.tone,
-    confidenceScore: 10,
-    extractionNotes: ["Fallback brand profile used because the scan did not capture page assets."],
-  };
-}
-
 function calculateLayerScores(
   data: RawScanData,
   businessName: string,
@@ -560,37 +532,32 @@ function calculateLayerScores(
   return { layer1, layer2, layer3, layer4, layer5 };
 }
 
-function generateQuickWins(
-  data: RawScanData,
+export function generateQuickWins(
+  data: Pick<RawScanData, "hasLocalBusinessSchema" | "hasAboutPage" | "cityPages" | "hasPhone" | "hasGoogleReviewsLink" | "hasFAQSchema">,
   scores: { layer1: number; layer2: number; layer3: number; layer4: number; layer5: number },
   businessName: string,
   city: string,
   state: string
 ): QuickWin[] {
   const wins: QuickWin[] = [];
+  // Escaping '<' prevents a business name containing </script> from ending
+  // the element when a customer installs this otherwise valid JSON-LD.
+  const schemaSnippet = (value: object) => `<script type="application/ld+json">\n${JSON.stringify(value, null, 2).replace(/</g, "\\u003c")}\n</script>`;
 
   if (!data.hasLocalBusinessSchema) {
     wins.push({
       title: "Add LocalBusiness Schema Markup",
-      description: `Your website is missing LocalBusiness structured data. This tells Google exactly who you are, where you're located, and what services you offer. This is the #1 quick fix for AI visibility.`,
-      copyText: `<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "InsuranceAgency",
-  "name": "${businessName}",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "${city}",
-    "addressRegion": "${state}"
-  },
-  "areaServed": {
-    "@type": "City",
-    "name": "${city}"
-  },
-  "description": "${businessName} provides auto, home, life, and business insurance in ${city}, ${state}.",
-  "priceRange": "$$"
-}
-</script>`,
+      description: "Recognized local business structured data was not detected on the scanned page. Review existing markup before adding this starter template. Confirm the business name and location, choose an accurate business subtype if appropriate, and add only verified details. Structured data does not guarantee rankings or AI recommendations.",
+      copyText: schemaSnippet({
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        name: businessName,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: city,
+          addressRegion: state,
+        },
+      }),
       impact: "high",
       layer: 5,
     });
@@ -599,8 +566,8 @@ function generateQuickWins(
   if (!data.hasAboutPage) {
     wins.push({
       title: "Create an About Page",
-      description: `You're missing an About page. Insurance is a trust business — people want to know who they're buying from. An About page with your photo, story, and credentials builds instant credibility.`,
-      copyText: `About ${businessName}\n\nServing the ${city}, ${state} community since [year]. As a local independent insurance agent, I help families and businesses find the right coverage at the best price.\n\nLicensed in ${state} | [Phone Number] | [Address]`,
+      description: "An About-page link was not detected on the scanned page. Check whether one already exists and make it easy to find. Explain your business, the people behind it, and relevant experience using accurate details.",
+      copyText: `About ${businessName}\n\n[Describe your business and the services you actually provide.]\n\nOur connection to ${city}, ${state}\n[Describe your local experience and confirmed service area.]\n\nMeet the team\n[Add names, roles, and verified qualifications you want to make public.]\n\nContact us\n[Add your current business contact details.]\n\nReplace every placeholder and review the facts before publishing.`,
       impact: "high",
       layer: 2,
     });
@@ -608,9 +575,9 @@ function generateQuickWins(
 
   if (data.cityPages.length === 0) {
     wins.push({
-      title: "Create City-Specific Landing Pages",
-      description: `You have zero city-specific pages. Each nearby city you serve should have its own page targeting "[City] insurance agent." This is how you capture search traffic from surrounding areas.`,
-      copyText: `Page Title: ${city} Insurance Agent - ${businessName}\n\nMeta Description: Looking for a trusted insurance agent in ${city}, ${state}? ${businessName} offers auto, home, and life insurance with personalized local service.\n\n[Use Geothority's content generator to create full pages automatically]`,
+      title: "Review Your Local Service Information",
+      description: "No city-page links matching this scan's detection patterns were found on the scanned page. This does not prove that local pages are missing. Review existing pages first, then add useful local information only for places you actually serve.",
+      copyText: `Page outline: ${businessName} in ${city}, ${state}\n\nServices available\n[List only services you actually provide here.]\n\nWhere we work\n[Confirm locations served and any service limitations.]\n\nLocal experience\n[Add useful, original details about your work in this area.]\n\nHow to contact us\n[Provide accurate contact or appointment instructions.]\n\nReview existing pages before creating another one. Replace placeholders and verify all details before publishing.`,
       impact: "high",
       layer: 3,
     });
@@ -618,8 +585,8 @@ function generateQuickWins(
 
   if (!data.hasPhone) {
     wins.push({
-      title: "Add Your Phone Number to Every Page",
-      description: `Your phone number isn't visible on your website. Insurance customers want to call — make it easy. Add a clickable phone number to your header and footer.`,
+      title: "Make Your Business Phone Number Easy to Find",
+      description: "A phone number matching this scan's detection patterns was not found on the scanned page. Check your contact details and add a clickable business number where useful. Replace the placeholder below with your actual number before publishing.",
       copyText: `<a href="tel:+1XXXXXXXXXX" class="phone-link">Call (XXX) XXX-XXXX</a>`,
       impact: "high",
       layer: 1,
@@ -629,7 +596,7 @@ function generateQuickWins(
   if (!data.hasGoogleReviewsLink) {
     wins.push({
       title: "Link to Your Google Reviews",
-      description: `Your website doesn't link to your Google Business Profile. Adding a direct link to your reviews builds trust and encourages more reviews from happy customers.`,
+      description: "A recognized Google review or Maps link was not detected on the scanned page. Check existing links, then use your business's correct review link to invite every customer to share honest feedback. Replace the place-ID placeholder before publishing.",
       copyText: `<a href="https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID" target="_blank" rel="noopener">Leave us a review on Google ⭐</a>`,
       impact: "medium",
       layer: 4,
@@ -639,31 +606,29 @@ function generateQuickWins(
   if (!data.hasFAQSchema) {
     wins.push({
       title: "Add FAQ Schema Markup",
-      description: `Adding FAQ structured data helps your website appear in Google's "People Also Ask" section and AI search results. This is critical for AEO (AI Engine Optimization).`,
-      copyText: `<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What types of insurance do you offer in ${city}?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "${businessName} offers auto, home, life, business, and umbrella insurance to residents and businesses in ${city}, ${state}."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How much does car insurance cost in ${city}, ${state}?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Car insurance rates in ${city} vary based on your driving record, vehicle, and coverage needs. Contact ${businessName} for a free personalized quote."
-      }
-    }
-  ]
-}
-</script>`,
+      description: "FAQ structured data was not detected on the scanned page. If you publish helpful questions and answers, any FAQ markup must match that visible content. Replace these placeholders with accurate answers before use; markup does not guarantee a special search appearance.",
+      copyText: schemaSnippet({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: `What services does ${businessName} offer?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "[Describe only the services this business actually provides. Match the answer visible on your website.]",
+            },
+          },
+          {
+            "@type": "Question",
+            name: `How can I contact ${businessName}?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "[Provide verified business contact details and any relevant appointment instructions. Match the visible website answer.]",
+            },
+          },
+        ],
+      }),
       impact: "medium",
       layer: 5,
     });
@@ -674,57 +639,4 @@ function generateQuickWins(
   wins.sort((a, b) => impactOrder[a.impact] - impactOrder[b.impact]);
 
   return wins.slice(0, 5);
-}
-
-async function findRealCompetitors(businessName: string, city: string, state: string): Promise<CompetitorGap[]> {
-  const mapsKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (mapsKey && mapsKey !== 'YOUR_MAPS_API_KEY_HERE') {
-    try {
-      // Use Places API (New) text search to find competing insurance agents
-      const query = `insurance agent ${city} ${state}`;
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${mapsKey}`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-      const data = await res.json();
-      const places = (data.results || [])
-        .filter((p: any) => p.name?.toLowerCase() !== businessName.toLowerCase())
-        .slice(0, 3);
-
-      if (places.length > 0) {
-        return places.map((p: any) => ({
-          domain: p.website || `${p.name?.toLowerCase().replace(/\s+/g, '')}.com`,
-          businessName: p.name,
-          advantage: `${p.rating ? p.rating + '★ rating, ' : ''}${p.user_ratings_total || 0} reviews on Google Maps`,
-          score: Math.min(90, 50 + (p.user_ratings_total || 0) / 10),
-        }));
-      }
-    } catch {
-      // Fall through to mock
-    }
-  }
-  return generateMockCompetitors(city, state);
-}
-
-function generateMockCompetitors(city: string, state: string): CompetitorGap[] {
-  return [
-    {
-      domain: `${city.toLowerCase().replace(/\s+/g, "")}insurance.com`,
-      businessName: `${city} Insurance Group`,
-      advantage: "12 city-specific landing pages, FAQ schema on every page",
-      score: 78,
-    },
-    {
-      domain: `trusted${state.toLowerCase()}agent.com`,
-      businessName: `Trusted ${state} Insurance`,
-      advantage: "142 Google reviews (4.9★), active review response",
-      score: 72,
-    },
-    {
-      domain: `${city.toLowerCase().replace(/\s+/g, "-")}-coverage.com`,
-      businessName: `${city} Coverage Experts`,
-      advantage: "Complete LocalBusiness schema, About page with credentials",
-      score: 65,
-    },
-  ];
 }

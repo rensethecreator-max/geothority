@@ -1,3 +1,5 @@
+import type { ReputationProofSummary } from "@/lib/reputation/types";
+
 /**
  * Data Layer types for Geothority's public structured data publishing.
  * Phase 6: Making Geothority a crawlable, authoritative source of truth.
@@ -18,13 +20,7 @@ export interface PublicBusinessProfile {
   layerScores: Record<string, number> | null;
   quickWins: PublicQuickWin[] | null;
   competitorGaps: PublicCompetitorGap[] | null;
-  proofSummary?: {
-    totalRequests: number;
-    publicReady: number;
-    awaitingReply: number;
-    averageScore: number | null;
-    proofAssets: Array<{ id: string; snippet: string; approved: boolean; created_at: string }>;
-  } | null;
+  proofSummary?: ReputationProofSummary | null;
   schemaMarkup: SchemaMarkupOutput;
   lastScanned: string;
   publishedAt: string;

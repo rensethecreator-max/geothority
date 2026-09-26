@@ -3,20 +3,11 @@
 import { useState } from "react";
 import { ExternalLink, Star } from "lucide-react";
 
-interface ReviewTemplateView {
-  id: string;
-  categoryLabel: string;
-  icon: string;
-  filledText: string;
-}
-
 interface PublicReviewFlowProps {
   token: string;
   businessName: string;
   googleUrl: string;
-  templates: ReviewTemplateView[];
-  alreadyUsed: boolean;
-  initialStatus?: string;
+  hasPriorResponse: boolean;
   brand?: {
     logoUrl?: string | null;
     primaryColor?: string | null;
@@ -26,224 +17,146 @@ interface PublicReviewFlowProps {
   } | null;
 }
 
-export function PublicReviewFlow({ token, businessName, googleUrl, templates, alreadyUsed, initialStatus = "public_review_ready", brand }: PublicReviewFlowProps) {
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [banner, setBanner] = useState(false);
+export function PublicReviewFlow({ token, businessName, googleUrl, hasPriorResponse, brand }: PublicReviewFlowProps) {
   const [score, setScore] = useState<number | null>(null);
   const [feedbackText, setFeedbackText] = useState("");
-  const [status, setStatus] = useState(initialStatus);
+  const [allowQuote, setAllowQuote] = useState(false);
+  const [submitted, setSubmitted] = useState(hasPriorResponse);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const primaryColor = brand?.primaryColor || "#4f46e5";
-  const accentColor = brand?.accentColor || primaryColor;
+  const primaryColor = brand?.primaryColor || "#2563eb";
+  const accentColor = brand?.accentColor || "#10b981";
 
-  async function trackReviewAction(action: "open_google" | "use_template", templateId?: string) {
-    try {
-      await fetch(`/api/review/${encodeURIComponent(token)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, templateId }),
-        keepalive: true,
-      });
-    } catch {
-      // Non-blocking tracking only.
-    }
-  }
-
-  async function submitFeedback() {
+  async function submitPrivateFeedback() {
     if (!score) return;
     setSubmitting(true);
     setError(null);
+
     try {
-      const res = await fetch(`/api/review/${encodeURIComponent(token)}`, {
+      const response = await fetch(`/api/review/${encodeURIComponent(token)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "submit_feedback", score, feedbackText }),
+        body: JSON.stringify({ action: "submit_feedback", score, feedbackText, allowQuote }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to submit feedback");
-      setStatus(json.status || (score >= 4 ? "public_review_ready" : "feedback_received"));
-    } catch (err: any) {
-      setError(err.message || "Failed to submit feedback");
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || "We couldn’t save your feedback. Please try again.");
+      setSubmitted(true);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "We couldn’t save your feedback. Please try again.");
     } finally {
       setSubmitting(false);
     }
   }
 
-  function openGoogleReview() {
-    void trackReviewAction("open_google");
-    window.open(googleUrl, "_blank", "noopener,noreferrer");
+  function recordGoogleOpen() {
+    void fetch(`/api/review/${encodeURIComponent(token)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "open_google" }),
+      keepalive: true,
+    }).catch(() => undefined);
   }
 
-  async function handleTemplateClick(template: ReviewTemplateView) {
-    try {
-      await navigator.clipboard.writeText(template.filledText);
-    } catch {
-      const ta = document.createElement("textarea");
-      ta.value = template.filledText;
-      ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-    }
+  return (
+    <main
+      className="min-h-screen px-4 py-10 text-[var(--foreground)]"
+      style={{ background: `radial-gradient(circle at top, ${primaryColor}18, transparent 34%), var(--background)` }}
+    >
+      <div className="mx-auto max-w-xl space-y-6">
+        <section className="rounded-3xl border border-white/10 bg-[var(--card)]/95 p-6 shadow-2xl shadow-black/10 sm:p-8">
+          {brand?.logoUrl ? (
+            <img src={brand.logoUrl} alt={`${businessName} logo`} className="mx-auto mb-5 max-h-16 max-w-[220px] object-contain" />
+          ) : (
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl text-white" style={{ background: primaryColor }}>
+              <Star className="h-6 w-6" />
+            </div>
+          )}
 
-    void trackReviewAction("use_template", template.id);
-    setCopiedId(template.id);
-    setBanner(true);
-    setTimeout(() => openGoogleReview(), 140);
-    setTimeout(() => {
-      setBanner(false);
-      setCopiedId(null);
-    }, 7000);
-  }
-
-  const isPublicReady = status === "public_review_ready";
-  const isPrivateRecovery = status === "feedback_received";
-
-  if (!isPublicReady) {
-    return (
-      <div
-        className="min-h-screen px-4 py-10 text-[var(--foreground)]"
-        style={{
-          background: `radial-gradient(circle at top, ${primaryColor}18, transparent 34%), var(--background)`,
-        }}
-      >
-        <div className="mx-auto max-w-xl space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-[var(--card)]/95 p-6 text-center shadow-2xl shadow-black/10">
-            {brand?.logoUrl ? (
-              <img src={brand.logoUrl} alt={`${businessName} logo`} className="mx-auto mb-5 max-h-16 max-w-[220px] object-contain" />
-            ) : (
-              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl text-white" style={{ background: primaryColor }}>
-                <Star className="h-7 w-7" />
-              </div>
-            )}
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Private feedback</div>
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Your experience matters</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">How was your experience with {businessName}?</h1>
             <p className="mt-3 text-sm leading-6 text-[var(--muted-foreground)]">
-              Your answer starts privately. Happy customers can share on Google after this step, and unhappy customers can be heard before anything goes public.
+              You can share private feedback, write an honest public review, do both, or skip either option. Your rating never changes the choices shown here.
             </p>
+          </div>
 
-            {isPrivateRecovery ? (
-              <div className="mt-7 space-y-4">
-                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-4 text-sm leading-6 text-amber-100">
-                  Thanks for telling us. Your feedback was sent privately so the team can review it and follow up.
-                </div>
-                <button
-                  type="button"
-                  onClick={openGoogleReview}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-white/5"
-                >
-                  Still want to post publicly? Open Google Reviews <ExternalLink className="h-4 w-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="mt-7 space-y-5">
+          {submitted ? (
+            <div className="mt-7 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-4 text-center text-sm leading-6 text-emerald-100">
+              Thank you for sharing your rating. {allowQuote && feedbackText.trim() ? "You gave the business permission to review your note as a possible quote; nothing is published automatically. " : ""}You can still share an honest review publicly if you choose.
+            </div>
+          ) : (
+            <div className="mt-7 space-y-4">
+              <fieldset>
+                <legend className="mb-3 text-sm font-medium">Private rating (optional)</legend>
                 <div className="flex justify-center gap-2">
                   {[1, 2, 3, 4, 5].map((value) => (
                     <button
                       key={value}
                       type="button"
                       onClick={() => setScore(value)}
-                      className="flex h-12 w-12 items-center justify-center rounded-2xl border transition"
+                      aria-label={`${value} out of 5 stars`}
+                      aria-pressed={score === value}
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                       style={{
                         borderColor: score && value <= score ? accentColor : "rgba(148,163,184,0.35)",
                         background: score && value <= score ? `${accentColor}22` : "transparent",
                         color: score && value <= score ? accentColor : "var(--muted-foreground)",
                       }}
-                      aria-label={`${value} star rating`}
                     >
                       <Star className={`h-6 w-6 ${score && value <= score ? "fill-current" : ""}`} />
                     </button>
                   ))}
                 </div>
-                <textarea
-                  value={feedbackText}
-                  onChange={(event) => setFeedbackText(event.target.value)}
-                  placeholder={score && score < 4 ? "Tell us what went wrong so the team can make it right." : "Optional: what made the experience good?"}
-                  className="min-h-[112px] w-full rounded-2xl border border-white/10 bg-black/10 px-4 py-3 text-sm outline-none ring-0 placeholder:text-[var(--muted-foreground)] focus:border-white/25"
+              </fieldset>
+
+              <label className="block text-sm font-medium" htmlFor="private-feedback">Private note (optional)</label>
+              <textarea
+                id="private-feedback"
+                value={feedbackText}
+                onChange={(event) => setFeedbackText(event.target.value)}
+                maxLength={2000}
+                placeholder="Tell the team anything you’d like them to know."
+                className="min-h-[112px] w-full rounded-2xl border border-white/10 bg-black/10 px-4 py-3 text-sm outline-none placeholder:text-[var(--muted-foreground)] focus:border-white/25"
+              />
+              <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/5 p-3 text-xs leading-5 text-[var(--muted-foreground)]">
+                <input
+                  type="checkbox"
+                  checked={allowQuote}
+                  onChange={(event) => setAllowQuote(event.target.checked)}
+                  disabled={!feedbackText.trim()}
+                  className="mt-1 h-4 w-4 accent-emerald-500"
                 />
-                {error ? <div className="text-sm text-rose-300">{error}</div> : null}
-                <button
-                  type="button"
-                  disabled={!score || submitting}
-                  onClick={submitFeedback}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
-                  style={{ background: primaryColor }}
-                >
-                  {submitting ? "Sending..." : score && score >= 4 ? "Continue" : "Send private feedback"}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
+                <span>I give {businessName} permission to review my written note as a possible quote on its website or marketing materials. The business must approve it before use. Leaving this unchecked keeps your note private.</span>
+              </label>
+              {error ? <p role="alert" className="text-sm text-rose-300">{error}</p> : null}
+              <button
+                type="button"
+                disabled={!score || submitting}
+                onClick={submitPrivateFeedback}
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {submitting ? "Saving feedback…" : "Send private feedback"}
+              </button>
+            </div>
+          )}
 
-  return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.08),transparent_35%),var(--background)] px-4 py-10 text-[var(--foreground)]">
-      <div className="mx-auto max-w-2xl space-y-6">
-        {banner ? (
-          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-center text-sm font-medium text-emerald-200">
-            Review copied — Google Reviews is opening now. Paste and you’re done.
-          </div>
-        ) : null}
+          {googleUrl ? (
+            <a
+              href={googleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={recordGoogleOpen}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+            >
+              Write an honest Google review <ExternalLink className="h-4 w-4" />
+            </a>
+          ) : null}
 
-        <div className="text-center">
-          {brand?.logoUrl ? <img src={brand.logoUrl} alt={`${businessName} logo`} className="mx-auto mb-5 max-h-14 max-w-[220px] object-contain" /> : null}
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
-            <Star className="h-3.5 w-3.5" /> Quick review flow
-          </div>
-          <h1 className="text-3xl font-semibold tracking-[-0.03em]">Help others find {businessName}</h1>
-          <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-            Pick a review that sounds like you. We’ll copy it and open Google so you can paste it in one step.
+          <p className="mt-4 text-center text-xs leading-5 text-[var(--muted-foreground)]">
+            A public review is optional. Please use your own words and share only what reflects your experience.
           </p>
-        </div>
-
-        {alreadyUsed ? (
-          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            You’ve already used this review link once — thank you. You can still open Google and write your own if you’d like.
-          </div>
-        ) : null}
-
-        <div className="space-y-4">
-          {templates.map((template) => {
-            const copied = copiedId === template.id;
-            return (
-              <div key={template.id} className={`rounded-3xl border bg-[var(--card)]/95 ${copied ? "border-emerald-500/30" : "border-white/10"}`}>
-                <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <span>{template.icon}</span>
-                    <span>{template.categoryLabel}</span>
-                  </div>
-                  <div className="text-amber-400">★★★★★</div>
-                </div>
-                <div className="space-y-4 px-5 py-5">
-                  <p className="text-sm leading-7 text-[var(--foreground)]/90">“{template.filledText}”</p>
-                  <button
-                    onClick={() => handleTemplateClick(template)}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400"
-                  >
-                    <Star className="h-4 w-4" /> Use this review
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={openGoogleReview}
-            className="inline-flex items-center gap-2 text-sm font-medium text-electric-500 hover:text-electric-400"
-          >
-            Prefer to write your own? Open Google Reviews <ExternalLink className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

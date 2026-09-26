@@ -13,7 +13,7 @@
  */
 
 import crypto from "crypto";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 
 const CACHE_TTL_HOURS = 24;
 
@@ -32,7 +32,8 @@ export async function getCachedAI<T>(
   const key = makeKey(namespace, params);
 
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createOptionalServiceClient();
+    if (!supabase) return { data: await fetcher(), fromCache: false };
 
     // Try to get from cache
     const { data: cached } = await supabase

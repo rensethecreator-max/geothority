@@ -135,6 +135,10 @@ async function enrichKeywordsWithAI(
       seeds_hash: seedKeywords.sort().join("|").slice(0, 200),
     },
     async () => {
+      if (!openai) {
+        throw new Error("Keyword research is temporarily unavailable. Please try again later.");
+      }
+
       const prompt = `You are an expert local SEO keyword researcher. Analyze the following seed keywords for a ${input.businessType} business "${input.businessName}" in ${input.city}, ${input.state}.
 
 SERVICES: ${input.services.join(", ")}
@@ -210,6 +214,10 @@ async function extractPeopleAlsoAsk(
       services: input.services.sort().join(","),
     },
     async () => {
+      if (!openai) {
+        throw new Error("Keyword research is temporarily unavailable. Please try again later.");
+      }
+
       const prompt = `For a ${input.businessType} business in ${input.city}, ${input.state}, provide "People Also Ask" questions for each service category.
 
 Services: ${input.services.join(", ")}

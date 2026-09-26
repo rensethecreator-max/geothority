@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendGBPAlert } from "@/lib/email-alerts";
 
+type MonitorAlerts = {
+  businessName: string;
+  alerts: Parameters<typeof sendGBPAlert>[2];
+};
+
 /**
  * GET /api/cron/gbp-monitor
  * Weekly cron job — scan all active GBP monitors.
@@ -11,7 +16,10 @@ export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret) {
+    return NextResponse.json({ error: "Cron configuration missing" }, { status: 503 });
+  }
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -24,6 +32,9 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "Google Maps configuration missing" }, { status: 503 });
+  }
 
   try {
     // Get all active monitors due for a weekly scan
@@ -40,38 +51,32 @@ export async function GET(req: NextRequest) {
 
     let processed = 0;
     let failed = 0;
-    const alertsByUser = new Map<string, { businessName: string; alerts: Array<{ type: string; title: string; description: string }> }>();
+    const alertsByUser = new Map<string, MonitorAlerts>();
 
     for (const monitor of monitors || []) {
       try {
-        if (!apiKey) {
-          // No API key — create a placeholder snapshot
-          await supabase.from("gbp_monitor_snapshots").insert({
-            monitor_id: monitor.id,
-            rating: null,
-            review_count: null,
-            competitor_data: null,
-            scanned_at: new Date().toISOString(),
-          });
-        } else {
+        {
           const query = monitor.place_id
             ? `https://maps.googleapis.com/maps/api/place/details/json?place_id=${monitor.place_id}&fields=name,rating,user_ratings_total&key=${apiKey}`
             : `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(`${monitor.business_name} ${monitor.city} ${monitor.state}`)}&key=${apiKey}`;
 
           const res = await fetch(query, { signal: AbortSignal.timeout(10000) });
+          if (!res.ok) throw new Error(`Google Maps returned ${res.status}`);
           const data = (await res.json()) as {
             result?: { rating?: number; user_ratings_total?: number };
             results?: { rating?: number; user_ratings_total?: number }[];
           };
           const place = data.result || data.results?.[0];
+          if (!place) throw new Error("Google Maps did not return this business");
 
-          await supabase.from("gbp_monitor_snapshots").insert({
+          const { error: snapshotError } = await supabase.from("gbp_monitor_snapshots").insert({
             monitor_id: monitor.id,
-            rating: place?.rating || null,
-            review_count: place?.user_ratings_total || null,
+            rating: place.rating ?? null,
+            review_count: place.user_ratings_total ?? null,
             competitor_data: null,
             scanned_at: new Date().toISOString(),
           });
+          if (snapshotError) throw snapshotError;
 
           // Check for rating drops vs previous snapshot
           const prevRes = await supabase
@@ -95,7 +100,7 @@ export async function GET(req: NextRequest) {
                 read: false,
               });
 
-              const existing = alertsByUser.get(monitor.user_id) ?? {
+              const existing: MonitorAlerts = alertsByUser.get(monitor.user_id) ?? {
                 businessName: monitor.business_name,
                 alerts: [],
               };
@@ -109,10 +114,11 @@ export async function GET(req: NextRequest) {
           }
         }
 
-        await supabase
+        const { error: updateError } = await supabase
           .from("gbp_monitors")
           .update({ last_scanned: new Date().toISOString() })
           .eq("id", monitor.id);
+        if (updateError) throw updateError;
 
         processed++;
       } catch (err) {

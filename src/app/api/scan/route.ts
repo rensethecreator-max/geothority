@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { scanWebsite } from "@/lib/scanner";
+import { scanWebsite, WebsiteScanError } from "@/lib/scanner";
 import { scanRatelimit, checkRateLimit } from "@/lib/ratelimit";
 import { recordJourneyMilestone } from "@/lib/journey-events";
 import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
@@ -52,27 +52,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { url, businessName, city, state, sourceScanId } = await req.json();
+    const body: unknown = await req.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "A valid scan request is required" }, { status: 400 });
+    }
+    const { url, businessName, city, state, sourceScanId } = body as Record<string, unknown>;
+    if ([url, businessName, city, state, sourceScanId].some(value => value != null && typeof value !== "string")) {
+      return NextResponse.json({ error: "Scan fields must be text" }, { status: 400 });
+    }
+    const inputUrl = typeof url === "string" ? url.trim() : "";
+    const inputBusinessName = typeof businessName === "string" ? businessName.trim() : "";
+    const inputCity = typeof city === "string" ? city.trim() : "";
+    const inputState = typeof state === "string" ? state.trim() : "";
 
     // Input length validation (prevents prompt injection + cost abuse)
-    if (url?.length > MAX_URL_LENGTH || businessName?.length > MAX_NAME_LENGTH ||
-        city?.length > MAX_CITY_LENGTH || state?.length > MAX_STATE_LENGTH) {
+    if (inputUrl.length > MAX_URL_LENGTH || inputBusinessName.length > MAX_NAME_LENGTH ||
+        inputCity.length > MAX_CITY_LENGTH || inputState.length > MAX_STATE_LENGTH) {
       return NextResponse.json({ error: "Input too long" }, { status: 400 });
     }
 
     // Rate limiting — 3 scans/day per user on free plan
     const rl = await checkRateLimit(scanRatelimit, `scan:${user.id}`);
+    if (rl.unavailable) {
+      return NextResponse.json(
+        { error: "Scans are temporarily unavailable. Please try again shortly." },
+        { status: 503 }
+      );
+    }
     if (!rl.allowed) {
       return NextResponse.json(
-        { error: "Rate limit exceeded", message: "You've reached your daily scan limit. Upgrade to Pro for unlimited scans.", reset: rl.reset },
+        { error: "Rate limit exceeded", message: "You've reached your daily scan limit. Try again after it resets.", reset: rl.reset },
         { status: 429 }
       );
     }
 
-    let resolvedUrl = url;
-    let resolvedBusinessName = businessName;
-    let resolvedCity = city;
-    let resolvedState = state;
+    let resolvedUrl = inputUrl;
+    let resolvedBusinessName = inputBusinessName;
+    let resolvedCity = inputCity;
+    let resolvedState = inputState;
 
     if (sourceScanId && (!resolvedUrl || !resolvedBusinessName || !resolvedCity || !resolvedState)) {
       const { data: sourceScan } = await supabase
@@ -126,28 +143,39 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Insert score_history entry for chart tracking
-    await supabase.from("score_history").insert({
+    const warnings: string[] = [];
+
+    // These secondary records improve the dashboard but must not hide a
+    // successfully saved scan when one optional write fails.
+    const { error: historyError } = await supabase.from("score_history").insert({
       user_id: user.id,
       scan_id: scan.id,
       overall_score: result.localAuthorityScore,
       layer_scores: result.layerScores,
       scanned_at: new Date().toISOString(),
     });
+    if (historyError) {
+      console.error("Scan history could not be saved", historyError);
+      warnings.push("The scan was saved, but its history chart could not be updated.");
+    }
 
     // Update user profile with business info
-    await supabase.from("user_profiles").upsert({
+    const { error: profileError } = await supabase.from("user_profiles").upsert({
       id: user.id,
       business_name: resolvedBusinessName,
       city: resolvedCity,
       state: resolvedState,
-      website_url: resolvedUrl,
+      website_url: result.url,
     });
+    if (profileError) {
+      console.error("Business profile could not be updated after scan", profileError);
+      warnings.push("The scan was saved, but your business profile could not be updated.");
+    }
 
     const brandCapture = result.rawScanData.brandCapture;
     if (brandCapture) {
       const businessIdentity = getReputationBusinessIdentity(resolvedBusinessName);
-      await supabase
+      const { error: brandError } = await supabase
         .from("business_brand_profiles")
         .upsert(
           {
@@ -173,13 +201,25 @@ export async function POST(req: NextRequest) {
           },
           { onConflict: "user_id,business_key" },
         );
+      if (brandError) {
+        console.error("Brand profile could not be updated after scan", brandError);
+        warnings.push("The scan was saved, but automatic brand styling could not be updated.");
+      }
     }
 
-    await recordJourneyMilestone(user.id, "first_scan_completed");
+    try {
+      await recordJourneyMilestone(user.id, "first_scan_completed");
+    } catch (milestoneError) {
+      console.error("First scan milestone could not be recorded", milestoneError);
+      warnings.push("The scan was saved, but onboarding progress could not be updated.");
+    }
 
-    return NextResponse.json({ scan });
+    return NextResponse.json({ scan, warnings });
   } catch (error) {
     console.error("Scan API error:", error);
+    if (error instanceof WebsiteScanError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json(
       { error: "Failed to perform scan" },
       { status: 500 }

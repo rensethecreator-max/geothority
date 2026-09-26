@@ -65,6 +65,7 @@ export async function GET(req: NextRequest) {
     // Compute trend data (last 10 scorecard snapshots)
     const checksByDate = new Map<string, { found: number; total: number }>();
     for (const check of recentChecks ?? []) {
+      if (check.is_real !== true) continue;
       const date = new Date(check.checked_at).toISOString().slice(0, 10);
       const existing = checksByDate.get(date) ?? { found: 0, total: 0 };
       existing.total++;
@@ -85,6 +86,7 @@ export async function GET(req: NextRequest) {
     // Per-engine summary
     const engineSummary: Record<string, { checks: number; found: number; lastChecked: string | null }> = {};
     for (const check of recentChecks ?? []) {
+      if (check.is_real !== true) continue;
       if (!engineSummary[check.engine]) {
         engineSummary[check.engine] = { checks: 0, found: 0, lastChecked: null };
       }
@@ -192,10 +194,12 @@ async function runAndPersistCheck(supabase: any, userId: string, params: Record<
   // Compute and update scorecard
   await computeScorecard(supabase, userId);
 
+  const liveChecks = engines.filter((engine) => engine.isReal);
   return NextResponse.json({
     checksSaved: checkRows.length,
-    found: engines.filter(e => e.found).length,
-    total: engines.length,
+    liveFound: liveChecks.filter((engine) => engine.found).length,
+    liveTotal: liveChecks.length,
+    estimatedCount: engines.length - liveChecks.length,
   });
 }
 
@@ -240,8 +244,9 @@ async function computeScorecard(supabase: any, userId: string) {
   // Get all checks for this user
   const { data: checks } = await supabase
     .from("ai_visibility_checks")
-    .select("engine, found, confidence, checked_at")
+    .select("engine, found, confidence, checked_at, is_real")
     .eq("user_id", userId)
+    .eq("is_real", true)
     .order("checked_at", { ascending: false });
 
   if (!checks || checks.length === 0) {

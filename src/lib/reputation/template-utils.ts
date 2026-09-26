@@ -60,7 +60,23 @@ export function generateReputationTemplates(
   return merged;
 }
 
+export function isSafeGoogleReviewUrl(value: string) {
+  try {
+    const url = new URL(value.trim());
+    const host = url.hostname.toLowerCase();
+    const isGoogleReviewHost = host === "google.com"
+      || host.endsWith(".google.com")
+      || host === "g.page"
+      || host === "maps.app.goo.gl";
+    return url.protocol === "https:" && isGoogleReviewHost;
+  } catch {
+    return false;
+  }
+}
+
 export function buildGoogleReviewUrl(googleReviewLink: string | null | undefined, businessName: string) {
-  if (googleReviewLink?.trim()) return googleReviewLink.trim();
+  if (googleReviewLink?.trim() && isSafeGoogleReviewUrl(googleReviewLink)) {
+    return new URL(googleReviewLink.trim()).toString();
+  }
   return `https://www.google.com/maps/search/${encodeURIComponent(businessName)}/`;
 }

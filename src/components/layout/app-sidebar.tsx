@@ -35,6 +35,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import NotificationCenter from "@/components/saas/NotificationCenter";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -83,15 +84,15 @@ export function AppSidebar() {
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then((result: { data: { user: User | null } }) => {
       if (isMounted) {
-        setUserEmail(data.user?.email ?? null);
+        setUserEmail(result.data.user?.email ?? null);
       }
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       if (isMounted) {
         setUserEmail(session?.user?.email ?? null);
       }
@@ -130,7 +131,7 @@ export function AppSidebar() {
         </Link>
         <div className="flex items-center gap-1">
           <ThemeToggle />
-          <NotificationCenter />
+          <NotificationCenter userKey={userEmail} />
         </div>
       </div>
 
@@ -213,7 +214,7 @@ export function AppSidebar() {
           </div>
           <span className="font-semibold text-sm">Geothority</span>
         </div>
-        <NotificationCenter />
+        <NotificationCenter userKey={userEmail} />
       </div>
 
       {mobileOpen && (

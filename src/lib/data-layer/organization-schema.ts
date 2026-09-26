@@ -24,13 +24,13 @@ export function generateOrganizationSchema() {
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
-      url: `${BASE_URL}/support`,
+      url: `${BASE_URL}/contact`,
       availableLanguage: "English",
     },
     offers: {
       "@type": "AggregateOffer",
       lowPrice: "0",
-      highPrice: "299",
+      highPrice: "297",
       priceCurrency: "USD",
       offerCount: 4,
     },
@@ -70,14 +70,8 @@ export function generateSoftwareAppSchema() {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
-      description: "Free scan and basic monitoring",
+      description: "Free website scans and visibility findings",
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "127",
-      bestRating: "5",
-      worstRating: "1",
-    },
+
   };
 }

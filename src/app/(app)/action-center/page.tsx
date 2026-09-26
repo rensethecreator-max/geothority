@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
+import type { Scan } from "@/lib/types";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
   getLayerScores,
@@ -120,8 +121,8 @@ interface LatestScanSummary {
   state: string | null;
   created_at: string;
   geothority_score: number | null;
-  layer_scores: Record<string, number> | null;
-  quick_wins: Array<{ title?: string | null }> | null;
+  layer_scores: Scan["layer_scores"];
+  quick_wins: Scan["quick_wins"];
 }
 
 interface LaunchStateSummary {
@@ -832,7 +833,7 @@ export default function ActionCenterPage() {
             <div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">Reputation ops</div>
               <h2 className="mt-2 text-xl font-semibold text-[var(--foreground)]">Private feedback and review follow-up</h2>
-              <p className="mt-2 text-sm text-[var(--muted-foreground)]">Keep low-score issues private, respond fast, and watch requests waiting on a reply.</p>
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">Prioritize private follow-up, respond promptly, and track requests waiting on a reply. Every customer keeps the same public review option.</p>
             </div>
             <Link href="/reputation" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-3 py-2 text-sm text-[var(--foreground)] transition-colors hover:border-electric-500/40 hover:text-electric-400">
               Open reputation

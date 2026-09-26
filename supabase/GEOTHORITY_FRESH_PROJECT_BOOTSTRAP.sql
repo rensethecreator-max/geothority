@@ -1,5 +1,5 @@
 -- Geothority fresh-project bootstrap for a dedicated Supabase project
--- Generated on 2026-05-03 to migrate only Geothority schema
+-- Generated on 2026-09-26 to migrate only Geothority schema
 -- Ordered to satisfy table dependencies for a clean project bootstrap
 create extension if not exists pgcrypto;
 
@@ -2069,12 +2069,6 @@ create table if not exists public.reputation_requests (
   trigger_source text not null default 'manual',
   external_event_id text,
   status text not null default 'pending',
-  delivery_state text not null default 'pending',
-  send_attempt_count integer not null default 0,
-  last_send_attempt_at timestamptz,
-  last_send_error text,
-  next_retry_at timestamptz,
-  dead_lettered_at timestamptz,
   score integer,
   feedback_text text,
   review_token text unique,
@@ -2088,28 +2082,14 @@ create table if not exists public.reputation_requests (
 create index if not exists reputation_requests_contact_created_idx
   on public.reputation_requests (contact_id, created_at desc);
 
-create index if not exists reputation_requests_delivery_state_idx
-  on public.reputation_requests (user_id, delivery_state, created_at desc);
-
-create index if not exists reputation_requests_next_retry_idx
-  on public.reputation_requests (delivery_state, next_retry_at)
-  where next_retry_at is not null;
-
 create table if not exists public.reputation_message_log (
   id uuid primary key default gen_random_uuid(),
   request_id uuid not null references public.reputation_requests(id) on delete cascade,
   direction text not null,
   body text not null,
   provider_sid text,
-  attempt_number integer not null default 1,
-  delivery_state text not null default 'sent',
-  error_detail text,
-  simulated boolean not null default true,
   created_at timestamptz not null default now()
 );
-
-create index if not exists reputation_message_log_request_attempt_idx
-  on public.reputation_message_log (request_id, attempt_number desc, created_at desc);
 
 create table if not exists public.reputation_templates (
   id text primary key,
@@ -2156,31 +2136,38 @@ create table if not exists public.reputation_proof_assets (
 alter table public.reputation_settings enable row level security;
 alter table public.reputation_templates enable row level security;
 
-create policy if not exists "reputation_settings_select_own"
+drop policy if exists "reputation_settings_select_own" on public.reputation_settings;
+create policy "reputation_settings_select_own"
   on public.reputation_settings
   for select using (auth.uid() = user_id);
 
-create policy if not exists "reputation_settings_upsert_own"
+drop policy if exists "reputation_settings_upsert_own" on public.reputation_settings;
+create policy "reputation_settings_upsert_own"
   on public.reputation_settings
   for insert with check (auth.uid() = user_id);
 
-create policy if not exists "reputation_settings_update_own"
+drop policy if exists "reputation_settings_update_own" on public.reputation_settings;
+create policy "reputation_settings_update_own"
   on public.reputation_settings
   for update using (auth.uid() = user_id);
 
-create policy if not exists "reputation_templates_select_own"
+drop policy if exists "reputation_templates_select_own" on public.reputation_templates;
+create policy "reputation_templates_select_own"
   on public.reputation_templates
   for select using (auth.uid() = user_id);
 
-create policy if not exists "reputation_templates_insert_own"
+drop policy if exists "reputation_templates_insert_own" on public.reputation_templates;
+create policy "reputation_templates_insert_own"
   on public.reputation_templates
   for insert with check (auth.uid() = user_id);
 
-create policy if not exists "reputation_templates_update_own"
+drop policy if exists "reputation_templates_update_own" on public.reputation_templates;
+create policy "reputation_templates_update_own"
   on public.reputation_templates
   for update using (auth.uid() = user_id);
 
-create policy if not exists "reputation_templates_delete_own"
+drop policy if exists "reputation_templates_delete_own" on public.reputation_templates;
+create policy "reputation_templates_delete_own"
   on public.reputation_templates
   for delete using (auth.uid() = user_id);
 
@@ -2496,6 +2483,7 @@ create index if not exists reputation_event_ledger_event_type_idx
 create or replace function public.prevent_reputation_event_ledger_mutation()
 returns trigger
 language plpgsql
+set search_path = pg_catalog
 as $$
 begin
   raise exception 'reputation_event_ledger is append-only';
@@ -2516,10 +2504,364 @@ create trigger reputation_event_ledger_no_delete
 
 alter table public.reputation_event_ledger enable row level security;
 
-create policy if not exists "reputation_event_ledger_select_own"
+drop policy if exists "reputation_event_ledger_select_own" on public.reputation_event_ledger;
+create policy "reputation_event_ledger_select_own"
   on public.reputation_event_ledger
   for select using (auth.uid() = user_id);
 
 -- ==================================================================
 -- END 20260503_reputation_event_ledger.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260603_brand_capture_reputation_channels.sql
+-- ==================================================================
+-- Brand Capture + Reputation Channel Layer foundation
+
+create table if not exists public.business_brand_profiles (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  business_key text not null,
+  business_name text not null,
+  website_url text,
+  logo_url text,
+  logo_source text,
+  primary_color text,
+  secondary_color text,
+  accent_color text,
+  font_family_hint text,
+  hero_image_url text,
+  service_image_urls text[] not null default '{}',
+  business_category text,
+  motif text,
+  tone text,
+  confidence_score integer not null default 0,
+  extraction_notes text[] not null default '{}',
+  manual_overrides jsonb not null default '{}'::jsonb,
+  source_scan_id uuid references public.scans(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, business_key)
+);
+
+alter table public.business_brand_profiles enable row level security;
+
+do $$
+begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'business_brand_profiles' and policyname = 'business_brand_profiles_select_own') then
+    create policy "business_brand_profiles_select_own"
+      on public.business_brand_profiles
+      for select using (auth.uid() = user_id);
+  end if;
+
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'business_brand_profiles' and policyname = 'business_brand_profiles_insert_own') then
+    create policy "business_brand_profiles_insert_own"
+      on public.business_brand_profiles
+      for insert with check (auth.uid() = user_id);
+  end if;
+
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'business_brand_profiles' and policyname = 'business_brand_profiles_update_own') then
+    create policy "business_brand_profiles_update_own"
+      on public.business_brand_profiles
+      for update using (auth.uid() = user_id);
+  end if;
+
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'business_brand_profiles' and policyname = 'business_brand_profiles_delete_own') then
+    create policy "business_brand_profiles_delete_own"
+      on public.business_brand_profiles
+      for delete using (auth.uid() = user_id);
+  end if;
+end $$;
+
+alter table if exists public.reputation_settings
+  add column if not exists enabled_channels text not null default 'sms',
+  add column if not exists primary_channel text not null default 'sms',
+  add column if not exists email_subject text not null default 'Quick question about your experience with {business_name}',
+  add column if not exists email_template text not null default 'Thanks for choosing {business_name}. How was your experience? Use this private link to leave quick feedback: {review_link}',
+  add column if not exists send_both_delay_minutes integer not null default 240,
+  add column if not exists max_reminders integer not null default 1,
+  add column if not exists reminder_delay_hours integer not null default 48,
+  add column if not exists quiet_hours_start text,
+  add column if not exists quiet_hours_end text;
+
+alter table if exists public.reputation_contacts
+  alter column phone drop not null,
+  add column if not exists sms_opt_out boolean not null default false,
+  add column if not exists email_opt_out boolean not null default false,
+  add column if not exists preferred_channel text,
+  add column if not exists last_contacted_at timestamptz,
+  add column if not exists last_reputation_request_at timestamptz;
+
+alter table if exists public.reputation_requests
+  add column if not exists channel text not null default 'sms',
+  add column if not exists requested_channels text[] not null default array['sms']::text[],
+  add column if not exists brand_profile_id uuid references public.business_brand_profiles(id) on delete set null;
+
+alter table if exists public.reputation_message_log
+  add column if not exists channel text,
+  add column if not exists recipient text,
+  add column if not exists provider text,
+  add column if not exists provider_message_id text,
+  add column if not exists template_id text,
+  add column if not exists opened_at timestamptz,
+  add column if not exists clicked_at timestamptz,
+  add column if not exists delivered_at timestamptz,
+  add column if not exists bounced_at timestamptz,
+  add column if not exists complained_at timestamptz;
+
+create index if not exists reputation_requests_channel_idx
+  on public.reputation_requests (user_id, channel, created_at desc);
+
+create index if not exists reputation_message_log_channel_idx
+  on public.reputation_message_log (channel, created_at desc);
+
+-- ==================================================================
+-- END 20260603_brand_capture_reputation_channels.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260925004447_operator_runs.sql
+-- ==================================================================
+-- Durable operator run log for coordinated launch decisions and execution history.
+
+CREATE TABLE IF NOT EXISTS operator_runs (
+  id TEXT PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  scan_id UUID,
+  status TEXT NOT NULL CHECK (status IN ('blocked', 'ready', 'launched', 'resumed', 'failed')),
+  operator_action TEXT NOT NULL,
+  message TEXT NOT NULL,
+  redirect_to TEXT,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_operator_runs_user_created
+  ON operator_runs(user_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_operator_runs_scan
+  ON operator_runs(scan_id);
+
+ALTER TABLE operator_runs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users see own operator runs"
+  ON operator_runs FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users create own operator runs"
+  ON operator_runs FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users update own operator runs"
+  ON operator_runs FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- ==================================================================
+-- END 20260925004447_operator_runs.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260925004453_operator_run_events.sql
+-- ==================================================================
+ALTER TABLE operator_runs
+  ADD COLUMN IF NOT EXISTS current_stage TEXT NOT NULL DEFAULT 'intake',
+  ADD COLUMN IF NOT EXISTS stage_status TEXT NOT NULL DEFAULT 'started',
+  ADD COLUMN IF NOT EXISTS plan_id TEXT,
+  ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS operator_run_events (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES operator_runs(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  stage TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('started', 'completed', 'blocked', 'redirected', 'failed', 'info')),
+  title TEXT NOT NULL,
+  detail TEXT NOT NULL,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_operator_run_events_run_created
+  ON operator_run_events(run_id, created_at ASC);
+
+CREATE INDEX IF NOT EXISTS idx_operator_run_events_user_created
+  ON operator_run_events(user_id, created_at DESC);
+
+ALTER TABLE operator_run_events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users see own operator run events"
+  ON operator_run_events FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users create own operator run events"
+  ON operator_run_events FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- ==================================================================
+-- END 20260925004453_operator_run_events.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260925033817_restrict_user_profile_billing_writes.sql
+-- ==================================================================
+-- Billing entitlements come from the server's Stripe integration. RLS limits
+-- owners to their own rows; column grants separately prevent self-upgrades.
+revoke insert, update on table public.user_profiles from public, anon, authenticated;
+
+do $profile_column_access$
+declare
+  all_columns text;
+  editable_columns text;
+begin
+  select string_agg(quote_ident(column_name), ', ' order by ordinal_position)
+    into all_columns
+    from information_schema.columns
+    where table_schema = 'public' and table_name = 'user_profiles';
+
+  -- Remove any pre-existing column grants as well as table grants. Otherwise a
+  -- prior grant on a protected column would remain effective after the revoke.
+  execute format(
+    'revoke insert (%1$s), update (%1$s) on table public.user_profiles from public, anon, authenticated',
+    all_columns
+  );
+
+  -- Some legacy bootstraps do not yet have the automation execution flags.
+  -- Grant only named, present columns; new billing/admin columns stay denied.
+  select string_agg(quote_ident(column_name), ', ' order by ordinal_position)
+    into editable_columns
+    from information_schema.columns
+    where table_schema = 'public' and table_name = 'user_profiles'
+      and column_name = any(array[
+        'id', 'business_name', 'city', 'state', 'website_url',
+        'onboarding_completed', 'cms_type', 'cms_credentials',
+        'automation_policies', 'auto_exec_enabled', 'auto_exec_dry_run'
+      ]);
+
+  execute format(
+    'grant insert (%1$s), update (%1$s) on table public.user_profiles to authenticated',
+    editable_columns
+  );
+end
+$profile_column_access$;
+
+-- Existing owner RLS still controls which rows can be read or changed.
+-- Table SELECT remains so profile screens may read their own plan/status.
+grant select on table public.user_profiles to authenticated;
+grant select, insert, update, delete on table public.user_profiles to service_role;
+
+-- ==================================================================
+-- END 20260925033817_restrict_user_profile_billing_writes.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260925034242_grant_operator_service_access.sql
+-- ==================================================================
+-- Server readiness reads scans; operator coordination records run progress.
+-- Keep these grants limited to the tables and operations used by those paths.
+grant select on table public.scans to service_role;
+grant select, insert, update on table public.operator_runs to service_role;
+grant select, insert on table public.operator_run_events to service_role;
+
+-- ==================================================================
+-- END 20260925034242_grant_operator_service_access.sql
+-- ==================================================================
+
+
+-- ==================================================================
+-- BEGIN 20260926002809_add_atomic_rate_limiter.sql
+-- ==================================================================
+-- A shared sliding-window limiter for server routes when Redis is not configured.
+-- One bounded row per action/caller; never expose these identifiers to clients.
+create schema if not exists geothority_private;
+revoke all on schema geothority_private from public, anon, authenticated;
+grant usage on schema geothority_private to service_role;
+
+create table if not exists geothority_private.rate_limit_buckets (
+  identifier text primary key check (octet_length(identifier) between 1 and 512),
+  request_times timestamptz[] not null default '{}',
+  updated_at timestamptz not null default clock_timestamp(),
+  constraint rate_limit_bucket_bounded check (cardinality(request_times) <= 1000)
+);
+
+alter table geothority_private.rate_limit_buckets enable row level security;
+revoke all on table geothority_private.rate_limit_buckets from public, anon, authenticated, service_role;
+grant select, insert, update on table geothority_private.rate_limit_buckets to service_role;
+
+create or replace function public.consume_rate_limit(
+  p_identifier text,
+  p_limit integer,
+  p_window_seconds integer
+)
+returns table (allowed boolean, remaining integer, reset_at timestamptz)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_times timestamptz[];
+  v_now timestamptz;
+  v_window interval;
+  v_count integer;
+begin
+  if p_identifier is null or octet_length(p_identifier) not between 1 and 512 then
+    raise exception 'Rate limit identifier must contain 1 to 512 bytes' using errcode = '22023';
+  end if;
+  if p_limit is null or p_limit not between 1 and 1000 then
+    raise exception 'Rate limit must be between 1 and 1000' using errcode = '22023';
+  end if;
+  if p_window_seconds is null or p_window_seconds not between 1 and 604800 then
+    raise exception 'Rate limit window must be between 1 and 604800 seconds' using errcode = '22023';
+  end if;
+
+  insert into geothority_private.rate_limit_buckets (identifier)
+  values (p_identifier)
+  on conflict (identifier) do nothing;
+
+  -- Serialize every consume for this identifier, including concurrent first use.
+  select bucket.request_times into strict v_times
+  from geothority_private.rate_limit_buckets as bucket
+  where bucket.identifier = p_identifier
+  for update;
+
+  -- Capture time after acquiring the lock, rather than at transaction start.
+  v_now := clock_timestamp();
+  v_window := make_interval(secs => p_window_seconds);
+  select coalesce(array_agg(request_at order by request_at), '{}'::timestamptz[])
+  into v_times
+  from unnest(v_times) as requests(request_at)
+  where request_at > v_now - v_window;
+
+  v_count := cardinality(v_times);
+  allowed := v_count < p_limit;
+  if allowed then
+    v_times := array_append(v_times, v_now);
+    v_count := v_count + 1;
+  end if;
+
+  update geothority_private.rate_limit_buckets as bucket
+  set request_times = v_times, updated_at = v_now
+  where bucket.identifier = p_identifier;
+
+  remaining := greatest(0, p_limit - v_count);
+  -- If a configured limit decreases, wait until enough entries expire.
+  reset_at := v_times[greatest(1, v_count - p_limit + 1)] + v_window;
+  return next;
+end;
+$$;
+
+revoke all on function public.consume_rate_limit(text, integer, integer) from public, anon, authenticated;
+grant execute on function public.consume_rate_limit(text, integer, integer) to service_role;
+
+comment on function public.consume_rate_limit(text, integer, integer) is
+  'Server-only atomic sliding window. Prefix the identifier with the action; call via a service-role client.';
+
+-- ==================================================================
+-- END 20260926002809_add_atomic_rate_limiter.sql
 -- ==================================================================

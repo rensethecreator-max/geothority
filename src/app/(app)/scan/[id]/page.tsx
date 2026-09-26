@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Scan } from "@/lib/types";
 import { ScanSkeleton } from "@/components/shared/loading-skeleton";
@@ -227,6 +227,8 @@ function FixCard({ fix }: { fix: FixItem }) {
 
 export default function ScanResultPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const scanWarnings = searchParams.getAll("warning");
   const [loading, setLoading] = useState(true);
   const [scan, setScan] = useState<Scan | null>(null);
   const [fixing, setFixing] = useState(false);
@@ -619,6 +621,12 @@ export default function ScanResultPage() {
           </div>
         </div>
       </div>
+
+      {scanWarnings.length > 0 ? (
+        <div role="status" className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+          {scanWarnings.map((warning, index) => <p key={`${index}-${warning}`}>{warning}</p>)}
+        </div>
+      ) : null}
 
       {/* Score Overview */}
       <div className="bg-[var(--card)] rounded-xl p-8 border border-[var(--border)]">

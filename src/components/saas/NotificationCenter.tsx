@@ -33,6 +33,7 @@ interface NotificationsResponse {
   unreadCount: number;
   limit: number;
   offset: number;
+  unauthorized?: boolean;
 }
 
 const TYPE_CONFIG: Record<NotifType, { icon: React.ElementType; colorClass: string; bgClass: string }> = {
@@ -47,11 +48,13 @@ function getTypeConfig(type: string) {
 }
 
 interface NotificationCenterProps {
+  userKey: string | null;
   maxVisible?: number;
   pollIntervalMs?: number;
 }
 
 export default function NotificationCenter({
+  userKey,
   maxVisible = 8,
   pollIntervalMs = 30_000,
 }: NotificationCenterProps) {
@@ -60,13 +63,20 @@ export default function NotificationCenter({
   const [open, setOpen] = useState(false);
 
   const { data, isLoading } = useQuery<NotificationsResponse>({
-    queryKey: ["/api/notifications"],
+    queryKey: ["/api/notifications", userKey],
     queryFn: async () => {
       const res = await fetch("/api/notifications");
-      if (!res.ok) return { notifications: [], unreadCount: 0, limit: 20, offset: 0 };
+      if (res.status === 401) {
+        return { notifications: [], unreadCount: 0, limit: 20, offset: 0, unauthorized: true };
+      }
+      if (!res.ok) throw new Error("Failed to load notifications");
       return res.json();
     },
-    refetchInterval: open ? 10_000 : pollIntervalMs,
+    enabled: Boolean(userKey),
+    refetchInterval: (query) => {
+      if (query.state.data?.unauthorized) return false;
+      return open ? 10_000 : pollIntervalMs;
+    },
     refetchIntervalInBackground: false,
   });
 
@@ -154,6 +164,14 @@ export default function NotificationCenter({
                   </div>
                 </div>
               ))}
+            </div>
+          ) : data?.unauthorized ? (
+            <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+              <Bell className="h-8 w-8 text-muted-foreground mb-2 opacity-40" />
+              <p className="text-sm text-muted-foreground">Your session has expired</p>
+              <Button variant="link" size="sm" onClick={() => router.push("/login")}>
+                Sign in again
+              </Button>
             </div>
           ) : visible.length > 0 ? (
             <div className="divide-y divide-border">

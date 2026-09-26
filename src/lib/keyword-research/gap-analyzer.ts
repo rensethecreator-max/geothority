@@ -73,6 +73,10 @@ async function identifyGaps(input: GapAnalysisInput): Promise<ContentGap[]> {
       topKeywords: input.keywords.slice(0, 20).map((k) => k.term).join(","),
     },
     async () => {
+      if (!openai) {
+        throw new Error("Content gap analysis is temporarily unavailable. Please try again later.");
+      }
+
       const prompt = `You are a local SEO content gap analyst. Analyze this business for content gaps.
 
 BUSINESS: ${input.businessName}
@@ -291,6 +295,10 @@ async function generateSingleBrief(
       businessName: input.businessName,
     },
     async () => {
+      if (!openai) {
+        throw new Error("Content gap analysis is temporarily unavailable. Please try again later.");
+      }
+
       const prompt = `Create a detailed content brief for a local SEO page.
 
 BUSINESS: ${input.businessName}

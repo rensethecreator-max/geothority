@@ -102,30 +102,37 @@ create table if not exists public.reputation_proof_assets (
 alter table public.reputation_settings enable row level security;
 alter table public.reputation_templates enable row level security;
 
-create policy if not exists "reputation_settings_select_own"
+drop policy if exists "reputation_settings_select_own" on public.reputation_settings;
+create policy "reputation_settings_select_own"
   on public.reputation_settings
   for select using (auth.uid() = user_id);
 
-create policy if not exists "reputation_settings_upsert_own"
+drop policy if exists "reputation_settings_upsert_own" on public.reputation_settings;
+create policy "reputation_settings_upsert_own"
   on public.reputation_settings
   for insert with check (auth.uid() = user_id);
 
-create policy if not exists "reputation_settings_update_own"
+drop policy if exists "reputation_settings_update_own" on public.reputation_settings;
+create policy "reputation_settings_update_own"
   on public.reputation_settings
   for update using (auth.uid() = user_id);
 
-create policy if not exists "reputation_templates_select_own"
+drop policy if exists "reputation_templates_select_own" on public.reputation_templates;
+create policy "reputation_templates_select_own"
   on public.reputation_templates
   for select using (auth.uid() = user_id);
 
-create policy if not exists "reputation_templates_insert_own"
+drop policy if exists "reputation_templates_insert_own" on public.reputation_templates;
+create policy "reputation_templates_insert_own"
   on public.reputation_templates
   for insert with check (auth.uid() = user_id);
 
-create policy if not exists "reputation_templates_update_own"
+drop policy if exists "reputation_templates_update_own" on public.reputation_templates;
+create policy "reputation_templates_update_own"
   on public.reputation_templates
   for update using (auth.uid() = user_id);
 
-create policy if not exists "reputation_templates_delete_own"
+drop policy if exists "reputation_templates_delete_own" on public.reputation_templates;
+create policy "reputation_templates_delete_own"
   on public.reputation_templates
   for delete using (auth.uid() = user_id);

@@ -62,6 +62,9 @@ function SettingsContent() {
   const [policies, setPolicies] = useState<Record<AutomationActionKey, AutomationPolicyMode>>({ ...DEFAULT_AUTOMATION_POLICIES });
   const [savingPolicies, setSavingPolicies] = useState(false);
   const [policiesSaved, setPoliciesSaved] = useState(false);
+  const [autoExecEnabled, setAutoExecEnabled] = useState(false);
+  const [autoExecDryRun, setAutoExecDryRun] = useState(true);
+  const [automationError, setAutomationError] = useState<string | null>(null);
 
   // Account deletion state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -102,6 +105,8 @@ function SettingsContent() {
         if (data.automation_policies) {
           setPolicies({ ...DEFAULT_AUTOMATION_POLICIES, ...(data.automation_policies as Partial<Record<AutomationActionKey, AutomationPolicyMode>>) });
         }
+        setAutoExecEnabled(data.auto_exec_enabled === true);
+        setAutoExecDryRun(data.auto_exec_dry_run !== false);
       }
       setLoading(false);
     }
@@ -162,11 +167,21 @@ function SettingsContent() {
   const handleSavePolicies = async () => {
     if (!profile) return;
     setSavingPolicies(true);
-    await supabase
+    setAutomationError(null);
+    const { error } = await supabase
       .from("user_profiles")
-      .update({ automation_policies: policies })
+      .update({
+        automation_policies: policies,
+        auto_exec_enabled: autoExecEnabled,
+        auto_exec_dry_run: autoExecDryRun,
+      })
       .eq("id", profile.id);
     setSavingPolicies(false);
+    if (error) {
+      setAutomationError(error.message || "Could not save automation settings.");
+      return;
+    }
+    setProfile({ ...profile, automation_policies: policies, auto_exec_enabled: autoExecEnabled, auto_exec_dry_run: autoExecDryRun });
     setPoliciesSaved(true);
     setTimeout(() => setPoliciesSaved(false), 3000);
   };
@@ -616,6 +631,16 @@ function SettingsContent() {
           <p className="text-sm text-[var(--muted-foreground)]">
             Control how Geothority handles each action type. &quot;Auto-apply&quot; executes immediately, &quot;Approval required&quot; waits for your go-ahead, and &quot;Manual only&quot; disables automation entirely.
           </p>
+          <div className="rounded-lg border border-[var(--border)] p-3 space-y-3">
+            <label className="flex items-start gap-3 text-sm">
+              <input type="checkbox" checked={autoExecEnabled} onChange={(event) => setAutoExecEnabled(event.target.checked)} className="mt-1" />
+              <span><span className="font-medium">Enable scheduled auto-execution</span><span className="mt-1 block text-xs text-[var(--muted-foreground)]">Only actions allowed by the policies below can run. Disabled by default.</span></span>
+            </label>
+            <label className="flex items-start gap-3 text-sm">
+              <input type="checkbox" checked={autoExecDryRun} onChange={(event) => setAutoExecDryRun(event.target.checked)} className="mt-1" />
+              <span><span className="font-medium">Dry run</span><span className="mt-1 block text-xs text-[var(--muted-foreground)]">Preview the actions without applying external changes. Turn this off only after reviewing the results.</span></span>
+            </label>
+          </div>
           {AUTOMATION_ACTIONS.map(({ key, label, description }) => (
             <div key={key} className="flex items-start justify-between gap-4 rounded-lg border border-[var(--border)] p-3">
               <div className="flex-1">
@@ -633,6 +658,7 @@ function SettingsContent() {
               </select>
             </div>
           ))}
+          {automationError && <p role="alert" className="text-sm text-rose-400">{automationError}</p>}
           <button
             onClick={handleSavePolicies}
             disabled={savingPolicies}
@@ -643,7 +669,7 @@ function SettingsContent() {
             ) : savingPolicies ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
             ) : (
-              "Save Policies"
+              "Save Automation Settings"
             )}
           </button>
         </div>

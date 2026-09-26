@@ -39,6 +39,8 @@ export interface UserProfile {
   cms_type: "wordpress" | "wix" | "squarespace" | null;
   cms_credentials: Record<string, string> | null;
   automation_policies: Record<AutomationActionKey, AutomationPolicyMode> | null;
+  auto_exec_enabled: boolean;
+  auto_exec_dry_run: boolean;
   created_at: string;
 }
 

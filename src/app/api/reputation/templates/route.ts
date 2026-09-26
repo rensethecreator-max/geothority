@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { DEFAULT_REPUTATION_TEMPLATES } from "@/lib/reputation/defaults";
+import { DEFAULT_REPUTATION_TEMPLATES, type ReputationTemplate } from "@/lib/reputation/defaults";
+
+type ReputationTemplateRow = {
+  id: string;
+  category: ReputationTemplate["category"];
+  category_label: string;
+  icon: string;
+  template_text: string;
+  is_default: boolean;
+  usage_count: number | null;
+};
+
+function isReputationTemplate(value: unknown): value is ReputationTemplate {
+  if (!value || typeof value !== "object") return false;
+  const template = value as Record<string, unknown>;
+  return typeof template.id === "string" && template.id.length > 0
+    && typeof template.category === "string" && ["service", "knowledge", "personal", "easy"].includes(template.category)
+    && typeof template.categoryLabel === "string"
+    && typeof template.icon === "string"
+    && typeof template.templateText === "string" && template.templateText.trim().length > 0
+    && typeof template.isDefault === "boolean"
+    && typeof template.usageCount === "number" && Number.isInteger(template.usageCount) && template.usageCount >= 0;
+}
 
 function isMissingTableError(error: any) {
   return error?.code === "42P01"
@@ -13,17 +35,17 @@ export async function GET() {
   try {
     const supabase = await createServerSupabase();
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { data, error } = await supabase
       .from("reputation_templates")
       .select("id, category, category_label, icon, template_text, is_default, usage_count")
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -37,8 +59,9 @@ export async function GET() {
       return NextResponse.json({ templates: DEFAULT_REPUTATION_TEMPLATES, setupRequired: false });
     }
 
+    const rows: ReputationTemplateRow[] = data;
     return NextResponse.json({
-      templates: data.map((row) => ({
+      templates: rows.map((row) => ({
         id: row.id,
         category: row.category,
         categoryLabel: row.category_label,
@@ -58,21 +81,21 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = await createServerSupabase();
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { templates } = await req.json();
-    if (!Array.isArray(templates)) {
-      return NextResponse.json({ error: "templates array required" }, { status: 400 });
+    if (!Array.isArray(templates) || templates.length > 100 || !templates.every(isReputationTemplate)) {
+      return NextResponse.json({ error: "A valid templates array with at most 100 entries is required" }, { status: 400 });
     }
 
-    const normalized = templates.map((template: any) => ({
-      id: template.id,
-      user_id: session.user.id,
+    const normalized = templates.map((template: ReputationTemplate) => ({
+      id: template.id.startsWith(`${user.id}:`) ? template.id : `${user.id}:${template.id}`,
+      user_id: user.id,
       category: template.category,
       category_label: template.categoryLabel,
       icon: template.icon,
@@ -82,18 +105,32 @@ export async function POST(req: NextRequest) {
       updated_at: new Date().toISOString(),
     }));
 
-    const { error: deleteError } = await supabase.from("reputation_templates").delete().eq("user_id", session.user.id);
-    if (deleteError && !isMissingTableError(deleteError)) {
-      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    if (new Set(normalized.map(template => template.id)).size !== normalized.length) {
+      return NextResponse.json({ error: "Template IDs must be unique" }, { status: 400 });
     }
 
-    const { error } = await supabase.from("reputation_templates").insert(normalized);
+    // Save replacements before removing old templates, so a failed write cannot erase the user's templates.
+    const { error } = normalized.length
+      ? await supabase.from("reputation_templates").upsert(normalized, { onConflict: "id" })
+      : { error: null };
 
     if (error) {
       if (isMissingTableError(error)) {
         return NextResponse.json({ error: "Reputation tables are not installed yet. Run the migration first." }, { status: 412 });
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    const { data: saved, error: readError } = await supabase
+      .from("reputation_templates").select("id").eq("user_id", user.id);
+    if (readError) return NextResponse.json({ error: readError.message }, { status: 500 });
+    const savedRows: { id: string }[] = saved ?? [];
+    const retainedIds = new Set(normalized.map(template => template.id));
+    const obsoleteIds = savedRows.filter(template => !retainedIds.has(template.id)).map(template => template.id);
+    if (obsoleteIds.length) {
+      const { error: deleteError } = await supabase.from("reputation_templates")
+        .delete().eq("user_id", user.id).in("id", obsoleteIds);
+      if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

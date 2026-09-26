@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
+import { createServerSupabase, createOptionalServiceClient } from "@/lib/supabase/server";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import { isMissingTableError } from "@/lib/reputation/request-service";
 
@@ -20,20 +20,31 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }
 
     const { id } = await params;
-    const body = await req.json();
-    const approved = Boolean(body.approved);
-    const publishedTo = Array.isArray(body.publishedTo)
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "Request body must be an object" }, { status: 400 });
+    }
+    if (typeof body.approved !== "boolean") {
+      return NextResponse.json({ error: "approved must be a boolean" }, { status: 400 });
+    }
+    const approved = body.approved;
+    const publishedTo = approved && Array.isArray(body.publishedTo)
       ? Array.from(
           new Set(
             body.publishedTo
               .map((value: unknown) => String(value).trim())
-              .filter((value) => ALLOWED_PUBLISH_TARGETS.has(value)),
+              .filter((value: string) => ALLOWED_PUBLISH_TARGETS.has(value)),
           ),
         )
       : approved
@@ -42,7 +53,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { data: existingAsset, error: existingAssetError } = await supabase
       .from("reputation_proof_assets")
-      .select("id, request_id, approved, published_to")
+      .select("id, request_id, approved, published_to, customer_permission_at")
       .eq("id", id)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -57,13 +68,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!existingAsset) {
       return NextResponse.json({ error: "Proof asset not found" }, { status: 404 });
     }
+    if (approved && publishedTo.includes("public_profile") && !existingAsset.customer_permission_at) {
+      return NextResponse.json({
+        error: "Customer permission is required before this quote can be published publicly.",
+      }, { status: 409 });
+    }
 
     const { data, error } = await supabase
       .from("reputation_proof_assets")
       .update({ approved, published_to: publishedTo })
       .eq("id", id)
       .eq("user_id", user.id)
-      .select("id, request_id, snippet, approved, created_at, topic, published_to")
+      .select("id, request_id, snippet, approved, created_at, topic, published_to, customer_permission_at")
       .maybeSingle();
 
     if (error) {

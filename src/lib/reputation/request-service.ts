@@ -1,4 +1,4 @@
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { DEFAULT_REPUTATION_SETTINGS } from "@/lib/reputation/defaults";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 import { getReputationBusinessIdentity } from "@/lib/reputation/business-identity";
@@ -582,7 +582,7 @@ export async function createAndSendReputationRequest(params: {
 }
 
 export async function sendReputationRequestNow(requestId: string) {
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
   if (!supabase) {
     throw new Error("Supabase service client unavailable");
   }
@@ -654,12 +654,16 @@ export async function sendReputationRequestNow(requestId: string) {
 
     if (settingsError && isMissingColumnError(settingsError)) {
       const legacySettings = await supabase.from("reputation_settings").select("sms_template").eq("user_id", requestRow.user_id).maybeSingle();
-      settings = legacySettings.data;
+      settings = legacySettings.data
+        ? { ...legacySettings.data, email_subject: null, email_template: null, enabled_channels: null, primary_channel: null }
+        : null;
     }
 
     if (contactError && isMissingColumnError(contactError)) {
       const legacyContact = await supabase.from("reputation_contacts").select("name, phone, email, opt_out").eq("id", requestRow.contact_id).single();
-      contact = legacyContact.data;
+      contact = legacyContact.data
+        ? { ...legacyContact.data, sms_opt_out: null, email_opt_out: null, preferred_channel: null }
+        : null;
       contactError = legacyContact.error;
     }
 
@@ -1099,7 +1103,7 @@ function buildAnalyticsSummary(requests: any[], proofAssetRows: any[], feedbackI
     proofGeneratedCount,
     replyRate: buildRate(repliedCount, requestsSent),
     positiveRate: buildRate(positiveCount, repliedCount),
-    proofGenerationRate: buildRate(proofGeneratedCount, positiveCount),
+    proofGenerationRate: buildRate(proofGeneratedCount, repliedCount),
     recovery: {
       totalFeedback: feedbackItems.length,
       unresolved,
@@ -1121,13 +1125,14 @@ export async function getReputationProofSummary(
 
   const proofAssetsQuery = supabase
     .from("reputation_proof_assets")
-    .select("id, snippet, approved, created_at, topic, published_to")
+    .select("id, snippet, approved, created_at, topic, published_to, customer_permission_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
 
   if (approvedOnly) {
     proofAssetsQuery.eq("approved", true);
+    proofAssetsQuery.not("customer_permission_at", "is", null);
   }
 
   const [requestsResult, proofResult, approvedCountResult, pendingCountResult, proofAssetRowsResult, feedbackItemsResult] = await Promise.all([
@@ -1141,7 +1146,8 @@ export async function getReputationProofSummary(
       .from("reputation_proof_assets")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
-      .eq("approved", true),
+      .eq("approved", true)
+      .not("customer_permission_at", "is", null),
     approvedOnly
       ? Promise.resolve({ count: 0, error: null })
       : supabase
@@ -1152,7 +1158,8 @@ export async function getReputationProofSummary(
     supabase
       .from("reputation_proof_assets")
       .select("request_id")
-      .eq("user_id", userId),
+      .eq("user_id", userId)
+      .not("customer_permission_at", "is", null),
     supabase
       .from("reputation_feedback_items")
       .select("follow_up_status, severity")

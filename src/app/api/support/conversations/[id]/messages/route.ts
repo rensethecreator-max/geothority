@@ -79,10 +79,8 @@ Be concise, friendly, and helpful. Focus on local SEO best practices for insuran
   }
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const auth = await getAuthUser(req);
   if ("error" in auth) return auth.error;
   const { user } = auth;
@@ -119,10 +117,8 @@ export async function GET(
   return NextResponse.json(messages ?? []);
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const auth = await getAuthUser(req);
   if ("error" in auth) return auth.error;
   const { user } = auth;

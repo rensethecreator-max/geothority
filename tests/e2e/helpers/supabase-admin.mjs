@@ -9,8 +9,15 @@ function requiredEnv(name) {
 }
 
 export function createAdminClient() {
+  const supabaseUrl = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
+  if (new URL(supabaseUrl).hostname === "ugdpnzxphvdcakcctvqb.supabase.co") {
+    throw new Error(
+      "E2E helpers cannot write to the Geothority production Supabase project. Configure an isolated staging or test database.",
+    );
+  }
+
   return createClient(
-    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    supabaseUrl,
     requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
     {
       auth: {

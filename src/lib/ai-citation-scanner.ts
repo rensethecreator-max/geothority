@@ -6,7 +6,12 @@
 
 const PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions";
 
-function getOpenAICompatibleConfig() {
+function getOpenAICompatibleConfig(): {
+  apiKey: string | undefined;
+  baseUrl: string;
+  headers: Record<string, string>;
+  defaultModel: string;
+} {
   const openrouterKey = process.env.OPENROUTER_API_KEY;
   return {
     apiKey: openrouterKey || process.env.OPENAI_API_KEY,

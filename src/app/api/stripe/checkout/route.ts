@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createOptionalServiceClient, createServerSupabase } from "@/lib/supabase/server";
 import { getPlanPriceId, requireStripe, PLANS, type PlanKey } from "@/lib/stripe";
 
 export async function POST(req: NextRequest) {
@@ -23,6 +23,10 @@ export async function POST(req: NextRequest) {
 
     const selectedPlanKey = plan as PlanKey;
     const selectedPlan = PLANS[selectedPlanKey];
+    const billingClient = createOptionalServiceClient();
+    if (!billingClient) {
+      return NextResponse.json({ error: "Billing is temporarily unavailable." }, { status: 503 });
+    }
     const stripe = requireStripe();
     const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin || "https://geothority.io";
 
@@ -40,11 +44,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Get or create Stripe customer
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
       .select("stripe_customer_id")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
+    if (profileError) {
+      console.error("Unable to read billing customer:", profileError);
+      return NextResponse.json({ error: "Unable to load your billing account." }, { status: 500 });
+    }
 
     let customerId = profile?.stripe_customer_id;
 
@@ -52,12 +60,19 @@ export async function POST(req: NextRequest) {
       const customer = await stripe.customers.create({
         email: user.email,
         metadata: { supabase_id: user.id },
-      });
+      }, { idempotencyKey: `geothority-customer-${user.id}` });
       customerId = customer.id;
 
-      await supabase
+      // Billing columns are writable only by the server's service role.
+      const { data: savedProfile, error: customerSaveError } = await billingClient
         .from("user_profiles")
-        .upsert({ id: user.id, stripe_customer_id: customerId });
+        .upsert({ id: user.id, stripe_customer_id: customerId }, { onConflict: "id" })
+        .select("id")
+        .maybeSingle();
+      if (customerSaveError || !savedProfile) {
+        console.error("Unable to persist billing customer:", customerSaveError);
+        return NextResponse.json({ error: "Unable to save your billing account. Please try again." }, { status: 500 });
+      }
     }
 
     const session = await stripe.checkout.sessions.create({

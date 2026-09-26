@@ -5,7 +5,7 @@
  */
 
 import { Metadata } from "next";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import { slugify, isEligibleForPublicProfile } from "@/lib/data-layer/profile-service";
 import Link from "next/link";
 
@@ -29,7 +29,17 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilesDirectoryPage() {
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
+  if (!supabase) {
+    return (
+      <main className="min-h-screen bg-gray-950 px-4 py-16 text-white">
+        <div className="mx-auto max-w-5xl">
+          <h1 className="text-3xl font-bold">Business Profiles</h1>
+          <p className="mt-3 text-gray-400">Profiles are temporarily unavailable. Please check back soon.</p>
+        </div>
+      </main>
+    );
+  }
 
   const { data: scans, error: scansError } = await supabase
     .from("scans")
@@ -54,7 +64,16 @@ export default async function ProfilesDirectoryPage() {
     (users ?? []).filter((u: any) => isEligibleForPublicProfile(u.plan)).map((u: any) => u.id)
   );
 
-  const profiles = (scans ?? [])
+  type PublicProfile = {
+    slug: string;
+    businessName: string;
+    city: string | null;
+    state: string | null;
+    score: number | null;
+    lastScanned: string;
+  };
+
+  const profiles: PublicProfile[] = (scans ?? [])
     .filter((s: any) => eligibleIds.has(s.user_id))
     .map((s: any) => ({
       slug: slugify(s.url),
@@ -66,7 +85,7 @@ export default async function ProfilesDirectoryPage() {
     }));
 
   // Group by state for browseability
-  const byState: Record<string, typeof profiles> = {};
+  const byState: Record<string, PublicProfile[]> = {};
   for (const p of profiles) {
     const key = p.state || "Other";
     if (!byState[key]) byState[key] = [];
@@ -81,7 +100,7 @@ export default async function ProfilesDirectoryPage() {
           Browse {profiles.length} local businesses analyzed by Geothority. Each profile includes a Geothority Score, layer breakdown, and competitor insights.
         </p>
 
-        {Object.entries(byState)
+        {(Object.entries(byState) as [string, PublicProfile[]][])
           .sort(([a], [b]) => a.localeCompare(b))
           .map(([state, stateProfiles]) => (
             <div key={state} className="mb-10">

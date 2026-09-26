@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeSerpFeatures, generateSerpFeatureReport } from '@/lib/serp-features';
 import type { DetectedFeature } from '@/lib/serp-features';
+import { requirePlan } from '@/lib/plan-gate';
 
 // Default SERP feature detection based on keyword analysis
 // In production, this would call a real SERP API (e.g., Serper.dev, DataForSEO)
@@ -53,11 +54,22 @@ function detectFeaturesForKeyword(keyword: string, location: string): DetectedFe
 
 export async function POST(req: NextRequest) {
   try {
+    const gate = await requirePlan(req, 'growth');
+    if (gate.error) return gate.error;
+
     const body = await req.json();
     const { keyword, location, gbpCompleteness = 50, currentRanking } = body;
 
-    if (!keyword || !location) {
-      return NextResponse.json({ error: 'keyword and location are required' }, { status: 400 });
+    if (typeof keyword !== 'string' || typeof location !== 'string'
+      || !keyword.trim() || !location.trim()
+      || keyword.length > 200 || location.length > 120) {
+      return NextResponse.json({ error: 'Enter a keyword (up to 200 characters) and location (up to 120 characters).' }, { status: 400 });
+    }
+    if (typeof gbpCompleteness !== 'number' || !Number.isFinite(gbpCompleteness) || gbpCompleteness < 0 || gbpCompleteness > 100) {
+      return NextResponse.json({ error: 'gbpCompleteness must be a number from 0 to 100.' }, { status: 400 });
+    }
+    if (currentRanking !== undefined && (!Number.isInteger(currentRanking) || currentRanking < 1 || currentRanking > 100)) {
+      return NextResponse.json({ error: 'currentRanking must be an integer from 1 to 100.' }, { status: 400 });
     }
 
     // Detect SERP features (placeholder — production would use real SERP API)
@@ -81,7 +93,7 @@ export async function POST(req: NextRequest) {
       gbpCompleteness,
     });
 
-    return NextResponse.json(report);
+    return NextResponse.json({ ...report, dataQuality: 'heuristic_estimate', observedSerpFeatures: false });
   } catch (error) {
     console.error('SERP features analysis error:', error);
     return NextResponse.json({ error: 'Analysis failed' }, { status: 500 });

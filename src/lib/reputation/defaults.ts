@@ -28,12 +28,12 @@ export const DEFAULT_REPUTATION_SETTINGS: ReputationSettings = {
   smsDelayMinutes: 60,
   positiveThreshold: 4,
   smsTemplate:
-    "Hi {customer_name}! Thanks for choosing {business_name}. How was your experience? Reply 1-5 or use {review_link}. (Reply STOP to opt out)",
+    "Hi {customer_name}, thanks for choosing {business_name}. If you’d like, share honest feedback or a public review here: {review_link}. Reply STOP to opt out.",
   enabledChannels: "sms",
   primaryChannel: "sms",
   emailSubject: "Quick question about your experience with {business_name}",
   emailTemplate:
-    "Thanks for choosing {business_name}. How was your experience? Use this private link to leave quick feedback: {review_link}",
+    "Thanks for choosing {business_name}. If you’d like, share private feedback or an honest public review here: {review_link}. Please use your own words and share only what reflects your experience.",
   sendBothDelayMinutes: 240,
   active: false,
 };
@@ -42,40 +42,36 @@ export const DEFAULT_REPUTATION_TEMPLATES: ReputationTemplate[] = [
   {
     id: "service",
     category: "service",
-    categoryLabel: "Great Value",
-    icon: "💰",
-    templateText:
-      "I switched to {BUSINESS} and couldn’t be happier. The team was incredibly helpful and made sure I got exactly what I needed at a great price. Highly recommend to anyone looking for quality service!",
+    categoryLabel: "Describe the service",
+    icon: "📝",
+    templateText: "In your own words, describe what happened and anything you would like others to know.",
     isDefault: true,
     usageCount: 0,
   },
   {
     id: "knowledge",
     category: "knowledge",
-    categoryLabel: "Fast & Professional",
-    icon: "⚡",
-    templateText:
-      "Fast, professional, and really knows their stuff. {BUSINESS} answered all my questions and made the whole process completely painless. Five stars — will definitely be back.",
+    categoryLabel: "Share useful details",
+    icon: "🔎",
+    templateText: "Share only details that reflect your own experience. Your feedback may be positive, mixed, or critical.",
     isDefault: true,
     usageCount: 0,
   },
   {
     id: "personal",
     category: "personal",
-    categoryLabel: "Personal Touch",
-    icon: "❤️",
-    templateText:
-      "What sets {BUSINESS} apart is how much they genuinely care. They took the time to understand exactly what I needed and delivered beyond my expectations. Wish I’d come here sooner.",
+    categoryLabel: "Use your own words",
+    icon: "💬",
+    templateText: "There is no required rating or wording. You can leave a review, private feedback, both, or neither.",
     isDefault: true,
     usageCount: 0,
   },
   {
     id: "easy",
     category: "easy",
-    categoryLabel: "Super Easy",
+    categoryLabel: "No pressure",
     icon: "✅",
-    templateText:
-      "The whole experience with {BUSINESS} was so much easier than I expected. Everything was handled quickly and professionally. No hassle, no stress — great experience from start to finish.",
+    templateText: "A review is optional. Do not include information you do not want to share publicly.",
     isDefault: true,
     usageCount: 0,
   },

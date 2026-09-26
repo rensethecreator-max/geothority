@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
+import { createServerSupabase, createOptionalServiceClient } from "@/lib/supabase/server";
 import { appendReputationLedgerEvent } from "@/lib/reputation/event-ledger";
 
 const FOLLOW_UP_STATUSES = new Set(["new", "reviewing", "outreach_queued", "waiting_on_customer", "resolved"]);
@@ -66,7 +66,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const serviceSupabase = createServiceClient();
+    const serviceSupabase = createOptionalServiceClient();
     if (!serviceSupabase) {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }

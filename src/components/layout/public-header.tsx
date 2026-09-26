@@ -36,10 +36,10 @@ export function PublicHeader() {
               What You Get
             </Link>
             <Link
-              href="/for/insurance-agents"
+              href="/#industries"
               className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             >
-              Insurance Agents
+              Industries
             </Link>
             <Link
               href="/pricing"
@@ -59,9 +59,9 @@ export function PublicHeader() {
             </Link>
             <Link
               href="/signup"
-              className="bg-electric-500 hover:bg-electric-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="bg-emerald-700 hover:bg-emerald-800 !text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              Get Your Free Scan
+              Get my free scan
             </Link>
           </nav>
 
@@ -69,6 +69,8 @@ export function PublicHeader() {
           <button
             className="md:hidden p-2 text-[var(--muted-foreground)]"
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -85,11 +87,11 @@ export function PublicHeader() {
               Features
             </Link>
             <Link
-              href="/for/insurance-agents"
+              href="/#industries"
               onClick={() => setMobileOpen(false)}
               className="block text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
-              Insurance Agents
+              Industries
             </Link>
             <Link
               href="/service-facts"
@@ -115,9 +117,9 @@ export function PublicHeader() {
             <Link
               href="/signup"
               onClick={() => setMobileOpen(false)}
-              className="block bg-electric-500 text-white text-center px-4 py-2 rounded-lg text-sm font-medium"
+              className="block bg-emerald-700 hover:bg-emerald-800 !text-white text-center px-4 py-2 rounded-lg text-sm font-medium"
             >
-              Get Your Free Scan
+              Get my free scan
             </Link>
           </div>
         )}

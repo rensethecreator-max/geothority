@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { hashPublicApiKey } from "@/lib/api-keys";
 
 /**
  * Public Business Data API
@@ -12,9 +13,9 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const slug = params.slug;
+  const { slug } = await params;
 
   // Validate API key
   const apiKey = req.headers.get("X-API-Key") || req.headers.get("Authorization")?.replace("Bearer ", "");
@@ -22,33 +23,35 @@ export async function GET(
     return NextResponse.json({ error: "API key required. Pass X-API-Key header." }, { status: 401 });
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.json({ error: "Public API is not configured" }, { status: 503 });
+  }
   const supabase = createServiceClient(supabaseUrl, supabaseKey);
 
-  // Hash the API key and look it up
-  const encoder = new TextEncoder();
-  const data = encoder.encode(apiKey);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const keyHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-
-  const { data: apiKeyRecord } = await supabase
+  const { data: apiKeyRecord, error: keyError } = await supabase
     .from("public_api_keys")
-    .select("user_id, permissions, active")
-    .eq("key_hash", keyHash)
+    .select("id, user_id, permissions, active, expires_at")
+    .eq("key_hash", hashPublicApiKey(apiKey))
     .eq("active", true)
-    .single();
+    .maybeSingle();
 
-  if (!apiKeyRecord) {
+  if (keyError) {
+    return NextResponse.json({ error: "Unable to verify API key" }, { status: 503 });
+  }
+  if (!apiKeyRecord || (apiKeyRecord.expires_at && new Date(apiKeyRecord.expires_at) <= new Date())) {
     return NextResponse.json({ error: "Invalid or inactive API key" }, { status: 401 });
+  }
+  if (!Array.isArray(apiKeyRecord.permissions) || !apiKeyRecord.permissions.includes("read")) {
+    return NextResponse.json({ error: "This API key does not have read permission" }, { status: 403 });
   }
 
   // Update last used
   await supabase
     .from("public_api_keys")
     .update({ last_used_at: new Date().toISOString() })
-    .eq("key_hash", keyHash);
+    .eq("id", apiKeyRecord.id);
 
   const userId = apiKeyRecord.user_id;
   const permissions: string[] = apiKeyRecord.permissions || ["read"];

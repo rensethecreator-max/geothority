@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createOptionalServiceClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 import { findPlanByPriceId, getBillingCycleFromPrice, requireStripe } from "@/lib/stripe";
 
@@ -39,6 +39,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
   }
 
+  if (!process.env.STRIPE_WEBHOOK_SECRET && !process.env.STRIPE_WEBHOOK_SECRET_PREVIOUS) {
+    return NextResponse.json({ error: "Stripe webhook is not configured" }, { status: 503 });
+  }
+
   try {
     requireStripe();
   } catch (error: any) {
@@ -51,14 +55,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const supabase = createServiceClient();
+  const supabase = createOptionalServiceClient();
+  if (!supabase) {
+    return NextResponse.json({ error: "Billing service is temporarily unavailable" }, { status: 503 });
+  }
 
-  switch (event.type) {
+  try {
+    switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const supabaseId = session.metadata?.supabase_id;
 
-      if (supabaseId) {
+      if (!supabaseId) {
+        throw new Error("Checkout session is missing its account identifier");
+      }
+      {
         const customerId = getCustomerId(session.customer);
         const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
         let resolvedPlan = session.metadata?.plan ?? null;
@@ -80,12 +91,13 @@ export async function POST(req: NextRequest) {
             trialEndsAt = subscription.trial_end
               ? new Date(subscription.trial_end * 1000).toISOString()
               : null;
-          } catch {
-            // Subscription lookup failed — non-critical
+            } catch (error) {
+            console.error("Stripe subscription lookup failed; asking Stripe to retry", error);
+            throw error;
           }
         }
 
-        await supabase
+        const { error: profileError } = await supabase
           .from("user_profiles")
           .upsert({
             id: supabaseId,
@@ -94,9 +106,10 @@ export async function POST(req: NextRequest) {
             billing_cycle: billingCycle,
             subscription_status: subscriptionStatus ?? (trialEndsAt ? "trialing" : "active"),
             trial_ends_at: trialEndsAt,
-          });
+          }, { onConflict: "id" });
+        if (profileError) throw new Error(`Unable to save subscription entitlement: ${profileError.message}`);
 
-        await supabase.from("analytics_events").insert({
+        const { error: analyticsError } = await supabase.from("analytics_events").insert({
           user_id: supabaseId,
           event_name: "subscription_started",
           metadata: {
@@ -105,9 +118,11 @@ export async function POST(req: NextRequest) {
             stripeCustomerId: customerId,
             subscriptionId,
             status: subscriptionStatus,
+            stripeEventId: event.id,
           },
           session_id: "server-stripe-webhook",
         });
+        if (analyticsError) console.error("Stripe analytics event could not be saved", analyticsError);
       }
       break;
     }
@@ -118,21 +133,22 @@ export async function POST(req: NextRequest) {
 
       if (!customerId) break;
 
-      const { data: profile } = await supabase
+      const { data: profile, error: lookupError } = await supabase
         .from("user_profiles")
         .select("id")
         .eq("stripe_customer_id", customerId)
-        .single();
+        .maybeSingle();
+      if (lookupError) throw new Error(`Unable to find subscription owner: ${lookupError.message}`);
+      if (!profile) throw new Error("Subscription owner is not linked yet; retrying webhook");
 
-      if (profile) {
+      {
         const status = subscription.status;
         const primaryPrice = subscription.items.data[0]?.price;
         const resolvedPlan = subscription.metadata?.plan || findPlanByPriceId(primaryPrice?.id ?? null);
         const billingCycle = getBillingCycleFromPrice(primaryPrice);
 
         if (status === "trialing") {
-          await supabase
-            .from("user_profiles")
+          await persistProfileUpdate(supabase.from("user_profiles")
             .update({
               ...(resolvedPlan ? { plan: resolvedPlan } : {}),
               billing_cycle: billingCycle,
@@ -141,22 +157,20 @@ export async function POST(req: NextRequest) {
                 ? new Date(subscription.trial_end * 1000).toISOString()
                 : null,
             })
-            .eq("id", profile.id);
+            .eq("id", profile.id));
         } else if (status === "active") {
-          await supabase
-            .from("user_profiles")
+          await persistProfileUpdate(supabase.from("user_profiles")
             .update({
               ...(resolvedPlan ? { plan: resolvedPlan } : {}),
               billing_cycle: billingCycle,
               subscription_status: "active",
               trial_ends_at: null,
             })
-            .eq("id", profile.id);
+            .eq("id", profile.id));
         } else if (status === "canceled" || status === "unpaid" || status === "past_due") {
-          await supabase
-            .from("user_profiles")
+          await persistProfileUpdate(supabase.from("user_profiles")
             .update({ plan: "free", billing_cycle: billingCycle, subscription_status: status })
-            .eq("id", profile.id);
+            .eq("id", profile.id));
         }
       }
       break;
@@ -168,22 +182,23 @@ export async function POST(req: NextRequest) {
 
       if (!customerId) break;
 
-      const { data: profile } = await supabase
+      const { data: profile, error: lookupError } = await supabase
         .from("user_profiles")
         .select("id")
         .eq("stripe_customer_id", customerId)
-        .single();
+        .maybeSingle();
+      if (lookupError) throw new Error(`Unable to find subscription owner: ${lookupError.message}`);
+      if (!profile) throw new Error("Subscription owner is not linked yet; retrying webhook");
 
-      if (profile) {
-        await supabase
-          .from("user_profiles")
+      {
+        await persistProfileUpdate(supabase.from("user_profiles")
           .update({
             plan: "free",
             billing_cycle: getBillingCycleFromPrice(subscription.items.data[0]?.price),
             subscription_status: "canceled",
             trial_ends_at: null,
           })
-          .eq("id", profile.id);
+          .eq("id", profile.id));
       }
       break;
     }
@@ -195,17 +210,28 @@ export async function POST(req: NextRequest) {
 
       if (!customerId) break;
 
-      const { data: profile } = await supabase
+      const { data: profile, error: lookupError } = await supabase
         .from("user_profiles")
         .select("id")
         .eq("stripe_customer_id", customerId)
-        .single();
+        .maybeSingle();
+      if (lookupError) throw new Error(`Unable to find trial owner: ${lookupError.message}`);
 
       // Could send a trial-ending email here via Resend
       console.log(`[stripe-webhook] Trial ending soon for user ${profile?.id}`);
       break;
     }
   }
+  } catch (error) {
+    console.error("Stripe webhook processing failed", error);
+    return NextResponse.json({ error: "Webhook processing failed; Stripe should retry" }, { status: 500 });
+  }
 
   return NextResponse.json({ received: true });
+}
+
+async function persistProfileUpdate(query: any) {
+  const { data, error } = await query.select("id").maybeSingle();
+  if (error) throw new Error(`Unable to update subscription entitlement: ${error.message}`);
+  if (!data) throw new Error("No subscription owner matched the update");
 }

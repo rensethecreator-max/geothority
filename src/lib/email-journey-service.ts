@@ -91,24 +91,24 @@ const JOURNEY_CONFIGS: Record<string, JourneyConfig> = {
       {
         stepOrder: 5,
         name: "Reputation Engine Activated",
-        subject: "Your review engine is live. Time to build momentum.",
+        subject: "Your review request workflow is ready",
         templateId: "feature_tip",
         type: "trigger",
         triggerEvent: "reputation_activated",
-        bodyHtml: `<p>Your Reputation Engine is now live, which means Geothority can help you turn happy customers into fresh review velocity instead of waiting passively.</p>
-<p>Best next move: send the first request, confirm your review link is clean, and monitor the response trend over the next 7 days.</p>
-<p>Fresh, recent reviews are one of the fastest ways to strengthen your trust layer and local conversion proof.</p>`,
+        bodyHtml: `<p>Your Reputation Engine is ready to invite every customer to share an honest review and optionally send private feedback.</p>
+<p>Before enabling automatic sends, check your message, review link, consent process, and opt-out handling. Then send a test request and confirm delivery.</p>
+<p>Use the inbox to follow up on feedback. Public review invitations are shown equally, regardless of a customer's rating.</p>`,
       },
       {
         stepOrder: 6,
         name: "First Reputation Request Sent",
-        subject: "Your first review request is out. Now watch the loop.",
+        subject: "Your first review request is out",
         templateId: "check_in",
         type: "trigger",
         triggerEvent: "first_reputation_request_sent",
-        bodyHtml: `<p>Your first reputation request has been sent, which means the review loop is officially live.</p>
-<p>Now the goal is simple: monitor replies, route private feedback quickly, and convert positive responses into public proof.</p>
-<p>This is where Geothority starts compounding trust instead of only diagnosing gaps.</p>`,
+        bodyHtml: `<p>Your first reputation request has been sent. The customer has the same optional public review choice as every other customer.</p>
+<p>Monitor replies and follow up on private feedback. Never condition a public review invitation on a rating or sentiment.</p>
+<p>Check delivery and opt-out status before enabling an automated campaign.</p>`,
       },
       {
         stepOrder: 7,

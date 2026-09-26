@@ -43,7 +43,9 @@ Geothority should be treated as a standard long-running Next.js service.
 
 ### Scheduled automation
 
-Any scheduler is fine (Railway cron, GitHub Actions, external monitor). Send `Authorization: Bearer $CRON_SECRET`.
+Run scheduled automation from a separate Railway service. Set its start command to `node scripts/cron-dispatch.mjs`, its Cron Schedule to `*/15 * * * *`, and set `APP_URL=https://geothority.io`. Set `CRON_SECRET` as a Railway reference to the Geothority web service's `CRON_SECRET` (for example `${{Geothority.CRON_SECRET}}`). The dispatcher calls the jobs below at their UTC times and exits after each run. Do not attach the cron schedule to the web service.
+
+The Vercel Hobby plan rejects the 15-minute journey schedule. Vercel cron entries are therefore disabled; use the Railway worker for all scheduled jobs. Send `Authorization: Bearer $CRON_SECRET`.
 
 | Schedule (UTC) | Method | Path |
 |---|---|---|
@@ -55,9 +57,11 @@ Any scheduler is fine (Railway cron, GitHub Actions, external monitor). Send `Au
 | custom | `POST` | `/api/cron/ai-visibility` |
 | custom | `GET` | `/api/cron/citation-drift` |
 
+The Railway dispatcher runs the first five jobs on this table. AI visibility and citation drift remain custom jobs and can be called by another scheduler when configured.
+
 ## Tech Stack
 
-- **Frontend:** Next.js 14 (App Router), Tailwind CSS, shadcn/ui
+- **Frontend:** Next.js 15 (App Router), Tailwind CSS, shadcn/ui
 - **Backend:** Next.js API routes, Supabase (PostgreSQL + Auth)
 - **AI:** OpenAI GPT-4o-mini (content generation, Will chatbot, analysis)
 - **Payments:** Stripe (3-tier subscription billing)

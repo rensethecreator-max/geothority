@@ -121,6 +121,8 @@ export default function DashboardPage() {
   const supabase = createClient();
   const router = useRouter();
   const activationState = useActivationState({ scan: latestScan, fetchLatestScan: false });
+  const gbpConnected = activationState.gbpConnected;
+  const reputationActivated = activationState.reputationActivated;
 
   useEffect(() => {
     async function loadData() {
@@ -322,8 +324,6 @@ export default function DashboardPage() {
   const quickWins = latestScan.quick_wins || [];
   const quickWinCount = getQuickWinCount(quickWins);
   const topLayer = getTopLayer(ls);
-  const gbpConnected = activationState.gbpConnected;
-  const reputationActivated = activationState.reputationActivated;
   const launchStepsLive = activationState.launchStepsLive;
   const weakestLayerDiagnosis = getWeakestLayerDiagnosis(ls);
   const monetizationNeedsLaunchFirst = !gbpConnected || !reputationActivated;

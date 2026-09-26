@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase, createServiceClient } from "@/lib/supabase/server";
+import { createServerSupabase, createOptionalServiceClient } from "@/lib/supabase/server";
 import { formatTriggerSource } from "@/lib/reputation/format";
 import { ingestReputationEvent, normalizeReputationEventPayload } from "@/lib/reputation/event-ingest";
 import { isMissingTableError } from "@/lib/reputation/request-service";
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = createOptionalServiceClient();
     if (!supabase) {
       return NextResponse.json({ error: "Supabase service client unavailable" }, { status: 500 });
     }

@@ -20,7 +20,7 @@ export default defineConfig({
     headless: true,
   },
   webServer: {
-    command: "bash -lc 'set -a && source .env.local && set +a && npm run dev'",
+    command: "npm run dev",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

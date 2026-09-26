@@ -234,21 +234,6 @@ export default function OnboardingPage() {
           .limit(1),
       ]);
 
-      const { error: profileError } = await supabase
-        .from("user_profiles")
-        .update({
-          business_name: businessName,
-          city,
-          state,
-          website_url: website || null,
-        })
-        .eq("id", user.id);
-
-      if (profileError) {
-        setBusinessError(profileError.message);
-        return { preventAdvance: true };
-      }
-
       const businessProfileRes = await fetch("/api/business-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -304,26 +289,29 @@ export default function OnboardingPage() {
         seededReputationDefaults: true,
       });
       return;
+    } catch (error) {
+      setBusinessError(error instanceof Error ? error.message : "Unable to save your business details. Please try again.");
+      return { preventAdvance: true };
     } finally {
       setSavingBusiness(false);
     }
   }, [profileForm, supabase]);
 
   const handleFinish = async () => {
+    const response = await fetch("/api/activation/milestone", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventName: "onboarding_completed" }),
+    });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null);
+      throw new Error(typeof payload?.error === "string" ? payload.error : "Unable to finish setup. Please try again.");
+    }
+
     const allIds = steps.map((step) => step.id);
     markOnboardingComplete(allIds);
     trackEvent("onboarding_completed");
-
-    try {
-      await fetch("/api/activation/milestone", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventName: "onboarding_completed" }),
-      });
-    } catch {
-      // localStorage fallback still prevents repeated redirect
-    }
-
+    router.refresh();
     router.push("/dashboard");
   };
 
@@ -343,7 +331,7 @@ export default function OnboardingPage() {
               { icon: "🔍", title: "90-Second Audit", desc: "See where visibility and trust are breaking down" },
               { icon: "📊", title: "Trust Stack™ Score", desc: "5-layer authority measurement" },
               { icon: "🤖", title: "AEO Readiness", desc: "See how AI assistants perceive your business" },
-              { icon: "⭐", title: "Reputation Engine", desc: "Turn happy customers into review momentum" },
+              { icon: "⭐", title: "Reputation Engine", desc: "Invite honest reviews equally and track private feedback" },
             ].map((item) => (
               <div key={item.title} className="flex items-start gap-3 rounded-lg border border-border p-3">
                 <span className="text-xl">{item.icon}</span>
@@ -517,7 +505,7 @@ export default function OnboardingPage() {
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Geothority now has your default reputation settings and starter templates in place. The next move is to add your Google review link, turn automation on, and test the first request.
+            Add your Google review link, review the neutral request message, then send a test request. Every customer will see the same public review option.
           </p>
           <div className="rounded-lg border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
             {reputationActivated

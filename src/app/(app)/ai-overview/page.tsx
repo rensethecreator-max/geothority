@@ -21,6 +21,7 @@ import type { AICheckResult, AIRecommendationScore } from "@/lib/ai-citation-sca
 
 interface GoogleAiOverviewResult {
   source: "google";
+  status: "checked" | "demo_mode" | "error";
   found: boolean;
   mentionedText: string | null;
   confidence: "high" | "medium" | "low" | "none";
@@ -34,8 +35,11 @@ interface AiOverviewResponse {
   googleResult: GoogleAiOverviewResult;
   aiResults: AICheckResult[];
   realApiCount: number;
+  liveCheckedCount: number;
+  liveFoundCount: number;
+  estimatedCount: number;
   recommendationScore?: AIRecommendationScore;
-  overallVisibility: "high" | "medium" | "low" | "none";
+  overallVisibility: "high" | "medium" | "low" | "none" | null;
   topRecommendations: string[];
 }
 
@@ -173,8 +177,6 @@ const VISIBILITY_STYLES = {
   },
 };
 
-const DEMO_MODE_SENTINEL = "__DEMO_MODE__";
-
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({
@@ -239,8 +241,8 @@ function StatusBadge({
 function GoogleResultCard({ result }: { result: GoogleAiOverviewResult }) {
   const [expanded, setExpanded] = useState(false);
   const meta = ENGINE_META.google;
-  const isDemoMode = result.snippet === DEMO_MODE_SENTINEL;
-  const isFound = result.found && !isDemoMode;
+  const isDemoMode = result.status === "demo_mode";
+  const isFound = result.status === "checked" && result.found;
 
   return (
     <div
@@ -261,7 +263,7 @@ function GoogleResultCard({ result }: { result: GoogleAiOverviewResult }) {
             <h3 className={`font-semibold text-sm ${meta.color}`}>{meta.label}</h3>
           </div>
         </div>
-        <StatusBadge isReal={false} status={isDemoMode ? "demo_mode" : "checked"} />
+        <StatusBadge isReal={result.status === "checked"} status={result.status} />
       </div>
 
       {isDemoMode ? (
@@ -309,7 +311,7 @@ function GoogleResultCard({ result }: { result: GoogleAiOverviewResult }) {
 
       {/* Found / Not Found badge */}
       <div className="mt-3">
-        {!isDemoMode &&
+      {result.status === "checked" &&
           (isFound ? (
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
@@ -345,7 +347,8 @@ function AIEngineCard({ result }: { result: AICheckResult }) {
   const [expanded, setExpanded] = useState(false);
   const meta = ENGINE_META[result.engine] || ENGINE_META.chatgpt;
   const note = meta.note;
-  const isFound = result.found;
+  const hasResult = result.status === "checked" || result.status === "simulated";
+  const isFound = hasResult && result.found;
 
   return (
     <div
@@ -404,8 +407,14 @@ function AIEngineCard({ result }: { result: AICheckResult }) {
         </div>
       )}
 
+      {result.status === "error" && (
+        <div role="status" className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4">
+          <p className="text-xs text-red-300 leading-relaxed">{result.snippet || "This provider did not return a result."}</p>
+        </div>
+      )}
+
       {/* Mentioned snippet */}
-      {result.mentioned && result.snippet && result.status !== "skipped" && (
+      {result.mentioned && result.snippet && hasResult && (
         <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 mb-4">
           <p className="text-xs text-emerald-300 italic leading-relaxed">
             &ldquo;{result.snippet}&rdquo;
@@ -414,7 +423,7 @@ function AIEngineCard({ result }: { result: AICheckResult }) {
       )}
 
       {/* Full snippet (when not found, show what AI said) */}
-      {!result.mentioned && result.snippet && result.status !== "skipped" && (
+      {!result.mentioned && result.snippet && hasResult && (
         <div className="mb-4">
           <p
             className={`text-xs text-[var(--muted-foreground)] leading-relaxed ${
@@ -443,17 +452,17 @@ function AIEngineCard({ result }: { result: AICheckResult }) {
       )}
 
       {/* Found / Not Found */}
-      {result.status !== "skipped" && (
+      {hasResult && (
         <div className="mb-3">
           {isFound ? (
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="text-xs font-semibold text-emerald-500">Found</span>
+              <span className="text-xs font-semibold text-emerald-500">{result.isReal ? "Mentioned in live result" : "Model estimate mentions it"}</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5">
               <XCircle className="w-3.5 h-3.5 text-red-400" />
-              <span className="text-xs font-semibold text-red-400">Not Found</span>
+              <span className="text-xs font-semibold text-red-400">{result.isReal ? "Not mentioned in live result" : "Model estimate does not mention it"}</span>
             </div>
           )}
         </div>
@@ -464,7 +473,7 @@ function AIEngineCard({ result }: { result: AICheckResult }) {
         <div className="mt-3">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Users className="w-3 h-3 text-amber-400" />
-            <p className="text-xs font-semibold text-amber-400">Mentioned Instead</p>
+            <p className="text-xs font-semibold text-amber-400">Other names in this response</p>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {result.competitors.slice(0, 4).map((comp, i) => (
@@ -548,7 +557,7 @@ export default function AiOverviewPage() {
     }
   };
 
-  const visStyle = result ? VISIBILITY_STYLES[result.overallVisibility] : null;
+  const visStyle = result?.overallVisibility ? VISIBILITY_STYLES[result.overallVisibility] : null;
 
   return (
     <div className="space-y-6">
@@ -673,7 +682,7 @@ export default function AiOverviewPage() {
       {/* Results */}
       {result && step === "done" && (
         <div className="space-y-5">
-          {/* Overall visibility + real API count */}
+          {/* Counts below include only direct live observations. */}
           {visStyle && (
             <div
               className={`flex items-center gap-4 p-5 rounded-xl border ${visStyle.border} ${visStyle.bg}`}
@@ -683,51 +692,28 @@ export default function AiOverviewPage() {
                 <div className={`font-bold text-lg ${visStyle.color}`}>{visStyle.label}</div>
                 <p className="text-sm text-[var(--muted-foreground)]">
                   <strong className="text-[var(--foreground)]">{result.businessName}</strong>{" "}
-                  appears in{" "}
-                  <strong>
-                    {
-                      [
-                        result.googleResult,
-                        ...result.aiResults,
-                      ].filter((r) => r.found).length
-                    }
-                  </strong>{" "}
-                  of 15 AI platforms for &ldquo;{result.query}&rdquo;
+                  appeared in <strong>{result.liveFoundCount}</strong> of <strong>{result.liveCheckedCount}</strong> live checks for &ldquo;{result.query}&rdquo;.
+                  {result.estimatedCount > 0 ? ` ${result.estimatedCount} model-based estimates are shown below and are not counted as live results.` : ""}
                 </p>
               </div>
-              {result.realApiCount > 0 && (
+              {result.liveCheckedCount > 0 && (
                 <div className="text-right text-xs text-gray-400 flex-shrink-0">
-                  <div className="text-emerald-400 font-bold text-lg">{result.realApiCount}</div>
-                  <div>Live APIs</div>
+                  <div className="text-emerald-400 font-bold text-lg">{result.liveCheckedCount}</div>
+                  <div>Live checks</div>
                 </div>
               )}
             </div>
           )}
 
-          {/* Competitor frequency insight */}
-          {(() => {
-            const total = [...result.aiResults, result.googleResult].length;
-            const mentions = [...result.aiResults, result.googleResult].filter(r => r.found).length;
-            const notMentions = total - mentions;
-            const ratio = mentions > 0 ? (notMentions / mentions).toFixed(1) : '∞';
-            return mentions < total ? (
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-amber-400">AI systems are recommending your competitors {ratio}x more often than you</p>
-                  <p className="text-sm text-[var(--muted-foreground)] mt-1">You appear in {mentions} of {total} AI platforms. Your competitors appear in nearly all of them. Below are the specific platforms where you&apos;re missing.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-emerald-400">AI systems recommend you across all platforms</p>
-                  <p className="text-sm text-[var(--muted-foreground)] mt-1">You appear in {mentions} of {total} AI platforms. Keep monitoring to maintain this position.</p>
-                </div>
-              </div>
-            );
-          })()}
+          {!visStyle ? (
+            <div role="status" className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4 text-sm text-blue-100">
+              No live provider returned a result for this check. The model-based estimates below are not observations of those platforms.
+            </div>
+          ) : result.estimatedCount > 0 ? (
+            <div role="status" className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4 text-sm text-blue-100">
+              This report includes {result.estimatedCount} model-based estimates. Only the {result.liveCheckedCount} direct live checks above contribute to the visibility summary.
+            </div>
+          ) : null}
 
           {/* AI Recommendation Score */}
           {result.recommendationScore && (() => {

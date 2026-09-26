@@ -1,5 +1,9 @@
 import withPWAInit from "next-pwa";
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ugdpnzxphvdcakcctvqb.supabase.co";
+const supabaseOrigin = new URL(supabaseUrl).origin;
+const supabaseHostname = new URL(supabaseUrl).hostname;
+
 const withPWA = withPWAInit({
   dest: "public",
   register: true,
@@ -15,18 +19,15 @@ const nextConfig = {
     },
     optimizePackageImports: ["lucide-react", "framer-motion", "date-fns"],
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   eslint: {
     ignoreDuringBuilds: true,
   },
   productionBrowserSourceMaps: false,
-  images: {
-    remotePatterns: [
+    images: {
+      remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
-      { protocol: "https", hostname: "ofhapyienurfdndpclor.supabase.co" },
-    ],
+      { protocol: "https", hostname: supabaseHostname },
+      ],
   },
   async headers() {
     return [
@@ -61,9 +62,9 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-eval in dev
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob: https://lh3.googleusercontent.com https://ofhapyienurfdndpclor.supabase.co https://*.googleapis.com",
+              `img-src 'self' data: blob: https://lh3.googleusercontent.com ${supabaseOrigin} https://*.googleapis.com`,
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://api.stripe.com https://api.openai.com",
+              `connect-src 'self' ${supabaseOrigin} wss://${supabaseHostname} https://api.stripe.com https://api.openai.com`,
               "frame-src https://js.stripe.com",
               "frame-ancestors 'none'",
             ].join("; "),

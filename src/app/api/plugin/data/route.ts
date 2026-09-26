@@ -1,34 +1,82 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-// Uses service role to look up user by API key
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createOptionalServiceClient } from "@/lib/supabase/server";
+import { hashPublicApiKey, hostMatchesAllowedOrigin, normalizeAllowedOrigin } from "@/lib/api-keys";
 
 export async function GET(req: NextRequest) {
+  const supabase = createOptionalServiceClient();
+  if (!supabase) {
+    return NextResponse.json({ error: "Embed service is not configured" }, { status: 503 });
+  }
+
   const apiKey = req.nextUrl.searchParams.get("key");
-  if (!apiKey) {
+  if (!apiKey || !/^geo_[a-f0-9]{32}$/i.test(apiKey)) {
     return NextResponse.json({ error: "API key required" }, { status: 401 });
   }
 
-  // Look up user by embed API key
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("*")
-    .eq("embed_api_key", apiKey)
-    .single();
+  const { data: apiKeyRecord, error: keyError } = await supabase
+    .from("public_api_keys")
+    .select("id, user_id, permissions, expires_at, allowed_origin")
+    .eq("key_hash", hashPublicApiKey(apiKey))
+    .eq("active", true)
+    .maybeSingle();
 
-  if (!profile) {
+  if (keyError) {
+    console.error("Embed API key lookup failed", keyError);
+    return NextResponse.json({ error: "Unable to verify API key" }, { status: 500 });
+  }
+  if (!apiKeyRecord || (apiKeyRecord.expires_at && new Date(apiKeyRecord.expires_at) <= new Date())) {
     return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
   }
+  if (!Array.isArray(apiKeyRecord.permissions) || !apiKeyRecord.permissions.includes("read")) {
+    return NextResponse.json({ error: "This API key does not have read permission" }, { status: 403 });
+  }
+
+  const [{ data: profile, error: profileError }, { data: businessProfile, error: businessError }] = await Promise.all([
+    supabase
+      .from("user_profiles")
+      .select("business_name, city, state, website_url")
+      .eq("id", apiKeyRecord.user_id)
+      .maybeSingle(),
+    supabase
+      .from("business_profiles")
+      .select("business_name, address, city, state, zip, phone, website")
+      .eq("user_id", apiKeyRecord.user_id)
+      .maybeSingle(),
+  ]);
+
+  if (profileError || businessError) {
+    console.error("Embed business profile lookup failed", profileError || businessError);
+    return NextResponse.json({ error: "Unable to load business profile" }, { status: 500 });
+  }
+  if (!profile && !businessProfile) {
+    return NextResponse.json({ error: "Business profile not found" }, { status: 404 });
+  }
+
+  const business = {
+    business_name: businessProfile?.business_name || profile?.business_name || "",
+    address: businessProfile?.address || "",
+    city: businessProfile?.city || profile?.city || "",
+    state: businessProfile?.state || profile?.state || "",
+    zip: businessProfile?.zip || "",
+    phone: businessProfile?.phone || "",
+    website_url: businessProfile?.website || profile?.website_url || "",
+  };
+
+  const origin = req.headers.get("origin") || "";
+  const registeredOrigin = apiKeyRecord.allowed_origin || normalizeAllowedOrigin(business.website_url);
+  if (origin && (!registeredOrigin || !hostMatchesAllowedOrigin(origin, registeredOrigin))) {
+    return NextResponse.json({ error: "This website is not registered for the API key" }, { status: 403 });
+  }
+  if (registeredOrigin && !apiKeyRecord.allowed_origin) {
+    await supabase.from("public_api_keys").update({ allowed_origin: registeredOrigin }).eq("id", apiKeyRecord.id);
+  }
+  await supabase.from("public_api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", apiKeyRecord.id);
 
   // Get latest scan data
   const { data: scan } = await supabase
     .from("scans")
-    .select("*")
-    .eq("user_id", profile.id)
+    .select("geothority_score, created_at")
+    .eq("user_id", apiKeyRecord.user_id)
     .order("created_at", { ascending: false })
     .limit(1)
     .single();
@@ -37,7 +85,7 @@ export async function GET(req: NextRequest) {
   const { data: fixPkg } = await supabase
     .from("fix_packages")
     .select("*")
-    .eq("user_id", profile.id)
+    .eq("user_id", apiKeyRecord.user_id)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -45,26 +93,25 @@ export async function GET(req: NextRequest) {
   // Build the embed data payload
   const payload = {
     business: {
-      name: profile.business_name,
-      city: profile.city,
-      state: profile.state,
-      website: profile.website_url,
+      name: business.business_name,
+      city: business.city,
+      state: business.state,
+      website: business.website_url,
     },
-    schema: buildSchemaMarkup(profile, scan),
+    schema: buildSchemaMarkup(business),
     faq: buildFaqContent(fixPkg),
-    metaTags: buildMetaTags(profile, scan),
+    metaTags: buildMetaTags(business, scan),
     trustScore: scan?.geothority_score || null,
     lastScan: scan?.created_at || null,
   };
 
   // CORS: validate Origin against the user's registered embed domain
-  const origin = req.headers.get("origin") || "";
-  const allowedOrigin = getAllowedOrigin(origin, profile.embed_domain);
+  const allowedOrigin = origin && registeredOrigin && hostMatchesAllowedOrigin(origin, registeredOrigin) ? origin : "";
   return NextResponse.json(payload, {
     headers: {
       "Access-Control-Allow-Origin": allowedOrigin,
       "Access-Control-Allow-Methods": "GET",
-      "Cache-Control": "public, max-age=3600, s-maxage=86400",
+      "Cache-Control": "private, no-store",
       "Vary": "Origin",
     },
   });
@@ -85,74 +132,35 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 function isLocalhost(origin: string): boolean {
-  return /localhost|127\.0\.0\.1|\.test$|\.local$/.test(origin);
+  try {
+    const hostname = new URL(origin).hostname.toLowerCase();
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".test") || hostname.endsWith(".local");
+  } catch {
+    return false;
+  }
 }
 
-function getAllowedOrigin(origin: string, embedDomain: string | null): string {
-  if (!origin) return "";
-  // In development, allow localhost
-  if (process.env.NODE_ENV !== "production" && isLocalhost(origin)) return origin;
-  // If the origin matches the registered embed domain, allow it
-  if (embedDomain) {
-    try {
-      const embedHost = new URL(embedDomain).hostname;
-      const originHost = new URL(origin).hostname;
-      if (originHost === embedHost || originHost.endsWith(`.${embedHost}`)) return origin;
-    } catch {}
-  }
-  // Fallback: allow the Geothority app domain itself
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (siteUrl) {
-    try {
-      if (new URL(origin).hostname === new URL(siteUrl).hostname) return origin;
-    } catch {}
-  }
-  return "";
-}
-
-function buildSchemaMarkup(profile: any, scan: any) {
-  const schemas = [];
-
-  // LocalBusiness / InsuranceAgency schema
-  schemas.push({
+function buildSchemaMarkup(profile: any) {
+  return [{
     "@context": "https://schema.org",
-    "@type": "InsuranceAgency",
+    "@type": "LocalBusiness",
     name: profile.business_name,
     address: {
       "@type": "PostalAddress",
+      streetAddress: profile.address || undefined,
       addressLocality: profile.city,
       addressRegion: profile.state,
+      postalCode: profile.zip || undefined,
       addressCountry: "US",
     },
-    url: profile.website_url,
+    url: profile.website_url || undefined,
     ...(profile.phone ? { telephone: profile.phone } : {}),
-    ...(scan?.geothority_score
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: (scan.geothority_score / 20).toFixed(1),
-            bestRating: "5",
-            worstRating: "1",
-            ratingCount: "1",
-          },
-        }
-      : {}),
     sameAs: [],
-  });
-
-  // Organization schema
-  schemas.push({
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: profile.business_name,
-    url: profile.website_url,
-  });
-
-  return schemas;
+  }];
 }
 
 function buildFaqContent(fixPkg: any) {
-  if (!fixPkg?.fixes) return null;
+  if (!Array.isArray(fixPkg?.fixes)) return null;
   const faqFix = fixPkg.fixes.find(
     (f: any) => f.type === "faq" || f.type === "ai_optimization"
   );
@@ -168,8 +176,9 @@ function buildFaqContent(fixPkg: any) {
 }
 
 function buildMetaTags(profile: any, scan: any) {
+  const location = [profile.city, profile.state].filter(Boolean).join(", ");
   return {
-    title: `${profile.business_name} — ${profile.city}, ${profile.state}`,
-    description: `${profile.business_name} serves ${profile.city}, ${profile.state}. Trust Stack Score: ${scan?.geothority_score || "N/A"}/100.`,
+    title: [profile.business_name, location].filter(Boolean).join(" — "),
+    description: `${profile.business_name || "Local business"}${location ? ` serves ${location}` : ""}.`,
   };
 }

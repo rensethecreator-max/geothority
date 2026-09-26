@@ -8,6 +8,7 @@ export interface RecordReputationReplyParams {
   requestId: string;
   score: number;
   feedbackText?: string;
+  customerPermission?: boolean;
   providerSid?: string | null;
   channel?: string;
 }
@@ -27,6 +28,7 @@ export async function recordReputationReply(
     requestId,
     score,
     feedbackText: rawFeedbackText = "",
+    customerPermission = false,
     providerSid = null,
     channel = "sms",
   } = params;
@@ -57,16 +59,18 @@ export async function recordReputationReply(
   const belowThreshold = score < positiveThreshold;
   const nextStatus = belowThreshold ? "feedback_received" : "public_review_ready";
 
-  if (requestRow.replied_at) {
+  const duplicateIgnored = Boolean(requestRow.replied_at);
+  if (duplicateIgnored) {
     const sameScore = requestRow.score === score;
     const sameFeedback = (requestRow.feedback_text || "") === (feedbackText || "");
 
     if (!sameScore || !sameFeedback) {
       throw Object.assign(new Error("This request already has a recorded response."), { status: 409 });
     }
+
   }
 
-  if (!requestRow.replied_at) {
+  if (!duplicateIgnored) {
     const { error: updateError } = await supabase
       .from("reputation_requests")
       .update({
@@ -142,10 +146,12 @@ export async function recordReputationReply(
 
   const businessIdentity = getReputationBusinessIdentity(requestRow.business_id || "");
 
-  if (belowThreshold) {
+  // Private notes remain private regardless of score. Never turn customer
+  // feedback into public proof without explicit, separate permission.
+  if (belowThreshold || feedbackText) {
     const feedbackPayload = {
-      severity: score <= 2 ? "high" : "medium",
-      topic: `Low rating (${score}/5)`,
+      severity: score <= 2 ? "high" : score < positiveThreshold ? "medium" : "low",
+      topic: `Private feedback (${score}/5)`,
       feedback_text: feedbackText || `Customer replied with a ${score}/5 score and no written feedback.`,
     };
 
@@ -156,6 +162,9 @@ export async function recordReputationReply(
       .maybeSingle();
 
     if (existingFeedback?.id) {
+      if (duplicateIgnored) {
+        // A retry after a partial failure may find the feedback row already saved.
+      } else {
       const { error: feedbackUpdateError } = await supabase
         .from("reputation_feedback_items")
         .update({
@@ -177,12 +186,13 @@ export async function recordReputationReply(
         eventType: "feedback.updated",
         toStatus: existingFeedback.follow_up_status === "resolved" ? "resolved" : "new",
         channel,
-        summary: "Updated the private feedback recovery record.",
+        summary: "Updated the private feedback follow-up record.",
         metadata: {
           severity: feedbackPayload.severity,
           topic: feedbackPayload.topic,
         },
       });
+      }
     } else {
       const feedbackInsertPayload = {
         user_id: requestRow.user_id,
@@ -212,58 +222,43 @@ export async function recordReputationReply(
         eventType: "feedback.created",
         toStatus: createdFeedback?.follow_up_status || "new",
         channel,
-        summary: "Created a private feedback recovery record.",
+        summary: "Created a private feedback follow-up record.",
         metadata: {
           severity: feedbackPayload.severity,
           topic: feedbackPayload.topic,
         },
       });
     }
-  } else if (feedbackText) {
-    const proofPayload = {
-      snippet: feedbackText,
-      topic: `Review snippet (${score}/5)`,
-      sentiment: "positive",
-    };
+  }
 
-    const { data: existingProof } = await supabase
+  if (customerPermission && feedbackText) {
+    const { data: existingProof, error: proofLookupError } = await supabase
       .from("reputation_proof_assets")
-      .select("id, approved, published_to")
+      .select("id, customer_permission_at")
       .eq("request_id", requestRow.id)
+      .limit(1)
       .maybeSingle();
+    if (proofLookupError) throw Object.assign(new Error(proofLookupError.message), { status: 500 });
 
-    if (existingProof?.id) {
-      const resetPublishedTargets = existingProof.approved ? [] : existingProof.published_to;
-      const { error: proofUpdateError } = await supabase
+    const permissionAt = new Date().toISOString();
+    if (existingProof?.id && !existingProof.customer_permission_at) {
+      const { error: permissionError } = await supabase
         .from("reputation_proof_assets")
-        .update({
-          ...proofPayload,
-          approved: false,
-          published_to: resetPublishedTargets,
-        })
+        .update({ customer_permission_at: permissionAt, approved: false, published_to: [] })
         .eq("id", existingProof.id);
-
-      if (proofUpdateError) {
-        throw Object.assign(new Error(proofUpdateError.message), { status: 500 });
-      }
+      if (permissionError) throw Object.assign(new Error(permissionError.message), { status: 500 });
 
       await appendReputationLedgerEvent(supabase, {
         userId: requestRow.user_id,
         requestId: requestRow.id,
         proofAssetId: existingProof.id,
-        actorType: "system",
-        eventType: "proof.updated",
-        fromStatus: existingProof.approved ? "approved" : "pending_review",
-        toStatus: "pending_review",
-        channel: "review_link",
-        summary: "Updated a proof asset from a positive reply.",
-        metadata: {
-          topic: proofPayload.topic,
-          approvalReset: existingProof.approved,
-          publishedTo: resetPublishedTargets,
-        },
+        actorType: "customer",
+        eventType: "proof.customer_permission_recorded",
+        channel,
+        summary: "Customer explicitly permitted their note to be reviewed as a possible quote.",
+        metadata: { permissionAt, businessApprovalRequired: true },
       });
-    } else {
+    } else if (!existingProof?.id) {
       const { data: createdProof, error: proofInsertError } = await supabase
         .from("reputation_proof_assets")
         .insert({
@@ -271,36 +266,34 @@ export async function recordReputationReply(
           business_id: requestRow.business_id,
           business_key: requestRow.business_key || businessIdentity.businessKey,
           request_id: requestRow.id,
-          ...proofPayload,
+          snippet: feedbackText,
+          topic: "Customer-authorized quote",
+          sentiment: "unspecified",
+          customer_permission_at: permissionAt,
           approved: false,
+          published_to: [],
         })
         .select("id")
         .single();
-
-      if (proofInsertError) {
-        throw Object.assign(new Error(proofInsertError.message), { status: 500 });
-      }
+      if (proofInsertError) throw Object.assign(new Error(proofInsertError.message), { status: 500 });
 
       await appendReputationLedgerEvent(supabase, {
         userId: requestRow.user_id,
         requestId: requestRow.id,
         proofAssetId: createdProof?.id,
-        actorType: "system",
-        eventType: "proof.created",
-        toStatus: "pending_review",
-        channel: "review_link",
-        summary: "Created a proof asset from a positive reply.",
-        metadata: {
-          topic: proofPayload.topic,
-        },
+        actorType: "customer",
+        eventType: "proof.customer_permission_recorded",
+        channel,
+        summary: "Customer explicitly permitted their note to be reviewed as a possible quote.",
+        metadata: { permissionAt, businessApprovalRequired: true },
       });
     }
   }
 
   return {
     success: true,
-    status: nextStatus,
+    status: duplicateIgnored ? requestRow.status : nextStatus,
     positiveThreshold,
-    duplicateIgnored: Boolean(requestRow.replied_at),
+    duplicateIgnored,
   };
 }

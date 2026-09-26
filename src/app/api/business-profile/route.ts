@@ -1,6 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createHash } from "crypto";
+import { ensureUserProfileExists } from "@/lib/supabase/ensure-user-profile";
+
+type CitationSyncSummaryRow = {
+  directory_id: string;
+  sync_status: string;
+  consistency_score: number | null;
+  last_checked: string | null;
+  drift_detected: boolean | null;
+};
+
+type BusinessProfileInput = {
+  businessName: string;
+  city: string;
+  state: string;
+  address?: string | null;
+  zip?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  email?: string | null;
+  categories?: string[];
+  primaryCategory?: string | null;
+  description?: string | null;
+  hoursJson?: Record<string, unknown> | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+function isBusinessProfileInput(value: unknown): value is BusinessProfileInput {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const input = value as Record<string, unknown>;
+  for (const key of ["businessName", "city", "state"]) {
+    if (typeof input[key] !== "string" || !input[key].trim() || input[key].length > 200) return false;
+  }
+  for (const key of ["address", "zip", "phone", "website", "email", "primaryCategory", "description"]) {
+    if (input[key] != null && (typeof input[key] !== "string" || input[key].length > 10000)) return false;
+  }
+  if (input.categories !== undefined && (!Array.isArray(input.categories) || input.categories.length > 100 || !input.categories.every(category => typeof category === "string"))) return false;
+  if (input.hoursJson != null && (typeof input.hoursJson !== "object" || Array.isArray(input.hoursJson))) return false;
+  if (input.latitude != null && (typeof input.latitude !== "number" || !Number.isFinite(input.latitude) || Math.abs(input.latitude) > 90)) return false;
+  if (input.longitude != null && (typeof input.longitude !== "number" || !Number.isFinite(input.longitude) || Math.abs(input.longitude) > 180)) return false;
+  return true;
+}
 
 /**
  * GET /api/business-profile — Get the user's canonical business profile
@@ -21,7 +63,7 @@ function isSchemaDriftError(error: any) {
     || /Could not find the '.*' column of '.*' in the schema cache/i.test(error?.message || "");
 }
 
-function normalizeNAP(input: { businessName: string; address?: string; city: string; state: string; zip?: string; phone?: string }) {
+function normalizeNAP(input: { businessName: string; address?: string | null; city: string; state: string; zip?: string | null; phone?: string | null }) {
   const parts = [
     input.businessName?.trim().toLowerCase(),
     input.address?.trim().toLowerCase().replace(/[.,]/g, ""),
@@ -59,14 +101,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "DB error" }, { status: 500 });
     }
 
+    const states: CitationSyncSummaryRow[] = syncStates ?? [];
     const syncSummary = {
-      totalDirectories: syncStates?.length ?? 0,
-      found: syncStates?.filter(s => s.sync_status === "found" || s.sync_status === "synced").length ?? 0,
-      mismatches: syncStates?.filter(s => s.sync_status === "mismatch").length ?? 0,
-      notFound: syncStates?.filter(s => s.sync_status === "not_found" || s.sync_status === "unchecked").length ?? 0,
-      driftDetected: syncStates?.filter(s => s.drift_detected).length ?? 0,
-      avgConsistency: syncStates?.length
-        ? Math.round(syncStates.reduce((sum, s) => sum + (s.consistency_score ?? 0), 0) / syncStates.length)
+      totalDirectories: states.length,
+      found: states.filter(s => s.sync_status === "found" || s.sync_status === "synced").length,
+      mismatches: states.filter(s => s.sync_status === "mismatch").length,
+      notFound: states.filter(s => s.sync_status === "not_found" || s.sync_status === "unchecked").length,
+      driftDetected: states.filter(s => s.drift_detected).length,
+      avgConsistency: states.length
+        ? Math.round(states.reduce((sum, s) => sum + (s.consistency_score ?? 0), 0) / states.length)
         : null,
     };
 
@@ -86,38 +129,51 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json();
+    const body: unknown = await req.json().catch(() => null);
+    if (!isBusinessProfileInput(body)) {
+      return NextResponse.json({ error: "Valid businessName, city, and state are required. Check that optional business details have valid values." }, { status: 400 });
+    }
     const {
-      businessName, address, city, state, zip, phone,
+      address, zip, phone,
       website, email, categories, primaryCategory,
       description, hoursJson, latitude, longitude,
     } = body;
-
-    if (!businessName || !city || !state) {
-      return NextResponse.json({ error: "businessName, city, and state are required" }, { status: 400 });
-    }
+    const businessName = body.businessName.trim();
+    const city = body.city.trim();
+    const state = body.state.trim();
 
     const napHash = normalizeNAP({ businessName, address, city, state, zip, phone });
 
-    // Check if user_profiles has existing data to seed from
-    const { data: userProfile } = await supabase
+    const profileSeed = await ensureUserProfileExists(supabase, user);
+    if (profileSeed.error) {
+      console.error("Failed to prepare user business profile:", profileSeed.error);
+      return NextResponse.json({ error: "Failed to prepare your account profile" }, { status: 500 });
+    }
+
+    // Whitelist business fields so profile saves cannot alter billing or roles.
+    const { data: savedUserProfile, error: userProfileError } = await supabase
       .from("user_profiles")
-      .select("business_name, city, state, website_url")
+      .update({ business_name: businessName, city, state, ...(website !== undefined ? { website_url: website?.trim() || null } : {}) })
       .eq("id", user.id)
-      .single();
+      .select("id, website_url")
+      .maybeSingle();
+    if (userProfileError || !savedUserProfile) {
+      console.error("Failed to save user business details:", userProfileError);
+      return NextResponse.json({ error: "Failed to save your account's business details" }, { status: 500 });
+    }
 
     // Upsert business profile
     const { data: profile, error } = await supabase
       .from("business_profiles")
       .upsert({
         user_id: user.id,
-        business_name: businessName || userProfile?.business_name,
+        business_name: businessName,
         address,
-        city: city || userProfile?.city,
-        state: state || userProfile?.state,
+        city,
+        state,
         zip,
         phone,
-        website: website || userProfile?.website_url,
+        website: website?.trim() || savedUserProfile.website_url || null,
         email,
         categories: categories ?? [],
         primary_category: primaryCategory,
@@ -136,29 +192,15 @@ export async function POST(req: NextRequest) {
     if (error) {
       if (isSchemaDriftError(error)) {
         return NextResponse.json({
-          profile: {
-            user_id: user.id,
-            business_name: businessName || userProfile?.business_name || null,
-            address: address ?? null,
-            city: city || userProfile?.city || null,
-            state: state || userProfile?.state || null,
-            zip: zip ?? null,
-            phone: phone ?? null,
-            website: website || userProfile?.website_url || null,
-            email: email ?? null,
-            categories: categories ?? [],
-            primary_category: primaryCategory ?? null,
-            description: description ?? null,
-            hours_json: hoursJson ?? null,
-            latitude: latitude ?? null,
-            longitude: longitude ?? null,
-            nap_hash: napHash,
-            verification_source: "fallback",
-          },
+          error: "Your business profile could not be saved because database setup is incomplete.",
           setupRequired: true,
-        });
+        }, { status: 503 });
       }
       return NextResponse.json({ error: "Failed to save profile", details: error.message }, { status: 500 });
+    }
+
+    if (!profile) {
+      return NextResponse.json({ error: "Business profile save could not be verified" }, { status: 500 });
     }
 
     return NextResponse.json({ profile, setupRequired: false });

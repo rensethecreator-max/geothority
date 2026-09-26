@@ -86,7 +86,7 @@ const PUSH_JOURNEY_CONFIGS: Record<string, {
         name: "Reputation Activated",
         payload: {
           title: "⭐ Your Reputation Engine is live",
-          body: "Send the first request and start building fresh review momentum.",
+          body: "Invite every customer to share an honest review and optionally send private feedback.",
           category: "journey",
           link: "/reputation",
         },
@@ -98,7 +98,7 @@ const PUSH_JOURNEY_CONFIGS: Record<string, {
         name: "First Reputation Request Sent",
         payload: {
           title: "📨 Your first review request is live",
-          body: "Now monitor replies and turn positive responses into public proof.",
+          body: "Monitor replies and follow up on private feedback. Public review links are offered equally.",
           category: "journey",
           link: "/reputation",
         },
@@ -247,7 +247,11 @@ export async function sendPushToSegment(
     .from("push_subscriptions")
     .select("user_id");
 
-  const userIds = Array.from(new Set((rows ?? []).map((r: any) => r.user_id)));
+  const userIds = new Set<string>();
+  for (const row of rows ?? []) {
+    const userId = (row as { user_id?: unknown }).user_id;
+    if (typeof userId === "string" && userId.trim()) userIds.add(userId);
+  }
 
   let sent = 0;
   let failed = 0;

@@ -1,18 +1,19 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Eye, EyeOff, ArrowRight, Mail } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { Logo } from "@/components/ui/logo";
+import { getSafeRedirect } from "@/lib/auth/safe-redirect";
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const redirect = searchParams.get("redirect") || "/dashboard";
-  const safeRedirect = redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/dashboard";
+  const safeRedirect = getSafeRedirect(searchParams.get("redirect"));
   const error = searchParams.get("error");
   const resetSuccess = searchParams.get("reset") === "success";
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
@@ -58,7 +59,7 @@ function LoginForm() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
         completeSignInRedirect();
       }
@@ -155,8 +156,8 @@ function LoginForm() {
           </h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             {mode === "signin"
-              ? "Sign in to review your scans, trust signals, and next fixes"
-              : "Start your free website scan - no credit card needed"}
+              ? "Sign in to review your scans, findings, and next steps"
+              : "Create a free account, then add your business and website to run your scan. No payment card needed."}
           </p>
         </div>
 
@@ -220,7 +221,7 @@ function LoginForm() {
               minLength={8}
               className="w-full pl-4 pr-10 py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
             />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+            <button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
@@ -229,13 +230,13 @@ function LoginForm() {
             <div>
               <input
                 type="text"
-                placeholder="Beta access code (optional)"
+                placeholder="Invitation code (optional)"
                 value={betaCode}
                 onChange={e => setBetaCode(e.target.value)}
                 className="w-full px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
               />
               <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                Invited beta testers can use their access code to start immediately without waiting for email confirmation.
+                Only enter a code if you received a beta invitation. Otherwise, leave this blank and sign up normally.
               </p>
             </div>
           )}
@@ -249,7 +250,7 @@ function LoginForm() {
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                {mode === "signin" ? "Sign In" : "Create Account"}
+                {mode === "signin" ? "Sign In" : "Create Free Account"}
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

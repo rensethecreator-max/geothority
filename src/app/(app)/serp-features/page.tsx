@@ -14,9 +14,11 @@ export default function SerpFeaturesPage() {
   const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const runAnalysis = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/serp-features/analyze', {
         method: 'POST',
@@ -24,9 +26,11 @@ export default function SerpFeaturesPage() {
         body: JSON.stringify({ keyword, location }),
       });
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Analysis failed');
       setReport(data);
     } catch (err) {
       console.error(err);
+      setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -36,7 +40,11 @@ export default function SerpFeaturesPage() {
     <div className="p-6 max-w-6xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-white">SERP Feature Optimizer</h1>
-        <p className="text-gray-400 mt-1">Analyze SERPs for Local Pack & Featured Snippet opportunities</p>
+        <p className="text-gray-400 mt-1">Estimate Local Pack and Featured Snippet opportunities for your keyword.</p>
+      </div>
+
+      <div role="status" className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+        These are keyword-based estimates, not live Google results. Geothority has not checked the current SERP for this search.
       </div>
 
       {/* Input */}
@@ -68,6 +76,7 @@ export default function SerpFeaturesPage() {
         >
           {loading ? 'Analyzing...' : 'Analyze SERP Features'}
         </button>
+        {error ? <p role="alert" className="text-sm text-red-300">{error}</p> : null}
       </div>
 
       {/* Report */}

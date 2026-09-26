@@ -8,6 +8,21 @@ import { getAutomationPolicy, isAutoAllowed } from "@/lib/automation-policies";
  * POST /api/gbp/posts — Generate new post suggestions
  */
 
+type GbpPostRow = {
+  id: string;
+  status: string | null;
+  body: string | null;
+  title: string | null;
+  cta_type: string | null;
+  cta_url: string | null;
+  image_url: string | null;
+  post_type: string | null;
+  gbp_profile_id?: string | null;
+};
+
+type GoogleProfileRow = { google_account_id: string; google_location_id: string };
+type ServerSupabase = Awaited<ReturnType<typeof createServerSupabase>>;
+
 const POST_TEMPLATES = [
   {
     category: "seasonal",
@@ -88,7 +103,7 @@ export async function GET(req: NextRequest) {
       .order("created_at", { ascending: false });
 
     // Summary
-    const allPosts = posts ?? [];
+    const allPosts: GbpPostRow[] = posts ?? [];
     const summary = {
       total: allPosts.length,
       drafts: allPosts.filter(p => p.status === "draft").length,
@@ -234,172 +249,106 @@ async function approvePost(supabase: any, userId: string, params: Record<string,
   return NextResponse.json({ post });
 }
 
-async function publishPost(supabase: any, userId: string, params: Record<string, any>) {
+async function publishPost(supabase: ServerSupabase, userId: string, params: Record<string, unknown>) {
   const { postId } = params;
-  if (!postId) return NextResponse.json({ error: "postId required" }, { status: 400 });
-
-  // Check automation policy
-  const policy = await getAutomationPolicy(userId, "gbp_actions");
-  if (!isAutoAllowed(policy)) {
-    // Must be approved first
-    const { data: post } = await supabase
-      .from("gbp_posts")
-      .select("status")
-      .eq("id", postId)
-      .eq("user_id", userId)
-      .single();
-
-    if (post?.status !== "approved") {
-      return NextResponse.json(
-        { error: "Post must be approved before publishing (automation policy requires approval for GBP actions)" },
-        { status: 403 }
-      );
-    }
+  if (typeof postId !== "string" || !postId) {
+    return NextResponse.json({ error: "postId required" }, { status: 400 });
   }
 
-  // Get the post data
-  const { data: postData } = await supabase
-    .from("gbp_posts")
-    .select("*")
-    .eq("id", postId)
-    .eq("user_id", userId)
-    .single();
+  const { data: postResult, error: postError } = await supabase
+    .from("gbp_posts").select("*").eq("id", postId).eq("user_id", userId).maybeSingle();
+  if (postError) return NextResponse.json({ error: "Failed to load post" }, { status: 500 });
+  const postData: GbpPostRow | null = postResult;
+  if (!postData) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+  if (postData.status === "published") {
+    return NextResponse.json({ post: postData, publishedToGoogle: true, message: "Post is already published" });
+  }
+  if (!postData.body?.trim()) {
+    return NextResponse.json({ error: "Post body is required before publishing" }, { status: 400 });
+  }
+  if (postData.post_type && postData.post_type !== "standard") {
+    return NextResponse.json({ error: "Only standard posts can be published here. Events and offers require their additional details in Google Business Profile." }, { status: 400 });
+  }
 
-  // Try to publish via Google Business Profile API
-  let publishedToGoogle = false;
-  let googleError: string | null = null;
+  const policy = await getAutomationPolicy(userId, "gbp_actions");
+  if (!isAutoAllowed(policy) && postData.status !== "approved") {
+    return NextResponse.json({ error: "Post must be approved before publishing" }, { status: 403 });
+  }
+
+  // Google OAuth credentials live in the verified user's Supabase session.
+  // gbp_connections stores connection health, not access or refresh tokens.
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user.id !== userId || !session.provider_token) {
+    return NextResponse.json({ error: "Connect your Google Business Profile before publishing", needsReconnect: true }, { status: 409 });
+  }
+
+  let profileQuery = supabase.from("gbp_profiles")
+    .select("google_account_id, google_location_id").eq("user_id", userId);
+  const profileId = typeof params.profileId === "string" ? params.profileId : postData.gbp_profile_id;
+  if (profileId) profileQuery = profileQuery.eq("id", profileId);
+  const { data: profileData, error: profileError } = await profileQuery.limit(2);
+  if (profileError) return NextResponse.json({ error: "Failed to load Google Business Profile" }, { status: 500 });
+  const profiles: GoogleProfileRow[] = profileData ?? [];
+  if (profiles.length !== 1) {
+    return NextResponse.json({ error: profiles.length ? "Select a Google Business Profile for this post" : "Sync your Google Business Profile before publishing" }, { status: 409 });
+  }
+  const profile = profiles[0];
+  const accountId = profile.google_account_id.replace(/^accounts\//, "");
+  const locationId = profile.google_location_id.replace(/^locations\//, "");
+  if (!/^[A-Za-z0-9_-]+$/.test(accountId) || !/^[A-Za-z0-9_-]+$/.test(locationId)) {
+    return NextResponse.json({ error: "Google profile identifiers are invalid; reconnect your profile" }, { status: 409 });
+  }
+
+  const postPayload: {
+    languageCode: string;
+    summary: string;
+    topicType: "STANDARD";
+    callToAction?: { actionType: string; url?: string };
+    media?: { mediaFormat: "PHOTO"; sourceUrl: string }[];
+  } = { languageCode: "en", summary: postData.body, topicType: "STANDARD" };
+  if (postData.cta_type === "CALL") {
+    postPayload.callToAction = { actionType: "CALL" };
+  } else if (postData.cta_type && postData.cta_url) {
+    postPayload.callToAction = { actionType: postData.cta_type.toUpperCase(), url: postData.cta_url };
+  }
+  if (postData.image_url) {
+    postPayload.media = [{ mediaFormat: "PHOTO", sourceUrl: postData.image_url }];
+  }
 
   try {
-    // Check for OAuth token
-    const { data: gbpConnection } = await supabase
-      .from("gbp_connections")
-      .select("access_token, refresh_token, token_expiry, account_id")
-      .eq("user_id", userId)
-      .eq("status", "connected")
-      .single();
-
-    if (gbpConnection?.access_token) {
-      // Check if token needs refresh
-      let accessToken = gbpConnection.access_token;
-      const isExpired = gbpConnection.token_expiry && new Date(gbpConnection.token_expiry) < new Date();
-
-      if (isExpired && gbpConnection.refresh_token) {
-        try {
-          const refreshRes = await fetch("https://oauth2.googleapis.com/token", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              client_id: process.env.GOOGLE_CLIENT_ID!,
-              client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-              refresh_token: gbpConnection.refresh_token,
-              grant_type: "refresh_token",
-            }),
-          });
-          const refreshData = await refreshRes.json();
-          if (refreshData.access_token) {
-            accessToken = refreshData.access_token;
-            // Update stored token
-            await supabase
-              .from("gbp_connections")
-              .update({
-                access_token: accessToken,
-                token_expiry: new Date(Date.now() + (refreshData.expires_in || 3600) * 1000).toISOString(),
-              })
-              .eq("user_id", userId);
-          }
-        } catch (refreshErr) {
-          console.error("[gbp/publish] Token refresh failed:", refreshErr);
-          googleError = "OAuth token refresh failed";
-        }
+    const publishRes = await fetch(
+      `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/localPosts`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.provider_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(postPayload),
+        signal: AbortSignal.timeout(15000),
       }
-
-      if (accessToken && !googleError && gbpConnection.account_id) {
-        // Get the location for this account
-        const locationsRes = await fetch(
-          `https://mybusinessbusinessinformation.googleapis.com/v1/accounts/${gbpConnection.account_id}/locations`,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-        const locationsData = await locationsRes.json();
-        const location = locationsData?.locations?.[0];
-
-        if (location?.name) {
-          // Create the local post via Google Business Profile API
-          const postPayload: Record<string, any> = {
-            languageCode: "en",
-            summary: postData?.body || postData?.content || "",
-          };
-
-          if (postData?.title) {
-            postPayload.title = postData.title;
-          }
-
-          // Add CTA if specified
-          if (postData?.cta_type || postData?.cta_url) {
-            postPayload.callToAction = {
-              actionType: (postData.cta_type || "LEARN_MORE").toUpperCase(),
-              url: postData.cta_url || "",
-            };
-          }
-
-          const publishRes = await fetch(
-            `https://mybusinessbusinessinformation.googleapis.com/v1/${location.name}/localPosts`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(postPayload),
-            }
-          );
-
-          if (publishRes.ok) {
-            publishedToGoogle = true;
-          } else {
-            const errData = await publishRes.json().catch(() => ({}));
-            googleError = errData?.error?.message || `Google API returned ${publishRes.status}`;
-            console.error("[gbp/publish] Google API error:", errData);
-          }
-        } else {
-          googleError = "No GBP location found for this account";
-        }
-      }
+    );
+    const published: { name?: string; error?: { message?: string } } = await publishRes.json();
+    if (!publishRes.ok || !published.name) {
+      const { error: failureWriteError } = await supabase.from("gbp_posts")
+        .update({ status: "failed", updated_at: new Date().toISOString() })
+        .eq("id", postId).eq("user_id", userId);
+      if (failureWriteError) console.error("Failed to save GBP publish failure:", failureWriteError);
+      return NextResponse.json({
+        error: published.error?.message || "Google did not confirm publication",
+        publishedToGoogle: false,
+        needsReconnect: publishRes.status === 401,
+      }, { status: 502 });
     }
-  } catch (err) {
-    googleError = `GBP API error: ${String(err)}`;
-    console.error("[gbp/publish] Error:", err);
+
+    const { data: post, error } = await supabase.from("gbp_posts")
+      .update({ status: "published", published_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("id", postId).eq("user_id", userId).select().single();
+    if (error) {
+      return NextResponse.json({ error: "Google published the post, but its local status could not be saved. Check Google before trying again.", publishedToGoogle: true }, { status: 500 });
+    }
+    return NextResponse.json({ post, publishedToGoogle: true, message: "Post published to Google Business Profile" });
+  } catch (error) {
+    console.error("[gbp/publish] Publication could not be confirmed:", error);
+    return NextResponse.json({ error: "Publication could not be confirmed. Check Google Business Profile before trying again." }, { status: 502 });
   }
-
-  // Update post status in database
-  const updateData: Record<string, any> = {
-    status: publishedToGoogle ? "published" : "published_local",
-    published_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  if (publishedToGoogle) {
-    updateData.google_published = true;
-  }
-  if (googleError) {
-    updateData.publish_error = googleError;
-  }
-
-  const { data: post, error } = await supabase
-    .from("gbp_posts")
-    .update(updateData)
-    .eq("id", postId)
-    .eq("user_id", userId)
-    .select()
-    .single();
-
-  if (error) return NextResponse.json({ error: "Failed to publish" }, { status: 500 });
-
-  return NextResponse.json({
-    post,
-    publishedToGoogle,
-    ...(googleError && !publishedToGoogle ? { warning: `Saved locally but not published to Google: ${googleError}` } : {}),
-    ...(publishedToGoogle ? { message: "Post published to Google Business Profile" } : { message: "Post saved locally. Connect your Google Business Profile to publish directly." }),
-  });
 }
 
 async function createPost(supabase: any, userId: string, params: Record<string, any>) {
