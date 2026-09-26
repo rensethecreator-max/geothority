@@ -35,7 +35,7 @@ Module._load = function (request) {
   };
   return originalLoad.apply(this, arguments);
 };
-const { scanWebsite, WebsiteScanError } = require('../../src/lib/scanner.ts');
+const { scanWebsite, WebsiteScanError, generateQuickWins, hasLocalBusinessStructuredData } = require('../../src/lib/scanner.ts');
 const scanRoute = require('../../src/app/api/scan/route.ts');
 const fixRoute = require('../../src/app/api/scan/fix-all/route.ts');
 Module._load = originalLoad;
@@ -135,4 +135,60 @@ test('fix-all uses raw evidence for missing schema and metadata and includes the
   assert.deepEqual(body.fixes.map(fix => fix.type).sort(), ['meta_tags', 'schema']);
   assert.equal(completions.length, 2);
   assert.ok(completions.some(completion => completion.messages[0].content.includes('Stuart, FL')));
+});
+
+const noGaps = {
+  hasLocalBusinessSchema: true, hasAboutPage: true, cityPages: ['/locations/stuart'],
+  hasPhone: true, hasGoogleReviewsLink: true, hasFAQSchema: true,
+};
+const scores = { layer1: 100, layer2: 100, layer3: 100, layer4: 100, layer5: 100 };
+function parseSchemaSnippet(snippet) {
+  assert.equal((snippet.match(/<script\b/g) || []).length, 1);
+  assert.equal((snippet.match(/<\/script>/g) || []).length, 1);
+  return JSON.parse(snippet.replace(/^<script type="application\/ld\+json">\n/, '').replace(/\n<\/script>$/, ''));
+}
+
+test('generic business schema preserves hostile-looking names as data without invented insurance services', () => {
+  const name = 'Pat’s "Plumbing" \\ Repairs\n</script><script>alert(1)</script>';
+  const city = 'Stuart "North"';
+  const [win] = generateQuickWins({ ...noGaps, hasLocalBusinessSchema: false }, scores, name, city, 'FL');
+  const schema = parseSchemaSnippet(win.copyText);
+  assert.equal(schema['@type'], 'LocalBusiness');
+  assert.equal(schema.name, name);
+  assert.equal(schema.address.addressLocality, city);
+  assert.equal(schema.priceRange, undefined);
+  assert.equal(schema.description, undefined);
+  assert.doesNotMatch(win.copyText, /InsuranceAgency|auto, home|life insurance/);
+  assert.match(win.description, /not detected on the scanned page/);
+});
+
+test('FAQ templates use explicit factual placeholders and safely serialize business names', () => {
+  const name = 'Dental "Care" </script>';
+  const [win] = generateQuickWins({ ...noGaps, hasFAQSchema: false }, scores, name, 'Stuart', 'FL');
+  const schema = parseSchemaSnippet(win.copyText);
+  assert.equal(schema['@type'], 'FAQPage');
+  assert.equal(schema.mainEntity[0].name, `What services does ${name} offer?`);
+  for (const item of schema.mainEntity) assert.match(item.acceptedAnswer.text, /^\[.*\]$/);
+  assert.doesNotMatch(win.copyText, /insurance|free personalized quote/i);
+});
+
+test('local business subtype recognition handles graph/type arrays and rejects text-only mentions', () => {
+  for (const subtype of ['InsuranceAgency', 'Plumber', 'AccountingService', 'Dentist', 'MedicalClinic', 'HVACBusiness', 'Attorney']) {
+    assert.equal(hasLocalBusinessStructuredData([JSON.stringify({ '@context': 'https://schema.org', '@graph': [
+      { '@type': ['Organization', `https://schema.org/${subtype}`], name: 'Fixture Business' },
+    ] })]), true, subtype);
+  }
+  assert.equal(hasLocalBusinessStructuredData(['{invalid json}']), false);
+  assert.equal(hasLocalBusinessStructuredData([JSON.stringify({ '@type': 'Article', description: 'LocalBusiness Dentist InsuranceAgency' })]), false);
+});
+
+test('non-insurance businesses receive qualified, generic findings from a full scan', async () => {
+  pageFetcher = async (url) => {
+    if (url.endsWith('/robots.txt') || url.endsWith('/sitemap.xml')) throw new Error('Optional file unavailable');
+    return { finalUrl: 'https://example.com/', text: '<!doctype html><html><head><title>Local Plumbing</title></head><body><h1>Local Plumbing</h1></body></html>' };
+  };
+  const result = await scanWebsite('example.com', 'Local Plumbing', 'Stuart', 'FL');
+  assert.ok(result.quickWins.length > 0);
+  assert.doesNotMatch(JSON.stringify(result.quickWins), /insurance|car coverage|Licensed in/);
+  assert.ok(result.quickWins.every(win => /not detected|not found|were found/.test(win.description)));
 });

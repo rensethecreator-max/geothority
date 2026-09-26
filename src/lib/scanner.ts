@@ -198,6 +198,38 @@ interface EnhancedMeta {
   hasSitemapXml: boolean;
 }
 
+const LOCAL_BUSINESS_SCHEMA_TYPES = new Set([
+  "localbusiness", "insuranceagency", "financialservice", "accountingservice",
+  "legalservice", "attorney", "professionalservice", "homeandconstructionbusiness",
+  "plumber", "electrician", "generalcontractor", "hvacbusiness", "roofingcontractor",
+  "housepainter", "locksmith", "movingcompany", "medicalbusiness", "medicalclinic",
+  "dentist", "physician", "optician", "pharmacy", "healthandbeautybusiness",
+  "beautysalon", "hairsalon", "dayspa", "nailsalon", "automotivebusiness",
+  "autorepair", "autobodyshop", "autodealer", "store", "foodestablishment",
+  "restaurant", "cafeorcoffeeshop", "realestateagent", "travelagency",
+  "veterinarycare", "childcare", "drycleaningorlaundry", "employmentagency",
+]);
+
+/** Read actual JSON-LD types, including @graph and type arrays, without
+ * mistaking an ordinary text mention for business structured data. */
+export function hasLocalBusinessStructuredData(scripts: string[]): boolean {
+  function containsBusinessType(value: unknown): boolean {
+    if (Array.isArray(value)) return value.some(containsBusinessType);
+    if (!value || typeof value !== "object") return false;
+    const record = value as Record<string, unknown>;
+    const types = Array.isArray(record["@type"]) ? record["@type"] : [record["@type"]];
+    if (types.some(type => typeof type === "string" && LOCAL_BUSINESS_SCHEMA_TYPES.has(
+      type.replace(/^https?:\/\/schema\.org\//i, "").toLowerCase(),
+    ))) return true;
+    return Object.values(record).some(containsBusinessType);
+  }
+
+  return scripts.some(script => {
+    try { return containsBusinessType(JSON.parse(script)); }
+    catch { return false; }
+  });
+}
+
 function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, businessName: string, meta: EnhancedMeta): RawScanData {
   const bodyText = $("body").text().toLowerCase();
   const title = $("title").text() || "";
@@ -241,7 +273,7 @@ function analyzeHTML($: cheerio.CheerioAPI, baseUrl: string, businessName: strin
     .get();
   const schemaText = scripts.join(" ").toLowerCase();
   const hasSchema = scripts.length > 0;
-  const hasLocalBusinessSchema = schemaText.includes("localbusiness") || schemaText.includes("insuranceagency");
+  const hasLocalBusinessSchema = hasLocalBusinessStructuredData(scripts);
   const hasFAQSchema = schemaText.includes("faqpage");
 
   // H1 tag check
@@ -500,37 +532,32 @@ function calculateLayerScores(
   return { layer1, layer2, layer3, layer4, layer5 };
 }
 
-function generateQuickWins(
-  data: RawScanData,
+export function generateQuickWins(
+  data: Pick<RawScanData, "hasLocalBusinessSchema" | "hasAboutPage" | "cityPages" | "hasPhone" | "hasGoogleReviewsLink" | "hasFAQSchema">,
   scores: { layer1: number; layer2: number; layer3: number; layer4: number; layer5: number },
   businessName: string,
   city: string,
   state: string
 ): QuickWin[] {
   const wins: QuickWin[] = [];
+  // Escaping '<' prevents a business name containing </script> from ending
+  // the element when a customer installs this otherwise valid JSON-LD.
+  const schemaSnippet = (value: object) => `<script type="application/ld+json">\n${JSON.stringify(value, null, 2).replace(/</g, "\\u003c")}\n</script>`;
 
   if (!data.hasLocalBusinessSchema) {
     wins.push({
       title: "Add LocalBusiness Schema Markup",
-      description: `Your website is missing LocalBusiness structured data. This tells Google exactly who you are, where you're located, and what services you offer. This is the #1 quick fix for AI visibility.`,
-      copyText: `<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "InsuranceAgency",
-  "name": "${businessName}",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "${city}",
-    "addressRegion": "${state}"
-  },
-  "areaServed": {
-    "@type": "City",
-    "name": "${city}"
-  },
-  "description": "${businessName} provides auto, home, life, and business insurance in ${city}, ${state}.",
-  "priceRange": "$$"
-}
-</script>`,
+      description: "Recognized local business structured data was not detected on the scanned page. Review existing markup before adding this starter template. Confirm the business name and location, choose an accurate business subtype if appropriate, and add only verified details. Structured data does not guarantee rankings or AI recommendations.",
+      copyText: schemaSnippet({
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        name: businessName,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: city,
+          addressRegion: state,
+        },
+      }),
       impact: "high",
       layer: 5,
     });
@@ -539,8 +566,8 @@ function generateQuickWins(
   if (!data.hasAboutPage) {
     wins.push({
       title: "Create an About Page",
-      description: `You're missing an About page. Insurance is a trust business — people want to know who they're buying from. An About page with your photo, story, and credentials builds instant credibility.`,
-      copyText: `About ${businessName}\n\nServing the ${city}, ${state} community since [year]. As a local independent insurance agent, I help families and businesses find the right coverage at the best price.\n\nLicensed in ${state} | [Phone Number] | [Address]`,
+      description: "An About-page link was not detected on the scanned page. Check whether one already exists and make it easy to find. Explain your business, the people behind it, and relevant experience using accurate details.",
+      copyText: `About ${businessName}\n\n[Describe your business and the services you actually provide.]\n\nOur connection to ${city}, ${state}\n[Describe your local experience and confirmed service area.]\n\nMeet the team\n[Add names, roles, and verified qualifications you want to make public.]\n\nContact us\n[Add your current business contact details.]\n\nReplace every placeholder and review the facts before publishing.`,
       impact: "high",
       layer: 2,
     });
@@ -548,9 +575,9 @@ function generateQuickWins(
 
   if (data.cityPages.length === 0) {
     wins.push({
-      title: "Create City-Specific Landing Pages",
-      description: `You have zero city-specific pages. Each nearby city you serve should have its own page targeting "[City] insurance agent." This is how you capture search traffic from surrounding areas.`,
-      copyText: `Page Title: ${city} Insurance Agent - ${businessName}\n\nMeta Description: Looking for a trusted insurance agent in ${city}, ${state}? ${businessName} offers auto, home, and life insurance with personalized local service.\n\n[Use Geothority's content generator to create full pages automatically]`,
+      title: "Review Your Local Service Information",
+      description: "No city-page links matching this scan's detection patterns were found on the scanned page. This does not prove that local pages are missing. Review existing pages first, then add useful local information only for places you actually serve.",
+      copyText: `Page outline: ${businessName} in ${city}, ${state}\n\nServices available\n[List only services you actually provide here.]\n\nWhere we work\n[Confirm locations served and any service limitations.]\n\nLocal experience\n[Add useful, original details about your work in this area.]\n\nHow to contact us\n[Provide accurate contact or appointment instructions.]\n\nReview existing pages before creating another one. Replace placeholders and verify all details before publishing.`,
       impact: "high",
       layer: 3,
     });
@@ -558,8 +585,8 @@ function generateQuickWins(
 
   if (!data.hasPhone) {
     wins.push({
-      title: "Add Your Phone Number to Every Page",
-      description: `Your phone number isn't visible on your website. Insurance customers want to call — make it easy. Add a clickable phone number to your header and footer.`,
+      title: "Make Your Business Phone Number Easy to Find",
+      description: "A phone number matching this scan's detection patterns was not found on the scanned page. Check your contact details and add a clickable business number where useful. Replace the placeholder below with your actual number before publishing.",
       copyText: `<a href="tel:+1XXXXXXXXXX" class="phone-link">Call (XXX) XXX-XXXX</a>`,
       impact: "high",
       layer: 1,
@@ -569,7 +596,7 @@ function generateQuickWins(
   if (!data.hasGoogleReviewsLink) {
     wins.push({
       title: "Link to Your Google Reviews",
-      description: `Your website doesn't link to your Google Business Profile. Adding a direct review link makes it easier for every customer to share an honest review.`,
+      description: "A recognized Google review or Maps link was not detected on the scanned page. Check existing links, then use your business's correct review link to invite every customer to share honest feedback. Replace the place-ID placeholder before publishing.",
       copyText: `<a href="https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID" target="_blank" rel="noopener">Leave us a review on Google ⭐</a>`,
       impact: "medium",
       layer: 4,
@@ -579,31 +606,29 @@ function generateQuickWins(
   if (!data.hasFAQSchema) {
     wins.push({
       title: "Add FAQ Schema Markup",
-      description: `Adding FAQ structured data helps your website appear in Google's "People Also Ask" section and AI search results. This is critical for AEO (AI Engine Optimization).`,
-      copyText: `<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What types of insurance do you offer in ${city}?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "${businessName} offers auto, home, life, business, and umbrella insurance to residents and businesses in ${city}, ${state}."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How much does car insurance cost in ${city}, ${state}?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Car insurance rates in ${city} vary based on your driving record, vehicle, and coverage needs. Contact ${businessName} for a free personalized quote."
-      }
-    }
-  ]
-}
-</script>`,
+      description: "FAQ structured data was not detected on the scanned page. If you publish helpful questions and answers, any FAQ markup must match that visible content. Replace these placeholders with accurate answers before use; markup does not guarantee a special search appearance.",
+      copyText: schemaSnippet({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: `What services does ${businessName} offer?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "[Describe only the services this business actually provides. Match the answer visible on your website.]",
+            },
+          },
+          {
+            "@type": "Question",
+            name: `How can I contact ${businessName}?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "[Provide verified business contact details and any relevant appointment instructions. Match the visible website answer.]",
+            },
+          },
+        ],
+      }),
       impact: "medium",
       layer: 5,
     });

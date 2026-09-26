@@ -1,424 +1,227 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, TrendingUp, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
+import { ArrowRight, CheckCircle2, ClipboardCheck, Search, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
+import { PublicHeader } from "@/components/layout/public-header";
 
-const industries: Record<string, {
-  slug: string;
+type Industry = {
   name: string;
   h1: string;
   description: string;
-  painPoints: { title: string; desc: string }[];
-  solutions: { title: string; desc: string }[];
-  testimonial: { quote: string; author: string; role: string };
-  stats: { value: string; label: string }[];
+  opportunities: { title: string; desc: string }[];
+  example: { business: string; gap: string; action: string; approval: string };
   faqs: { q: string; a: string }[];
-}> = {
+};
+
+const industries: Record<string, Industry> = {
   "insurance-agents": {
-    slug: "insurance-agents",
-    name: "Insurance Agents",
-    h1: "Local SEO for Insurance Agents - Get Found Before Your Competitors",
-    description: "Insurance agents who rank in the local pack get 3x more calls. Geothority's Trust Stack gives you a clear path to the top - citations, GBP, AI recommendations, and schema all in one score.",
-    painPoints: [
-      {
-        title: "You're invisible in AI search",
-        desc: "When someone asks ChatGPT, Perplexity, Claude, Copilot, or Grok 'who's the best insurance agent near me,' they probably don't see your name. Most agents have zero AI presence.",
-      },
-      {
-        title: "Your Google Business Profile is half-built",
-        desc: "Missing categories, incomplete service areas, no posts, no Q&A - these gaps cost you calls every single day and most agents don't know where to start fixing them.",
-      },
-      {
-        title: "Citations are inconsistent across directories",
-        desc: "Your NAP (Name, Address, Phone) data probably has 5+ variations across the web. Google sees this as a trust signal problem and ranks you lower.",
-      },
+    name: "Independent Insurance Agencies",
+    h1: "Help local insurance shoppers find your agency.",
+    description: "Identify gaps in your agency's online presence and get a clear list of what to improve. Help shoppers understand your services, your experience, and how to request a quote.",
+    opportunities: [
+      { title: "Explain the insurance you offer", desc: "Make your lines of business and service area easy to understand. A shopper should be able to tell whether you can help before calling." },
+      { title: "Keep your agency details consistent", desc: "Review the business name, address, phone number, and hours shown on your website and public profiles. Work through conflicting information where you find it." },
+      { title: "Build trust with honest feedback", desc: "Give all customers a consistent invitation to leave an honest review. Prepare responses that respect client privacy." },
     ],
-    solutions: [
-      {
-        title: "Trust Stack Score in 90 seconds",
-        desc: "Scan your website and instantly see your 0-100 Trust Stack Score - covering GBP health, citations, schema markup, AI recommendations, and content. No guesswork.",
-      },
-      {
-        title: "AI Overview Checker",
-        desc: "See if you appear when people ask AI assistants for insurance recommendations in your city. If you're not there, we show you exactly how to get there.",
-      },
-      {
-        title: "Schema Generator Wizard",
-        desc: "Insurance Schema markup (InsuranceAgency, LocalBusiness, FAQ) generated in 60 seconds. Paste it into your site and watch your rich results improve.",
-      },
-    ],
-    testimonial: {
-      quote: "I went from page 3 to the local pack in 6 weeks. The Trust Stack score showed me exactly what to fix - I started with citations and GBP, and the results were immediate.",
-      author: "Marcus T.",
-      role: "Independent Insurance Agent, Nashville TN",
-    },
-    stats: [
-      { value: "73%", label: "of insurance shoppers use Google to find a local agent" },
-      { value: "3x", label: "more calls from businesses in the local pack vs. organic results" },
-    ],
+    example: { business: "An independent agency offering home and auto insurance", gap: "An About page link was not detected on the scanned page.", action: "Check whether an About page exists and is clearly linked. Add verified agency experience, team information, and the communities served where useful.", approval: "The agency verifies business details and carrier references; its website provider applies approved changes." },
     faqs: [
-      { q: "Does Geothority work for independent insurance agents?", a: "Yes - Geothority was built with independent agents in mind. You get the same local SEO power as large carriers without the enterprise price tag." },
-      { q: "How long does it take to see results?", a: "Most agents see GBP improvements within 2-4 weeks of implementing Geothority's recommendations. Citation consistency typically shows results in 4-8 weeks." },
-      { q: "Can I check my competitors' scores?", a: "Yes, Geothority's competitor analysis lets you scan competing agents in your zip code and see exactly where you're ahead or behind." },
-      { q: "Do I need to know SEO to use Geothority?", a: "No. Geothority gives you plain-English action items ranked by impact. If you can follow a checklist, you can improve your local ranking." },
-      { q: "What makes Geothority different from generic SEO tools?", a: "Geothority is built specifically for local service businesses like insurance agents. Our Trust Stack framework prioritizes the exact ranking factors that matter for local search - not broad SEO metrics that don't apply to you." },
+      { q: "Do I need to upload client or policy information?", a: "No. The initial website scan needs business details and a public website, not client records or policy documents." },
+      { q: "Who reviews insurance content?", a: "Your agency does. Check generated drafts for coverage accuracy, licensing details, carrier requirements, and your own approval process before publishing." },
+    ],
+  },
+  "home-services": {
+    name: "Home Service Businesses",
+    h1: "Help nearby homeowners find your business when they need you.",
+    description: "For plumbers, HVAC companies, electricians, cleaners, and other local service businesses. Find gaps in your online presence and make your services and coverage area easier to understand.",
+    opportunities: [
+      { title: "Make your service area clear", desc: "Show the towns and neighborhoods you actually serve so homeowners can quickly decide whether to contact you." },
+      { title: "Explain the work you do", desc: "Give specific services a useful explanation. Help a visitor distinguish repairs, installation, routine maintenance, and emergency work where offered." },
+      { title: "Make it easier to choose you", desc: "Keep contact details current, explain how to request service, and support a consistent process for inviting honest customer reviews." },
+    ],
+    example: { business: "A local HVAC company", gap: "A service-area page link was not detected on the scanned page.", action: "Review the existing navigation. Link to a useful service-area page that accurately explains which towns the company serves.", approval: "The owner verifies availability, licensing claims, and services; the website provider publishes the approved content." },
+    faqs: [
+      { q: "Can this work for a business that travels to customers?", a: "Yes. Use your real service area and public business details. Any Google Business Profile changes should reflect how your business actually operates, including whether customers visit your address." },
+      { q: "Will Geothority book jobs or answer my calls?", a: "Geothority focuses on visibility findings and improvement work. Your existing phone, booking, and dispatch systems continue to handle customer inquiries." },
+    ],
+  },
+  "accountants": {
+    name: "Accountants & Bookkeepers",
+    h1: "Help local clients find the right accounting help.",
+    description: "Make your expertise easier to discover and understand. Find website visibility gaps and plan useful improvements for the clients, services, and communities your firm serves.",
+    opportunities: [
+      { title: "Clarify who you help", desc: "Help prospective clients distinguish personal tax preparation, bookkeeping, payroll, and business advisory services that your firm actually offers." },
+      { title: "Show your experience clearly", desc: "Bring verified qualifications, team information, and areas of focus into view so visitors can assess whether your firm fits their needs." },
+      { title: "Make the first contact straightforward", desc: "Keep your hours and contact details clear, and explain how a prospective client can arrange an initial conversation." },
+    ],
+    example: { business: "A bookkeeping firm serving local small businesses", gap: "An FAQ page link was not detected on the scanned page.", action: "Check for existing questions and answers. Add a clear link or prepare useful answers about monthly bookkeeping and arranging a consultation.", approval: "The firm verifies credentials and service descriptions; its website provider publishes the approved draft." },
+    faqs: [
+      { q: "Does Geothority need client financial records?", a: "No. Start with your public website and business details. The initial visibility scan does not require tax returns, bookkeeping records, or client documents." },
+      { q: "Can I review every content draft?", a: "Yes. Your firm should check all descriptions of qualifications, services, and financial topics before publishing. Generated drafts support your editorial process." },
     ],
   },
   "real-estate-agents": {
-    slug: "real-estate-agents",
-    name: "Real Estate Agents",
-    h1: "Local SEO for Real Estate Agents - Rank Higher, Close More Deals",
-    description: "Home buyers and sellers search locally before they call. Geothority's Trust Stack ensures your name is what they find - in Google Maps, local search, and AI assistants.",
-    painPoints: [
-      {
-        title: "New listings get buried under Zillow and Realtor.com",
-        desc: "Big portals dominate local search, but Google's local pack is winnable for agents. Most agents don't know the specific signals that get them into that top-3 box.",
-      },
-      {
-        title: "AI assistants recommend other agents",
-        desc: "When a buyer asks an AI 'who's the best realtor in [city],' your competitors who've optimized for AI authority show up. You need an AI presence strategy now.",
-      },
-      {
-        title: "Reviews are inconsistent and under-optimized",
-        desc: "Real estate success depends on trust. If your review profile is thin, unresponded-to, or spread across too many platforms without a strategy, you're leaving leads on the table.",
-      },
+    name: "Real Estate Professionals",
+    h1: "Help local buyers and sellers discover your expertise.",
+    description: "Give prospective clients a clearer view of the communities you serve and the help you offer. Start with a website scan and a practical list of visibility improvements.",
+    opportunities: [
+      { title: "Make your local knowledge visible", desc: "Use accurate, firsthand information about the communities you serve. Give visitors something useful beyond a list of city names." },
+      { title: "Explain your services", desc: "Help buyers and sellers understand what working with you involves and how to start a conversation." },
+      { title: "Keep your professional details clear", desc: "Check brokerage, contact, and service-area information for accuracy. Review public business details when your office or affiliation changes." },
     ],
-    solutions: [
-      {
-        title: "Trust Stack Score with GBP deep-dive",
-        desc: "Real estate GBP optimization is nuanced. Geothority checks your categories, service area, photo frequency, review response rate, and post cadence - all in one scan.",
-      },
-      {
-        title: "City Landing Page Generator",
-        desc: "Create SEO-optimized neighborhood and city pages in seconds. 'Homes for Sale in [Neighborhood]' pages with proper schema and local signals can rank fast.",
-      },
-      {
-        title: "Competitor Benchmarking",
-        desc: "See exactly how you stack up against the top 3 agents in your market. Know what they're doing right and where you can leapfrog them.",
-      },
-    ],
-    testimonial: {
-      quote: "I created 8 neighborhood pages with Geothority's content tool. Three of them rank on page 1 now. My GBP calls doubled in 90 days.",
-      author: "Priya S.",
-      role: "Buyer's Agent, Austin TX",
-    },
-    stats: [
-      { value: "52%", label: "of real estate searches begin on a mobile device with local intent" },
-      { value: "87%", label: "of homebuyers use the internet during their home search" },
-    ],
+    example: { business: "An agent helping first-time buyers", gap: "An FAQ page link was not detected on the scanned page.", action: "Check the existing navigation and prepare clearly linked answers to common buyer questions, using the agent's firsthand local knowledge.", approval: "The agent and brokerage verify local facts, disclosures, and wording before publishing." },
     faqs: [
-      { q: "Does Geothority work for buyer's agents, listing agents, or both?", a: "Both. The Trust Stack score applies to any local real estate professional - we check GBP, citations, schema, and AI recommendations regardless of your specialty." },
-      { q: "Can I use Geothority for multiple zip codes?", a: "Yes. Run scans for different service areas and create city/neighborhood landing pages for each area you want to target." },
-      { q: "What schema markup matters most for real estate?", a: "RealEstateAgent and LocalBusiness schema are most important. Geothority's schema wizard generates both with the correct markup for your specific practice." },
-      { q: "How do I rank against Zillow and Realtor.com?", a: "You can't out-rank portals for generic terms, but you can win the local pack and neighborhood-specific searches. That's where Geothority focuses." },
-      { q: "Can I track my local pack ranking over time?", a: "Geothority's scan history lets you compare Trust Stack scores over time. We're adding native rank tracking in Q3 2025." },
+      { q: "Does Geothority replace my property listings or CRM?", a: "No. It helps you review and improve your public online presence. Your existing listing, CRM, and transaction tools remain separate." },
+      { q: "Can I create pages for different communities?", a: "Content tools can help prepare drafts where included in your plan. Each page should contain useful, accurate information about a community you serve, with your own review before publication." },
     ],
   },
   "dentists": {
-    slug: "dentists",
-    name: "Dentists",
-    h1: "Local SEO for Dentists - Fill Your Schedule with New Patients",
-    description: "Patients search for dentists near me before they book. Geothority's Trust Stack helps dental practices dominate Google Maps, local search, and AI recommendations.",
-    painPoints: [
-      {
-        title: "Your practice doesn't show in the local pack",
-        desc: "The top 3 Google Maps results get 70%+ of local clicks. If you're not there, you're invisible to patients who are ready to book - often to a competitor down the street.",
-      },
-      {
-        title: "AI search doesn't recommend you",
-        desc: "Patients increasingly ask AI assistants 'find me a dentist in [city].' Without AI-optimized content and proper schema, you won't be part of those answers.",
-      },
-      {
-        title: "Inconsistent NAP data hurts your trust score",
-        desc: "Your practice name, address, and phone number are probably listed differently across Healthgrades, Zocdoc, Yelp, and Google. This hurts your local ranking signals.",
-      },
+    name: "Dental Practices",
+    h1: "Help nearby patients find and understand your practice.",
+    description: "Make your practice's services, location, and next steps easier to discover. Identify website visibility gaps and prioritize improvements with your team.",
+    opportunities: [
+      { title: "Explain the care you provide", desc: "Help patients understand your services and how to contact the practice. Keep treatment descriptions accurate and easy to read." },
+      { title: "Keep practice information current", desc: "Review your location, phone number, office hours, and public business details so patients know where and how to reach you." },
+      { title: "Build a thoughtful review process", desc: "Invite honest feedback consistently and keep responses focused on the practice. Protect patient confidentiality in every public response." },
     ],
-    solutions: [
-      {
-        title: "Dental Practice Trust Stack",
-        desc: "Our Trust Stack checks the specific signals Google uses for healthcare providers - including YMYL (Your Money Your Life) factors, review authority, and citation consistency across medical directories.",
-      },
-      {
-        title: "Healthcare Schema Generator",
-        desc: "Generate Dentist, MedicalOrganization, and FAQPage schema in 60 seconds. Rich snippets help patients see your hours, services, and reviews directly in search results.",
-      },
-      {
-        title: "Native Reputation Engine",
-        desc: "Launch Geothority's built-in one-tap review request workflow after appointments. More reviews means stronger local pack rankings, better trust signals, and more patient confidence.",
-      },
-    ],
-    testimonial: {
-      quote: "We went from 47 reviews to 190 in 4 months using Geothority's Reputation Engine. Our new patient bookings from Google increased 40%. The Trust Stack score was eye-opening.",
-      author: "Dr. Angela R.",
-      role: "Family Dentist, Tampa FL",
-    },
-    stats: [
-      { value: "77%", label: "of patients use search engines to find dental providers" },
-      { value: "4.4+", label: "average star rating needed to be competitive in dental local pack" },
-    ],
+    example: { business: "A neighborhood family dental practice", gap: "A phone number was not detected on the scanned page.", action: "Check the page and add the correct practice phone number where patients can easily find it, alongside accurate contact information.", approval: "The practice verifies its phone number and contact details; its website provider publishes approved changes." },
     faqs: [
-      { q: "What local SEO factors matter most for dentists?", a: "For dentists, reviews (volume and recency), GBP optimization, citation consistency across medical directories, and healthcare schema are the highest-impact factors." },
-      { q: "Does Geothority check Healthgrades and Zocdoc?", a: "Geothority checks 18 directories including major healthcare platforms. We flag inconsistencies and tell you exactly which ones to fix first." },
-      { q: "Can multi-location dental practices use Geothority?", a: "Yes. Run separate scans for each location and get individual Trust Stack scores. Each location has its own citation and GBP profile." },
-      { q: "How important is schema for dental websites?", a: "Very important. Proper Dentist schema can enable rich results showing your rating, hours, and accepted insurance directly in Google - before patients even click." },
-      { q: "What's the fastest win for a dental practice?", a: "Most dental practices see the fastest wins from GBP optimization (completing all sections, adding photos weekly) and requesting reviews from existing patients." },
+      { q: "Do I need to share patient information?", a: "No. The initial scan uses your public website and business details. Patient records are not needed to review website visibility." },
+      { q: "Who approves treatment descriptions?", a: "Your practice does. A qualified member of your team should review clinical wording and any claims before publication." },
     ],
   },
   "lawyers": {
-    slug: "lawyers",
-    name: "Lawyers",
-    h1: "Local SEO for Lawyers - Get Found by Clients Who Need You Now",
-    description: "When someone searches for a lawyer, they're ready to hire. Geothority's Trust Stack ensures you appear at the top of local search, Google Maps, and AI recommendations when it matters most.",
-    painPoints: [
-      {
-        title: "Legal directories are cluttered and expensive",
-        desc: "Avvo, FindLaw, Martindale-Hubbell - you're paying for visibility on someone else's platform while your own website languishes. Local SEO lets you own your presence.",
-      },
-      {
-        title: "AI assistants recommend your competitors",
-        desc: "When a potential client asks an AI 'best personal injury lawyer in [city],' attorneys who've optimized for AI search authority appear first. Are you one of them?",
-      },
-      {
-        title: "Your website lacks E-E-A-T signals",
-        desc: "Google applies extra scrutiny to legal content (YMYL). Without proper attorney schema, consistent citations, and authoritative content signals, your rankings suffer.",
-      },
+    name: "Law Firms",
+    h1: "Help local clients understand how your firm can help.",
+    description: "Make your practice areas, location, and experience easier to discover. Get a clearer starting point for improving your firm's public online presence.",
+    opportunities: [
+      { title: "Clarify your practice areas", desc: "Help visitors understand the types of matters you handle and where you practice, without promising an outcome." },
+      { title: "Make experience easy to assess", desc: "Bring accurate attorney biographies, qualifications, and contact information into view for prospective clients." },
+      { title: "Organize your next improvements", desc: "Use scan findings to prioritize website information and technical fixes, then coordinate approved changes with your website provider." },
     ],
-    solutions: [
-      {
-        title: "Attorney Trust Stack Score",
-        desc: "Get a comprehensive score covering GBP optimization, citation consistency across legal directories, attorney schema markup, AI recommendations, and content authority - all ranked by impact.",
-      },
-      {
-        title: "Legal Schema Generator",
-        desc: "Generate Attorney, LegalService, and FAQPage schema in 60 seconds. This tells search engines exactly who you are, what you practice, and where you serve clients.",
-      },
-      {
-        title: "Practice Area Landing Pages",
-        desc: "Create geo-targeted pages for each practice area and city you serve. 'Personal Injury Lawyer in [City]' pages with proper local signals rank fast for high-intent searches.",
-      },
-    ],
-    testimonial: {
-      quote: "I was skeptical, but within 3 months of following Geothority's recommendations, I went from page 2 to the local pack for 'estate planning attorney [city].' Three new client consultations per week from Google alone.",
-      author: "James K.",
-      role: "Estate Planning Attorney, Chicago IL",
-    },
-    stats: [
-      { value: "96%", label: "of people seeking legal advice start with an online search" },
-      { value: "62%", label: "of legal searches have local intent (near me or city name)" },
-    ],
+    example: { business: "A local estate-planning practice", gap: "An About page link was not detected on the scanned page.", action: "Check whether attorney and firm information is clearly linked. Add verified biographies, qualifications, and practice information where needed.", approval: "The firm checks legal wording and applicable advertising requirements before its website provider publishes changes." },
     faqs: [
-      { q: "Does Geothority work for solo attorneys and small firms?", a: "Yes - Geothority is ideal for solo and small firm attorneys who need enterprise-level local SEO without hiring an agency. The Trust Stack gives you a clear DIY action plan." },
-      { q: "Which legal directories does Geothority check?", a: "Geothority checks 18 directories including Avvo, FindLaw, Justia, and general directories like Yelp and Google. We flag citation inconsistencies across all of them." },
-      { q: "What schema markup is most important for attorneys?", a: "Attorney and LegalService schema are most critical. Our wizard generates these with your practice areas, service area, and contact information pre-filled." },
-      { q: "Can I use Geothority for multiple practice areas?", a: "Yes. Create separate landing pages for each practice area and use Geothority's content tool to optimize each one for local search intent." },
-      { q: "How does AI search affect attorney marketing?", a: "Increasingly, potential clients ask AI assistants for lawyer recommendations. Geothority's AI Overview Checker shows if you appear in those results and what to do to improve your presence." },
+      { q: "Is generated content ready to publish without review?", a: "Treat it as a draft. Your firm should verify legal accuracy and applicable advertising requirements before publication." },
+      { q: "Does the scan need client or case information?", a: "No. Start with public business details and your website. Confidential client or case information is not needed for the initial scan." },
     ],
   },
   "restaurants": {
-    slug: "restaurants",
-    name: "Restaurants",
-    h1: "Local SEO for Restaurants - Turn Hungry Searches Into Reservations",
-    description: "Restaurant searches are the most local of all - people want to eat NOW. Geothority's Trust Stack helps you dominate Google Maps, AI food recommendations, and local search when customers are deciding where to go.",
-    painPoints: [
-      {
-        title: "Competitors outrank you on 'restaurants near me'",
-        desc: "The top 3 local pack results capture most clicks from hungry diners. Every day you're not there is revenue going to the restaurant next door.",
-      },
-      {
-        title: "Your menu and hours aren't optimized for AI search",
-        desc: "When someone asks an AI 'where should I eat [cuisine] in [city],' restaurants with structured data, consistent citations, and GBP optimization dominate those answers.",
-      },
-      {
-        title: "Review velocity has slowed",
-        desc: "Reviews are the #1 ranking factor in restaurant local search. If your competitors are getting more reviews per week than you, they'll outrank you regardless of food quality.",
-      },
+    name: "Restaurants & Cafés",
+    h1: "Help nearby diners find the details they need to choose you.",
+    description: "Make your restaurant's menu, location, and contact information easier to find. Start with a website scan and a clear plan for improving your public presence.",
+    opportunities: [
+      { title: "Make essential details easy to find", desc: "Help diners locate the menu, opening hours, address, and available reservation or ordering options." },
+      { title: "Keep information consistent", desc: "Review public details when hours, menus, or contact information change so customers can make plans with confidence." },
+      { title: "Invite honest customer feedback", desc: "Create a consistent review invitation and response routine. Keep the invitation open to customers regardless of their experience." },
     ],
-    solutions: [
-      {
-        title: "Restaurant Trust Stack Score",
-        desc: "Check your GBP (menu, hours, photos, attributes), citation consistency across Yelp/TripAdvisor/OpenTable, restaurant schema markup, and AI recommendations - all in one 90-second scan.",
-      },
-      {
-        title: "Restaurant Schema Wizard",
-        desc: "Generate Restaurant, Menu, and LocalBusiness schema including cuisine type, price range, reservation links, and hours. Rich results show your info before customers click.",
-      },
-      {
-        title: "Review Boost via Reputation Engine",
-        desc: "Send automatic review requests after dining experiences. More reviews, higher ratings, and better local pack momentum create the virtuous cycle that keeps your tables full.",
-      },
-    ],
-    testimonial: {
-      quote: "We added 85 reviews in 2 months using Geothority's Reputation Engine. Our OpenTable reservations from Google increased 55% once we hit the local pack. Game changer.",
-      author: "Sofia M.",
-      role: "Owner, Italian Restaurant, Dallas TX",
-    },
-    stats: [
-      { value: "84%", label: "of restaurant searches happen on mobile - local pack gets 70% of clicks" },
-      { value: "33%", label: "increase in reservations for restaurants with 4.5+ star ratings vs. 4.0" },
-    ],
+    example: { business: "A neighborhood café", gap: "Business schema markup was not detected on the scanned page.", action: "Review the existing website setup and prepare structured business details, such as the café's name, address, and opening hours, for the website provider.", approval: "The owner verifies business details and hours; the website provider reviews and applies approved markup." },
     faqs: [
-      { q: "What matters most for restaurant local SEO?", a: "Reviews (volume, rating, recency), GBP completeness (menu, photos, hours, attributes), citation consistency, and restaurant schema are the top ranking factors." },
-      { q: "Does Geothority check Yelp and TripAdvisor?", a: "Yes. Geothority checks 18 directories including Yelp, TripAdvisor, OpenTable, and general business directories. We flag any NAP inconsistencies." },
-      { q: "How often should I post to GBP as a restaurant?", a: "Weekly posts showing new dishes, specials, or events dramatically improve GBP engagement signals. Geothority's GBP checklist shows exactly what to post." },
-      { q: "Does AI search matter for restaurants?", a: "Yes, increasingly. AI assistants are recommending specific restaurants based on online presence, review quality, and structured data. Get ahead of this now." },
-      { q: "Can Geothority help multi-location restaurant chains?", a: "Yes. Each location gets its own Trust Stack score. Run all locations in a batch and prioritize which ones need the most work." },
+      { q: "Does this replace my ordering or reservation system?", a: "No. Geothority helps you review your public presence. Your existing ordering, reservation, and point-of-sale systems remain separate." },
+      { q: "Will a review campaign guarantee a higher rating?", a: "No. Reviews should reflect customers' honest experiences. Invite feedback consistently and use it to inform your service and response process." },
     ],
   },
 };
 
+const sharedFaqs = [
+  { q: "What do I get when I start?", a: "Create a free account, enter your business details and website, and run a scan. Review the findings and recommended priorities. Paid tools and ongoing monitoring depend on the plan you choose." },
+  { q: "Will this work with my existing website?", a: "Start with your current public website. Geothority does not require a website rebuild. Applying changes may need your website provider's help; connected actions require supported access and setup." },
+  { q: "Will Geothority guarantee rankings or new customers?", a: "No. It gives you findings and tools to guide improvement work. Rankings, AI answers, and customer activity vary. A scan score is a view of measured signals, not a search position or a promise of leads." },
+];
+
 export function generateStaticParams() {
-  return Object.keys(industries).map(slug => ({ slug }));
+  return Object.keys(industries).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const params = await props.params;
-  const data = industries[params.slug];
+  const { slug } = await props.params;
+  const data = Object.prototype.hasOwnProperty.call(industries, slug) ? industries[slug] : undefined;
   if (!data) return {};
   return {
-    title: `${data.h1} | Geothority`,
+    title: `Local Visibility for ${data.name} | Geothority`,
     description: data.description,
+    alternates: { canonical: slug === "insurance-agents" ? "https://geothority.io/insurance-agents" : `https://geothority.io/for/${slug}` },
     openGraph: { title: data.h1, description: data.description },
   };
 }
 
 export default async function IndustryPage(props: { params: Promise<{ slug: string }> }) {
-  const params = await props.params;
-  const data = industries[params.slug];
+  const { slug } = await props.params;
+  const data = Object.prototype.hasOwnProperty.call(industries, slug) ? industries[slug] : undefined;
   if (!data) notFound();
+  const faqs = [...data.faqs, ...sharedFaqs];
+  const cta = slug === "insurance-agents" ? "Check my agency's visibility" : "Check my business's visibility";
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <div className="max-w-5xl mx-auto px-4 py-16 sm:py-24">
-
-        {/* Hero */}
-        <div className="text-center mb-20">
-          <div className="inline-block px-4 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-full text-sm font-medium mb-4">
-            Built for {data.name}
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <PublicHeader />
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-28 pb-20">
+        <section className="text-center mb-16">
+          <div className="inline-block px-4 py-1.5 border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 rounded-full text-sm font-medium mb-6">Built for {data.name.toLowerCase()}</div>
+          <h1 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight tracking-tight text-balance">{data.h1}</h1>
+          <p className="text-lg leading-8 text-[var(--muted-foreground)] max-w-2xl mx-auto mb-8">{data.description}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/signup" className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-emerald-400 hover:bg-emerald-300 text-slate-950 rounded-xl font-semibold transition-colors">{cta} <ArrowRight className="w-4 h-4" aria-hidden="true" /></Link>
+            <Link href="#industry-example" className="inline-flex items-center justify-center px-7 py-4 rounded-xl border border-[var(--border)] font-semibold hover:border-emerald-400 transition-colors">See an example</Link>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold mb-6 leading-tight">{data.h1}</h1>
-          <p className="text-lg text-[var(--muted-foreground)] max-w-2xl mx-auto mb-4">{data.description}</p>
-          <p className="text-sm text-[var(--muted-foreground)] max-w-2xl mx-auto mb-8">
-            This page is a planning guide for {data.name.toLowerCase()}. Your actual scan is the source of truth for your site, profile, and citation data.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-lg font-semibold transition-colors"
-          >
-            Get Your Free Trust Stack Score <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
+          <p className="text-sm text-[var(--muted-foreground)] mt-5">Create a free account to run your scan. No credit card needed for the free plan.</p>
+        </section>
 
-        {/* Stats */}
-        <div className="grid sm:grid-cols-2 gap-6 mb-6">
-          {data.stats.map((stat, i) => (
-            <div key={i} className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-8 text-center">
-              <div className="text-4xl font-bold text-emerald-400 mb-2">{stat.value}</div>
-              <p className="text-[var(--muted-foreground)]">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mb-20 text-center text-xs text-[var(--muted-foreground)]">
-          Market context only. Use these numbers as directional planning inputs, not guarantees or benchmarks for your specific business.
-        </p>
+        <section id="industry-example" className="scroll-mt-24 bg-[var(--card)] border border-emerald-500/30 rounded-3xl p-6 sm:p-9 mb-16">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300 mb-3">Illustrative example · not a customer result</p>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-8">{data.example.business}</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { label: "The gap", text: data.example.gap },
+              { label: "The next step", text: data.example.action },
+              { label: "Your role", text: data.example.approval },
+            ].map((item) => (<div key={item.label} className="border-t border-[var(--border)] pt-4"><h3 className="font-semibold text-emerald-300 mb-2">{item.label}</h3><p className="text-sm leading-7 text-[var(--muted-foreground)]">{item.text}</p></div>))}
+          </div>
+          <p className="text-xs leading-relaxed text-[var(--muted-foreground)] mt-6">Your findings depend on your website and available data. Content tools and monitoring vary by plan.</p>
+        </section>
 
-        {/* Pain Points */}
-        <div className="mb-20">
-          <h2 className="text-2xl font-bold mb-2 text-center">The Challenges {data.name} Face</h2>
-          <p className="text-center text-[var(--muted-foreground)] mb-10">You&apos;re not alone - these are the most common local SEO problems we see.</p>
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold mb-3 text-center">Make the next improvement clear.</h2>
+          <p className="text-[var(--muted-foreground)] text-center mb-9 max-w-2xl mx-auto leading-7">Focus on the information that helps people understand your business and take the next step.</p>
+          <div className="grid md:grid-cols-3 gap-5">
+            {data.opportunities.map((item) => (<div key={item.title} className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6"><CheckCircle2 className="w-6 h-6 text-emerald-300 mb-4" aria-hidden="true" /><h3 className="font-semibold mb-3">{item.title}</h3><p className="text-sm text-[var(--muted-foreground)] leading-7">{item.desc}</p></div>))}
+          </div>
+        </section>
+
+        <section className="mb-16 rounded-3xl border border-[var(--border)] p-6 sm:p-9">
+          <h2 className="text-3xl font-bold mb-8">A practical way to get started.</h2>
+          <div className="grid md:grid-cols-3 gap-7">
+            {[
+              { icon: Search, title: "Scan your website", text: "Use your business details and public website to establish a starting point. No customer records are needed for the initial scan." },
+              { icon: ClipboardCheck, title: "Choose your priorities", text: "Review the findings and decide what to improve first. Use the tools available in your plan to prepare the next steps." },
+              { icon: ShieldCheck, title: "Review and follow through", text: "Approve business details and content before publication. Coordinate website changes with your provider, then revisit the measured signals." },
+            ].map((step) => (<div key={step.title}><step.icon className="h-6 w-6 text-emerald-300 mb-4" aria-hidden="true" /><h3 className="font-semibold mb-3">{step.title}</h3><p className="text-sm leading-7 text-[var(--muted-foreground)]">{step.text}</p></div>))}
+          </div>
+          <Link href="/service-facts" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-emerald-300 underline underline-offset-4">See what Geothority includes <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+        </section>
+
+        <section className="mb-16 max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold mb-8 text-center">Before you get started.</h2>
           <div className="space-y-4">
-            {data.painPoints.map((p, i) => (
-              <div key={i} className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 flex gap-4">
-                <AlertCircle className="w-6 h-6 text-orange-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">{p.title}</h3>
-                  <p className="text-sm text-[var(--muted-foreground)]">{p.desc}</p>
-                </div>
-              </div>
-            ))}
+            {faqs.map((faq) => (<details key={faq.q} className="bg-[var(--card)] rounded-2xl border border-[var(--border)]"><summary className="p-5 cursor-pointer font-semibold">{faq.q}</summary><p className="px-5 pb-5 text-sm text-[var(--muted-foreground)] leading-7">{faq.a}</p></details>))}
           </div>
-        </div>
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((faq) => ({ "@type": "Question", name: faq.q, acceptedAnswer: { "@type": "Answer", text: faq.a } })) }).replace(/</g, "\\u003c") }} />
+        </section>
 
-        {/* Solutions */}
-        <div className="mb-20">
-          <h2 className="text-2xl font-bold mb-2 text-center">How Geothority Solves It</h2>
-          <p className="text-center text-[var(--muted-foreground)] mb-10">Purpose-built features for {data.name.toLowerCase()} who want to rank locally.</p>
-          <div className="grid sm:grid-cols-3 gap-6">
-            {data.solutions.map((s, i) => (
-              <div key={i} className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6">
-                <CheckCircle2 className="w-6 h-6 text-emerald-400 mb-3" />
-                <h3 className="font-semibold mb-2">{s.title}</h3>
-                <p className="text-sm text-[var(--muted-foreground)]">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <section className="text-center bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-3xl border border-emerald-500/20 p-7 sm:p-10">
+          <h2 className="text-3xl font-bold mb-4">See what to improve first.</h2>
+          <p className="text-[var(--muted-foreground)] mb-7 max-w-lg mx-auto leading-7">Start with your own website and a clear set of priorities for your business.</p>
+          <Link href="/signup" className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-emerald-400 hover:bg-emerald-300 text-slate-950 rounded-xl font-semibold transition-colors">{cta} <ArrowRight className="w-4 h-4" aria-hidden="true" /></Link>
+          <div className="mt-5"><Link href="/pricing" className="text-sm text-[var(--muted-foreground)] underline underline-offset-4">Compare free and paid plans</Link></div>
+        </section>
+      </main>
 
-        <div className="mb-20">
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-8 max-w-2xl mx-auto">
-            <div className="flex items-center justify-center gap-2 mb-4 text-emerald-300">
-              <ShieldCheck className="w-5 h-5" />
-              <span className="text-sm font-semibold uppercase tracking-[0.18em]">Honest planning note</span>
-            </div>
-            <p className="text-center text-lg font-medium mb-3 leading-relaxed">
-              Geothority is strongest when it helps you measure what is true now, then prioritize the next fix.
-            </p>
-            <p className="text-center text-sm text-[var(--muted-foreground)] leading-relaxed">
-              We do not treat industry pages as proof of outcomes. Once you run a scan, the product uses your own website, profile, and trust signals to build the action plan.
-            </p>
-          </div>
-        </div>
-
-        {/* FAQ */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
-          <div className="space-y-4 max-w-3xl mx-auto">
-            {data.faqs.map((faq, i) => (
-              <details key={i} className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-hidden">
-                <summary className="p-5 cursor-pointer font-medium hover:text-emerald-400 transition-colors">{faq.q}</summary>
-                <div className="px-5 pb-5 text-sm text-[var(--muted-foreground)] leading-relaxed">{faq.a}</div>
-              </details>
-            ))}
-          </div>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "FAQPage",
-                "mainEntity": data.faqs.map(f => ({
-                  "@type": "Question",
-                  "name": f.q,
-                  "acceptedAnswer": { "@type": "Answer", "text": f.a },
-                })),
-              }),
-            }}
-          />
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="text-center bg-[var(--card)] rounded-2xl border border-[var(--border)] p-10">
-          <TrendingUp className="w-10 h-10 text-emerald-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-4">See What to Fix First</h2>
-          <p className="text-[var(--muted-foreground)] mb-6 max-w-md mx-auto">
-            Get your Trust Stack Score in 90 seconds and work from your real gaps instead of generic local SEO advice.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-lg font-semibold transition-colors"
-          >
-            Try Free - No Credit Card <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="border-t border-[var(--border)] py-8 mt-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--muted-foreground)]">
+      <footer className="border-t border-[var(--border)] py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--muted-foreground)]">
           <p>&copy; {new Date().getFullYear()} Geothority. All rights reserved.</p>
-          <div className="flex items-center gap-6">
-            <Link href="/pricing" className="hover:text-[var(--foreground)] transition-colors">Pricing</Link>
-            <Link href="/privacy" className="hover:text-[var(--foreground)] transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">Terms of Service</Link>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+            <Link href="/" className="hover:text-[var(--foreground)]">For local businesses</Link>
+            <Link href="/pricing" className="hover:text-[var(--foreground)]">Pricing</Link>
+            <Link href="/privacy" className="hover:text-[var(--foreground)]">Privacy</Link>
+            <Link href="/terms" className="hover:text-[var(--foreground)]">Terms</Link>
           </div>
         </div>
       </footer>

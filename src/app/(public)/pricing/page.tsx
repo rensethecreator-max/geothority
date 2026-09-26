@@ -2,717 +2,259 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, X, Shield, ArrowRight, Sparkles, ChevronDown, ChevronUp, Building2, Star } from "lucide-react";
+import { Check, Shield, ArrowRight, Sparkles, ChevronDown, Building2, Star } from "lucide-react";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
-import { GeoTooltip } from "@/components/ui/geo-tooltip";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type FeatureValue = boolean | string;
-
-interface PlanFeatures {
-  // Scanning & Analysis
-  dailyScans: string;
-  trustStackScore: boolean;
-  layerBreakdown: boolean;
-  quickWins: boolean;
-  competitorAnalysis: string;
-  // Citations & Listings
-  citationCheck: boolean;
-  listingSync: boolean;
-  fixThisLinks: boolean;
-  napMonitoring: string;
-  // Content & AI
-  aiContentGen: string;
-  schemaGenerator: boolean;
-  aiOverviewChecker: string;
-  // Monitoring & Alerts
-  gbpMonitor: string;
-  competitorAlerts: boolean;
-  scoreHistory: string;
-  // Support
-  willAiAssistant: boolean;
-  emailSupport: string;
-  pdfReports: string;
-}
+import { PublicHeader } from "@/components/layout/public-header";
 
 interface Plan {
   id: string;
   name: string;
   monthlyPrice: number;
+  annualPrice: number;
   description: string;
-  cta: string;
-  ctaHref: string;
-  popular: boolean;
-  features: PlanFeatures;
+  purpose: string;
+  features: string[];
+  popular?: boolean;
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
+// Prices mirror the existing billing definitions in src/lib/stripe.ts.
 const plans: Plan[] = [
   {
     id: "free",
     name: "Free",
     monthlyPrice: 0,
-    description: "See where your visibility is weak before you commit",
-    cta: "Start Free",
-    ctaHref: "/signup",
-    popular: false,
-    features: {
-      dailyScans: "3",
-      trustStackScore: true,
-      layerBreakdown: true,
-      quickWins: true,
-      competitorAnalysis: "Basic",
-      citationCheck: true,
-      listingSync: false,
-      fixThisLinks: true,
-      napMonitoring: "None",
-      aiContentGen: "1 / mo",
-      schemaGenerator: true,
-      aiOverviewChecker: "Demo",
-      gbpMonitor: "None",
-      competitorAlerts: false,
-      scoreHistory: "30 days",
-      willAiAssistant: true,
-      emailSupport: "None",
-      pdfReports: "None",
-    },
+    annualPrice: 0,
+    description: "Find your starting point.",
+    purpose: "For a first look at your business's online visibility.",
+    features: [
+      "Website scan and visibility score",
+      "Findings grouped by area",
+      "Prioritized next steps",
+      "Saved scans to review later",
+      "No payment card required",
+    ],
   },
   {
     id: "starter",
     name: "Starter",
     monthlyPrice: 97,
-    description: "For single-location businesses that need a clear baseline",
-    cta: "Start 14-Day Trial",
-    ctaHref: "/signup",
-    popular: false,
-    features: {
-      dailyScans: "10",
-      trustStackScore: true,
-      layerBreakdown: true,
-      quickWins: true,
-      competitorAnalysis: "Full",
-      citationCheck: true,
-      listingSync: false,
-      fixThisLinks: true,
-      napMonitoring: "Weekly",
-      aiContentGen: "5 / mo",
-      schemaGenerator: true,
-      aiOverviewChecker: "Full",
-      gbpMonitor: "Weekly",
-      competitorAlerts: false,
-      scoreHistory: "90 days",
-      willAiAssistant: true,
-      emailSupport: "✓",
-      pdfReports: "✓",
-    },
+    annualPrice: 970,
+    description: "Keep your business information in view.",
+    purpose: "For one business building a consistent local presence.",
+    features: [
+      "Everything in Free",
+      "Google Business Profile connection",
+      "Business listing checks",
+      "Visibility and profile health tools",
+      "Email support",
+    ],
   },
   {
     id: "growth",
     name: "Growth",
     monthlyPrice: 197,
-    description: "For teams that want ongoing monitoring and follow-through",
-    cta: "Start 14-Day Trial",
-    ctaHref: "/signup",
+    annualPrice: 1970,
+    description: "Follow through on more opportunities.",
+    purpose: "For owners ready to track competitors and improve local discovery.",
     popular: true,
-    features: {
-      dailyScans: "Unlimited",
-      trustStackScore: true,
-      layerBreakdown: true,
-      quickWins: true,
-      competitorAnalysis: "Full + Alerts",
-      citationCheck: true,
-      listingSync: true,
-      fixThisLinks: true,
-      napMonitoring: "Daily",
-      aiContentGen: "Unlimited",
-      schemaGenerator: true,
-      aiOverviewChecker: "Full",
-      gbpMonitor: "Daily",
-      competitorAlerts: true,
-      scoreHistory: "1 year",
-      willAiAssistant: true,
-      emailSupport: "Priority",
-      pdfReports: "Branded",
-    },
+    features: [
+      "Everything in Starter",
+      "AI visibility checks on supported sources",
+      "Local competitor tracking",
+      "Google Business Profile post tools",
+      "Supported business listing sync",
+      "Review request workflows and priority support",
+    ],
   },
   {
     id: "authority",
     name: "Authority",
     monthlyPrice: 297,
-    description: "For serious operators who want deeper visibility coverage",
-    cta: "Start 14-Day Trial",
-    ctaHref: "/signup",
-    popular: false,
-    features: {
-      dailyScans: "Unlimited",
-      trustStackScore: true,
-      layerBreakdown: true,
-      quickWins: true,
-      competitorAnalysis: "Full + Alerts",
-      citationCheck: true,
-      listingSync: true,
-      fixThisLinks: true,
-      napMonitoring: "Real-time",
-      aiContentGen: "Unlimited",
-      schemaGenerator: true,
-      aiOverviewChecker: "Full + Monitor",
-      gbpMonitor: "Real-time",
-      competitorAlerts: true,
-      scoreHistory: "Unlimited",
-      willAiAssistant: true,
-      emailSupport: "Dedicated",
-      pdfReports: "White-label",
-    },
+    annualPrice: 2970,
+    description: "Turn your findings into useful content.",
+    purpose: "For businesses ready to build out service and local information.",
+    features: [
+      "Everything in Growth",
+      "Local and service page drafts",
+      "FAQ, about-page, and blog drafts",
+      "Content briefs based on your business",
+      "Reporting exports",
+      "Dedicated onboarding call",
+    ],
   },
 ];
 
 const faqs = [
   {
-    q: "Can I switch plans?",
-    a: "Absolutely. You can upgrade or downgrade at any time. When you upgrade, we prorate the difference immediately so you get access right away. Downgrades take effect at your next billing cycle.",
+    q: "What do I get for free?",
+    a: "Create a free account, add your business details and website, and run a scan. You can review your visibility score, findings, and prioritized next steps without entering a payment card. Creating a free account does not start a paid subscription.",
   },
   {
-    q: "Is there a free trial?",
-    a: "Yes - every paid plan comes with a 14-day free trial, no credit card required. You get full access to all features in your plan so you can see the value before you commit.",
+    q: "How does the paid trial work?",
+    a: "After signing up, choose a paid plan from Billing. Paid checkout includes a 14-day trial and asks for a payment card. Your chosen subscription starts billing automatically when the trial ends unless you cancel first. Review the amount and renewal date at checkout.",
+  },
+  {
+    q: "Why would I keep a monthly subscription?",
+    a: "Your first scan establishes a starting point. A subscription gives you continuing access to the tools in your plan so you can review changes, work through priorities, and follow up on new findings. Growth adds competitor and AI visibility checks; Authority adds content drafts you can review and publish. Connections and setup are required for connected services.",
+  },
+  {
+    q: "Does Geothority make every change for me?",
+    a: "Geothority prepares findings, recommendations, and supported actions. You confirm business details and approve customer-facing work. Direct publishing or updates depend on a supported, authorized connection. Other changes need to be applied in your website builder or passed to your website provider.",
+  },
+  {
+    q: "Are there usage limits?",
+    a: "Website scans currently allow up to 3 requests in a rolling 24-hour window per account, including paid accounts. Other tools can have separate limits and connection requirements. If a limit is reached, wait for earlier requests to leave that window before trying again. A higher plan unlocks tools; it does not remove every usage limit.",
+  },
+  {
+    q: "How does annual billing work?",
+    a: "Where available at checkout, annual billing is $970 for Starter, $1,970 for Growth, or $2,970 for Authority, paid for the year. That is the cost of 10 monthly payments. The monthly equivalents shown here are for comparison; annual billing is one annual payment.",
+  },
+  {
+    q: "Can I change or cancel my plan?",
+    a: "Manage your subscription through Billing in your account. Cancellation keeps access through the current billing period. Review any plan-change amount and effective date before confirming. Refund eligibility is described in the Terms of Service.",
   },
   {
     q: "What payment methods do you accept?",
-    a: "We accept all major credit and debit cards (Visa, Mastercard, Amex, Discover) as well as ACH bank transfers for annual plans. All payments are processed securely through Stripe.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Yes. There are no contracts or lock-ins. Cancel from your dashboard in under 60 seconds. You keep access until the end of your current billing period.",
-  },
-  {
-    q: "Do you offer discounts for annual billing?",
-    a: "Yes - save 20% when you pay annually. For the Growth plan that's over $480 back in your pocket each year. Discounts apply to all paid plans.",
-  },
-  {
-    q: "What happens when I hit my scan limit?",
-    a: "On the Free plan, scans reset daily at midnight UTC. If you reach your limit before then, you'll see a prompt to upgrade. Paid plans come with generous limits - Growth and Authority are completely unlimited.",
+    a: "Paid checkout accepts credit and debit cards through Stripe. The Free plan does not require a card.",
   },
 ];
 
-// ─── Helper Components ────────────────────────────────────────────────────────
-
-function FeatureCell({ value }: { value: FeatureValue }) {
-  if (typeof value === "boolean") {
-    return value ? (
-      <Check className="w-5 h-5 text-emerald-400 mx-auto" />
-    ) : (
-      <X className="w-5 h-5 text-gray-600 mx-auto" />
-    );
-  }
-  if (value === "None") return <X className="w-5 h-5 text-gray-600 mx-auto" />;
-  if (value === "✓") return <Check className="w-5 h-5 text-emerald-400 mx-auto" />;
-  return <span className="text-sm text-gray-300 text-center block">{value}</span>;
-}
-
-function FeatureRow({
-  label,
-  free,
-  starter,
-  growth,
-  authority,
-  tip,
-}: {
-  label: string;
-  free: FeatureValue;
-  starter: FeatureValue;
-  growth: FeatureValue;
-  authority: FeatureValue;
-  tip?: string;
-}) {
-  return (
-    <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-      <td className="py-3 pr-4 text-sm text-gray-400 font-medium">
-        <span className="inline-flex items-center gap-1.5">
-          {label}
-          {tip && <GeoTooltip tip={tip} side="right" iconClassName="w-3 h-3 opacity-40 hover:opacity-100 transition-opacity" />}
-        </span>
-      </td>
-      <td className="py-3 text-center px-2"><FeatureCell value={free} /></td>
-      <td className="py-3 text-center px-2"><FeatureCell value={starter} /></td>
-      <td className="py-3 text-center px-2 relative">
-        <div className="absolute inset-0 bg-emerald-500/[0.04] pointer-events-none" />
-        <FeatureCell value={growth} />
-      </td>
-      <td className="py-3 text-center px-2"><FeatureCell value={authority} /></td>
-    </tr>
-  );
-}
-
-function SectionHeader({ label }: { label: string }) {
-  return (
-    <tr>
-      <td colSpan={5} className="pt-6 pb-2">
-        <span className="text-xs uppercase tracking-wider text-gray-500 font-semibold">{label}</span>
-      </td>
-    </tr>
-  );
-}
-
-function FAQItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border border-white/10 rounded-xl bg-[#0f1117] overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-5 text-left hover:bg-white/5 transition-colors min-h-[56px]"
-      >
-        <span className="text-white font-medium pr-4 text-[15px] leading-relaxed">{q}</span>
-        {open ? (
-          <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0" />
-        ) : (
-          <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
-        )}
-      </button>
-      {open && (
-        <div className="px-6 pb-5">
-          <p className="text-gray-400 leading-relaxed">{a}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
+const comparisonRows = [
+  { label: "Website scan, score, and priorities", values: ["Included", "Included", "Included", "Included"] },
+  { label: "Google Business Profile connection", values: ["—", "Included", "Included", "Included"] },
+  { label: "AI visibility and competitor checks", values: ["—", "—", "Included", "Included"] },
+  { label: "Supported listing sync and Google posts", values: ["—", "—", "Included", "Included"] },
+  { label: "Local, service, and FAQ content drafts", values: ["—", "—", "—", "Included"] },
+  { label: "Support", values: ["Self-service", "Email", "Priority", "Onboarding + priority"] },
+];
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false);
-
-  const displayPrice = (plan: Plan) => {
-    if (plan.monthlyPrice === 0) return "$0";
-    const price = annual
-      ? Math.round(plan.monthlyPrice * 0.8)
-      : plan.monthlyPrice;
-    return `$${price}`;
-  };
+  const displayPrice = (plan: Plan) =>
+    annual && plan.annualPrice > 0 ? (plan.annualPrice / 12).toFixed(2) : String(plan.monthlyPrice);
 
   return (
+    <>
+    <PublicHeader />
     <main className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* ── Radial background glow ── */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/[0.06] rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-teal-500/[0.04] rounded-full blur-3xl" />
       </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32">
-
-        {/* ═══════════════════════════════════════════════════
-            SECTION 1 - Header
-        ════════════════════════════════════════════════════ */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24">
         <ScrollReveal>
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-14">
             <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium px-4 py-2 rounded-full mb-6">
-              <Sparkles className="w-4 h-4" />
-              Straightforward pricing
+              <Sparkles className="w-4 h-4" /> Start with a free scan
             </div>
-
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-5">
-              <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                Choose the Level
-              </span>{" "}
-              <br />
-              <span className="text-white">of Support You Need</span>
+              Find your gaps.<br />
+              <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">Choose your next step.</span>
             </h1>
-
-            <p className="text-lg sm:text-xl text-gray-400 mb-10">
-              Start with a free scan. Upgrade when you want deeper monitoring, stronger follow-through, and more hands-on support.
+            <p className="text-lg sm:text-xl text-gray-400 mb-5">
+              Clear priorities for local businesses that want to be easier to find and choose.
+              Start free, then choose the tools that fit the work you want to do.
             </p>
-
-            {/* Monthly / Annual toggle */}
-            <div className="inline-flex items-center gap-4 bg-[#0f1117] border border-white/10 rounded-full px-2 py-2">
-              <button
-                onClick={() => setAnnual(false)}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                  !annual
-                    ? "bg-white text-black shadow"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setAnnual(true)}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
-                  annual
-                    ? "bg-white text-black shadow"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                Annual
-                <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  Save 20%
-                </span>
+            <p className="text-sm text-gray-400 mb-8">Free account required. No card for your free scan. Paid plans are a separate choice.</p>
+            <div className="inline-flex flex-wrap justify-center items-center gap-2 bg-[#0f1117] border border-white/10 rounded-2xl sm:rounded-full px-2 py-2" role="group" aria-label="Billing period">
+              <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)} className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${!annual ? "bg-white text-black shadow" : "text-gray-400 hover:text-white"}`}>Monthly</button>
+              <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)} className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${annual ? "bg-white text-black shadow" : "text-gray-400 hover:text-white"}`}>
+                Annual <span className="bg-emerald-500 text-slate-950 text-xs font-bold px-2 py-0.5 rounded-full">Save 2 months</span>
               </button>
             </div>
           </div>
         </ScrollReveal>
 
-        {/* ═══════════════════════════════════════════════════
-            SECTION 2 - Pricing Cards
-        ════════════════════════════════════════════════════ */}
         <ScrollReveal delay={100}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-7">
             {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={`relative flex flex-col rounded-2xl p-6 border transition-all duration-300 ${
-                  plan.popular
-                    ? "bg-[#0f1117] border-emerald-500/50 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/20"
-                    : "bg-[#0f1117] border-white/10 hover:border-white/20"
-                }`}
-              >
-                {/* Most Popular badge */}
+              <div key={plan.id} className={`relative flex flex-col rounded-2xl p-6 border ${plan.popular ? "bg-[#0f1117] border-emerald-500/50 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/20" : "bg-[#0f1117] border-white/10"}`}>
                 {plan.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-emerald-500/30">
-                      <Star className="w-3 h-3 fill-current" />
-                      Most Popular
-                    </span>
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-xs font-bold px-4 py-1.5 rounded-full"><Star className="w-3 h-3" /> For ongoing growth</span>
                   </div>
                 )}
-
-                {/* Plan name */}
-                <div className="mb-4 pt-2">
-                  <h2 className={`text-lg font-bold mb-1 ${plan.popular ? "text-emerald-400" : "text-white"}`}>
-                    {plan.name}
-                  </h2>
-                  <p className="text-sm text-gray-500">{plan.description}</p>
+                <h2 className={`text-lg font-bold mb-2 pt-2 ${plan.popular ? "text-emerald-400" : "text-white"}`}>{plan.name}</h2>
+                <p className="text-base font-medium text-gray-200 min-h-12">{plan.description}</p>
+                <p className="text-sm text-gray-400 mt-2 mb-5 min-h-16">{plan.purpose}</p>
+                <div className="mb-5">
+                  <div className="flex items-end gap-1"><span className="text-4xl font-black">${displayPrice(plan)}</span><span className="text-gray-400 mb-1.5">/mo</span></div>
+                  <p className="text-xs text-gray-400 mt-2 min-h-8">{plan.monthlyPrice === 0 ? "Free account. No payment card." : annual ? `$${plan.annualPrice.toLocaleString("en-US")} billed annually where available` : "Billed monthly after your trial"}</p>
                 </div>
-
-                {/* Price */}
-                <div className="mb-6">
-                  <div className="flex items-end gap-1">
-                    <span className="text-4xl font-black text-white">
-                      {displayPrice(plan)}
-                    </span>
-                    <span className="text-gray-500 mb-1.5">/mo</span>
-                  </div>
-                  {annual && plan.monthlyPrice > 0 && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Billed annually (${Math.round(plan.monthlyPrice * 0.8 * 12)}/yr)
-                    </p>
-                  )}
-                  {!annual && plan.monthlyPrice > 0 && (
-                    <p className="text-xs text-emerald-500 mt-1">
-                      ${Math.round(plan.monthlyPrice * 0.8)}/mo billed annually
-                    </p>
-                  )}
-                </div>
-
-                {/* CTA */}
-                <Link
-                  href={plan.ctaHref}
-                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-sm transition-all mb-6 ${
-                    plan.popular
-                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02]"
-                      : plan.id === "free"
-                      ? "bg-white/10 text-white hover:bg-white/15 border border-white/10"
-                      : "bg-white text-black hover:bg-gray-100"
-                  }`}
-                >
-                  {plan.cta}
-                  <ArrowRight className="w-4 h-4" />
+                <Link href={plan.id === "free" ? "/signup" : "/signup?redirect=%2Fbilling"} className={`w-full flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold text-sm mb-3 transition-colors ${plan.popular ? "bg-emerald-500 text-slate-950 hover:bg-emerald-400" : "bg-white text-black hover:bg-gray-100"}`}>
+                  {plan.id === "free" ? "Get my free scan" : "Create account to choose"}<ArrowRight className="w-4 h-4 flex-shrink-0" />
                 </Link>
-
-                {/* Feature list */}
-                <ul className="space-y-2.5 flex-1">
-                  {/* Included */}
-                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-1">Included</li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    {plan.features.dailyScans} daily scans
-                    <GeoTooltip tip="More scans means more up-to-date data. Re-scan whenever you make changes to see the impact immediately." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    Trust Stack Score
-                    <GeoTooltip tip="A single 0–100 score across 5 authority layers that tells you how strong your local presence is at a glance." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    {plan.features.competitorAnalysis} competitor analysis
-                    <GeoTooltip tip="See how your local authority compares to competitors. Alerts notify you when they make a move." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-
-                  {/* Monitoring */}
-                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">Monitoring</li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    Citation check (18 dirs)
-                    <GeoTooltip tip="We verify your business info across 18 major directories so you can see where core listing data is consistent and where it needs work." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-                  <li className="flex items-center gap-2.5 text-sm">
-                    {plan.features.listingSync ? (
-                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    ) : (
-                      <X className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                    )}
-                    <span className={plan.features.listingSync ? "text-gray-300" : "text-gray-600"}>
-                      Listing sync (50+ dirs)
-                    </span>
-                    <GeoTooltip tip="Push correct info to 50+ directories through connected distribution partners where supported. Coverage depends on the network and integration state." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-                  {plan.features.napMonitoring !== "None" && (
-                    <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      NAP monitoring ({plan.features.napMonitoring.toLowerCase()})
-                      <GeoTooltip tip="We watch your Name, Address, and Phone listings and alert you the moment something changes." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                    </li>
-                  )}
-
-                  {/* AI Visibility */}
-                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">AI Visibility</li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    15 AI platforms monitored
-                    <GeoTooltip tip="We check whether your business appears across major AI answer surfaces including ChatGPT, Perplexity, Google AI Overviews, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    Automatic AI fixes
-                    <GeoTooltip tip="We turn AI visibility findings into executable work: suggested FAQ schema, entity-rich content, structured markup, and GBP recommendations. Some changes can be applied directly; others are prepared for review." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    AI Recommendation Score
-                    <GeoTooltip tip="A weighted A+ through F score measuring how often AI systems recommend your business vs competitors. Know exactly where you stand." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-
-                  {/* Content */}
-                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">Content & Pages</li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    {plan.features.aiContentGen} local pages
-                    <GeoTooltip tip="Generate city-specific pages and local content from your detected gaps so each draft has a strategic reason to exist." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    {plan.features.aiOverviewChecker} AI search tracker
-                    <GeoTooltip tip="Checks if ChatGPT, Perplexity, Google AI, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere recommend your business when customers search for your services." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-
-                  {/* Support */}
-                  <li className="text-xs uppercase tracking-wider text-gray-600 font-semibold pt-2">Support & Reporting</li>
-                  <li className="flex items-center gap-2.5 text-sm">
-                    {plan.features.pdfReports !== "None" ? (
-                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    ) : (
-                      <X className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                    )}
-                    <span className={plan.features.pdfReports !== "None" ? "text-gray-300" : "text-gray-600"}>
-                      {plan.features.pdfReports !== "None" ? `${plan.features.pdfReports} PDF reports` : "No PDF reports"}
-                    </span>
-                    <GeoTooltip tip="Download professional reports. Branded includes your logo; White-label lets you use your own branding entirely." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
-                  <li className="flex items-center gap-2.5 text-sm text-gray-300">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    {plan.features.scoreHistory} score history
-                    <GeoTooltip tip="See how your Trust Stack changes over time and tie those changes back to completed fixes and new issues." side="top" iconClassName="w-3 h-3 opacity-40 hover:opacity-100" />
-                  </li>
+                <p className="text-xs text-gray-400 mb-6">{plan.id === "free" ? "Add your business and website after signup." : "14-day trial at paid checkout. Card required."}</p>
+                <ul className="space-y-3 flex-1">
+                  {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-300"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />{feature}</li>)}
                 </ul>
               </div>
             ))}
           </div>
+          <p className="text-sm leading-relaxed text-gray-400 max-w-4xl mx-auto text-center mb-16">
+            Connected features require setup and authorization. Coverage depends on the available source and connection.
+            Website scans currently allow 3 requests in a rolling 24-hour window per account on every plan. Content drafts need your review before use.
+          </p>
         </ScrollReveal>
 
-        {/* ═══════════════════════════════════════════════════
-            Full Feature Comparison Table (desktop)
-        ════════════════════════════════════════════════════ */}
-        <ScrollReveal delay={150}>
-          <div className="hidden lg:block mb-20">
-            <h2 className="text-2xl font-bold text-white text-center mb-8">
-              Full Feature Comparison
-            </h2>
-            <div className="bg-[#0f1117] border border-white/10 rounded-2xl p-8 overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left py-3 pr-4 text-gray-500 font-medium text-sm w-48">Feature</th>
-                    {plans.map((plan) => (
-                      <th key={plan.id} className={`text-center py-3 px-4 ${plan.popular ? "text-emerald-400" : "text-gray-300"} font-bold text-sm`}>
-                        {plan.popular && <Star className="w-3.5 h-3.5 inline-block mr-1 fill-current" />}
-                        {plan.name}
-                        <div className="text-xs font-normal text-gray-500 mt-0.5 normal-case">
-                          {plan.monthlyPrice === 0 ? "Free" : `$${annual ? Math.round(plan.monthlyPrice * 0.8) : plan.monthlyPrice}/mo`}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <SectionHeader label="Scanning & Analysis" />
-                  <FeatureRow label="Daily scans" free="3" starter="10" growth="Unlimited" authority="Unlimited" tip="More scans means more up-to-date data. Free gives you 3 daily scans to start; paid plans let you re-scan as often as you need." />
-                  <FeatureRow label="Trust Stack Score" free={true} starter={true} growth={true} authority={true} tip="Your Trust Stack is a single 0–100 score across 5 authority layers - Foundation, Trust Pages, Geo Content, Reviews, and AI Optimization. It tells you at a glance how strong your local presence is." />
-                  <FeatureRow label="Layer Breakdown" free={true} starter={true} growth={true} authority={true} tip="See exactly how you score on each of the 5 Trust Stack layers, so you know which specific area to fix first for the biggest ranking gains." />
-                  <FeatureRow label="Quick Wins with Priority" free={true} starter={true} growth={true} authority={true} tip="We rank every issue by impact and effort. Quick Wins are the fixes that move your score the most with the least work - your fastest path to better visibility." />
-                  <FeatureRow label="Competitor Analysis" free="Basic" starter="Full" growth="Full + Alerts" authority="Full + Alerts" tip="See how your local authority compares to competitors. Full adds detailed side-by-side breakdowns; Alerts emails you when a competitor makes a move." />
-
-                  <SectionHeader label="Citations & Listings" />
-                  <FeatureRow label="Citation Check (18 dirs)" free={true} starter={true} growth={true} authority={true} tip="We verify your business name, address, and phone across 18 major directories like Google, Yelp, Bing, and Apple Maps. Inconsistent listings confuse Google and cost you rankings." />
-                  <FeatureRow label="Listing Sync (50+ dirs)" free={false} starter={false} growth={true} authority={true} tip="Automatically push correct business info to 50+ directories through the Foursquare data network - covering Bing, Uber, Samsung, HERE Maps, and more. No manual updates needed." />
-                  <FeatureRow label="Fix This Direct Links" free={true} starter={true} growth={true} authority={true} tip="Every issue we find comes with a one-click link that takes you straight to the fix - no hunting through dashboards or guessing what to do next." />
-                  <FeatureRow label="NAP Monitoring" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="NAP stands for Name, Address, Phone. Monitoring frequency increases by plan, and alert speed depends on the connected source and directory." />
-
-                  <SectionHeader label="AI Visibility" />
-                  <FeatureRow label="15 AI Platforms Monitored" free="Demo" starter="Full" growth="Full" authority="Full + Monitor" tip="We check whether your business appears in major AI answer surfaces and use that coverage to drive recommendations and execution." />
-                  <FeatureRow label="Automatic AI Fixes" free={true} starter={true} growth={true} authority={true} tip="We turn findings into executable work including FAQ schema, entity-rich content, structured markup, and GBP recommendations. Some changes can be auto-applied; others stay in review until approved." />
-                  <FeatureRow label="AI Recommendation Score (A+ to F)" free={true} starter={true} growth={true} authority={true} tip="A weighted scoring system that measures how often AI systems recommend your business vs competitors. Know exactly where you stand in AI-powered search." />
-                  <FeatureRow label="Competitor Frequency Tracking" free={false} starter={true} growth={true} authority={true} tip="See how often AI recommends your competitors vs you, for example: 'AI systems recommend your competitors 3.4x more often than you.' Emotional urgency that drives action." />
-
-                  <SectionHeader label="Content & Search" />
-                  <FeatureRow label="Local Page Generation" free="1 / mo" starter="5 / mo" growth="Unlimited" authority="Unlimited" tip="Generate city-specific landing pages, service descriptions, and local content that Google and AI assistants trust. More pages means more local searches you rank for." />
-                  <FeatureRow label="Schema Generator" free={true} starter={true} growth={true} authority={true} tip="Schema is the technical code that tells search engines exactly what your business does. Our 3-click wizard generates it for you - no developer needed." />
-
-                  <SectionHeader label="Monitoring & Alerts" />
-                  <FeatureRow label="GBP Monitor" free="None" starter="Weekly" growth="Daily" authority="Real-time" tip="Your Google Business Profile is the most important listing you have. We watch it for changes, suspensions, and optimization opportunities so you never lose ground." />
-                  <FeatureRow label="Competitor Alerts" free={false} starter={false} growth={true} authority={true} tip="Get an email the moment a competitor publishes new content, gains reviews, or makes a move in your market - so you can respond the same day instead of finding out weeks later." />
-                  <FeatureRow label="Score History" free="30 days" starter="90 days" growth="1 year" authority="Unlimited" tip="See how your Trust Stack score has changed over time. Longer history means better trend tracking and proof that your efforts are paying off." />
-
-                  <SectionHeader label="Support" />
-                  <FeatureRow label="Will AI Assistant" free={true} starter={true} growth={true} authority={true} tip="An AI assistant that explains your scan results, answers product questions, and helps you understand the next best action." />
-                  <FeatureRow label="Email Support" free="None" starter="✓" growth="Priority" authority="Dedicated" tip="Priority means faster response times. Dedicated means a named contact who knows your account and business goals." />
-                  <FeatureRow label="PDF Reports" free="None" starter="✓" growth="Branded" authority="White-label" tip="Download professional reports to share with clients or stakeholders. Branded includes your logo; White-label lets you remove all Geothority branding and use your own." />
-                </tbody>
+        <ScrollReveal>
+          <section className="mb-16">
+            <h2 className="text-2xl font-bold text-center mb-7">What changes as you move up?</h2>
+            <div className="bg-[#0f1117] border border-white/10 rounded-2xl overflow-x-auto">
+              <table className="w-full min-w-[680px] text-sm">
+                <caption className="sr-only">Geothority plan features</caption>
+                <thead><tr className="border-b border-white/10"><th scope="col" className="text-left p-5 text-gray-400">Tools for your next step</th>{plans.map((plan) => <th scope="col" key={plan.id} className="p-5 text-left">{plan.name}</th>)}</tr></thead>
+                <tbody>{comparisonRows.map((row) => <tr key={row.label} className="border-b border-white/5 last:border-0"><th scope="row" className="text-left font-medium p-5 text-gray-300">{row.label}</th>{row.values.map((value, index) => <td key={plans[index].id} className="p-5 text-gray-400">{value}</td>)}</tr>)}</tbody>
               </table>
             </div>
-          </div>
+          </section>
         </ScrollReveal>
 
-        {/* ═══════════════════════════════════════════════════
-            SECTION 3 - Beta Expansion
-        ════════════════════════════════════════════════════ */}
-        <ScrollReveal delay={100}>
-          <div className="relative mb-20 rounded-2xl overflow-hidden border border-white/10 bg-[#0f1117]">
-            {/* Subtle gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-            <div className="relative px-8 py-12 sm:px-12 grid sm:grid-cols-2 gap-8 items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 text-emerald-400 text-sm font-semibold mb-4">
-                  <Building2 className="w-4 h-4" />
-                  Beta expansion
-                </div>
-              <h2 className="text-3xl font-bold text-white mb-3">
-                  Need more than one company or location?
-                </h2>
-                <p className="text-gray-400 text-lg leading-relaxed">
-                  The controlled beta is built for one company per account. If you want multiple companies,
-                  locations, team seats, white-label reporting, or API access, contact us so we can
-                  place you in the right rollout instead of overpromising inside the standard beta.
-                </p>
-              </div>
-              <div className="flex sm:justify-end">
-                <Link
-                  href="mailto:hello@geothority.io"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold px-8 py-4 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] transition-all"
-                >
-                  Contact Us
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </div>
+        <ScrollReveal>
+          <section className="grid md:grid-cols-2 gap-6 mb-16">
+            <div className="rounded-2xl border border-white/10 bg-[#0f1117] p-7">
+              <Shield className="w-6 h-6 text-emerald-400 mb-4" />
+              <h2 className="text-xl font-bold mb-3">You stay in control</h2>
+              <p className="text-gray-400 leading-relaxed">Confirm your business details and review customer-facing content. Geothority can prepare work and use supported connections; website changes may need your website provider. Your subscription gives you tools and follow-through, with no promise of a particular ranking or number of leads.</p>
+              <Link href="/service-facts" className="inline-flex items-center gap-2 text-emerald-400 mt-5 font-medium">See how the work is shared <ArrowRight className="w-4 h-4" /></Link>
             </div>
-          </div>
+            <div className="rounded-2xl border border-white/10 bg-[#0f1117] p-7">
+              <Building2 className="w-6 h-6 text-emerald-400 mb-4" />
+              <h2 className="text-xl font-bold mb-3">More than one business or location?</h2>
+              <p className="text-gray-400 leading-relaxed">The standard account is designed for one business. Contact us before signing up for multiple businesses, locations, team seats, white-label reports, or API access so we can confirm what your rollout requires.</p>
+              <Link href="mailto:hello@geothority.io" className="inline-flex items-center gap-2 text-emerald-400 mt-5 font-medium">Discuss your setup <ArrowRight className="w-4 h-4" /></Link>
+            </div>
+          </section>
         </ScrollReveal>
 
-        {/* ═══════════════════════════════════════════════════
-            SECTION 4 - Money-Back Guarantee
-        ════════════════════════════════════════════════════ */}
-        <ScrollReveal delay={100}>
-          <div className="flex flex-col sm:flex-row items-center gap-6 justify-center text-center sm:text-left mb-20 p-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/5">
-            <div className="flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center">
-                <Shield className="w-8 h-8 text-emerald-400" />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-white mb-1">30-Day Money-Back Guarantee</h3>
-              <p className="text-gray-400">
-                Not satisfied? Request a full refund within 30 days. It&apos;s a lower-risk way to try the paid plans without a long commitment.
-              </p>
-            </div>
-          </div>
+        <ScrollReveal>
+          <section className="max-w-3xl mx-auto mb-20">
+            <h2 className="text-3xl font-bold text-center mb-8">A few things to know before you start</h2>
+            <div className="space-y-3">{faqs.map((faq) => (
+              <details key={faq.q} className="group border border-white/10 rounded-xl bg-[#0f1117] overflow-hidden">
+                <summary className="flex items-center justify-between gap-4 px-5 py-5 cursor-pointer list-none font-medium hover:text-emerald-400">{faq.q}<ChevronDown className="w-5 h-5 flex-shrink-0 text-gray-400 group-open:rotate-180" /></summary>
+                <p className="px-5 pb-5 text-gray-400 leading-relaxed">{faq.a}</p>
+              </details>
+            ))}</div>
+            <p className="mt-5 text-sm text-gray-400">For subscription and refund terms, read our <Link href="/terms" className="text-emerald-400 underline underline-offset-4">Terms of Service</Link>.</p>
+          </section>
         </ScrollReveal>
 
-        {/* ═══════════════════════════════════════════════════
-            SECTION 5 - FAQ
-        ════════════════════════════════════════════════════ */}
-        <ScrollReveal delay={100}>
-          <div className="max-w-3xl mx-auto mb-28">
-            <h2 className="text-3xl font-bold text-white text-center mb-3">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-gray-400 text-center mb-10">
-              Everything you need to know about pricing and plans.
-            </p>
-            <div className="space-y-3">
-              {faqs.map((faq, i) => (
-                <FAQItem key={i} q={faq.q} a={faq.a} />
-              ))}
-            </div>
-          </div>
+        <ScrollReveal>
+          <section className="text-center rounded-3xl border border-emerald-500/20 bg-emerald-500/5 px-6 py-14">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Start by seeing what needs attention.</h2>
+            <p className="text-lg text-gray-400 mb-7 max-w-xl mx-auto">Your free scan gives you a starting point and practical priorities. Choose a paid plan when you are ready for its tools.</p>
+            <Link href="/signup" className="inline-flex items-center gap-2 bg-emerald-500 text-slate-950 font-semibold px-7 py-4 rounded-xl hover:bg-emerald-400">Check my business’s visibility <ArrowRight className="w-5 h-5" /></Link>
+            <p className="text-gray-400 text-sm mt-5">Free account required. No card for the free scan.</p>
+          </section>
         </ScrollReveal>
-
-        {/* ═══════════════════════════════════════════════════
-            SECTION 6 - Final CTA
-        ════════════════════════════════════════════════════ */}
-        <ScrollReveal delay={100}>
-          <div className="relative text-center rounded-3xl overflow-hidden border border-white/10 bg-[#0f1117] px-8 py-20">
-            {/* Glow blobs */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium px-4 py-2 rounded-full mb-6">
-                <Sparkles className="w-4 h-4" />
-                Start in under 60 seconds
-              </div>
-              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                Ready to Get Found{" "}
-                <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                  and Trusted?
-                </span>
-              </h2>
-              <p className="text-xl text-gray-300 mb-10 max-w-xl mx-auto">
-                Start with a free scan. Upgrade when you want more monitoring, more execution support, and a steadier path to better visibility.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold px-8 py-4 rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02] transition-all text-lg"
-                >
-                  Start Free - No Credit Card
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="inline-flex items-center gap-2 bg-white/10 text-white font-semibold px-8 py-4 rounded-xl border border-white/10 hover:bg-white/15 transition-all text-lg"
-                >
-                  View All Plans
-                </Link>
-              </div>
-              <p className="text-gray-400 text-sm mt-6">
-                30-day money-back guarantee · Cancel anytime · No contracts
-              </p>
-            </div>
-          </div>
-        </ScrollReveal>
-
       </div>
-
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-8 mt-8">
+      <footer className="relative border-t border-white/10 py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
           <p>© {new Date().getFullYear()} Geothority. All rights reserved.</p>
-          <div className="flex items-center gap-6">
-            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms of Service</Link>
-            <Link href="/faq" className="hover:text-gray-300 transition-colors">FAQ</Link>
-            <Link href="/service-facts" className="hover:text-gray-300 transition-colors">What You Get</Link>
-          </div>
+          <div className="flex flex-wrap justify-center gap-5"><Link href="/" className="hover:text-white">Home</Link><Link href="/faq" className="hover:text-white">FAQ</Link><Link href="/service-facts" className="hover:text-white">What You Get</Link><Link href="/privacy" className="hover:text-white">Privacy</Link><Link href="/terms" className="hover:text-white">Terms</Link></div>
         </div>
       </footer>
     </main>
+    </>
   );
 }

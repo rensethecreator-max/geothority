@@ -156,8 +156,8 @@ function LoginForm() {
           </h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             {mode === "signin"
-              ? "Sign in to review your scans, trust signals, and next fixes"
-              : "Start your free website scan - no credit card needed"}
+              ? "Sign in to review your scans, findings, and next steps"
+              : "Create a free account, then add your business and website to run your scan. No payment card needed."}
           </p>
         </div>
 
@@ -230,13 +230,13 @@ function LoginForm() {
             <div>
               <input
                 type="text"
-                placeholder="Beta access code (optional)"
+                placeholder="Invitation code (optional)"
                 value={betaCode}
                 onChange={e => setBetaCode(e.target.value)}
                 className="w-full px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
               />
               <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                Invited beta testers can use their access code to start immediately without waiting for email confirmation.
+                Only enter a code if you received a beta invitation. Otherwise, leave this blank and sign up normally.
               </p>
             </div>
           )}
@@ -250,7 +250,7 @@ function LoginForm() {
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                {mode === "signin" ? "Sign In" : "Create Account"}
+                {mode === "signin" ? "Sign In" : "Create Free Account"}
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

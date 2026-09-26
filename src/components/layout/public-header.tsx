@@ -36,10 +36,10 @@ export function PublicHeader() {
               What You Get
             </Link>
             <Link
-              href="/for/insurance-agents"
+              href="/#industries"
               className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             >
-              Insurance Agents
+              Industries
             </Link>
             <Link
               href="/pricing"
@@ -69,6 +69,8 @@ export function PublicHeader() {
           <button
             className="md:hidden p-2 text-[var(--muted-foreground)]"
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -85,11 +87,11 @@ export function PublicHeader() {
               Features
             </Link>
             <Link
-              href="/for/insurance-agents"
+              href="/#industries"
               onClick={() => setMobileOpen(false)}
               className="block text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
-              Insurance Agents
+              Industries
             </Link>
             <Link
               href="/service-facts"

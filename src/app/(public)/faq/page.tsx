@@ -7,142 +7,100 @@ import { ChevronDown } from "lucide-react";
 export const metadata: Metadata = {
   title: "FAQ - Geothority Local SEO Platform | Frequently Asked Questions",
   description:
-    "Everything you need to know about Geothority: how the Trust Stack score works, what the AI Overview Checker does, citation scanning, GBP monitoring, and how we compare to BrightLocal and Moz Local.",
+    "Answers for local business owners about the free website scan, paid plans, setup, approvals, supported connections, and what to expect from Geothority.",
   alternates: { canonical: "https://geothority.io/faq" },
   openGraph: {
     title: "Geothority FAQ - Local SEO Questions Answered",
     description:
-      "Get answers about Geothority's Trust Stack™, AI search optimization, website scanner, and how we help insurance agents improve local visibility.",
+      "Understand Geothority’s free scan, ongoing tools, and the work shared with your business or website provider.",
     url: "https://geothority.io/faq",
     type: "website",
   },
 };
 
+const questions = [
+  {
+    "question": "Who is Geothority for?",
+    "answer": "Geothority is for small businesses that depend on local customers and want a clearer path to improving online visibility. Insurance agencies, home service companies, professional services, and local practices share this challenge. Start with a website scan to see the findings for your own business."
+  },
+  {
+    "question": "What will I get from the free scan?",
+    "answer": "Create a free account, add your business details and website, and run a scan. You get a visibility score, findings grouped by area, and prioritized next steps. No payment card is required for the Free plan, and signing up does not start a paid subscription."
+  },
+  {
+    "question": "What do I need to get started?",
+    "answer": "You need an account, your business details, and your website address. You do not need a customer list for the website scan. You can connect supported services later when you choose to use features that need them."
+  },
+  {
+    "question": "What does the visibility score mean?",
+    "answer": "The Trust Stack score is Geothority’s assessment of the signals it can check, grouped into website foundations, business information, local content, reviews, and AI readiness. Use the score and individual findings to prioritize work and compare scans. It is not a Google score, a search ranking, or a prediction of leads."
+  },
+  {
+    "question": "Will this work with my existing website?",
+    "answer": "You can scan your existing public website without replacing it. Applying changes depends on your website platform, access, and available integrations. Where direct publishing is supported and connected, you can use that workflow. Otherwise, use the prepared content or instructions in your website builder, or share them with your website provider."
+  },
+  {
+    "question": "What does Geothority do, and what do I do?",
+    "answer": "Geothority checks available signals, organizes findings, and provides recommendations and supported tools for the next step. You confirm business details, review content for accuracy, connect the accounts you want to use, and approve customer-facing work. Website changes that cannot be applied through a supported connection need you or your website provider."
+  },
+  {
+    "question": "How much time should I set aside?",
+    "answer": "Start by entering your business details and reviewing the first report. The ongoing time depends on the findings, your chosen tools, and whether you or a website provider applies changes. Focus on a few priorities at a time. We do not promise a fixed setup time or a completely hands-off service."
+  },
+  {
+    "question": "What do paid plans add?",
+    "answer": "Starter adds tools for a connected Google Business Profile, business listing checks, and email support. Growth adds AI visibility checks, competitor tracking, Google post tools, supported listing sync, and review request workflows. Authority adds local and service page drafts, FAQ and other content drafts, reporting exports, and an onboarding call. Connected features require setup; see Pricing for the current scope and limits."
+  },
+  {
+    "question": "How does the 14-day paid trial work?",
+    "answer": "Choose a paid plan in Billing after creating your account. Paid checkout includes a 14-day trial and collects a payment card. Billing begins automatically at the end of the trial unless you cancel first. The free account and website scan are separate and do not require a card. Review the price and renewal date before completing checkout."
+  },
+  {
+    "question": "Why keep using Geothority after the first scan?",
+    "answer": "The first scan establishes your starting point. Continue using the tools in your plan to revisit findings, review changes, compare competitors where included, and work through improvements. With Authority, you can also prepare new content as your services and locations need it. Progress comes from reviewing and implementing appropriate changes, not simply running more scans."
+  },
+  {
+    "question": "What is local search visibility?",
+    "answer": "It is how easily someone in your service area can find your business when looking for what you offer. Examples include an insurance shopper searching for a nearby agent, a homeowner looking for a plumber, or a patient searching for a local practice. Geothority helps you inspect the business information and website signals that support discovery."
+  },
+  {
+    "question": "What do AI visibility checks tell me?",
+    "answer": "They show results from the supported AI sources and queries checked for your business. Coverage depends on available connections and source access. A checked result, an unavailable source, and an estimate are different; review the status in your results. A mention in one check does not guarantee future recommendations or visibility for every search."
+  },
+  {
+    "question": "How do business listing checks and sync work?",
+    "answer": "Listing checks help you review whether your business name, address, phone, and other details agree across supported sources. Sync can submit or update information through a supported connected service where available. A submitted change is not a guarantee that every directory has accepted or published it; some listings still require owner verification or a manual update."
+  },
+  {
+    "question": "How do review requests work?",
+    "answer": "Review workflows help you invite customers to share honest experiences and organize follow-up after setup. Use customer details you are authorized to contact and review the message before sending. Every invited customer should have the same opportunity to leave a public review, regardless of sentiment. Private feedback is an optional channel, not a filter for who receives the public review link."
+  },
+  {
+    "question": "How quickly will my ranking or inquiries improve?",
+    "answer": "There is no guaranteed timeline or ranking increase. Results depend on your starting point, competition, the changes you implement, and how search services respond. Start by checking whether the recommended changes were completed and whether scan findings changed. Track actual calls, inquiries, or bookings separately when you have that data."
+  },
+  {
+    "question": "Are there scan limits?",
+    "answer": "Website scans currently allow up to 3 requests in a rolling 24-hour window per account on every plan. Other tools may have separate limits. If you reach the scan limit, wait for earlier requests to leave that window before trying again. Paid plans unlock additional tools rather than unlimited use of every feature."
+  },
+  {
+    "question": "Can I manage multiple businesses or locations?",
+    "answer": "The standard account is designed for one business. Contact us before signing up for multiple businesses, locations, team seats, white-label reporting, or API access so we can confirm your setup and availability."
+  },
+  {
+    "question": "Where can I read about data and subscription terms?",
+    "answer": "Read our Privacy Policy for how information is used and our Terms of Service for subscription, cancellation, and refund terms. Only connect accounts you are authorized to manage, and review requested permissions before connecting a service."
+  }
+];
+
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "What is Geothority?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Geothority is a local SEO and AEO (AI Engine Optimization) platform built specifically for insurance agents and local businesses. It runs a 90-second website audit, scores your online presence across 5 trust layers, and gives you copy-paste fixes to rank higher in Google Maps, organic search, and AI answers like ChatGPT, Google AI Overviews, and Claude.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What is a Trust Stack score?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Your Trust Stack™ score is Geothority's proprietary 5-layer scoring system that measures your local search authority from 0–100. The five layers are: (1) Foundation - technical SEO, site speed, mobile optimization; (2) Trust Pages - About, Contact, team bios, credentials; (3) Geo Content - city pages, local landing pages, neighborhood mentions; (4) Reviews - Google review count, rating, recency, and response rate; (5) AI Optimization - schema markup, entity signals, FAQ content, and citation consistency. Each layer is scored individually so you know exactly which area to fix first.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How does the website scan work?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Enter your website URL and Geothority crawls your site in approximately 90 seconds. It checks over 80 SEO and local signals including page speed, meta tags, schema markup, NAP consistency, Google Business Profile completeness, review signals, and content quality. You'll receive a scored report with a prioritized list of Quick Win cards - each with a specific fix, the expected impact, and (where applicable) copy-paste code or content.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What is Local SEO?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Local SEO is the practice of optimizing your online presence so your business appears prominently when people search for services in your geographic area. For an insurance agent in Austin, that means showing up when someone searches 'insurance agent near me' or 'auto insurance Austin TX.' It involves optimizing your Google Business Profile, building local citations, earning reviews, creating geo-targeted content, and ensuring your website has strong technical signals that Google associates with local relevance.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How long does it take to see results from Geothority?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Most users see measurable improvements within 4–8 weeks of implementing their Quick Win recommendations. Technical fixes (schema markup, meta tags, NAP consistency) often show ranking improvements in 2–3 weeks. Content improvements like city landing pages and GBP post optimization typically take 6–12 weeks to fully compound. Review campaigns can generate new reviews within days of launching. Geothority customers report an average ranking improvement of 8 positions in the local map pack within 90 days.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What is NAP consistency?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "NAP stands for Name, Address, Phone number - the three core data points Google uses to verify a local business's identity across the web. Inconsistent NAP (e.g., your address listed differently on Yelp vs. your website vs. Yellow Pages) sends confusing signals to Google and can significantly suppress your local rankings. Geothority scans 80+ citation directories and data sources to flag every NAP discrepancy, then gives you the corrected citation data to submit.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How does the AI Overview Checker work?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Geothority's AI Overview Checker runs your business against 20+ queries that trigger Google AI Overviews, ChatGPT, and Claude responses in your category. It checks whether your business is cited as a recommended answer, which competitors are appearing instead, and what content signals (schema, FAQ pages, entity mentions) are driving those citations. You get an AEO score and a checklist of optimizations - structured data improvements, FAQ content, and entity-building tactics - that increase the probability of appearing in AI-generated answers.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What schema markup does my business need?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "For insurance agents and local service businesses, the most impactful schema types are: LocalBusiness (with InsuranceAgency subtype), FAQPage, BreadcrumbList, Review/AggregateRating, Service, and Organization. Geothority's Schema Generator tool creates the exact JSON-LD code for each schema type based on your business data - just copy and paste it into your website's <head> section or use it with a plugin like RankMath or Schema Pro.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How many citation directories does Geothority check?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Geothority checks 80+ citation directories including Google Business Profile, Apple Maps, Bing Places, Yelp, Yellow Pages, Foursquare, Angi, BBB, Facebook, LinkedIn, and industry-specific directories relevant to your niche. The Citation Scan shows each directory's current data for your business, flags inconsistencies, and provides the corrected NAP data you should submit. For insurance agents, we also check specialty directories like Insurify, PolicyGenius referral networks, and state insurance commissioner listings.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What's the difference between Free and Pro plans?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "The free website scan gives you your Trust Stack score, a summary of your top 3 issues, and one Quick Win card. Paid plans start at $97/month (Starter) and unlock: your full scored report with all Quick Win cards, GBP health monitoring, citation scan across 80+ directories, the AI Overview Checker, competitor tracking, monthly Trust Stack reports, and access to the AI Content Generator for city/service pages. The Growth plan ($197/month) adds weekly AI-written GBP posts, automated review campaigns, competitor watchdog, and priority support.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Can I use Geothority for multiple locations?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "The standard beta is designed for one company per account so every tester gets a clean setup, clear scan history, and focused support. If you need multiple companies, multiple locations, team seats, white-label reports, or API access, contact us first. Those workflows are handled as a private rollout instead of the normal beta signup path.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How does GBP monitoring work?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Geothority connects to your Google Business Profile via the Google Business API and monitors it continuously for unauthorized edits, photo removals, Q&A spam, review violations, and ranking fluctuations. You get an alert the moment something changes - critical because Google allows anyone to 'suggest edits' to your GBP listing. Beyond monitoring, Geothority tracks your GBP post engagement, photo performance, and message response rate, and benchmarks all of these against your local competitors.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What makes Geothority different from BrightLocal and Moz Local?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "BrightLocal and Moz Local are solid citation management tools, but they were built for SEO agencies managing dozens of clients. Geothority is built specifically for independent insurance agents and small local businesses who need to understand and act on their SEO themselves. Key differences: (1) AEO/AI Optimization - Geothority optimizes for AI Overviews, ChatGPT, Claude, Copilot, Grok, DeepSeek, Meta AI, You.com, Mistral, Brave, Phind, iAsk.ai, Qwen, and Cohere citations; BrightLocal and Moz Local do not. (2) Industry focus - our Quick Wins and content templates are insurance-agent specific. (3) Built-in content generation - Geothority writes city landing pages and GBP posts; BrightLocal and Moz Local do not. (4) Competitor Watchdog - live monitoring of specific local competitors; not available in BrightLocal or Moz Local.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Is my data secure with Geothority?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes. Geothority uses industry-standard security practices: all data is encrypted at rest and in transit (TLS 1.3), we use Supabase with row-level security for database access control, and we never sell or share your data with third parties. We follow the principle of least-privilege for all API access. OAuth tokens for Google Business Profile are stored encrypted and can be revoked at any time from your settings page.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Do I need technical skills to use Geothority?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "No. Geothority is designed for insurance agents, not developers. The website scan requires only your URL. Quick Win cards include the exact code or content to add - no coding knowledge required. The schema generator produces copy-paste JSON-LD. The GBP post generator writes the post and you click 'Publish.' The most technical thing you might do is paste a meta description into your website builder. If you get stuck, our onboarding call (included with Authority plan) walks you through implementing your first 5 fixes live.",
-      },
-    },
-  ],
+  mainEntity: questions.map(({ question, answer }) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: { "@type": "Answer", text: answer },
+  })),
 };
 
 const faqs = faqSchema.mainEntity;
@@ -162,8 +120,7 @@ export default function FAQPage() {
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
         <p className="text-[var(--muted-foreground)] max-w-xl mx-auto mb-4">
-          Everything you need to know about Geothority - from how the Trust Stack score works to
-          what makes us different from BrightLocal.
+          Clear answers about your first scan, the work involved, and what happens next.
         </p>
         <p className="text-sm text-[var(--muted-foreground)]">
           Can&apos;t find your answer?{" "}
@@ -175,8 +132,8 @@ export default function FAQPage() {
 
       <section className="px-4 pb-20">
         <div className="max-w-3xl mx-auto space-y-3">
-          {faqs.map((item, i) => (
-            <FAQAccordion key={i} question={item.name} answer={item.acceptedAnswer.text} />
+          {faqs.map((item) => (
+            <FAQAccordion key={item.name} question={item.name} answer={item.acceptedAnswer.text} />
           ))}
         </div>
       </section>
@@ -186,13 +143,13 @@ export default function FAQPage() {
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold mb-3">Ready to see where you stand?</h2>
           <p className="text-[var(--muted-foreground)] mb-6">
-            Get your free Trust Stack™ score in 90 seconds and start from the gaps your business actually has.
+            Create a free account to scan your website and review your next priorities. No payment card required.
           </p>
           <Link
             href="/signup"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-xl transition-colors"
           >
-            Get Your Free Scan →
+            Check my business’s visibility →
           </Link>
         </div>
       </section>
@@ -210,7 +167,7 @@ export default function FAQPage() {
               <Link href="/pricing" className="hover:text-[var(--foreground)] transition-colors">Pricing</Link>
               <Link href="/service-facts" className="hover:text-[var(--foreground)] transition-colors">What You Get</Link>
               <Link href="/compare/geothority-vs-brightlocal" className="hover:text-[var(--foreground)] transition-colors">Compare</Link>
-              <Link href="/for/insurance-agents" className="hover:text-[var(--foreground)] transition-colors">Insurance Agents</Link>
+              <Link href="/insurance-agents" className="hover:text-[var(--foreground)] transition-colors">Insurance Agents</Link>
               <Link href="/privacy" className="hover:text-[var(--foreground)] transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">Terms of Service</Link>
             </div>
