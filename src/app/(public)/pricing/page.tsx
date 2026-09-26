@@ -148,7 +148,7 @@ export default function PricingPage() {
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-5">
               Find your gaps.<br />
-              <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">Choose your next step.</span>
+              <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 [.light-mode_&]:from-emerald-700 [.light-mode_&]:via-teal-700 [.light-mode_&]:to-cyan-700 bg-clip-text text-transparent">Choose your next step.</span>
             </h1>
             <p className="text-lg sm:text-xl text-gray-400 mb-5">
               Clear priorities for local businesses that want to be easier to find and choose.
@@ -174,7 +174,7 @@ export default function PricingPage() {
                   </div>
                 )}
                 <h2 className={`text-lg font-bold mb-2 pt-2 ${plan.popular ? "text-emerald-400" : "text-white"}`}>{plan.name}</h2>
-                <p className="text-base font-medium text-gray-200 min-h-12">{plan.description}</p>
+                <p className="text-base font-medium text-gray-200 [.light-mode_&]:text-slate-700 min-h-12">{plan.description}</p>
                 <p className="text-sm text-gray-400 mt-2 mb-5 min-h-16">{plan.purpose}</p>
                 <div className="mb-5">
                   <div className="flex items-end gap-1"><span className="text-4xl font-black">${displayPrice(plan)}</span><span className="text-gray-400 mb-1.5">/mo</span></div>

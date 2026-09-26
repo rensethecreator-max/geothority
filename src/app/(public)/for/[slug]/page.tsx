@@ -155,7 +155,7 @@ export default async function IndustryPage(props: { params: Promise<{ slug: stri
       <PublicHeader />
       <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-28 pb-20">
         <section className="text-center mb-16">
-          <div className="inline-block px-4 py-1.5 border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 rounded-full text-sm font-medium mb-6">Built for {data.name.toLowerCase()}</div>
+          <div className="inline-block px-4 py-1.5 border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 [.light-mode_&]:text-emerald-700 rounded-full text-sm font-medium mb-6">Built for {data.name.toLowerCase()}</div>
           <h1 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight tracking-tight text-balance">{data.h1}</h1>
           <p className="text-lg leading-8 text-[var(--muted-foreground)] max-w-2xl mx-auto mb-8">{data.description}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -166,14 +166,14 @@ export default async function IndustryPage(props: { params: Promise<{ slug: stri
         </section>
 
         <section id="industry-example" className="scroll-mt-24 bg-[var(--card)] border border-emerald-500/30 rounded-3xl p-6 sm:p-9 mb-16">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300 mb-3">Illustrative example · not a customer result</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300 [.light-mode_&]:text-emerald-700 mb-3">Illustrative example · not a customer result</p>
           <h2 className="text-2xl sm:text-3xl font-bold mb-8">{data.example.business}</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { label: "The gap", text: data.example.gap },
               { label: "The next step", text: data.example.action },
               { label: "Your role", text: data.example.approval },
-            ].map((item) => (<div key={item.label} className="border-t border-[var(--border)] pt-4"><h3 className="font-semibold text-emerald-300 mb-2">{item.label}</h3><p className="text-sm leading-7 text-[var(--muted-foreground)]">{item.text}</p></div>))}
+            ].map((item) => (<div key={item.label} className="border-t border-[var(--border)] pt-4"><h3 className="font-semibold text-emerald-300 [.light-mode_&]:text-emerald-700 mb-2">{item.label}</h3><p className="text-sm leading-7 text-[var(--muted-foreground)]">{item.text}</p></div>))}
           </div>
           <p className="text-xs leading-relaxed text-[var(--muted-foreground)] mt-6">Your findings depend on your website and available data. Content tools and monitoring vary by plan.</p>
         </section>
@@ -182,7 +182,7 @@ export default async function IndustryPage(props: { params: Promise<{ slug: stri
           <h2 className="text-3xl font-bold mb-3 text-center">Make the next improvement clear.</h2>
           <p className="text-[var(--muted-foreground)] text-center mb-9 max-w-2xl mx-auto leading-7">Focus on the information that helps people understand your business and take the next step.</p>
           <div className="grid md:grid-cols-3 gap-5">
-            {data.opportunities.map((item) => (<div key={item.title} className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6"><CheckCircle2 className="w-6 h-6 text-emerald-300 mb-4" aria-hidden="true" /><h3 className="font-semibold mb-3">{item.title}</h3><p className="text-sm text-[var(--muted-foreground)] leading-7">{item.desc}</p></div>))}
+            {data.opportunities.map((item) => (<div key={item.title} className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6"><CheckCircle2 className="w-6 h-6 text-emerald-300 [.light-mode_&]:text-emerald-700 mb-4" aria-hidden="true" /><h3 className="font-semibold mb-3">{item.title}</h3><p className="text-sm text-[var(--muted-foreground)] leading-7">{item.desc}</p></div>))}
           </div>
         </section>
 
@@ -193,9 +193,9 @@ export default async function IndustryPage(props: { params: Promise<{ slug: stri
               { icon: Search, title: "Scan your website", text: "Use your business details and public website to establish a starting point. No customer records are needed for the initial scan." },
               { icon: ClipboardCheck, title: "Choose your priorities", text: "Review the findings and decide what to improve first. Use the tools available in your plan to prepare the next steps." },
               { icon: ShieldCheck, title: "Review and follow through", text: "Approve business details and content before publication. Coordinate website changes with your provider, then revisit the measured signals." },
-            ].map((step) => (<div key={step.title}><step.icon className="h-6 w-6 text-emerald-300 mb-4" aria-hidden="true" /><h3 className="font-semibold mb-3">{step.title}</h3><p className="text-sm leading-7 text-[var(--muted-foreground)]">{step.text}</p></div>))}
+            ].map((step) => (<div key={step.title}><step.icon className="h-6 w-6 text-emerald-300 [.light-mode_&]:text-emerald-700 mb-4" aria-hidden="true" /><h3 className="font-semibold mb-3">{step.title}</h3><p className="text-sm leading-7 text-[var(--muted-foreground)]">{step.text}</p></div>))}
           </div>
-          <Link href="/service-facts" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-emerald-300 underline underline-offset-4">See what Geothority includes <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+          <Link href="/service-facts" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-emerald-300 [.light-mode_&]:text-emerald-700 underline underline-offset-4">See what Geothority includes <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </section>
 
         <section className="mb-16 max-w-3xl mx-auto">

@@ -80,7 +80,7 @@ export default function ServiceFactsPage() {
         <section className="px-4 sm:px-6">
           <div className="mx-auto max-w-5xl rounded-[32px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] px-6 py-12 shadow-[0_24px_80px_rgba(4,10,18,0.24)] sm:px-10">
             <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-300">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-300 [.light-mode_&]:text-emerald-700">
                 <Sparkles className="h-4 w-4" />
                 Service facts
               </div>
@@ -102,7 +102,7 @@ export default function ServiceFactsPage() {
                 </Link>
                 <Link
                   href="/pricing"
-                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] px-6 py-3.5 font-semibold text-[var(--foreground)] transition hover:border-emerald-500/40 hover:text-emerald-300"
+                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] px-6 py-3.5 font-semibold text-[var(--foreground)] transition hover:border-emerald-500/40 hover:text-emerald-300 [.light-mode_&]:hover:text-emerald-700"
                 >
                   See Plans
                 </Link>
@@ -115,13 +115,13 @@ export default function ServiceFactsPage() {
           <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="rounded-[30px] border border-[var(--border)] bg-[var(--card)] p-7">
               <div className="flex items-center gap-3">
-                <ShieldCheck className="h-5 w-5 text-emerald-300" />
+                <ShieldCheck className="h-5 w-5 text-emerald-300 [.light-mode_&]:text-emerald-700" />
                 <h2 className="text-2xl font-semibold">From your first scan onward</h2>
               </div>
               <div className="mt-6 space-y-4">
                 {includedItems.map((item) => (
                   <div key={item} className="flex items-start gap-3 rounded-2xl border border-white/12 bg-white/[0.05] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-300" />
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-300 [.light-mode_&]:text-emerald-700" />
                     <p className="text-sm leading-7 text-[var(--card-foreground)]">{item}</p>
                   </div>
                 ))}
@@ -130,7 +130,7 @@ export default function ServiceFactsPage() {
 
             <div className="rounded-[30px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(92,230,186,0.16),rgba(20,32,52,0.94))] p-7 shadow-[0_18px_55px_rgba(4,10,18,0.28)]">
               <div className="flex items-center gap-3">
-                <Compass className="h-5 w-5 text-emerald-300" />
+                <Compass className="h-5 w-5 text-emerald-300 [.light-mode_&]:text-emerald-700" />
                 <h2 className="text-2xl font-semibold">What to expect</h2>
               </div>
               <div className="mt-6 space-y-4">
@@ -166,7 +166,7 @@ export default function ServiceFactsPage() {
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {firstThirtyDays.map((item) => (
                 <div key={item.title} className="rounded-2xl border border-white/12 bg-white/[0.05] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">{item.title}</div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300 [.light-mode_&]:text-emerald-700">{item.title}</div>
                   <p className="mt-3 text-sm leading-7 text-[var(--card-foreground)]">{item.text}</p>
                 </div>
               ))}

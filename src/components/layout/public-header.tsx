@@ -59,9 +59,9 @@ export function PublicHeader() {
             </Link>
             <Link
               href="/signup"
-              className="bg-electric-500 hover:bg-electric-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="bg-emerald-700 hover:bg-emerald-800 !text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              Get Your Free Scan
+              Get my free scan
             </Link>
           </nav>
 
@@ -117,9 +117,9 @@ export function PublicHeader() {
             <Link
               href="/signup"
               onClick={() => setMobileOpen(false)}
-              className="block bg-electric-500 text-white text-center px-4 py-2 rounded-lg text-sm font-medium"
+              className="block bg-emerald-700 hover:bg-emerald-800 !text-white text-center px-4 py-2 rounded-lg text-sm font-medium"
             >
-              Get Your Free Scan
+              Get my free scan
             </Link>
           </div>
         )}
